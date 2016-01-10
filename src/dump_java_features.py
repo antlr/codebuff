@@ -25,6 +25,9 @@ def main(argv):
     parser = JavaParser(stream)
     tree = parser.compilationUnit()
     # print(Trees.toStringTree(tree, None, parser))
+    print "Grammar has %d rules" % len(parser.ruleNames)
+    print "newline, token type, column, length, enclosing rule, earliest ancestor rule, " \
+          "earliest ancestor length, prev token type, prev token column, prev token last char index"
     features = DumpFeatures(stream)
     walker = ParseTreeWalker()
     walker.walk(features, tree)

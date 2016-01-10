@@ -20,16 +20,19 @@ class DumpFeatures(JavaListener):
             precedingNL = curToken.line > prevToken.line
 
         #print dir(node)
-        ruleName = JavaParser.ruleNames[node.getParent().getRuleIndex()]
+        ruleIndex = node.getParent().getRuleIndex()
+        ruleName = JavaParser.ruleNames[ruleIndex]
         earliestAncestor = self.earliestAncestorStartingAtToken(node.getParent(),curToken)
         earliestAncestorName = "None"
+        earliestAncestorRuleIndex = -1
         earliestAncestorWidth = 0
         if earliestAncestor is not None:
-            earliestAncestorName = JavaParser.ruleNames[earliestAncestor.getRuleIndex()]
+            earliestAncestorRuleIndex = earliestAncestor.getRuleIndex()
+            earliestAncestorName = JavaParser.ruleNames[earliestAncestorRuleIndex]
             earliestAncestorWidth = earliestAncestor.stop.stop - earliestAncestor.start.start + 1
 
-        features = [curToken.text, curToken.type, curToken.column, len(curToken.text),
-                    ruleName, earliestAncestorName, earliestAncestorWidth
+        features = [curToken.type, curToken.column, len(curToken.text),
+                    ruleIndex, earliestAncestorRuleIndex, earliestAncestorWidth
                     ]
         if prevToken is not None:
             endofprevtoken = prevToken.column + len(prevToken.text) - 1
