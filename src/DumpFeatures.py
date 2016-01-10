@@ -23,7 +23,7 @@ class DumpFeatures(JavaListener):
         ruleIndex = node.getParent().getRuleIndex()
         ruleName = JavaParser.ruleNames[ruleIndex]
         earliestAncestor = self.earliestAncestorStartingAtToken(node.getParent(),curToken)
-        earliestAncestorName = "None"
+        earliestAncestorName = None
         earliestAncestorRuleIndex = -1
         earliestAncestorWidth = 0
         if earliestAncestor is not None:
@@ -36,10 +36,10 @@ class DumpFeatures(JavaListener):
                     ]
         if prevToken is not None:
             endofprevtoken = prevToken.column + len(prevToken.text) - 1
-            features += [prevToken.text, prevToken.type, prevToken.column, endofprevtoken]
+            features += [prevToken.type, prevToken.column, endofprevtoken]
         else:
-            features += ['None', 0, -1, 0]
-        print precedingNL, features
+            features += [0, -1, 0]
+        print "%s, %s" % (1 if precedingNL else 0, ', '.join(str(x) for x in features))
 
     def earliestAncestorStartingAtToken(self, node, token):
         """

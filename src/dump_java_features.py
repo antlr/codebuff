@@ -19,14 +19,17 @@ public class T {
 """
 
 def main(argv):
-    input = InputStream(sample)
+    if len(argv)>1:
+        input = FileStream(argv[1])
+    else:
+        input = InputStream(sample)
     lexer = JavaLexer(input)
     stream = CommonTokenStream(lexer)
     parser = JavaParser(stream)
     tree = parser.compilationUnit()
     # print(Trees.toStringTree(tree, None, parser))
-    print "Grammar has %d rules" % len(parser.ruleNames)
-    print "newline, token type, column, length, enclosing rule, earliest ancestor rule, " \
+    print "Grammar %s has %d rules, %d tokens" % (parser.grammarFileName, len(parser.ruleNames), len(lexer.ruleNames))
+    print "inject newline, token type, column, length, enclosing rule, earliest ancestor rule, " \
           "earliest ancestor length, prev token type, prev token column, prev token last char index"
     features = DumpFeatures(stream)
     walker = ParseTreeWalker()
