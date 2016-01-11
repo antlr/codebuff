@@ -1,6 +1,8 @@
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 def print_importance(forest):
     importances = forest.feature_importances_
@@ -46,8 +48,7 @@ with open("samples/stringtemplate4/style.csv", 'r') as f:
 X = data[0::,1::]	# features
 Y = data[0::,0]	    # prediction class
 
-# get first 70% as training data, 30% as testing data
-# it's 150 rows with 4 features, 1 class column (first col)
+# get first 80% as training data, 20% as testing data
 n = len(data)
 last_training_index = n * 0.80
 X_training = X[0:last_training_index]
@@ -58,7 +59,11 @@ Y_testing = Y[last_training_index:]
 print "there are %d records, %d training and %d testing" % (len(data), len(X_training), len(X_testing))
 print "a priori   'inject newline' rate is %3d/%4d = %f" % (sum(Y), len(Y), sum(Y)/float(len(Y)))
 
-forest = RandomForestClassifier(n_estimators = 600)
+# transform categorical values
+index_of_cat_features = [0, 3, 4, 5]
+# todo
+
+forest = RandomForestClassifier(n_estimators = 100)
 forest = forest.fit(X_training, Y_training)
 
 Y_predictions = forest.predict(X_testing)

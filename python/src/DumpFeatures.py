@@ -8,11 +8,14 @@ from antlr4.tree.Trees import Trees
 class DumpFeatures(JavaListener):
     def __init__(self, stream):
         self.stream = stream # track stream so we can examine previous tokens
+        self.data = []
         pass
 
     def visitTerminal(self, node):
         i = node.symbol.tokenIndex
         curToken = node.symbol
+        if curToken.type==-1:
+            return
         prevToken = None
         precedingNL = False
         if i>=1:
@@ -39,7 +42,8 @@ class DumpFeatures(JavaListener):
             features += [prevToken.type, prevToken.column, endofprevtoken]
         else:
             features += [0, -1, 0]
-        print "%s, %s" % (1 if precedingNL else 0, ', '.join(str(x) for x in features))
+        self.data.append(features)
+        # print "%s, %s" % (1 if precedingNL else 0, ', '.join(str(x) for x in features))
 
     def earliestAncestorStartingAtToken(self, node, token):
         """

@@ -24,8 +24,10 @@ public class CollectFeatures extends JavaBaseListener {
 
 	@Override
 	public void visitTerminal(TerminalNode node) {
-		int i = node.getSymbol().getTokenIndex();
 		Token curToken = node.getSymbol();
+		if ( curToken.getType()==Token.EOF ) return;
+
+		int i = curToken.getTokenIndex();
 		Token prevToken = null;
 		boolean precedingNL = false;
 		if (i>=1) {
@@ -37,12 +39,10 @@ public class CollectFeatures extends JavaBaseListener {
 		int ruleIndex = parent.getRuleIndex();
 		String ruleName = JavaParser.ruleNames[ruleIndex];
 		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
-		String earliestAncestorName = null;
-		int earliestAncestorRuleIndex = -1;
+		int earliestAncestorRuleIndex = Integer.MAX_VALUE;
 		int earliestAncestorWidth = 0;
 		if ( earliestAncestor!=null ) {
 			earliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
-			earliestAncestorName = JavaParser.ruleNames[earliestAncestorRuleIndex];
 			earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
 		}
 
@@ -61,7 +61,7 @@ public class CollectFeatures extends JavaBaseListener {
 				precedingNL ? 1 : 0,
 				curToken.getType(), curToken.getCharPositionInLine(), curToken.getText().length(),
 				ruleIndex, earliestAncestorRuleIndex, earliestAncestorWidth,
-				0, -1, 0
+				0, Integer.MAX_VALUE, 0
 			};
 		}
 		data.add(features);
