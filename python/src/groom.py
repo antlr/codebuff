@@ -39,7 +39,7 @@ def newlines(csvfile):
     print "a priori   'inject newline' rate is %3d/%4d = %f" % (sum(Y), len(Y), sum(Y)/float(len(Y)))
 
     # train model on entire data set from style.csv
-    forest = RandomForestClassifier(n_estimators = 100)
+    forest = RandomForestClassifier(n_estimators = 600)
     forest = forest.fit(X, Y)
     return forest
 
@@ -65,6 +65,7 @@ newline_predictions = forest.predict(collector.data)
 print newline_predictions
 i = 0
 for t in tokens.tokens:
+    if t.type==-1: break
     if newline_predictions[i]:
         print
     print t.text,
