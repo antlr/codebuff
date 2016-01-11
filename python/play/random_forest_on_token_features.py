@@ -36,13 +36,10 @@ def graph_importance(forest):
 
     plt.show()
 
-# let's get some data. So called "iris" data
-# http://www.math.uah.edu/stat/data/Fisher.csv
-data = np.loadtxt("../samples/stringtemplate4/features.csv", delimiter=",", skiprows=1)
-
+data = np.loadtxt("samples/stringtemplate4/style.csv", delimiter=",", skiprows=1)
 
 features = []
-with open("../samples/stringtemplate4/features.csv", 'r') as f:
+with open("samples/stringtemplate4/style.csv", 'r') as f:
     features = f.readline().strip().split(', ')
     features = features[1:] # first col is predictor var
 

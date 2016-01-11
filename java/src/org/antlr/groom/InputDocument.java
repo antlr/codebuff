@@ -1,12 +1,12 @@
 package org.antlr.groom;
 
-import org.antlr.v4.runtime.tree.ParseTree;
+import java.util.List;
 
 public class InputDocument {
 	public String fileName;
 	public char[] content;
 	public int index;
-	public ParseTree tree;
+	public List<int[]> data;
 
 	public InputDocument(InputDocument d, int index) {
 		this.fileName = d.fileName;

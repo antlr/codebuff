@@ -6,10 +6,14 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.misc.Utils;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
@@ -45,6 +49,22 @@ public class ExtractFeatures {
 		List<String> allFiles = getFilenames(new File(rootDir), ".*\\.java");
 		documents = load(allFiles);
 		processSampleDocs(documents);
+		FileWriter fw = new FileWriter(rootDir+"/style.csv");
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write("inject newline, token type, column, length, enclosing rule, earliest ancestor rule, "+
+		          "earliest ancestor length, prev token type, prev token column, prev token last char index");
+		for (InputDocument doc : documents) {
+			for (int[] record : doc.data) {
+				String r = join(record, ", ");
+				bw.write(r);
+				bw.write('\n');
+			}
+		}
+		bw.close();
+	}
+
+	public void saveCSV(InputDocument doc, String dir) {
+
 	}
 
 	public void processSampleDocs(List<InputDocument> docs)
@@ -52,15 +72,14 @@ public class ExtractFeatures {
 	{
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			ParseTree tree = parse(doc, JavaLexer.class, JavaParser.class, "compilationUnit");
-			doc.tree = tree;
+			process(doc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		}
 	}
 
-	public ParseTree parse(InputDocument doc,
-	                       Class<? extends Lexer> lexerClass,
-	                       Class<? extends Parser> parserClass,
-	                       String startRuleName)
+	public List<int[]> process(InputDocument doc,
+	                           Class<? extends Lexer> lexerClass,
+	                           Class<? extends Parser> parserClass,
+	                           String startRuleName)
 		throws Exception
 	{
 		ANTLRInputStream input = new ANTLRInputStream(doc.content, doc.content.length);
@@ -81,10 +100,14 @@ public class ExtractFeatures {
 		}
 
 		Parser parser = parserCtor.newInstance(tokens);
-		parser.setBuildParseTree(false); // no parse trees
+		parser.setBuildParseTree(true);
 		Method startRule = parserClass.getMethod(startRuleName);
 		ParseTree tree = (ParseTree)startRule.invoke(parser, (Object[]) null);
-		return tree;
+
+		CollectFeatures collect = new CollectFeatures(tokens);
+		ParseTreeWalker.DEFAULT.walk(collect, tree);
+		doc.data = collect.getData();
+		return doc.data;
 	}
 
 	/** Get all file contents into input array */
@@ -140,5 +163,17 @@ public class ExtractFeatures {
 		else if ( inputFilePattern==null || f.getName().matches(inputFilePattern) ) {
 			files.add(f.getAbsolutePath());
 		}
+	}
+
+	public static String join(int[] array, String separator) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < array.length; i++) {
+			builder.append(array[i]);
+			if (i < array.length - 1) {
+				builder.append(separator);
+			}
+		}
+
+		return builder.toString();
 	}
 }
