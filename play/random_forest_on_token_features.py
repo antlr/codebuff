@@ -40,6 +40,7 @@ def graph_importance(forest):
 # http://www.math.uah.edu/stat/data/Fisher.csv
 data = np.loadtxt("../samples/stringtemplate4/features.csv", delimiter=",", skiprows=1)
 
+
 features = []
 with open("../samples/stringtemplate4/features.csv", 'r') as f:
     features = f.readline().strip().split(', ')
@@ -48,23 +49,26 @@ with open("../samples/stringtemplate4/features.csv", 'r') as f:
 X = data[0::,1::]	# features
 Y = data[0::,0]	    # prediction class
 
-print "a priori 'inject newline' is %d/%d = %f" % (sum(Y), len(Y), sum(Y)/float(len(Y)))
-
 # get first 70% as training data, 30% as testing data
 # it's 150 rows with 4 features, 1 class column (first col)
 n = len(data)
-last_training_index = n * 0.60
+last_training_index = n * 0.80
 X_training = X[0:last_training_index]
 X_testing = X[last_training_index:]
 Y_training = Y[0:last_training_index]
 Y_testing = Y[last_training_index:]
+
+print "there are %d records, %d training and %d testing" % (len(data), len(X_training), len(X_testing))
+print "a priori   'inject newline' rate is %3d/%4d = %f" % (sum(Y), len(Y), sum(Y)/float(len(Y)))
 
 forest = RandomForestClassifier(n_estimators = 600)
 forest = forest.fit(X_training, Y_training)
 
 Y_predictions = forest.predict(X_testing)
 
-print "prediction 'inject newline' rate is %d/%d = %f" % \
+print "expected   'inject newline' rate is %3d/%4d = %f" % \
+      (sum(Y_testing), len(Y_testing), sum(Y_testing)/float(len(Y_testing)))
+print "prediction 'inject newline' rate is %3d/%4d = %f" % \
       (sum(Y_predictions), len(Y_predictions), sum(Y_predictions)/float(len(Y_predictions)))
 
 # print "predictions:"
