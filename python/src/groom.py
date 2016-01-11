@@ -62,7 +62,13 @@ walker.walk(collector, tree)
 # print collector.data
 
 newline_predictions = forest.predict(collector.data)
+newline_predictions_proba = forest.predict_proba(collector.data)
 print newline_predictions
+i = 0
+for p in newline_predictions_proba:
+    print "%-25s %s" % (str(p), tokens.tokens[i])
+    i += 1
+
 i = 0
 for t in tokens.tokens:
     if t.type==-1: break
