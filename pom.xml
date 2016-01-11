@@ -1,0 +1,127 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>9</version>
+	</parent>
+	<groupId>org.antlr</groupId>
+	<artifactId>groom</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>Groom Computer Language Formatter</name>
+	<description>Pretty-printing, formatting.</description>
+	<url>http://www.antlr.org</url>
+	<organization>
+		<name>ANTLR</name>
+		<url>http://www.antlr.org</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>The BSD License</name>
+			<url>https://github.com/antlr/groom/blob/master/LICENSE</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr4-runtime</artifactId>
+			<version>4.5.1</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>java/src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr4-maven-plugin</artifactId>
+				<version>4.5.1</version>
+				<executions>
+					<execution>
+						<configuration>
+							<sourceDirectory>grammars</sourceDirectory>
+							<options>
+
+							</options>
+						</configuration>
+						<id>antlr</id>
+						<goals>
+							<goal>antlr4</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.googlecode.maven-download-plugin</groupId>
+				<artifactId>download-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<configuration>
+					<skipCache>true</skipCache>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.8</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.12.4</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals><goal>jar-no-fork</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals><goal>jar</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- explicitly define maven-deploy-plugin after other to force exec order -->
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>deploy</id>
+						<goals><goal>deploy</goal></goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<scm>
+		<url>https://github.com/antlr/groom</url>
+		<connection>scm:git:git://github.com/antlr/groom.git</connection>
+		<developerConnection>scm:git:git@github.com:antlr/groom.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+</project>
