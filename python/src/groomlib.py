@@ -15,7 +15,7 @@ PREDICTOR_VAR = "inject newline"
 #                  "earliest ancestor rule", "earliest ancestor length",
 #                  "prev token type", "prev token column",
 #                  "prev token last char column"]
-FEATURE_NAMES = ["prev token type", "prev token column", "enclosing rule"]
+FEATURE_NAMES = ["token type", "prev token type", "prev token column"]
 
 def node_features(tokens, node):
     curToken = node.symbol
@@ -33,9 +33,9 @@ def node_features(tokens, node):
         earliestAncestorName = JavaParser.ruleNames[earliestAncestorRuleIndex]
         earliestAncestorWidth = earliestAncestor.stop.stop - earliestAncestor.start.start + 1
     if prevToken is not None:
-        vars = [JavaLexer.symbolicNames[prevToken.type], prevToken.column, ruleName]
+        vars = [JavaLexer.symbolicNames[curToken.type], JavaLexer.symbolicNames[prevToken.type], prevToken.column]
     else:
-        vars = ['None', 0, ruleName] # first token of file
+        vars = [JavaLexer.symbolicNames[curToken.type], 'None', 0] # first token of file
 
     # vars = [JavaLexer.symbolicNames[curToken.type], curToken.column,
     #         len(curToken.text),
