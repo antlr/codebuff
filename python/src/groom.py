@@ -12,14 +12,31 @@ csvfile = "samples/stringtemplate4/style.csv"
 
 sample_java = \
 """
-public class T {
-    int i;
-    int j;
-    int[] a = {
-        1,2,3,
-        4,5,6
-    };
-    void foo() { int j; j=i+10; }
+package org.antlr.groom;
+
+import java.util.List;
+
+public class InputDocument {
+	public String fileName;
+	public char[] content;
+	public int index;
+	public List<int[]> data;
+
+	public InputDocument(InputDocument d, int index) {
+		this.fileName = d.fileName;
+		this.content = d.content;
+		this.index = index;
+	}
+
+	public InputDocument(String fileName, char[] content) {
+		this.content = content;
+		this.fileName = fileName;
+	}
+
+	@Override
+	public String toString() {
+		return fileName+"["+content.length+"]"+"@"+index;
+	}
 }
 """
 
@@ -87,6 +104,16 @@ def todict(features):
     return records
 
 
+def print_tokens(tokens, newline_predictions):
+    i = 0
+    for t in tokens:
+        if t.type==-1: break
+        if newline_predictions is not None and newline_predictions[i]:
+            print
+        print t.text,
+        i += 1
+
+
 # forest = newlines(csvfile) # train model
 
 # file_to_groom = sys.argv[1]
@@ -100,9 +127,9 @@ records = todict(features)
 vec = DictVectorizer(sort=False)
 transformed_data = vec.fit_transform(records).toarray()
 
-print len(vec.get_feature_names())
-print vec.get_feature_names()
-print len(transformed_data[0])
+print "number new vars", len(vec.get_feature_names())
+#print vec.get_feature_names()
+#print len(transformed_data[0])
 
 X = transformed_data
 Y = inject_newlines	    # prediction class
@@ -116,25 +143,16 @@ tokens_testing, inject_newlines_testing, features_testing = extract_data(sample_
 records_testing = todict(features_testing)
 transformed_data_testing = vec.transform(records_testing).toarray()
 X = transformed_data_testing
-print "197==",len(transformed_data_testing[0])
 Y = inject_newlines_testing	    # prediction class
 
 newline_predictions = forest.predict(X)
 newline_predictions_proba = forest.predict_proba(X)
-print newline_predictions_proba
-
 i = 0
-for t in tokens_testing:
-    if t.type==-1: break
-    print t.text,
+for probs in newline_predictions_proba:
+    print "%-25s %s" % (probs, tokens_testing[i])
     i += 1
 
-i = 0
-for t in tokens_testing:
-    if t.type==-1: break
-    if newline_predictions[i]:
-        print
-    print t.text,
-    i += 1
+print_tokens(tokens_testing, None)
+print_tokens(tokens_testing, newline_predictions)
 
 #graph_importance(forest, vec.get_feature_names(), X)
