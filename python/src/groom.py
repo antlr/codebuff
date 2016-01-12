@@ -102,7 +102,6 @@ transformed_data = vec.fit_transform(records).toarray()
 
 print len(vec.get_feature_names())
 print vec.get_feature_names()
-print vec.get_vocabulary()
 print len(transformed_data[0])
 
 X = transformed_data
@@ -115,7 +114,7 @@ forest = forest.fit(X, Y)
 
 tokens_testing, inject_newlines_testing, features_testing = extract_data(sample_java)
 records_testing = todict(features_testing)
-transformed_data_testing = vec.fit_transform(records_testing).toarray()
+transformed_data_testing = vec.transform(records_testing).toarray()
 X = transformed_data_testing
 print "197==",len(transformed_data_testing[0])
 Y = inject_newlines_testing	    # prediction class
@@ -125,17 +124,17 @@ newline_predictions_proba = forest.predict_proba(X)
 print newline_predictions_proba
 
 i = 0
-for t in tokens:
+for t in tokens_testing:
     if t.type==-1: break
     print t.text,
     i += 1
 
 i = 0
-for t in tokens:
+for t in tokens_testing:
     if t.type==-1: break
     if newline_predictions[i]:
         print
     print t.text,
     i += 1
 
-graph_importance(forest, vec.get_feature_names(), X)
+#graph_importance(forest, vec.get_feature_names(), X)
