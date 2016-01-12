@@ -6,6 +6,7 @@ from JavaLexer import JavaLexer
 from JavaParser import JavaParser
 from CollectTokenFeatures import CollectTokenFeatures
 from sklearn.feature_extraction import DictVectorizer
+import matplotlib.pyplot as plt
 
 csvfile = "samples/stringtemplate4/style.csv"
 
@@ -55,33 +56,79 @@ def newlines(csvfile):
     forest = forest.fit(X, Y)
     return forest
 
+
+def graph_importance(forest, feature_names, X):
+    importances = forest.feature_importances_
+    std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
+    indices = np.argsort(importances)[::-1]
+
+    fig, ax = plt.subplots(1,1)
+    plt.title("Feature importances")
+    xlabels = [feature_names[int(i)] for i in indices]
+    plt.bar(range(X.shape[1]), importances[indices],
+           color="r", yerr=std[indices], align="center")
+    plt.xticks(range(X.shape[1]), xlabels, rotation=15)
+    plt.xlim([-1, X.shape[1]])
+    plt.ylim([0, 1])
+
+    for tick in ax.xaxis.get_major_ticks():
+        tick.tick1line.set_markersize(0)
+        tick.tick2line.set_markersize(0)
+        tick.label1.set_horizontalalignment('right')
+
+    plt.show()
+
+
+def todict(features):
+    records = []
+    for record in features:
+        d = dict((CollectTokenFeatures.features[i], record[i]) for i in range(0, len(CollectTokenFeatures.features)))
+        records += [d]
+    return records
+
+
 # forest = newlines(csvfile) # train model
 
 # file_to_groom = sys.argv[1]
-tokens, inject_newlines, features = extract_data(sample_java)
+with open("samples/stringtemplate4/org/stringtemplate/v4/ST.java", 'r') as f:
+    corpus = f.read()
 
-records = []
-for record in features:
-    d = dict((CollectTokenFeatures.features[i], record[i]) for i in range(0, len(CollectTokenFeatures.features)))
-    records += [d]
+tokens, inject_newlines, features = extract_data(corpus)
 
-vec = DictVectorizer()
+records = todict(features)
+
+vec = DictVectorizer(sort=False)
 transformed_data = vec.fit_transform(records).toarray()
 
 print len(vec.get_feature_names())
 print vec.get_feature_names()
+print vec.get_vocabulary()
+print len(transformed_data[0])
 
 X = transformed_data
 Y = inject_newlines	    # prediction class
 
-print Y
-
 forest = RandomForestClassifier(n_estimators = 600)
 forest = forest.fit(X, Y)
 
+# PREDICT
+
+tokens_testing, inject_newlines_testing, features_testing = extract_data(sample_java)
+records_testing = todict(features_testing)
+transformed_data_testing = vec.fit_transform(records_testing).toarray()
+X = transformed_data_testing
+print "197==",len(transformed_data_testing[0])
+Y = inject_newlines_testing	    # prediction class
+
 newline_predictions = forest.predict(X)
-# newline_predictions_proba = forest.predict_proba(data)
-print newline_predictions
+newline_predictions_proba = forest.predict_proba(X)
+print newline_predictions_proba
+
+i = 0
+for t in tokens:
+    if t.type==-1: break
+    print t.text,
+    i += 1
 
 i = 0
 for t in tokens:
@@ -90,3 +137,5 @@ for t in tokens:
         print
     print t.text,
     i += 1
+
+graph_importance(forest, vec.get_feature_names(), X)
