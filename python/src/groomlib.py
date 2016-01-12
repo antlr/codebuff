@@ -9,6 +9,12 @@ import numpy as np
 import os
 import os.path
 
+INVALID_RULE_INDEX = 9999
+PREDICTOR_VAR = "inject newline"
+FEATURE_NAMES = ["token type", "column", "length", "enclosing rule",
+                 "earliest ancestor rule", "earliest ancestor length",
+                 "prev token type", "prev token column",
+                 "prev token last char index"]
 
 def extract_data(code):
     """
@@ -24,6 +30,46 @@ def extract_data(code):
     walker = ParseTreeWalker()
     walker.walk(collector, tree)
     return (stream.tokens, collector.inject_newlines, collector.features)
+
+
+def earliestAncestorStartingAtToken(node, token):
+    """
+    Walk upwards from node while p.start == token
+    """
+    p = node
+    prev = None
+    while p is not None and p.start == token:
+        prev = p
+        p = p.parentCtx
+
+    return prev
+
+
+def node_features(tokens, node):
+    curToken = node.symbol
+    prevToken = None
+    if curToken.tokenIndex>=1:
+        prevToken = tokens[curToken.tokenIndex-1]
+    ruleIndex = node.getParent().getRuleIndex()
+    ruleName = JavaParser.ruleNames[ruleIndex]
+    earliestAncestor = earliestAncestorStartingAtToken(node.getParent(),
+                                                            curToken)
+    earliestAncestorName = 'none'
+    earliestAncestorWidth = 0
+    if earliestAncestor is not None:
+        earliestAncestorRuleIndex = earliestAncestor.getRuleIndex()
+        earliestAncestorName = JavaParser.ruleNames[earliestAncestorRuleIndex]
+        earliestAncestorWidth = earliestAncestor.stop.stop - earliestAncestor.start.start + 1
+    vars = [JavaLexer.symbolicNames[curToken.type], curToken.column,
+            len(curToken.text),
+            ruleName, earliestAncestorName, earliestAncestorWidth]
+    if prevToken is not None:
+        endofprevtoken = prevToken.column + len(prevToken.text) - 1
+        vars += [JavaLexer.symbolicNames[prevToken.type], prevToken.column,
+                 endofprevtoken]
+    else:
+        vars += ['None', -1, 0]
+    return vars
 
 
 def analyze_corpus(dir):
@@ -62,13 +108,12 @@ def convert_categorical_data(features):
 def todict(features):
     """
     From features:list<object[]>, convert to a list<dict> using
-    CollectTokenFeatures.features_names as the keys.
+    FEATURE_NAMES as the keys.
     """
     records = []
-    feature_names = CollectTokenFeatures.feature_names
-    n = len(feature_names)
+    n = len(FEATURE_NAMES)
     for record in features:
-        d = dict((feature_names[i], record[i]) for i in range(0, n))
+        d = dict((FEATURE_NAMES[i], record[i]) for i in range(0, n))
         records += [d]
     return records
 

@@ -1,7 +1,8 @@
 import sys
 from sklearn.ensemble import RandomForestClassifier
-from groomlib import *
-import cProfile
+from groomlib import analyze_corpus
+from groomlib import convert_categorical_data
+from groomlib import format_code
 
 sample_java = \
     """
