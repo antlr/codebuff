@@ -2,6 +2,7 @@ from antlr4 import *
 from JavaLexer import JavaLexer
 from JavaParser import JavaParser
 from CollectTokenFeatures import CollectTokenFeatures
+from ProcessTokens import ProcessTokens
 from sklearn.feature_extraction import DictVectorizer
 import matplotlib.pyplot as plt
 import numpy as np
@@ -72,24 +73,30 @@ def todict(features):
     return records
 
 
-def format_code(code, newline_predictions=None):
+def format_code(forest, vec, code):
     """
-    Tokenize code and then print t in tokens separated by space but
-    inject a newline if newline_predictions[t.tokenindex].
+    Tokenize code and then, one token at a time, predict newline or not.
+    Do prediction of newline on the fly, adjusting token line/column.
+    """
 
-    This is how we format an unknown file.
-    """
+    # tokenize and wack location info in tokens
     input = InputStream(code)
     lexer = JavaLexer(input)
     stream = CommonTokenStream(lexer)
     stream.fill()
-    i = 0
+    # wipe out token location information in sample
     for t in stream.tokens:
-        if t.type == -1: break
-        if newline_predictions is not None and newline_predictions[i]:
-            print
-        print t.text,
-        i += 1
+        t.line = 0
+        t.column = 0
+
+    # parse to get parse tree
+    parser = JavaParser(stream)
+    tree = parser.compilationUnit()
+
+    # compute feature vector for each token and adjust line/column as we walk tree
+    collector = ProcessTokens(forest, vec, stream)
+    walker = ParseTreeWalker()
+    walker.walk(collector, tree)
 
 
 def files(dir):

@@ -38,10 +38,13 @@ class ProcessTokens(JavaListener):
             earliestAncestorWidth = earliestAncestor.stop.stop - earliestAncestor.start.start + 1
 
         # predict newline based upon curToken appearing after prevToken on same line
-        if  prevToken is not None:
+        if prevToken is not None:
+            curLine = prevToken.line
             curToken.column = prevToken.column + len(prevToken.text)
         else:
+            curLine = 1
             curToken.column = 0
+        curToken.line = curLine
 
         vars = [JavaLexer.symbolicNames[curToken.type], curToken.column, len(curToken.text),
                 ruleName, earliestAncestorName, earliestAncestorWidth]
@@ -57,8 +60,11 @@ class ProcessTokens(JavaListener):
         # print d
         transformed_data_testing = self.vec.transform(d).toarray()
         inject_newline = self.forest.predict(transformed_data_testing)
+        newline_predictions_proba = self.forest.predict_proba(transformed_data_testing)
+        print curToken, "->", newline_predictions_proba
         # print "inject_newline", inject_newline
         if inject_newline:
+            curToken.line += 1
             curToken.column = 0
             print
         print curToken.text,

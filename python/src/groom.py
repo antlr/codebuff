@@ -2,37 +2,36 @@ import sys
 from sklearn.ensemble import RandomForestClassifier
 from groomlib import *
 import cProfile
-from ProcessTokens import ProcessTokens
 
 sample_java = \
-"""
-package org.antlr.groom;
+    """
+    package org.antlr.groom;
 
-import java.util.List;
+    import java.util.List;
 
-public class InputDocument {
-	public String fileName;
-	public char[] content;
-	public int index;
-	public List<int[]> data;
+    public class InputDocument {
+        public String fileName;
+        public char[] content;
+        public int index;
+        public List<int[]> data;
 
-	public InputDocument(InputDocument d, int index) {
-		this.fileName = d.fileName;
-		this.content = d.content;
-		this.index = index;
-	}
+        public InputDocument(InputDocument d, int index) {
+            this.fileName = d.fileName;
+            this.content = d.content;
+            this.index = index;
+        }
 
-	public InputDocument(String fileName, char[] content) {
-		this.content = content;
-		this.fileName = fileName;
-	}
+        public InputDocument(String fileName, char[] content) {
+            this.content = content;
+            this.fileName = fileName;
+        }
 
-	@Override
-	public String toString() {
-		return fileName+"["+content.length+"]"+"@"+index;
-	}
-}
-"""
+        @Override
+        public String toString(String fileName, char[] content) {
+            return fileName+"["+content.length+"]"+"@"+index;
+        }
+    }
+    """
 
 # def newlines(csvfile):
 #     """
@@ -68,36 +67,15 @@ inject_newlines, features = analyze_corpus(sys.argv[1])
 vec, transformed_data = convert_categorical_data(features)
 
 X = transformed_data
-Y = inject_newlines	    # prediction class
+Y = inject_newlines  # prediction class
 
-forest = RandomForestClassifier(n_estimators = 600)
+forest = RandomForestClassifier(n_estimators=600)
 forest = forest.fit(X, Y)
+
 
 # PREDICT
 
-# tokenize input and then, one token at a time, predict newline or not.
-# must adjust token location.
-
-# tokenize and wack location info on tokens
-input = InputStream(sample_java)
-lexer = JavaLexer(input)
-stream = CommonTokenStream(lexer)
-stream.fill()
-# wipe out location information
-for t in stream.tokens:
-    t.line = 0
-    t.column = 0
-
-# parse to get parse tree
-parser = JavaParser(stream)
-tree = parser.compilationUnit()
-
-# compute feature vector for each token and adjust line/column as we walk tree
-
-collector = ProcessTokens(forest, vec, stream)
-walker = ParseTreeWalker()
-walker.walk(collector, tree)
-
+format_code(forest, vec, sample_java)
 
 # tokens_testing, inject_newlines_testing, features_testing = extract_data(sample_java)
 # transformed_data_testing = vec.transform(todict(features_testing)).toarray()
@@ -114,4 +92,4 @@ walker.walk(collector, tree)
 # format_code(sample_java, None)
 # format_code(sample_java, newline_predictions)
 
-#graph_importance(forest, vec.get_feature_names(), X)
+# graph_importance(forest, vec.get_feature_names(), X)
