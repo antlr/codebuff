@@ -3,7 +3,8 @@ from antlr4 import *
 from JavaLexer import JavaLexer
 from JavaParser import JavaParser
 from antlr4.tree.Trees import Trees
-from DumpFeatures import DumpFeatures
+from CollectTokenFeatures import CollectTokenFeatures
+from sklearn.feature_extraction import DictVectorizer
 
 sample = \
 """
@@ -18,6 +19,14 @@ public class T {
 }
 """
 
+def cvt_dummy_variables(token_features):
+    for record in token_features.data:
+        d = dict((CollectTokenFeatures.features[i], record[i]) for i in range(0, len(CollectTokenFeatures.features)))
+        dv = DictVectorizer(sparse=False)
+        print dv.fit_transform(d)
+        print dv.get_feature_names()
+
+
 def main(argv):
     if len(argv)>1:
         input = FileStream(argv[1])
@@ -29,11 +38,11 @@ def main(argv):
     tree = parser.compilationUnit()
     # print(Trees.toStringTree(tree, None, parser))
     print "Grammar %s has %d rules, %d tokens" % (parser.grammarFileName, len(parser.ruleNames), len(lexer.ruleNames))
-    print "inject newline, token type, column, length, enclosing rule, earliest ancestor rule, " \
-          "earliest ancestor length, prev token type, prev token column, prev token last char index"
-    features = DumpFeatures(stream)
+    print ', '.join(CollectTokenFeatures.features)
+    token_features = CollectTokenFeatures(stream)
     walker = ParseTreeWalker()
-    walker.walk(features, tree)
+    walker.walk(token_features, tree)
+    print token_features.features
 
 if __name__ == '__main__':
     main(sys.argv)

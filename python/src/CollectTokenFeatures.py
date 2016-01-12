@@ -5,10 +5,17 @@ from JavaParser import JavaParser
 from JavaListener import JavaListener
 from antlr4.tree.Trees import Trees
 
-class DumpFeatures(JavaListener):
+class CollectTokenFeatures(JavaListener):
+    INVALID_RULE_INDEX = 9999
+    PREDICTOR_VAR = "inject newline"
+    features = ["token type", "column", "length", "enclosing rule", "earliest ancestor rule",
+                 "earliest ancestor length", "prev token type", "prev token column",
+                 "prev token last char index"]
+
     def __init__(self, stream):
         self.stream = stream # track stream so we can examine previous tokens
-        self.data = []
+        self.inject_newlines = []
+        self.features = []
         pass
 
     def visitTerminal(self, node):
@@ -26,7 +33,7 @@ class DumpFeatures(JavaListener):
         ruleIndex = node.getParent().getRuleIndex()
         ruleName = JavaParser.ruleNames[ruleIndex]
         earliestAncestor = self.earliestAncestorStartingAtToken(node.getParent(),curToken)
-        earliestAncestorName = None
+        earliestAncestorName = 'none'
         earliestAncestorRuleIndex = -1
         earliestAncestorWidth = 0
         if earliestAncestor is not None:
@@ -34,15 +41,16 @@ class DumpFeatures(JavaListener):
             earliestAncestorName = JavaParser.ruleNames[earliestAncestorRuleIndex]
             earliestAncestorWidth = earliestAncestor.stop.stop - earliestAncestor.start.start + 1
 
-        features = [curToken.type, curToken.column, len(curToken.text),
-                    ruleIndex, earliestAncestorRuleIndex, earliestAncestorWidth
-                    ]
+        features = [JavaLexer.symbolicNames[curToken.type], curToken.column, len(curToken.text),
+                    ruleName, earliestAncestorName, earliestAncestorWidth]
         if prevToken is not None:
             endofprevtoken = prevToken.column + len(prevToken.text) - 1
-            features += [prevToken.type, prevToken.column, endofprevtoken]
+            features += [JavaLexer.symbolicNames[prevToken.type], prevToken.column, endofprevtoken]
         else:
-            features += [0, -1, 0]
-        self.data.append(features)
+            features += ['0', -1, 0]
+        self.inject_newlines.append(1 if precedingNL else 0)
+        self.features.append(features)
+
         # print "%s, %s" % (1 if precedingNL else 0, ', '.join(str(x) for x in features))
 
     def earliestAncestorStartingAtToken(self, node, token):

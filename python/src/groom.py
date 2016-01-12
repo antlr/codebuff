@@ -4,7 +4,8 @@ import numpy as np
 from antlr4 import *
 from JavaLexer import JavaLexer
 from JavaParser import JavaParser
-from DumpFeatures import DumpFeatures
+from CollectTokenFeatures import CollectTokenFeatures
+from sklearn.feature_extraction import DictVectorizer
 
 csvfile = "samples/stringtemplate4/style.csv"
 
@@ -20,6 +21,17 @@ public class T {
     void foo() { int j; j=i+10; }
 }
 """
+
+def extract_data(code):
+    input = InputStream(code)
+    lexer = JavaLexer(input)
+    tokens = CommonTokenStream(lexer)
+    parser = JavaParser(tokens)
+    tree = parser.compilationUnit()
+    collector = CollectTokenFeatures(tokens)
+    walker = ParseTreeWalker()
+    walker.walk(collector, tree)
+    return (tokens.tokens, collector.inject_newlines, collector.features)
 
 def newlines(csvfile):
     """
@@ -43,34 +55,36 @@ def newlines(csvfile):
     forest = forest.fit(X, Y)
     return forest
 
-forest = newlines(csvfile) # train model
+# forest = newlines(csvfile) # train model
 
 # file_to_groom = sys.argv[1]
-input = InputStream(sample_java)
-lexer = JavaLexer(input)
-tokens = CommonTokenStream(lexer)
-parser = JavaParser(tokens)
-tree = parser.compilationUnit()
+tokens, inject_newlines, features = extract_data(sample_java)
 
-for t in tokens.tokens:
-    print t.text,
+records = []
+for record in features:
+    d = dict((CollectTokenFeatures.features[i], record[i]) for i in range(0, len(CollectTokenFeatures.features)))
+    records += [d]
 
-collector = DumpFeatures(tokens)
-walker = ParseTreeWalker()
-walker.walk(collector, tree)
+vec = DictVectorizer()
+transformed_data = vec.fit_transform(records).toarray()
 
-# print collector.data
+print len(vec.get_feature_names())
+print vec.get_feature_names()
 
-newline_predictions = forest.predict(collector.data)
-newline_predictions_proba = forest.predict_proba(collector.data)
+X = transformed_data
+Y = inject_newlines	    # prediction class
+
+print Y
+
+forest = RandomForestClassifier(n_estimators = 600)
+forest = forest.fit(X, Y)
+
+newline_predictions = forest.predict(X)
+# newline_predictions_proba = forest.predict_proba(data)
 print newline_predictions
-i = 0
-for p in newline_predictions_proba:
-    print "%-25s %s" % (str(p), tokens.tokens[i])
-    i += 1
 
 i = 0
-for t in tokens.tokens:
+for t in tokens:
     if t.type==-1: break
     if newline_predictions[i]:
         print

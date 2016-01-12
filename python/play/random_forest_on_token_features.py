@@ -12,7 +12,7 @@ def print_importance(forest):
     for f in range(X_training.shape[1]):
         print "%d. feature %s col %d (%f, inter-tree variability=%f)" % \
               (f + 1,
-               features[indices[f]],
+               token_features[indices[f]],
                indices[f],
                importances[indices[f]],
                std[indices[f]])
@@ -24,7 +24,7 @@ def graph_importance(forest):
 
     fig, ax = plt.subplots(1,1)
     plt.title("Feature importances")
-    xlabels = [features[int(i)] for i in indices]
+    xlabels = [token_features[int(i)] for i in indices]
     plt.bar(range(X_training.shape[1]), importances[indices],
            color="r", yerr=std[indices], align="center")
     plt.xticks(range(X_training.shape[1]), xlabels, rotation=15)
@@ -40,10 +40,10 @@ def graph_importance(forest):
 
 data = np.loadtxt("samples/stringtemplate4/style.csv", delimiter=",", skiprows=1)
 
-features = []
+token_features = []
 with open("samples/stringtemplate4/style.csv", 'r') as f:
-    features = f.readline().strip().split(', ')
-    features = features[1:] # first col is predictor var
+    token_features = f.readline().strip().split(', ')
+    token_features = token_features[1:] # first col is predictor var
 
 X = data[0::,1::]	# features
 Y = data[0::,0]	    # prediction class
