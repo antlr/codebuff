@@ -1,14 +1,8 @@
 import sys
 from sklearn.ensemble import RandomForestClassifier
-import numpy as np
-from antlr4 import *
-from JavaLexer import JavaLexer
-from JavaParser import JavaParser
-from CollectTokenFeatures import CollectTokenFeatures
-from sklearn.feature_extraction import DictVectorizer
-import matplotlib.pyplot as plt
-
-csvfile = "samples/stringtemplate4/style.csv"
+from groomlib import *
+import cProfile
+from ProcessTokens import ProcessTokens
 
 sample_java = \
 """
@@ -40,96 +34,38 @@ public class InputDocument {
 }
 """
 
-def extract_data(code):
-    input = InputStream(code)
-    lexer = JavaLexer(input)
-    tokens = CommonTokenStream(lexer)
-    parser = JavaParser(tokens)
-    tree = parser.compilationUnit()
-    collector = CollectTokenFeatures(tokens)
-    walker = ParseTreeWalker()
-    walker.walk(collector, tree)
-    return (tokens.tokens, collector.inject_newlines, collector.features)
-
-def newlines(csvfile):
-    """
-    Return a random forest trained on a style.csv file
-    """
-    data = np.loadtxt(csvfile, delimiter=",", skiprows=1)
-
-    X = data[0::,1::]	# features
-    Y = data[0::,0]	    # prediction class
-
-    # get feature names
-    with open(csvfile, 'r') as f:
-        features = f.readline().strip().split(', ')
-        features = features[1:] # first col is predictor var
-
-    print "there are %d records" % len(data)
-    print "a priori   'inject newline' rate is %3d/%4d = %f" % (sum(Y), len(Y), sum(Y)/float(len(Y)))
-
-    # train model on entire data set from style.csv
-    forest = RandomForestClassifier(n_estimators = 600)
-    forest = forest.fit(X, Y)
-    return forest
-
-
-def graph_importance(forest, feature_names, X):
-    importances = forest.feature_importances_
-    std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
-    indices = np.argsort(importances)[::-1]
-
-    fig, ax = plt.subplots(1,1)
-    plt.title("Feature importances")
-    xlabels = [feature_names[int(i)] for i in indices]
-    plt.bar(range(X.shape[1]), importances[indices],
-           color="r", yerr=std[indices], align="center")
-    plt.xticks(range(X.shape[1]), xlabels, rotation=15)
-    plt.xlim([-1, X.shape[1]])
-    plt.ylim([0, 1])
-
-    for tick in ax.xaxis.get_major_ticks():
-        tick.tick1line.set_markersize(0)
-        tick.tick2line.set_markersize(0)
-        tick.label1.set_horizontalalignment('right')
-
-    plt.show()
-
-
-def todict(features):
-    records = []
-    for record in features:
-        d = dict((CollectTokenFeatures.features[i], record[i]) for i in range(0, len(CollectTokenFeatures.features)))
-        records += [d]
-    return records
-
-
-def print_tokens(tokens, newline_predictions):
-    i = 0
-    for t in tokens:
-        if t.type==-1: break
-        if newline_predictions is not None and newline_predictions[i]:
-            print
-        print t.text,
-        i += 1
-
+# def newlines(csvfile):
+#     """
+#     Return a random forest trained on a style.csv file
+#     """
+#     data = np.loadtxt(csvfile, delimiter=",", skiprows=1)
+#
+#     X = data[0::,1::]	# features
+#     Y = data[0::,0]	    # prediction class
+#
+#     # get feature names
+#     with open(csvfile, 'r') as f:
+#         features = f.readline().strip().split(', ')
+#         features = features[1:] # first col is predictor var
+#
+#     print "there are %d records" % len(data)
+#     print "a priori   'inject newline' rate is %3d/%4d = %f" % (sum(Y), len(Y), sum(Y)/float(len(Y)))
+#
+#     # train model on entire data set from style.csv
+#     forest = RandomForestClassifier(n_estimators = 600)
+#     forest = forest.fit(X, Y)
+#     return forest
 
 # forest = newlines(csvfile) # train model
 
-# file_to_groom = sys.argv[1]
-with open("samples/stringtemplate4/org/stringtemplate/v4/ST.java", 'r') as f:
-    corpus = f.read()
+# TRAIN ON CORPUS
+# import pstats
+# cProfile.run("inject_newlines, features = analyze_corpus(sys.argv[1])", "stats")
+# p = pstats.Stats('stats')
+# p.strip_dirs().sort_stats("time").print_stats()
 
-tokens, inject_newlines, features = extract_data(corpus)
-
-records = todict(features)
-
-vec = DictVectorizer(sort=False)
-transformed_data = vec.fit_transform(records).toarray()
-
-print "number new vars", len(vec.get_feature_names())
-#print vec.get_feature_names()
-#print len(transformed_data[0])
+inject_newlines, features = analyze_corpus(sys.argv[1])
+vec, transformed_data = convert_categorical_data(features)
 
 X = transformed_data
 Y = inject_newlines	    # prediction class
@@ -139,20 +75,43 @@ forest = forest.fit(X, Y)
 
 # PREDICT
 
-tokens_testing, inject_newlines_testing, features_testing = extract_data(sample_java)
-records_testing = todict(features_testing)
-transformed_data_testing = vec.transform(records_testing).toarray()
-X = transformed_data_testing
-Y = inject_newlines_testing	    # prediction class
+# tokenize input and then, one token at a time, predict newline or not.
+# must adjust token location.
 
-newline_predictions = forest.predict(X)
-newline_predictions_proba = forest.predict_proba(X)
-i = 0
-for probs in newline_predictions_proba:
-    print "%-25s %s" % (probs, tokens_testing[i])
-    i += 1
+# tokenize and wack location info on tokens
+input = InputStream(sample_java)
+lexer = JavaLexer(input)
+stream = CommonTokenStream(lexer)
+stream.fill()
+# wipe out location information
+for t in stream.tokens:
+    t.line = 0
+    t.column = 0
 
-print_tokens(tokens_testing, None)
-print_tokens(tokens_testing, newline_predictions)
+# parse to get parse tree
+parser = JavaParser(stream)
+tree = parser.compilationUnit()
+
+# compute feature vector for each token and adjust line/column as we walk tree
+
+collector = ProcessTokens(forest, vec, stream)
+walker = ParseTreeWalker()
+walker.walk(collector, tree)
+
+
+# tokens_testing, inject_newlines_testing, features_testing = extract_data(sample_java)
+# transformed_data_testing = vec.transform(todict(features_testing)).toarray()
+# X = transformed_data_testing
+# Y_truth = inject_newlines_testing	    # truth about newlines in sample input
+#
+# newline_predictions = forest.predict(X)
+# newline_predictions_proba = forest.predict_proba(X)
+# i = 0
+# for probs in newline_predictions_proba:
+#     print "%-25s %s" % (probs, tokens_testing[i])
+#     i += 1
+#
+# format_code(sample_java, None)
+# format_code(sample_java, newline_predictions)
 
 #graph_importance(forest, vec.get_feature_names(), X)

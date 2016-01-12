@@ -21,7 +21,7 @@ public class T {
 
 def cvt_dummy_variables(token_features):
     for record in token_features.data:
-        d = dict((CollectTokenFeatures.features[i], record[i]) for i in range(0, len(CollectTokenFeatures.features)))
+        d = dict((CollectTokenFeatures.feature_names[i], record[i]) for i in range(0, len(CollectTokenFeatures.feature_names)))
         dv = DictVectorizer(sparse=False)
         print dv.fit_transform(d)
         print dv.get_feature_names()
@@ -38,11 +38,11 @@ def main(argv):
     tree = parser.compilationUnit()
     # print(Trees.toStringTree(tree, None, parser))
     print "Grammar %s has %d rules, %d tokens" % (parser.grammarFileName, len(parser.ruleNames), len(lexer.ruleNames))
-    print ', '.join(CollectTokenFeatures.features)
+    print ', '.join(CollectTokenFeatures.feature_names)
     token_features = CollectTokenFeatures(stream)
     walker = ParseTreeWalker()
     walker.walk(token_features, tree)
-    print token_features.features
+    print token_features.feature_names
 
 if __name__ == '__main__':
     main(sys.argv)
