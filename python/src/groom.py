@@ -3,6 +3,9 @@ from sklearn.ensemble import RandomForestClassifier
 from groomlib import analyze_corpus
 from groomlib import convert_categorical_data
 from groomlib import format_code
+from groomlib import graph_importance
+from groomlib import print_importances
+import numpy as np
 
 sample_java = \
     """
@@ -28,7 +31,8 @@ sample_java = \
         }
 
         @Override
-        public String toString(String fileName, char[] content) {
+        public String toString(String fileName, char[] content, String fileName, char[] content, String fileName, char[] content) {
+            i = this.content + content;
             return fileName+"["+content.length+"]"+"@"+index;
         }
     }
@@ -73,10 +77,14 @@ Y = inject_newlines  # prediction class
 forest = RandomForestClassifier(n_estimators=600)
 forest = forest.fit(X, Y)
 
+print_importances(forest, vec.get_feature_names())
 
 # PREDICT
 
 format_code(forest, vec, sample_java)
+
+
+# graph_importance(forest, vec.get_feature_names())
 
 # tokens_testing, inject_newlines_testing, features_testing = extract_data(sample_java)
 # transformed_data_testing = vec.transform(todict(features_testing)).toarray()
