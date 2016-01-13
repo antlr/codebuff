@@ -6,6 +6,7 @@ from groomlib import format_code
 from groomlib import graph_importance
 from groomlib import print_importances
 import numpy as np
+import groomlib
 
 sample_java = \
     """
@@ -31,7 +32,7 @@ sample_java = \
         }
 
         @Override
-        public String toString(String fileName, char[] content, String fileName, char[] content, String fileName, char[] content) {
+        public String toString(String fileName, char[] content) {
             i = this.content + content;
             return fileName+"["+content.length+"]"+"@"+index;
         }
@@ -74,13 +75,15 @@ vec, transformed_data = convert_categorical_data(features)
 X = transformed_data
 Y = inject_newlines  # prediction class
 
-forest = RandomForestClassifier(n_estimators=600)
+forest = RandomForestClassifier(n_estimators=100)
 forest = forest.fit(X, Y)
 
-print_importances(forest, vec.get_feature_names())
+print_importances(forest, vec.get_feature_names(), n=15)
 
 # PREDICT
 
+# sample_java = open("samples/stringtemplate4/org/stringtemplate/v4/STGroup.java", "r").read()
+sample_java = sample_java.expandtabs(groomlib.TABSIZE)
 format_code(forest, vec, sample_java)
 
 

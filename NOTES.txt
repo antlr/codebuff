@@ -1,0 +1,139 @@
+STGroup importances
+1. feature           prev token type=SEMI (0.351254)
+2. feature         prev token type=RBRACE (0.130407)
+3. feature         prev token type=LBRACE (0.125114)
+4. feature              prev token column (0.124004)
+5. feature enclosing rule=classOrInterfaceModifier (0.033441)
+6. feature     prev token type=Identifier (0.033068)
+7. feature           enclosing rule=block (0.029189)
+8. feature         prev token type=RPAREN (0.027568)
+9. feature       enclosing rule=statement (0.018200)
+10. feature      enclosing rule=expression (0.016173)
+
+ST.java
+1. feature           prev token type=SEMI (0.327598)
+2. feature         prev token type=RBRACE (0.139468)
+3. feature              prev token column (0.130256)
+4. feature         prev token type=LBRACE (0.117500)
+5. feature enclosing rule=classOrInterfaceModifier (0.038501)
+6. feature     prev token type=Identifier (0.033606)
+7. feature           enclosing rule=block (0.030361)
+8. feature         prev token type=RPAREN (0.029276)
+9. feature       enclosing rule=statement (0.020395)
+10. feature      enclosing rule=expression (0.014898)
+
+ST.java but with just 2 features: token type and column
+
+1. feature           prev token type=SEMI (0.412802)
+2. feature         prev token type=RBRACE (0.184415)
+3. feature         prev token type=LBRACE (0.147246)
+4. feature              prev token column (0.126263)
+5. feature     prev token type=Identifier (0.045069)
+6. feature         prev token type=RPAREN (0.013678)
+7. feature         prev token type=LPAREN (0.012656)
+8. feature            prev token type=DOT (0.011678)
+9. feature          prev token type=COMMA (0.008841)
+10. feature         prev token type=PUBLIC (0.003790)
+
+Trained on misc/*.java
+number new vars 132
+1. feature           prev token type=SEMI (0.255720)
+2. feature         prev token type=LBRACE (0.166447)
+3. feature         prev token type=RBRACE (0.109263)
+4. feature              token type=RBRACE (0.095850)
+5. feature              token type=PUBLIC (0.081069)
+6. feature              prev token column (0.079423)
+7. feature              token type=IMPORT (0.027867)
+8. feature                  token type=IF (0.026204)
+9. feature     prev token type=Identifier (0.021377)
+10. feature              token type=RETURN (0.020409)
+
+Does a good job minus long func decl line.
+
+misc; window size 3
+number new vars 198
+1. feature                         column (0.265967)
+2. feature                 prev type=SEMI (0.174278)
+3. feature               prev type=LBRACE (0.115849)
+4. feature               prev type=RBRACE (0.074543)
+5. feature                    type=RBRACE (0.060997)
+6. feature                    prev column (0.051749)
+7. feature                    type=PUBLIC (0.050033)
+8. feature                    type=IMPORT (0.017960)
+9. feature                        type=IF (0.017028)
+10. feature                    type=RETURN (0.014495)
+
+ST.java; window size 3; much better than previous
+number new vars 174
+1. feature                         column (0.318451)
+2. feature                 prev type=SEMI (0.189204)
+3. feature               prev type=LBRACE (0.077133)
+4. feature               prev type=RBRACE (0.072953)
+5. feature                    prev column (0.063958)
+6. feature                    type=RBRACE (0.042399)
+7. feature                    type=PUBLIC (0.032051)
+8. feature                        type=IF (0.018845)
+9. feature           prev type=Identifier (0.018641)
+10. feature                    type=IMPORT (0.014840)
+
+debug/*; window 3; worse than previous
+number new vars 105
+1. feature                         column (0.270222)
+2. feature                 prev type=SEMI (0.119424)
+3. feature                    type=PUBLIC (0.086773)
+4. feature                    prev column (0.081842)
+5. feature               prev type=LBRACE (0.063175)
+6. feature               prev type=RBRACE (0.047498)
+7. feature                    type=RBRACE (0.040206)
+8. feature             type=StringLiteral (0.033761)
+9. feature                  prev type=ADD (0.028588)
+10. feature                type=Identifier (0.019452)
+
+next token does not seem to be used. take it out:
+ST.java; window 2. worse. puts methods all on one line.
+number new vars 117
+1. feature                         column (0.357880)
+2. feature                 prev type=SEMI (0.187145)
+3. feature               prev type=LBRACE (0.082113)
+4. feature               prev type=RBRACE (0.077689)
+5. feature                    prev column (0.066169)
+6. feature                    type=RBRACE (0.043734)
+7. feature                    type=PUBLIC (0.031242)
+8. feature                        type=IF (0.019554)
+9. feature           prev type=Identifier (0.016512)
+10. feature                    type=IMPORT (0.013972)
+
+"next type" feature not in top 10 but appears to make a big difference. putting window 3 back in
+
+FEATURE_NAMES = ["prev type", "prev column", "type", "column", "next type"]
+
+code is much better.
+
+ST.java with 4 token window, 2 before, 1 after:
+600 estimators; dropping to 100 seems to be same result
+number new vars 232
+1. feature                         column (0.279056)
+2. feature                 prev type=SEMI (0.160923)
+3. feature             prev^2 type=RPAREN (0.078452)
+4. feature               prev type=RBRACE (0.067966)
+5. feature               prev type=LBRACE (0.059212)
+6. feature                    prev column (0.040785)
+7. feature                    type=PUBLIC (0.031972)
+8. feature                    type=RBRACE (0.031532)
+9. feature                  prev^2 column (0.030329)
+10. feature                    type=IMPORT (0.016517)
+
+good formatting; seems to use prior context heavily; less future context.
+
+Same window but with misc/* and I get not nearly enough newlines.
+number new vars 264
+1. feature                         column (0.245303)
+2. feature                 prev type=SEMI (0.141623)
+3. feature             prev^2 type=RPAREN (0.085225)
+4. feature               prev type=LBRACE (0.075406)
+5. feature               prev type=RBRACE (0.069463)
+6. feature                    type=RBRACE (0.056057)
+7. feature                    type=PUBLIC (0.045072)
+8. feature                    prev column (0.034795)
+9. feature                  prev^2 column (0.019110)
+10. feature                    type=IMPORT (0.019083)

@@ -1,4 +1,5 @@
 from antlr4 import *
+from antlr4.Token import *
 from JavaLexer import JavaLexer
 from JavaParser import JavaParser
 from CollectTokenFeatures import CollectTokenFeatures
@@ -9,43 +10,33 @@ import numpy as np
 import os
 import os.path
 
+TABSIZE = 4
 INVALID_RULE_INDEX = 9999
 PREDICTOR_VAR = "inject newline"
-# FEATURE_NAMES = ["token type", "column", "length", "enclosing rule",
-#                  "earliest ancestor rule", "earliest ancestor length",
-#                  "prev token type", "prev token column",
-#                  "prev token last char column"]
-FEATURE_NAMES = ["token type", "prev token type", "prev token column"]
+FEATURE_NAMES = ["prev^2 type", "prev^2 column",
+                 "prev type", "prev column",
+                 "type",
+                 "next type"]
+
 
 def node_features(tokens, node):
     curToken = node.symbol
-    prevToken = None
-    if curToken.tokenIndex>=1:
-        prevToken = tokens[curToken.tokenIndex-1]
-    ruleIndex = node.getParent().getRuleIndex()
-    ruleName = JavaParser.ruleNames[ruleIndex]
-    earliestAncestor = earliestAncestorStartingAtToken(node.getParent(),
-                                                            curToken)
-    earliestAncestorName = 'none'
-    earliestAncestorWidth = 0
-    if earliestAncestor is not None:
-        earliestAncestorRuleIndex = earliestAncestor.getRuleIndex()
-        earliestAncestorName = JavaParser.ruleNames[earliestAncestorRuleIndex]
-        earliestAncestorWidth = earliestAncestor.stop.stop - earliestAncestor.start.start + 1
-    if prevToken is not None:
-        vars = [JavaLexer.symbolicNames[curToken.type], JavaLexer.symbolicNames[prevToken.type], prevToken.column]
+    i = curToken.tokenIndex
+    if i>=2:
+        window = tokens[i-2:i+2]
     else:
-        vars = [JavaLexer.symbolicNames[curToken.type], 'None', 0] # first token of file
+        window = [CommonToken(), CommonToken()]+tokens[i:i+2]
 
-    # vars = [JavaLexer.symbolicNames[curToken.type], curToken.column,
-    #         len(curToken.text),
-    #         ruleName, earliestAncestorName, earliestAncestorWidth]
-    # if prevToken is not None:
-    #     endofprevtoken = prevToken.column + len(prevToken.text) - 1
-    #     vars += [JavaLexer.symbolicNames[prevToken.type], prevToken.column,
-    #              endofprevtoken]
-    # else:
-    #     vars += ['None', -1, 0]
+    # print ','.join(str(t) for t in window)
+
+    def ttype(t): return JavaLexer.symbolicNames[t.type] if t.type>0 else 'None'
+    def ttext(t): return t.text if t.text is not None else 'None'
+
+    vars = [ttype(window[0]), window[0].column,
+            ttype(window[1]), window[1].column,
+            ttype(window[2]), # current token
+            ttype(window[3])]
+
     return vars
 
 
@@ -89,6 +80,7 @@ def analyze_corpus(dir):
         print fname
         with open(fname, 'r') as f:
             code = f.read()
+            code = code.expandtabs(TABSIZE)
             tokens, nl, predictors = extract_data(code)
             inject_newlines += nl
             features += predictors
@@ -187,10 +179,10 @@ def graph_importance(forest, feature_names):
     plt.show()
 
 
-def print_importances(forest, feature_names):
+def print_importances(forest, feature_names, n=10):
     importances = forest.feature_importances_
     indices = np.argsort(importances)[::-1]
     dims = len(feature_names)
-    for f in range(0,dims if dims<10 else 10):
+    for f in range(0,dims if dims<n else n):
         print("%d. feature %30s (%f)" %
               (f + 1, feature_names[indices[f]], importances[indices[f]]))
