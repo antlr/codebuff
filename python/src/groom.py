@@ -51,15 +51,15 @@ inject_newlines, indents, whitespace, features = analyze_corpus(sys.argv[1])
 #     print whitespace[i], features[i]
 vec, transformed_features = convert_categorical_data(features)
 
-newline_predictor_RF = RandomForestClassifier(n_estimators=100)
+newline_predictor_RF = RandomForestClassifier(n_estimators=300)
 newline_forest = newline_predictor_RF.fit(transformed_features, inject_newlines)
 print_importances(newline_forest, vec.get_feature_names(), n=15)
 
-indent_predictor_RF = RandomForestClassifier(n_estimators=100)
+indent_predictor_RF = RandomForestClassifier(n_estimators=300)
 indent_forest = indent_predictor_RF.fit(transformed_features, indents)
 print_importances(indent_forest, vec.get_feature_names(), n=15)
 
-whitespace_predictor_RF = RandomForestClassifier(n_estimators=100)
+whitespace_predictor_RF = RandomForestClassifier(n_estimators=300)
 whitespace_forest = whitespace_predictor_RF.fit(transformed_features, whitespace)
 print_importances(whitespace_forest, vec.get_feature_names(), n=15)
 
