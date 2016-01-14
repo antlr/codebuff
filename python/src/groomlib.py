@@ -118,7 +118,7 @@ def todict(features):
     return records
 
 
-def format_code(forest, vec, code):
+def format_code(newline_forest, indent_forest, vec, code):
     """
     Tokenize code and then, one token at a time, predict newline or not.
     Do prediction of newline on the fly, adjusting token line/column.
@@ -139,7 +139,7 @@ def format_code(forest, vec, code):
     tree = parser.compilationUnit()
 
     # compute feature vector for each token and adjust line/column as we walk tree
-    collector = ProcessTokens(forest, vec, stream)
+    collector = ProcessTokens(newline_forest, indent_forest, vec, stream)
     walker = ParseTreeWalker()
     walker.walk(collector, tree)
 

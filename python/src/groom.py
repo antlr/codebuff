@@ -39,30 +39,6 @@ public class InputDocument {
 }
 """
 
-# def newlines(csvfile):
-#     """
-#     Return a random forest trained on a style.csv file
-#     """
-#     data = np.loadtxt(csvfile, delimiter=",", skiprows=1)
-#
-#     X = data[0::,1::]	# features
-#     Y = data[0::,0]	    # prediction class
-#
-#     # get feature names
-#     with open(csvfile, 'r') as f:
-#         features = f.readline().strip().split(', ')
-#         features = features[1:] # first col is predictor var
-#
-#     print "there are %d records" % len(data)
-#     print "a priori   'inject newline' rate is %3d/%4d = %f" % (sum(Y), len(Y), sum(Y)/float(len(Y)))
-#
-#     # train model on entire data set from style.csv
-#     forest = RandomForestClassifier(n_estimators = 600)
-#     forest = forest.fit(X, Y)
-#     return forest
-
-# forest = newlines(csvfile) # train model
-
 # TRAIN ON CORPUS
 # import pstats
 # cProfile.run("inject_newlines, features = analyze_corpus(sys.argv[1])", "stats")
@@ -72,21 +48,21 @@ public class InputDocument {
 inject_newlines, indents, features = analyze_corpus(sys.argv[1])
 # for i in range(len(indents)):
 #     print inject_newlines[i], indents[i], features[i]
-vec, transformed_data = convert_categorical_data(features)
+vec, transformed_features = convert_categorical_data(features)
 
-X = transformed_data
-Y = inject_newlines  # prediction class
+newline_predictor_RF = RandomForestClassifier(n_estimators=100)
+newline_forest = newline_predictor_RF.fit(transformed_features, inject_newlines)
+print_importances(newline_forest, vec.get_feature_names(), n=15)
 
-forest = RandomForestClassifier(n_estimators=100)
-forest = forest.fit(X, Y)
-
-print_importances(forest, vec.get_feature_names(), n=15)
+indent_predictor_RF = RandomForestClassifier(n_estimators=100)
+indent_forest = indent_predictor_RF.fit(transformed_features, indents)
+print_importances(indent_forest, vec.get_feature_names(), n=15)
 
 # PREDICT
 
 # sample_java = open("samples/stringtemplate4/org/stringtemplate/v4/STGroup.java", "r").read()
 sample_java = sample_java.expandtabs(groomlib.TABSIZE)
-format_code(forest, vec, sample_java)
+format_code(newline_forest, indent_forest, vec, sample_java)
 
 
 # graph_importance(forest, vec.get_feature_names())
