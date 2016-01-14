@@ -43,7 +43,7 @@ def node_features(tokens, node):
 def extract_data(code):
     """
     Parse a code string and collect features with a CollectTokenFeatures.
-    Returns (tokens:list, inject_newlines:boolean[], features:list<object[]>)
+    Returns (tokens:list, inject_newlines:boolean[], indent:int[], features:list<object[]>)
     """
     input = InputStream(code)
     lexer = JavaLexer(input)
@@ -53,7 +53,7 @@ def extract_data(code):
     collector = CollectTokenFeatures(stream)
     walker = ParseTreeWalker()
     walker.walk(collector, tree)
-    return (stream.tokens, collector.inject_newlines, collector.features)
+    return (stream.tokens, collector.inject_newlines, collector.indent, collector.features)
 
 
 def earliestAncestorStartingAtToken(node, token):
@@ -71,20 +71,22 @@ def earliestAncestorStartingAtToken(node, token):
 
 def analyze_corpus(dir):
     """
-    Return inject_newlines:boolean[], features:list<object[]> collected
+    Return inject_newlines:boolean[], indent:int[], features:list<object[]> collected
     from all corpus files found recursively under dir.
     """
     inject_newlines = []
+    indents = []
     features = []
     for fname in files(dir):
         print fname
         with open(fname, 'r') as f:
             code = f.read()
             code = code.expandtabs(TABSIZE)
-            tokens, nl, predictors = extract_data(code)
+            tokens, nl, indent, predictors = extract_data(code)
+            indents += indent
             inject_newlines += nl
             features += predictors
-    return (inject_newlines, features)
+    return (inject_newlines, indents, features)
 
 
 def convert_categorical_data(features):

@@ -9,35 +9,35 @@ import numpy as np
 import groomlib
 
 sample_java = \
-    """
-    package org.antlr.groom;
+"""
+package org.antlr.groom;
 
-    import java.util.List;
+import java.util.List;
 
-    public class InputDocument {
-        public String fileName;
-        public char[] content;
-        public int index;
-        public List<int[]> data;
+public class InputDocument {
+    public String fileName;
+    public char[] content;
+    public int index;
+    public List<int[]> data;
 
-        public InputDocument(InputDocument d, int index) {
-            this.fileName = d.fileName;
-            this.content = d.content;
-            this.index = index;
-        }
-
-        public InputDocument(String fileName, char[] content) {
-            this.content = content;
-            this.fileName = fileName;
-        }
-
-        @Override
-        public String toString(String fileName, char[] content) {
-            i = this.content + content;
-            return fileName+"["+content.length+"]"+"@"+index;
-        }
+    public InputDocument(InputDocument d, int index) {
+        this.fileName = d.fileName;
+        this.content = d.content;
+        this.index = index;
     }
-    """
+
+    public InputDocument(String fileName, char[] content) {
+        this.content = content;
+        this.fileName = fileName;
+    }
+
+    @Override
+    public String toString(String fileName, char[] content) {
+        i = this.content + content;
+        return fileName+"["+content.length+"]"+"@"+index;
+    }
+}
+"""
 
 # def newlines(csvfile):
 #     """
@@ -69,7 +69,9 @@ sample_java = \
 # p = pstats.Stats('stats')
 # p.strip_dirs().sort_stats("time").print_stats()
 
-inject_newlines, features = analyze_corpus(sys.argv[1])
+inject_newlines, indents, features = analyze_corpus(sys.argv[1])
+# for i in range(len(indents)):
+#     print inject_newlines[i], indents[i], features[i]
 vec, transformed_data = convert_categorical_data(features)
 
 X = transformed_data
