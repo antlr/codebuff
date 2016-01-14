@@ -2,6 +2,7 @@ from JavaListener import JavaListener
 from CollectTokenFeatures import CollectTokenFeatures
 import groomlib
 from antlr4 import ParseTreeListener
+import sys
 
 """
 Similar to CollectTokenFeatures but we do prediction of newline on the fly
@@ -9,9 +10,10 @@ for each token.  Must adjust token line/column info on the fly as current token
 position depends on previous tokens and prediction of newline.
 """
 class ProcessTokens(ParseTreeListener):
-    def __init__(self, newline_forest, indent_forest, vec, stream):
+    def __init__(self, newline_forest, indent_forest, whitespace_forest, vec, stream):
         self.newline_forest = newline_forest
         self.indent_forest = indent_forest
+        self.whitespace_forest = whitespace_forest
         self.vec = vec          # the DictVectorizer used to transform categorical features
         self.stream = stream    # track stream so we can examine previous tokens
         self.current_indent = 0
@@ -50,5 +52,9 @@ class ProcessTokens(ParseTreeListener):
             # if indent!=0:
             #     print "indent %d at %s" % (indent,curToken)
             self.current_indent += indent
-            print " " * self.current_indent, # inject indent
-        print curToken.text,
+            sys.stdout.write(" " * self.current_indent) # inject indent
+        else:
+            ws = self.whitespace_forest.predict(transformed_features_testing)
+            sys.stdout.write(" " * ws) # inject whitespace before token
+
+        sys.stdout.write(curToken.text)

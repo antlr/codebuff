@@ -43,7 +43,8 @@ def node_features(tokens, node):
 def extract_data(code):
     """
     Parse a code string and collect features with a CollectTokenFeatures.
-    Returns (tokens:list, inject_newlines:boolean[], indent:int[], features:list<object[]>)
+    Returns (tokens:list, inject_newlines:boolean[], indent:int[],
+    whitespace:int[], features:list<object[]>)
     """
     input = InputStream(code)
     lexer = JavaLexer(input)
@@ -53,7 +54,8 @@ def extract_data(code):
     collector = CollectTokenFeatures(stream)
     walker = ParseTreeWalker()
     walker.walk(collector, tree)
-    return (stream.tokens, collector.inject_newlines, collector.indent, collector.features)
+    return (stream.tokens, collector.inject_newlines,
+            collector.indent, collector.whitespace, collector.features)
 
 
 def earliestAncestorStartingAtToken(node, token):
@@ -71,22 +73,24 @@ def earliestAncestorStartingAtToken(node, token):
 
 def analyze_corpus(dir):
     """
-    Return inject_newlines:boolean[], indent:int[], features:list<object[]> collected
-    from all corpus files found recursively under dir.
+    Return inject_newlines:boolean[], indent:int[], whitespace:int[],
+    features:list<object[]> collected from all corpus files found recursively under dir.
     """
     inject_newlines = []
     indents = []
     features = []
+    whitespace = []
     for fname in files(dir):
         print fname
         with open(fname, 'r') as f:
             code = f.read()
             code = code.expandtabs(TABSIZE)
-            tokens, nl, indent, predictors = extract_data(code)
+            tokens, nl, indent, ws, predictors = extract_data(code)
             indents += indent
             inject_newlines += nl
+            whitespace += ws
             features += predictors
-    return (inject_newlines, indents, features)
+    return (inject_newlines, indents, whitespace, features)
 
 
 def convert_categorical_data(features):
@@ -118,7 +122,7 @@ def todict(features):
     return records
 
 
-def format_code(newline_forest, indent_forest, vec, code):
+def format_code(newline_forest, indent_forest, whitespace_forest, vec, code):
     """
     Tokenize code and then, one token at a time, predict newline or not.
     Do prediction of newline on the fly, adjusting token line/column.
@@ -139,7 +143,7 @@ def format_code(newline_forest, indent_forest, vec, code):
     tree = parser.compilationUnit()
 
     # compute feature vector for each token and adjust line/column as we walk tree
-    collector = ProcessTokens(newline_forest, indent_forest, vec, stream)
+    collector = ProcessTokens(newline_forest, indent_forest, whitespace_forest, vec, stream)
     walker = ParseTreeWalker()
     walker.walk(collector, tree)
 

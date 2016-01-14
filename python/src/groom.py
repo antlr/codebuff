@@ -34,7 +34,8 @@ public class InputDocument {
     @Override
     public String toString(String fileName, char[] content) {
         i = this.content + content;
-        return fileName+"["+content.length+"]"+"@"+index;
+        return fileName+"["+content.length+"]"+
+               "@"+index;
     }
 }
 """
@@ -45,9 +46,9 @@ public class InputDocument {
 # p = pstats.Stats('stats')
 # p.strip_dirs().sort_stats("time").print_stats()
 
-inject_newlines, indents, features = analyze_corpus(sys.argv[1])
+inject_newlines, indents, whitespace, features = analyze_corpus(sys.argv[1])
 # for i in range(len(indents)):
-#     print inject_newlines[i], indents[i], features[i]
+#     print whitespace[i], features[i]
 vec, transformed_features = convert_categorical_data(features)
 
 newline_predictor_RF = RandomForestClassifier(n_estimators=100)
@@ -58,11 +59,15 @@ indent_predictor_RF = RandomForestClassifier(n_estimators=100)
 indent_forest = indent_predictor_RF.fit(transformed_features, indents)
 print_importances(indent_forest, vec.get_feature_names(), n=15)
 
+whitespace_predictor_RF = RandomForestClassifier(n_estimators=100)
+whitespace_forest = whitespace_predictor_RF.fit(transformed_features, whitespace)
+print_importances(whitespace_forest, vec.get_feature_names(), n=15)
+
 # PREDICT
 
 # sample_java = open("samples/stringtemplate4/org/stringtemplate/v4/STGroup.java", "r").read()
 sample_java = sample_java.expandtabs(groomlib.TABSIZE)
-format_code(newline_forest, indent_forest, vec, sample_java)
+format_code(newline_forest, indent_forest, whitespace_forest, vec, sample_java)
 
 
 # graph_importance(forest, vec.get_feature_names())
