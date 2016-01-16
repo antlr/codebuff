@@ -28,14 +28,6 @@ public class ExtractFeatures {
 
 	List<InputDocument> documents;
 
-//	public static Class[] parsers = {
-//		JavaParser.class
-//	};
-//
-//	public static Class[] lexers = {
-//		JavaLexer.class
-//	};
-//
 	public static void main(String[] args)
 		throws Exception
 	{
@@ -51,8 +43,8 @@ public class ExtractFeatures {
 		processSampleDocs(documents);
 		FileWriter fw = new FileWriter("/tmp/style.csv");
 		BufferedWriter bw = new BufferedWriter(fw);
-		bw.write("inject newline, token type, column, length, enclosing rule, earliest ancestor rule, "+
-		          "earliest ancestor length, prev token type, prev token column, prev token last char index");
+		bw.write(Utils.join(CollectFeatures.FEATURE_NAMES, ", "));
+		bw.write("\n");
 		for (InputDocument doc : documents) {
 			for (int[] record : doc.data) {
 				String r = join(record, ", ");
@@ -104,7 +96,7 @@ public class ExtractFeatures {
 		Method startRule = parserClass.getMethod(startRuleName);
 		ParseTree tree = (ParseTree)startRule.invoke(parser, (Object[]) null);
 
-		CollectFeatures collect = new CollectFeatures(tokens);
+		CollectFeatures collect = new CollectFeatures(parser);
 		ParseTreeWalker.DEFAULT.walk(collect, tree);
 		doc.data = collect.getData();
 		return doc.data;
