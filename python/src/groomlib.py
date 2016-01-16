@@ -32,6 +32,12 @@ def node_features(tokens, node):
     def ttype(t): return JavaLexer.symbolicNames[t.type] if t.type>0 else 'None'
     def ttext(t): return t.text if t.text is not None else 'None'
 
+#    earliestAncestorRoot = earliestAncestorStartingAtToken(node.parentCtx, curToken)
+#    if earliestAncestorRoot is not None:
+#        width = len(earliestAncestorRoot.getText())
+#        earliestAncestorRuleIndex = earliestAncestorRoot.getRuleIndex()
+#        print "%50s %3d %s" % (curToken, width, JavaParser.ruleNames[earliestAncestorRuleIndex])
+
     vars = [ttype(window[0]), window[0].column,
             ttype(window[1]), window[1].column,
             ttype(window[2]), # current token
