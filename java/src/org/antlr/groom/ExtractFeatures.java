@@ -49,7 +49,7 @@ public class ExtractFeatures {
 		List<String> allFiles = getFilenames(new File(rootDir), ".*\\.java");
 		documents = load(allFiles);
 		processSampleDocs(documents);
-		FileWriter fw = new FileWriter(rootDir+"/style.csv");
+		FileWriter fw = new FileWriter("/tmp/style.csv");
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write("inject newline, token type, column, length, enclosing rule, earliest ancestor rule, "+
 		          "earliest ancestor length, prev token type, prev token column, prev token last char index");
