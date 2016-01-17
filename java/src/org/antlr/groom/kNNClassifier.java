@@ -1,18 +1,31 @@
 package org.antlr.groom;
 
-import org.antlr.v4.runtime.misc.Pair;
-
 import java.util.Arrays;
 import java.util.List;
 
 /** A kNN (k-Nearest Neighbor) classifier */
-public class Classifier {
+public class kNNClassifier {
 	protected List<int[]> X;
 	protected List<Integer> Y;
 	protected boolean[] categorical;
 	public final int maxCategoryValue;
 
-	public Classifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
+	public static class Neighbor {
+		public final int category;
+		public final double distance;
+
+		public Neighbor(int category, double distance) {
+			this.category = category;
+			this.distance = distance;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("(cat=%d, d=%1.2f)", category, distance);
+		}
+	}
+
+	public kNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
 		this.X = X;
 		this.Y = Y;
 		this.categorical = categorical;
@@ -35,12 +48,7 @@ public class Classifier {
 	 *  smallest distance values.
 	 */
 	public int classify(int k, int[] unknown) {
-		Pair<Integer, Double>[] kNN = kNN(k, unknown);
-		// each neighbor gets a vote
-		int[] votes = new int[maxCategoryValue];
-		for (int i=0; i<k; i++) {
-			votes[kNN[i].a]++;
-		}
+		int[] votes = votes(k, unknown);
 		int max = 0;
 		int cat = 0;
 		for (int i=0; i<maxCategoryValue; i++) {
@@ -52,16 +60,32 @@ public class Classifier {
 		return cat;
 	}
 
-	public Pair<Integer, Double>[] kNN(int k, int[] unknown) {
-		int n = unknown.length;
-		Pair<Integer, Double>[] distances = new Pair[n];
+	public int[] votes(int k, int[] unknown) {
+		Neighbor[] kNN = kNN(k, unknown);
+		// each neighbor gets a vote
+		int[] votes = new int[maxCategoryValue+1];
+		for (int i=0; i<k; i++) {
+			votes[kNN[i].category]++;
+		}
+		return votes;
+	}
+
+	public Neighbor[] kNN(int k, int[] unknown) {
+		int n = X.size(); // num training samples
+		Neighbor[] distances = distances(k, unknown);
+		Arrays.sort(distances,
+					(Neighbor o1, Neighbor o2) -> Double.compare(o1.distance,o2.distance));
+		return Arrays.copyOfRange(distances, 0, k);
+	}
+
+	public Neighbor[] distances(int k, int[] unknown) {
+		int n = X.size(); // num training samples
+		Neighbor[] distances = new Neighbor[n];
 		for (int i=0; i<n; i++) {
 			int[] x = X.get(i);
-			distances[i] = new Pair<>(Y.get(i), distance(x, unknown));
+			distances[i] = new Neighbor(Y.get(i), distance(x, unknown));
 		}
-		Arrays.sort(distances,
-					(Pair<Integer, Double> o1, Pair<Integer, Double> o2) -> Double.compare(o1.b,o2.b));
-		return Arrays.copyOfRange(distances, n-4, n);
+		return distances;
 	}
 
 	public double distance(int[] A, int[] B) {

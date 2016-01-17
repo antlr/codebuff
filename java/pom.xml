@@ -36,10 +36,16 @@
 			<artifactId>antlr4-runtime</artifactId>
 			<version>4.5.1</version>
 		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
-		<sourceDirectory>java/src</sourceDirectory>
+		<sourceDirectory>src</sourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.antlr</groupId>
