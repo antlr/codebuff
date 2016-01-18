@@ -8,7 +8,7 @@ public class kNNClassifier {
 	protected List<int[]> X;
 	protected List<Integer> Y;
 	protected boolean[] categorical;
-	public final int maxCategoryValue;
+	public final int numCategories;
 
 	public static class Neighbor {
 		public final int category;
@@ -29,7 +29,7 @@ public class kNNClassifier {
 		this.X = X;
 		this.Y = Y;
 		this.categorical = categorical;
-		maxCategoryValue = max(Y);
+		numCategories = max(Y) + 1;
 	}
 
 	public int max(List<Integer> Y) {
@@ -51,7 +51,7 @@ public class kNNClassifier {
 		int[] votes = votes(k, unknown);
 		int max = 0;
 		int cat = 0;
-		for (int i=0; i<maxCategoryValue; i++) {
+		for (int i=0; i<numCategories; i++) {
 			if ( votes[i]>max ) {
 				max = votes[i];
 				cat = i;
@@ -63,10 +63,11 @@ public class kNNClassifier {
 	public int[] votes(int k, int[] unknown) {
 		Neighbor[] kNN = kNN(k, unknown);
 		// each neighbor gets a vote
-		int[] votes = new int[maxCategoryValue+1];
+		int[] votes = new int[numCategories];
 		for (int i=0; i<k; i++) {
 			votes[kNN[i].category]++;
 		}
+		System.out.println(Tool.toString(unknown)+"->"+Arrays.toString(kNN)+"->"+Arrays.toString(votes));
 		return votes;
 	}
 
@@ -89,19 +90,24 @@ public class kNNClassifier {
 	}
 
 	public double distance(int[] A, int[] B) {
+		// compute the L1 (manhattan) distance of numeric and combined categorical
 		double d = 0.0;
-		int hamming = 0; // count how many mismatched categories there are
+		int hamming = 0; // count how many mismatched categories there are; L0 distance I think
+		int num_categorical = 0;
 		for (int i=0; i<A.length; i++) {
 			if ( categorical[i] ) {
+				num_categorical++;
 				if ( A[i] != B[i] ) {
 					hamming++;
 				}
 			}
 			else {
-				d += Math.abs(A[i]-B[i]);
+				int delta = Math.abs(A[i]-B[i]);
+				d += delta/120.0; // normalize 0-1.0 for a large column value as 1.0.
 			}
 		}
 		// assume numeric data has been normalized so we don't overwhelm hamming distance
-		return d + hamming;
+		return d + ((float)hamming)/num_categorical;
+//		return ((float)hamming)/num_categorical;
 	}
 }
