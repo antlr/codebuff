@@ -9,7 +9,6 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Utils;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -57,17 +56,6 @@ public class Tool {
 		List<String> allFiles = getFilenames(new File(rootDir), ".*\\.java");
 		List<InputDocument> documents = load(allFiles);
 		return processSampleDocs(documents);
-	}
-
-	public static String toString(int[] features) {
-		Vocabulary v = JavaParser.VOCABULARY;
-		return String.format(
-			"%s %s %d %s, %s %d %s",
-			v.getDisplayName(features[0]),
-			v.getDisplayName(features[1]), features[2],
-			v.getDisplayName(features[3]), JavaParser.ruleNames[features[4]], features[5],
-			v.getDisplayName(features[6])
-		                    );
 	}
 
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
