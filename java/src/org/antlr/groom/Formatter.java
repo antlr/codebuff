@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class Formatter extends JavaBaseListener {
-	public static final int k = 29;
+	public static final int k = 201; // corpus has 41,973 records. that's about sqrt(41973).
 	protected StringBuilder output = new StringBuilder();
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected kNNClassifier classifier;

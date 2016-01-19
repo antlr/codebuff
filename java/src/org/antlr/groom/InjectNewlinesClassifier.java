@@ -21,10 +21,11 @@ import java.util.List;
 
      ')' '{' 23 'return', statement 49 Identifier
 
- There were k (29) exact context matches, but 62% of the	time a new
+ There were k (29) exact context matches, but 62% of the time a new
  line was used. It was this case	that I looked at for column or with
  information as the distinguishing characteristic, but it didn't seem
- to help.
+ to help.  I bumped that to k=201 for all ST4 source (like 41000 records)
+ and I get 60 against, 141 for a newline (70%).
  */
 
 /** A k nearest neighbor classifier to decide on injecting newlines */
