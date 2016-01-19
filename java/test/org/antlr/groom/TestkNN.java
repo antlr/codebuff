@@ -1,6 +1,5 @@
 package org.antlr.groom;
 
-import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Utils;
 import org.junit.Test;
 
@@ -24,14 +23,13 @@ public class TestkNN {
 	public static final int T5 = 5;
 	public static final int T6 = 6;
 
-	public static class MykNNClassifier extends kNNClassifier {
-		public MykNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
+	public static class CategoricalkNNClassifier extends kNNClassifier {
+		public CategoricalkNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
 			super(X, Y, categorical);
 		}
 
 		public double distance(int[] A, int[] B) {
 			// compute the L1 (manhattan) distance of numeric and combined categorical
-			double d = 0.0;
 			int hamming = 0; // count how many mismatched categories there are; L0 distance I think
 			int num_categorical = 0;
 			for (int i=0; i<A.length; i++) {
@@ -41,18 +39,11 @@ public class TestkNN {
 						hamming++;
 					}
 				}
-				else {
-					int delta = Math.abs(A[i]-B[i]);
-					d += delta/120.0; // normalize 0-1.0 for a large column value as 1.0.
-				}
 			}
-			// assume numeric data has been normalized so we don't overwhelm hamming distance
-			return d + ((float)hamming)/num_categorical;
-	//		return ((float)hamming)/num_categorical;
+			return ((float)hamming)/num_categorical;
 		}
 
 		public String toString(int[] features) {
-			Vocabulary v = JavaParser.VOCABULARY;
 			return String.format("%d %d", features[0], features[1]);
 		}
 	}
@@ -90,7 +81,7 @@ public class TestkNN {
 	@Test
 	public void testDistances() {
 		int k = 3;
-		kNNClassifier c = new MykNNClassifier(X, Y, categorical);
+		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		kNNClassifier.Neighbor[] distances = c.distances(k, new int[] {T0,T0});
 		String expecting =
 			"(cat=0, d=0.00), (cat=1, d=0.50), (cat=2, d=0.50), " +
@@ -134,7 +125,7 @@ public class TestkNN {
 
 	@Test
 	public void testNeighborsT0T0() {
-		kNNClassifier c = new MykNNClassifier(X, Y, categorical);
+		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T0, T0};
 		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), unknown);
 		// sorted by distance
@@ -160,7 +151,7 @@ public class TestkNN {
 
 	@Test
 	public void testVotesT0T0() {
-		kNNClassifier c = new MykNNClassifier(X, Y, categorical);
+		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T0, T0};
 		int[] votes = c.votes(X.size(), unknown);
 		assertEquals("[1, 5, 3]", Arrays.toString(votes)); // all categories are equally voted for given X and k=len(X)
@@ -183,7 +174,7 @@ public class TestkNN {
 
 	@Test
 	public void testClassificationT0T0() {
-		kNNClassifier c = new MykNNClassifier(X, Y, categorical);
+		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T0, T0};
 		int result = c.classify(X.size(), unknown);
 		assertEquals(CAT1, result);
@@ -203,7 +194,7 @@ public class TestkNN {
 
 	@Test
 	public void testNeighborsT1T0() {
-		kNNClassifier c = new MykNNClassifier(X, Y, categorical);
+		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T1, T0};
 		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), unknown);
 		// sorted by distance
@@ -230,7 +221,7 @@ public class TestkNN {
 
 	@Test
 	public void testVotesT1T0() {
-		kNNClassifier c = new MykNNClassifier(X, Y, categorical);
+		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T1, T0};
 		int[] votes = c.votes(X.size(), unknown);
 		assertEquals("[1, 5, 3]", Arrays.toString(votes)); // all categories are equally voted for given X and k=len(X)
@@ -254,7 +245,7 @@ public class TestkNN {
 
 	@Test
 	public void testClassificationT1T0() {
-		kNNClassifier c = new MykNNClassifier(X, Y, categorical);
+		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T1, T0};
 		int result = c.classify(X.size(), unknown);
 		assertEquals(CAT1, result);
