@@ -224,4 +224,17 @@ public class Tool {
 		}
 	}
 
+	public static double L0_Distance(boolean[] categorical, int[] A, int[] B) {
+		int count = 0; // count how many mismatched categories there are
+		int num_categorical = 0;
+		for (int i=0; i<A.length; i++) {
+			if ( categorical[i] ) {
+				num_categorical++;
+				if ( A[i] != B[i] ) {
+					count++;
+				}
+			}
+		}
+		return ((float)count)/num_categorical;
+	}
 }

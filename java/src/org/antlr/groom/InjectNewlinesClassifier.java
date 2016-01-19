@@ -36,21 +36,7 @@ public class InjectNewlinesClassifier extends kNNClassifier {
 
 	/** Get P(inject-newline) from votes based solely on context information. */
 	public double distance(int[] A, int[] B) {
-		return L0_Distance(A, B);
-	}
-
-	public double L0_Distance(int[] A, int[] B) {
-		int hamming = 0; // count how many mismatched categories there are; L0 distance I think
-		int num_categorical = 0;
-		for (int i=0; i<A.length; i++) {
-			if ( categorical[i] ) {
-				num_categorical++;
-				if ( A[i] != B[i] ) {
-					hamming++;
-				}
-			}
-		}
-		return ((float)hamming)/num_categorical;
+		return Tool.L0_Distance(categorical, A, B);
 	}
 
 	public String toString(int[] features) {
