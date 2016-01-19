@@ -2,10 +2,7 @@ package org.antlr.groom;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.tree.TerminalNode;
-
-import java.util.List;
 
 public class Formatter extends JavaBaseListener {
 	public static final int k = 29;
@@ -16,49 +13,10 @@ public class Formatter extends JavaBaseListener {
 	protected int line = 1;
 	protected int charPosInLine = 0;
 
-	public static class MykNNClassifier extends kNNClassifier {
-		public MykNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
-			super(X, Y, categorical);
-		}
-
-		public double distance(int[] A, int[] B) {
-			// compute the L1 (manhattan) distance of numeric and combined categorical
-			double d = 0.0;
-			int hamming = 0; // count how many mismatched categories there are; L0 distance I think
-			int num_categorical = 0;
-			for (int i=0; i<A.length; i++) {
-				if ( categorical[i] ) {
-					num_categorical++;
-					if ( A[i] != B[i] ) {
-						hamming++;
-					}
-				}
-				else {
-					int delta = Math.abs(A[i]-B[i]);
-					d += delta/120.0; // normalize 0-1.0 for a large column value as 1.0.
-				}
-			}
-			// assume numeric data has been normalized so we don't overwhelm hamming distance
-			return d + ((float)hamming)/num_categorical;
-	//		return ((float)hamming)/num_categorical;
-		}
-
-		public String toString(int[] features) {
-			Vocabulary v = JavaParser.VOCABULARY;
-			return String.format(
-				"%s %s %d %s, %s %d %s",
-				v.getDisplayName(features[0]),
-				v.getDisplayName(features[1]), features[2],
-				v.getDisplayName(features[3]), JavaParser.ruleNames[features[4]], features[5],
-				v.getDisplayName(features[6])
-			                    );
-		}
-	}
-
 	public Formatter(Corpus corpus, CommonTokenStream tokens) {
 		this.tokens = tokens;
 		Tool.wipeLineAndPositionInfo(tokens);
-		classifier = new MykNNClassifier(corpus.X, corpus.Y, CollectFeatures.CATEGORICAL);
+		classifier = new InjectNewlinesClassifier(corpus.X, corpus.Y, CollectFeatures.CATEGORICAL);
 	}
 
 	public String getOutput() {

@@ -25,7 +25,7 @@ public class CollectFeatures extends JavaBaseListener {
 	};
 
 	public static final boolean[] CATEGORICAL = {
-		true, false,
+		true,
 		true, false,
 		true, true, false,
 		true

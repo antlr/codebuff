@@ -84,41 +84,41 @@ public class TestkNN {
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		kNNClassifier.Neighbor[] distances = c.distances(k, new int[] {T0,T0});
 		String expecting =
-			"(cat=0, d=0.00), (cat=1, d=0.50), (cat=2, d=0.50), " +
-			"(cat=1, d=0.50), (cat=1, d=1.00), (cat=2, d=1.00), " +
-			"(cat=1, d=0.50), (cat=1, d=1.00), (cat=2, d=1.00)";
+			"(cat=0,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
+			"(cat=1,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00), " +
+			"(cat=1,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00)";
 		String result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
 		distances = c.distances(k, new int[] {T0,T1});
 		expecting =
-			"(cat=0, d=0.50), (cat=1, d=0.00), (cat=2, d=0.50), " +
-			"(cat=1, d=1.00), (cat=1, d=0.50), (cat=2, d=1.00), " +
-			"(cat=1, d=1.00), (cat=1, d=0.50), (cat=2, d=1.00)";
+			"(cat=0,d=0.50), (cat=1,d=0.00), (cat=2,d=0.50), " +
+			"(cat=1,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00), " +
+			"(cat=1,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00)";
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
 		distances = c.distances(k, new int[] {T1,T0});
 		expecting =
-			"(cat=0, d=0.50), (cat=1, d=1.00), (cat=2, d=1.00), " +
-			"(cat=1, d=0.00), (cat=1, d=0.50), (cat=2, d=0.50), " +
-			"(cat=1, d=0.50), (cat=1, d=1.00), (cat=2, d=1.00)";
+			"(cat=0,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00), " +
+			"(cat=1,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
+			"(cat=1,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00)";
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
 		distances = c.distances(k, new int[] {T1,T1});
 		expecting =
-			"(cat=0, d=1.00), (cat=1, d=0.50), (cat=2, d=1.00), " +
-			"(cat=1, d=0.50), (cat=1, d=0.00), (cat=2, d=0.50), " +
-			"(cat=1, d=1.00), (cat=1, d=0.50), (cat=2, d=1.00)";
+			"(cat=0,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00), " +
+			"(cat=1,d=0.50), (cat=1,d=0.00), (cat=2,d=0.50), " +
+			"(cat=1,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00)";
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
 		distances = c.distances(k, new int[] {T1,T2});
 		expecting =
-			"(cat=0, d=1.00), (cat=1, d=1.00), (cat=2, d=0.50), " +
-			"(cat=1, d=0.50), (cat=1, d=0.50), (cat=2, d=0.00), " +
-			"(cat=1, d=1.00), (cat=1, d=1.00), (cat=2, d=0.50)";
+			"(cat=0,d=1.00), (cat=1,d=1.00), (cat=2,d=0.50), " +
+			"(cat=1,d=0.50), (cat=1,d=0.50), (cat=2,d=0.00), " +
+			"(cat=1,d=1.00), (cat=1,d=1.00), (cat=2,d=0.50)";
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 	}
@@ -130,21 +130,21 @@ public class TestkNN {
 		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), unknown);
 		// sorted by distance
 		String expecting =
-			"(cat=0, d=0.00), (cat=1, d=0.50), (cat=2, d=0.50), " +
-			"(cat=1, d=0.50), (cat=1, d=0.50), (cat=1, d=1.00), " +
-			"(cat=2, d=1.00), (cat=1, d=1.00), (cat=2, d=1.00)";
+			"(cat=0,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
+			"(cat=1,d=0.50), (cat=1,d=0.50), (cat=1,d=1.00), " +
+			"(cat=2,d=1.00), (cat=1,d=1.00), (cat=2,d=1.00)";
 		String result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
 		neighbors = c.kNN(1, unknown);
 		// sorted by distance
-		expecting =	"(cat=0, d=0.00)";
+		expecting =	"(cat=0,d=0.00)";
 		result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
 		neighbors = c.kNN(3, unknown);
 		// sorted by distance
-		expecting =	"(cat=0, d=0.00), (cat=1, d=0.50), (cat=2, d=0.50)";
+		expecting =	"(cat=0,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50)";
 		result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 	}
@@ -199,21 +199,21 @@ public class TestkNN {
 		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), unknown);
 		// sorted by distance
 		String expecting =
-			"(cat=1, d=0.00), (cat=0, d=0.50), (cat=1, d=0.50), " +
-			"(cat=2, d=0.50), (cat=1, d=0.50), (cat=1, d=1.00), " +
-			"(cat=2, d=1.00), (cat=1, d=1.00), (cat=2, d=1.00)";
+			"(cat=1,d=0.00), (cat=0,d=0.50), (cat=1,d=0.50), " +
+			"(cat=2,d=0.50), (cat=1,d=0.50), (cat=1,d=1.00), " +
+			"(cat=2,d=1.00), (cat=1,d=1.00), (cat=2,d=1.00)";
 		String result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
 		neighbors = c.kNN(1, unknown);
 		// sorted by distance
-		expecting =	"(cat=1, d=0.00)";
+		expecting =	"(cat=1,d=0.00)";
 		result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
 		neighbors = c.kNN(3, unknown);
 		// sorted by distance
-		expecting =	"(cat=1, d=0.00), (cat=0, d=0.50), (cat=1, d=0.50)";
+		expecting =	"(cat=1,d=0.00), (cat=0,d=0.50), (cat=1,d=0.50)";
 		result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 	}
