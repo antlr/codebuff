@@ -807,7 +807,7 @@ public class Interpreter {
 	}
 
 	protected int getExprStopChar(InstanceScope scope) {
-		Interval templateLocation = scope.st.impl.sourceMap[scope.ip];
+	 	Interval templateLocation = scope.st.impl.sourceMap[scope.ip];
 		if ( templateLocation!=null ) return templateLocation.b;
 		return -1;
 	}
