@@ -84,7 +84,7 @@ public abstract class kNNClassifier {
 			sum[kNN[i].category].add(features[CollectFeatures.INDEX_PREV_END_COLUMN]+
 									 features[CollectFeatures.INDEX_ANCESTOR_WIDTH]);
 		}
-		System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+Arrays.toString(votes));
+//		System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+Arrays.toString(votes));
 //		System.out.println(Arrays.toString(charPos));
 //		System.out.println(Arrays.toString(widths));
 //		System.out.println(Arrays.toString(sum));
