@@ -6,7 +6,7 @@
 		<version>9</version>
 	</parent>
 	<groupId>org.antlr</groupId>
-	<artifactId>groom</artifactId>
+	<artifactId>codebuff</artifactId>
 	<version>0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
@@ -21,7 +21,7 @@
 	<licenses>
 		<license>
 			<name>The BSD License</name>
-			<url>https://github.com/antlr/groom/blob/master/LICENSE</url>
+			<url>https://github.com/antlr/codebuff/blob/master/LICENSE</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -124,9 +124,9 @@
 	</build>
 
 	<scm>
-		<url>https://github.com/antlr/groom</url>
-		<connection>scm:git:git://github.com/antlr/groom.git</connection>
-		<developerConnection>scm:git:git@github.com:antlr/groom.git</developerConnection>
+		<url>https://github.com/antlr/codebuff</url>
+		<connection>scm:git:git://github.com/antlr/codebuff.git</connection>
+		<developerConnection>scm:git:git@github.com:antlr/codebuff.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 

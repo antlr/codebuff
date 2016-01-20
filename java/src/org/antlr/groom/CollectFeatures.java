@@ -6,8 +6,12 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+/*
+NOTE: I think multiple newlines are counted as one during training.
+ */
 public class CollectFeatures extends JavaBaseListener {
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -46,12 +50,13 @@ public class CollectFeatures extends JavaBaseListener {
 		if ( curToken.getType()==Token.EOF ) return;
 
 		int i = curToken.getTokenIndex();
-		if ( i<2 ) {
-			return; // we need 2 previous tokens and current token
+		tokens.seek(i); // see so that LT(1) is tokens.get(i);
+		if ( tokens.LT(-2)==null ) { // do we have 2 previous tokens?
+			return;
 		}
 
 		int[] features = getNodeFeatures(tokens, node);
-		Token prevToken = tokens.get(i-1);
+		Token prevToken = tokens.LT(-1);
 		boolean precedingNL = curToken.getLine() > prevToken.getLine();
 
 //		System.out.printf("%5s: ", precedingNL);
@@ -78,13 +83,17 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static int[] getNodeFeatures(CommonTokenStream tokens, TerminalNode node) {
 		Token curToken = node.getSymbol();
+//		if ( curToken.getType()==Token.EOF ) return null;
+
 		int i = curToken.getTokenIndex();
-		if ( i<2 ) {
-			return null;
-		}
+		tokens.seek(i); // see so that LT(1) is tokens.get(i);
+//		if ( tokens.LT(-2)==null ) { // do we have 2 previous tokens?
+//			return null;
+//		}
 
 		// Get a 4-gram of tokens with current token in 3rd position
-		List<Token> window = tokens.getTokens(i-2, i+1);
+		List<Token> window =
+			Arrays.asList(tokens.LT(-2), tokens.LT(-1), tokens.LT(1), tokens.LT(2));
 
 		// Get context information
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
@@ -100,6 +109,16 @@ public class CollectFeatures extends JavaBaseListener {
 			window.get(3).getType(),
 		};
 	}
+
+//	public static Token getPreviousToken(CommonTokenStream tokens, int tokIndex) {
+//		for (int i=tokIndex-1; i>=0; i--) {
+//			Token t = tokens.get(i);
+//			if ( t.getChannel()==Token.DEFAULT_CHANNEL ) {
+//				return t;
+//			}
+//		}
+//		return null; // no such token
+//	}
 
 	public List<int[]> getFeatures() {
 		return features;

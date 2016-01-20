@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/** Ok, changed requirements. Grammar must have WS on hidden channel and comments skipped or on non-HIDDEN channel */
 public class Tool {
 	public static boolean showFileNames = true;
 	public static boolean showTokens = false;
@@ -108,7 +109,7 @@ public class Tool {
 		doc.injectWS = collect.getInjectWS();
 	}
 
-	public static List<Token> tokenize(String doc, Class<? extends Lexer> lexerClass)
+	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
 		throws Exception
 	{
 		ANTLRInputStream input = new ANTLRInputStream(doc);
@@ -118,7 +119,7 @@ public class Tool {
 
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		tokens.fill();
-		return tokens.getTokens();
+		return tokens;
 	}
 
 	/** Parse doc and fill tree and tokens fields */
@@ -314,27 +315,37 @@ public class Tool {
 	}
 
 	/** Compute a document difference metric 0-1.0 between two documents that
-	 *  are identical other than (likely) the whitespace. 1.0 means the docs
-	 *  are maximally different and 0 means docs are identical.
+	 *  are identical other than (likely) the whitespace and comments.
+	 *
+	 *  1.0 means the docs are maximally different and 0 means docs are identical.
+	 *
 	 *  The Levenshtein distance between the docs counts only
 	 *  whitespace diffs as the non-WS content is identical.
 	 *  Levenshtein distance is bounded by 0..max(len(doc1),len(doc2)) so
 	 *  we normalize the distance by dividing by max WS count.
+	 *
+	 *  TODO: can we simplify this to a simple walk with two
+	 *  cursors through the original vs formatted counting
+	 *  mismatched whitespace? real text are like anchors.
 	 */
-	public static double whitespaceDifference(String original,
-	                                          String formatted,
-	                                          Class<? extends Lexer> lexerClass)
+	public static double docDiff(String original,
+	                             String formatted,
+	                             Class<? extends Lexer> lexerClass)
 		throws Exception
 	{
-		List<Token> tokens = tokenize(original, lexerClass);
+		// strip all but real tokens and whitespace (on hidden channel)
+		CommonTokenStream original_tokens = tokenize(original, lexerClass);
 		int non_ws = 0;
-		for (Token tok : tokens) {
-			non_ws += tok.getText().length();
+		for (Token tok : original_tokens.getTokens()) {
+			if ( tok.getType()!=Token.EOF && tok.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL ) {
+				non_ws += tok.getText().length();
+			}
 		}
-		int original_ws = original.length() - non_ws;
+		String original_text_with_ws = original_tokens.getText();
+		int original_ws = original_text_with_ws.length() - non_ws;
 		int formatted_ws = formatted.length() - non_ws;
 		int max_ws = Math.max(original_ws, formatted_ws);
-		int ws_distance = Tool.levenshteinDistance(original, formatted);
+		int ws_distance = Tool.levenshteinDistance(original_text_with_ws, formatted);
 		float normalized_ws_distance = ((float) ws_distance)/max_ws;
 		return normalized_ws_distance;
 	}

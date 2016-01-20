@@ -38,11 +38,14 @@ public class Formatter extends JavaBaseListener {
 		if ( curToken.getType()==Token.EOF ) return;
 
 		int i = curToken.getTokenIndex();
-		String tokText = tokens.get(i).getText();
-		if ( i<2 ) {
-			output.append(tokText);
-			return; // we need 2 previous tokens and current token
+		tokens.seek(i); // see so that LT(1) is tokens.get(i);
+		if ( tokens.LT(-2)==null ) { // do we have 2 previous tokens?
+			output.append(curToken.getText());
+			return;
 		}
+
+		String tokText = curToken.getText();
+
 		int[] features = CollectFeatures.getNodeFeatures(tokens, node);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
