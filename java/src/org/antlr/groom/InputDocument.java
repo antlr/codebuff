@@ -13,6 +13,7 @@ public class InputDocument {
 	public CommonTokenStream tokens;
 	public List<int[]> features;
 	public List<Integer> injectNewlines;
+	public List<Integer> injectWS;
 
 	public InputDocument(InputDocument d, int index) {
 		this.fileName = d.fileName;

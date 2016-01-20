@@ -4,10 +4,12 @@ import java.util.List;
 
 public class Corpus {
 	List<int[]> X;
-	List<Integer> Y;
+	List<Integer> injectNewlines;
+	List<Integer> injectWS;
 
-	public Corpus(List<int[]> X, List<Integer> Y) {
+	public Corpus(List<int[]> X, List<Integer> injectNewlines, List<Integer> injectWS) {
 		this.X = X;
-		this.Y = Y;
+		this.injectNewlines = injectNewlines;
+		this.injectWS = injectWS;
 	}
 }

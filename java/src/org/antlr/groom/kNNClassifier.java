@@ -77,6 +77,7 @@ public abstract class kNNClassifier {
 			sum[i] = new ArrayList<>();
 		}
 		for (int i=0; i<k; i++) {
+			if ( kNN[i].category<0 ) continue;
 			votes[kNN[i].category]++;
 			int[] features = X.get(kNN[i].corpusVectorIndex);
 			charPos[kNN[i].category].add(features[CollectFeatures.INDEX_PREV_END_COLUMN]);

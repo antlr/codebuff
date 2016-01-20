@@ -77,17 +77,19 @@ public class Tool {
 		throws Exception
 	{
 		List<int[]> featureVectors = new ArrayList<>();
-		List<Integer> categories = new ArrayList<>();
+		List<Integer> injectNewlines = new ArrayList<>();
+		List<Integer> injectWS = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			process(doc, JavaLexer.class, JavaParser.class, "compilationUnit");
 			for (int i=0; i<doc.features.size(); i++) {
-				categories.add(doc.injectNewlines.get(i));
+				injectNewlines.add(doc.injectNewlines.get(i));
+				injectWS.add(doc.injectWS.get(i));
 				featureVectors.add(doc.features.get(i));
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(featureVectors, categories);
+		return new Corpus(featureVectors, injectNewlines, injectWS);
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
@@ -103,6 +105,7 @@ public class Tool {
 		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
 		doc.features = collect.getFeatures();
 		doc.injectNewlines = collect.getInjectNewlines();
+		doc.injectWS = collect.getInjectWS();
 	}
 
 	public static void tokenize(InputDocument doc, Class<? extends Lexer> lexerClass)

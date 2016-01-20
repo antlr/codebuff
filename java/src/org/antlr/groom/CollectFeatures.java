@@ -34,6 +34,7 @@ public class CollectFeatures extends JavaBaseListener {
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<int[]> features = new ArrayList<>();
 	protected List<Integer> injectNewlines = new ArrayList<>();
+	protected List<Integer> injectWS = new ArrayList<>();
 
 	public CollectFeatures(CommonTokenStream tokens) {
 		this.tokens = tokens;
@@ -56,6 +57,10 @@ public class CollectFeatures extends JavaBaseListener {
 //		System.out.printf("%5s: ", precedingNL);
 //		System.out.printf("%s\n", Tool.toString(features));
 		this.injectNewlines.add(precedingNL ? 1 : 0);
+		int ws = curToken.getCharPositionInLine() -
+			(prevToken.getCharPositionInLine()+prevToken.getText().length());
+
+		this.injectWS.add(ws); // likely negative if precedingNL
 		this.features.add(features);
 	}
 
@@ -102,5 +107,9 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public List<Integer> getInjectNewlines() {
 		return injectNewlines;
+	}
+
+	public List<Integer> getInjectWS() {
+		return injectWS;
 	}
 }

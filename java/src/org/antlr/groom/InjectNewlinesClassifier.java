@@ -1,7 +1,5 @@
 package org.antlr.groom;
 
-import org.antlr.v4.runtime.Vocabulary;
-
 import java.util.List;
 
 /*
@@ -29,7 +27,7 @@ import java.util.List;
  */
 
 /** A k nearest neighbor classifier to decide on injecting newlines */
-public class InjectNewlinesClassifier extends kNNClassifier {
+public class InjectNewlinesClassifier extends CodekNNClassifier {
 	public InjectNewlinesClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
 		super(X, Y, categorical);
 	}
@@ -37,16 +35,5 @@ public class InjectNewlinesClassifier extends kNNClassifier {
 	/** Get P(inject-newline) from votes based solely on context information. */
 	public double distance(int[] A, int[] B) {
 		return Tool.L0_Distance(categorical, A, B);
-	}
-
-	public String toString(int[] features) {
-		Vocabulary v = JavaParser.VOCABULARY;
-		return String.format(
-			"%s %s %d %s, %s %d %s",
-			v.getDisplayName(features[0]),
-			v.getDisplayName(features[1]), features[2],
-			v.getDisplayName(features[3]), JavaParser.ruleNames[features[4]], features[5],
-			v.getDisplayName(features[6])
-							);
 	}
 }

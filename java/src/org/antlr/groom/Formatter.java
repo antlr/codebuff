@@ -8,7 +8,8 @@ public class Formatter extends JavaBaseListener {
 	public static final int k = 201; // corpus has 41,973 records. that's about sqrt(41973).
 	protected StringBuilder output = new StringBuilder();
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
-	protected kNNClassifier classifier;
+	protected kNNClassifier newlineClassifier;
+	protected kNNClassifier wsClassifier;
 
 	protected int line = 1;
 	protected int charPosInLine = 0;
@@ -16,7 +17,12 @@ public class Formatter extends JavaBaseListener {
 	public Formatter(Corpus corpus, CommonTokenStream tokens) {
 		this.tokens = tokens;
 		Tool.wipeLineAndPositionInfo(tokens);
-		classifier = new InjectNewlinesClassifier(corpus.X, corpus.Y, CollectFeatures.CATEGORICAL);
+		newlineClassifier = new InjectNewlinesClassifier(corpus.X,
+														 corpus.injectNewlines,
+														 CollectFeatures.CATEGORICAL);
+		wsClassifier = new InjectWSClassifier(corpus.X,
+											  corpus.injectWS,
+											  CollectFeatures.CATEGORICAL);
 	}
 
 	public String getOutput() {
@@ -35,14 +41,20 @@ public class Formatter extends JavaBaseListener {
 			return; // we need 2 previous tokens and current token
 		}
 		int[] features = CollectFeatures.getNodeFeatures(tokens, node);
-		// must set "prev end column" value as token stream doesn't have it; we're tracking it as we emit tokens
+		// must set "prev end column" value as token stream doesn't have it;
+		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		int injectNewline = classifier.classify(k, features);
+		int injectNewline = newlineClassifier.classify(k, features);
 		if ( injectNewline==1 ) {
 			output.append("\n");
 			line++;
 			charPosInLine = 0;
+		}
+		else {
+			// inject whitespace instead of \n?
+			int ws = wsClassifier.classify(k, features); // the class is the number of WS chars
+			for (int sp=1; sp<=ws; sp++) output.append(" ");
 		}
 		output.append(tokText);
 		charPosInLine += tokText.length();
