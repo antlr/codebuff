@@ -93,7 +93,6 @@ public abstract class kNNClassifier {
 	}
 
 	public Neighbor[] kNN(int k, int[] unknown) {
-		int n = X.size(); // num training samples
 		Neighbor[] distances = distances(k, unknown);
 		Arrays.sort(distances,
 					(Neighbor o1, Neighbor o2) -> Double.compare(o1.distance,o2.distance));
