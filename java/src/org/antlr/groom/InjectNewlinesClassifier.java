@@ -31,9 +31,4 @@ public class InjectNewlinesClassifier extends CodekNNClassifier {
 	public InjectNewlinesClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
 		super(X, Y, categorical);
 	}
-
-	/** Get P(inject-newline) from votes based solely on context information. */
-	public double distance(int[] A, int[] B) {
-		return Tool.L0_Distance(categorical, A, B);
-	}
 }

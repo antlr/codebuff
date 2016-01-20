@@ -108,17 +108,17 @@ public class Tool {
 		doc.injectWS = collect.getInjectWS();
 	}
 
-	public static void tokenize(InputDocument doc, Class<? extends Lexer> lexerClass)
+	public static List<Token> tokenize(String doc, Class<? extends Lexer> lexerClass)
 		throws Exception
 	{
-		ANTLRInputStream input = new ANTLRInputStream(doc.content, doc.content.length);
+		ANTLRInputStream input = new ANTLRInputStream(doc);
 		Constructor<? extends Lexer> lexerCtor =
 			lexerClass.getConstructor(CharStream.class);
 		Lexer lexer = lexerCtor.newInstance(input);
-		input.name = doc.fileName;
 
-		doc.tokens = new CommonTokenStream(lexer);
-		doc.tokens.fill();
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		tokens.fill();
+		return tokens.getTokens();
 	}
 
 	/** Parse doc and fill tree and tokens fields */
@@ -136,19 +136,22 @@ public class Tool {
 
 		Constructor<? extends Parser> parserCtor =
 			parserClass.getConstructor(TokenStream.class);
-		doc.tokens = new CommonTokenStream(lexer);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
 
 		if ( showTokens ) {
-			doc.tokens.fill();
-			for (Object tok : doc.tokens.getTokens()) {
+			tokens.fill();
+			for (Object tok : tokens.getTokens()) {
 				System.out.println(tok);
 			}
 		}
 
-		Parser parser = parserCtor.newInstance(doc.tokens);
+		Parser parser = parserCtor.newInstance(tokens);
 		parser.setBuildParseTree(true);
 		Method startRule = parserClass.getMethod(startRuleName);
-		doc.tree = (ParserRuleContext)startRule.invoke(parser, (Object[]) null);
+		ParserRuleContext tree = (ParserRuleContext)startRule.invoke(parser, (Object[]) null);
+
+		doc.tokens = tokens;
+		doc.tree = tree;
 	}
 
 	/** Get all file contents into input array */
@@ -227,7 +230,7 @@ public class Tool {
 		}
 	}
 
-	public static double L0_Distance(boolean[] categorical, int[] A, int[] B) {
+	public static int L0_Distance(boolean[] categorical, int[] A, int[] B) {
 		int count = 0; // count how many mismatched categories there are
 		int num_categorical = 0;
 		for (int i=0; i<A.length; i++) {
@@ -238,7 +241,7 @@ public class Tool {
 				}
 			}
 		}
-		return ((float)count)/num_categorical;
+		return count;
 	}
 
 //	// From https://en.wikipedia.org/wiki/Levenshtein_distance
@@ -308,5 +311,31 @@ public class Tool {
 	    }
 
 	    return v1[t.length()];
+	}
+
+	/** Compute a document difference metric 0-1.0 between two documents that
+	 *  are identical other than (likely) the whitespace. 1.0 means the docs
+	 *  are maximally different and 0 means docs are identical.
+	 *  The Levenshtein distance between the docs counts only
+	 *  whitespace diffs as the non-WS content is identical.
+	 *  Levenshtein distance is bounded by 0..max(len(doc1),len(doc2)) so
+	 *  we normalize the distance by dividing by max WS count.
+	 */
+	public static double whitespaceDifference(String original,
+	                                          String formatted,
+	                                          Class<? extends Lexer> lexerClass)
+		throws Exception
+	{
+		List<Token> tokens = tokenize(original, lexerClass);
+		int non_ws = 0;
+		for (Token tok : tokens) {
+			non_ws += tok.getText().length();
+		}
+		int original_ws = original.length() - non_ws;
+		int formatted_ws = formatted.length() - non_ws;
+		int max_ws = Math.max(original_ws, formatted_ws);
+		int ws_distance = Tool.levenshteinDistance(original, formatted);
+		float normalized_ws_distance = ((float) ws_distance)/max_ws;
+		return normalized_ws_distance;
 	}
 }

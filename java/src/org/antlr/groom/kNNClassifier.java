@@ -48,11 +48,15 @@ public abstract class kNNClassifier {
 		return max;
 	}
 
+	public int classify(int k, int[] unknown) {
+		return classify(k, unknown, 1.0);
+	}
+
 	/** Walk all training samples and compute distance(). Return indexes of k
 	 *  smallest distance values.
 	 */
-	public int classify(int k, int[] unknown) {
-		int[] votes = votes(k, unknown);
+	public int classify(int k, int[] unknown, double distanceThreshold) {
+		int[] votes = votes(k, unknown, distanceThreshold);
 		int max = 0;
 		int cat = 0;
 		for (int i=0; i<numCategories; i++) {
@@ -65,6 +69,10 @@ public abstract class kNNClassifier {
 	}
 
 	public int[] votes(int k, int[] unknown) {
+		return votes(k, unknown, 1.0);
+	}
+
+	public int[] votes(int k, int[] unknown, double distanceThreshold) {
 		Neighbor[] kNN = kNN(k, unknown);
 		// each neighbor gets a vote
 		int[] votes = new int[numCategories];
@@ -76,8 +84,10 @@ public abstract class kNNClassifier {
 			widths[i] = new ArrayList<>();
 			sum[i] = new ArrayList<>();
 		}
-		for (int i=0; i<k; i++) {
+		for (int i=0; i<k && i<kNN.length; i++) {
 			if ( kNN[i].category<0 ) continue;
+			// Don't count any votes for training samples too distant.
+			if ( kNN[i].distance > distanceThreshold ) break;
 			votes[kNN[i].category]++;
 			int[] features = X.get(kNN[i].corpusVectorIndex);
 			charPos[kNN[i].category].add(features[CollectFeatures.INDEX_PREV_END_COLUMN]);
@@ -85,7 +95,7 @@ public abstract class kNNClassifier {
 			sum[kNN[i].category].add(features[CollectFeatures.INDEX_PREV_END_COLUMN]+
 									 features[CollectFeatures.INDEX_ANCESTOR_WIDTH]);
 		}
-//		System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+Arrays.toString(votes));
+		System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+Arrays.toString(votes));
 //		System.out.println(Arrays.toString(charPos));
 //		System.out.println(Arrays.toString(widths));
 //		System.out.println(Arrays.toString(sum));
@@ -95,7 +105,7 @@ public abstract class kNNClassifier {
 	public Neighbor[] kNN(int k, int[] unknown) {
 		Neighbor[] distances = distances(k, unknown);
 		Arrays.sort(distances,
-					(Neighbor o1, Neighbor o2) -> Double.compare(o1.distance,o2.distance));
+		            (Neighbor o1, Neighbor o2) -> Double.compare(o1.distance,o2.distance));
 		return Arrays.copyOfRange(distances, 0, k);
 	}
 
