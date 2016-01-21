@@ -4,6 +4,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Tree;
+import org.antlr.v4.runtime.tree.Trees;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +38,7 @@ public class CollectFeatures extends JavaBaseListener {
 		true
 	};
 
+	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<int[]> features = new ArrayList<>();
 	protected List<Integer> injectNewlines = new ArrayList<>();
@@ -43,7 +46,8 @@ public class CollectFeatures extends JavaBaseListener {
 
 	protected int tabSize;
 
-	public CollectFeatures(CommonTokenStream tokens, int tabSize) {
+	public CollectFeatures(ParserRuleContext root, CommonTokenStream tokens, int tabSize) {
+		this.root = root;
 		this.tokens = tokens;
 		this.tabSize = tabSize;
 	}
@@ -59,7 +63,7 @@ public class CollectFeatures extends JavaBaseListener {
 			return;
 		}
 
-		int[] features = getNodeFeatures(tokens, node, tabSize);
+		int[] features = getNodeFeatures(root, tokens, node, tabSize);
 		Token prevToken = tokens.LT(-1);
 		boolean precedingNL = curToken.getLine() > prevToken.getLine();
 
@@ -77,7 +81,7 @@ public class CollectFeatures extends JavaBaseListener {
 	public static ParserRuleContext earliestAncestorStartingAtToken(ParserRuleContext node, Token token) {
 		ParserRuleContext p = node;
 		ParserRuleContext prev = null;
-		while (p!=null && p.getPayload()==token) {
+		while (p!=null && p.getStart()==token) {
 			prev = p;
 			p = p.getParent();
 		}
@@ -85,7 +89,21 @@ public class CollectFeatures extends JavaBaseListener {
 		return prev;
 	}
 
-	public static int[] getNodeFeatures(CommonTokenStream tokens, TerminalNode node, int tabSize) {
+	public static ParserRuleContext deepestCommonAncestor(ParserRuleContext t1, ParserRuleContext t2) {
+		if ( t1==t2 ) return t1;
+		List<? extends Tree> t1_ancestors = Trees.getAncestors(t1);
+		List<? extends Tree> t2_ancestors = Trees.getAncestors(t2);
+		// first ancestor of t2 that matches an ancestor of t1 is the deepest common ancestor
+		for (Tree t : t1_ancestors) {
+			int i = t2_ancestors.indexOf(t);
+			if ( i>=0 ) {
+				return (ParserRuleContext)t2_ancestors.get(i);
+			}
+		}
+		return null;
+	}
+
+	public static int[] getNodeFeatures(ParserRuleContext root, CommonTokenStream tokens, TerminalNode node, int tabSize) {
 		Token curToken = node.getSymbol();
 //		if ( curToken.getType()==Token.EOF ) return null;
 
@@ -119,10 +137,15 @@ public class CollectFeatures extends JavaBaseListener {
 			if ( precedingNL &&
 				alignedToken!=null &&
 				alignedToken!=tokensOnPreviousLine.get(0) &&
-				!tabbed ) {
+				!tabbed )
+			{
 				// if cur token is on new line and it lines up and it's not left edge,
 				// it's alignment not 0 indent
 				printAlignment(tokens, curToken, tokensOnPreviousLine, alignedToken);
+				System.out.println("earliest: "+JavaParser.ruleNames[earliestAncestorRuleIndex]);
+				ParserRuleContext commonAncestor = Trees.getRootOfSubtreeEnclosingRegion(root, alignedToken.getTokenIndex(), curToken.getTokenIndex());
+				System.out.println("common ancestor: "+JavaParser.ruleNames[commonAncestor.getRuleIndex()]);
+
 			}
 		}
 

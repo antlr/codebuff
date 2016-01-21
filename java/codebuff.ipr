@@ -211,6 +211,7 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr4-runtime/4.5.1/antlr4-runtime-4.5.1-sources.jar!/" />
+        <root url="file://$PROJECT_DIR$/../../antlr4/runtime/Java/src" />
       </SOURCES>
     </library>
     <library name="Maven: org.hamcrest:hamcrest-core:1.3">

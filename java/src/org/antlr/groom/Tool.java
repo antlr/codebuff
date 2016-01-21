@@ -52,7 +52,7 @@ public class Tool {
 	 */
 	public static String format(Corpus corpus, InputDocument testDoc, int tabSize) throws Exception {
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
-		Formatter formatter = new Formatter(corpus, testDoc.tokens, tabSize);
+		Formatter formatter = new Formatter(corpus, testDoc.tree, testDoc.tokens, tabSize);
 		ParseTreeWalker.DEFAULT.walk(formatter, testDoc.tree);
 		return formatter.getOutput();
 	}
@@ -107,7 +107,7 @@ public class Tool {
 	{
 		parse(doc, lexerClass, parserClass, startRuleName);
 
-		CollectFeatures collect = new CollectFeatures(doc.tokens, tabSize);
+		CollectFeatures collect = new CollectFeatures(doc.tree, doc.tokens, tabSize);
 		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
 		doc.features = collect.getFeatures();
 		doc.injectNewlines = collect.getInjectNewlines();

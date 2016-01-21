@@ -1,6 +1,7 @@
 package org.antlr.groom;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -8,6 +9,7 @@ public class Formatter extends JavaBaseListener {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.4; // anything more than 40% different is probably too far
 
 	protected StringBuilder output = new StringBuilder();
+	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected kNNClassifier newlineClassifier;
 	protected kNNClassifier wsClassifier;
@@ -18,7 +20,8 @@ public class Formatter extends JavaBaseListener {
 
 	protected int tabSize;
 
-	public Formatter(Corpus corpus, CommonTokenStream tokens, int tabSize) {
+	public Formatter(Corpus corpus, ParserRuleContext root, CommonTokenStream tokens, int tabSize) {
+		this.root = root;
 		this.tokens = tokens;
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new InjectNewlinesClassifier(corpus.X,
@@ -49,7 +52,7 @@ public class Formatter extends JavaBaseListener {
 
 		String tokText = curToken.getText();
 
-		int[] features = CollectFeatures.getNodeFeatures(tokens, node, tabSize);
+		int[] features = CollectFeatures.getNodeFeatures(root, tokens, node, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
