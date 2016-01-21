@@ -10,7 +10,7 @@
 	<version>0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Groom Computer Language Formatter</name>
+	<name>CodeBuff Computer Language Formatter</name>
 	<description>Pretty-printing, formatting.</description>
 	<url>http://www.antlr.org</url>
 	<organization>
