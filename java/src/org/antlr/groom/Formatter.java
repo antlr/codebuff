@@ -16,7 +16,9 @@ public class Formatter extends JavaBaseListener {
 	protected int line = 1;
 	protected int charPosInLine = 0;
 
-	public Formatter(Corpus corpus, CommonTokenStream tokens) {
+	protected int tabSize;
+
+	public Formatter(Corpus corpus, CommonTokenStream tokens, int tabSize) {
 		this.tokens = tokens;
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new InjectNewlinesClassifier(corpus.X,
@@ -26,6 +28,7 @@ public class Formatter extends JavaBaseListener {
 											  corpus.injectWS,
 											  CollectFeatures.CATEGORICAL);
 		k = (int)Math.sqrt(corpus.X.size());
+		this.tabSize = tabSize;
 	}
 
 	public String getOutput() {
@@ -46,7 +49,7 @@ public class Formatter extends JavaBaseListener {
 
 		String tokText = curToken.getText();
 
-		int[] features = CollectFeatures.getNodeFeatures(tokens, node);
+		int[] features = CollectFeatures.getNodeFeatures(tokens, node, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;

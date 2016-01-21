@@ -7,7 +7,7 @@ import java.util.List;
 
 public class InputDocument {
 	public String fileName;
-	public char[] content;
+	public String content;
 	public int index;
 	public ParserRuleContext tree;
 	public CommonTokenStream tokens;
@@ -21,14 +21,14 @@ public class InputDocument {
 		this.index = index;
 	}
 
-	public InputDocument(String fileName, char[] content) {
+	public InputDocument(String fileName, String content) {
 		this.content = content;
 		this.fileName = fileName;
 	}
 
 	@Override
 	public String toString() {
-		return fileName+"["+content.length+"]"+"@"+index;
+		return fileName+"["+content.length()+"]"+"@"+index;
 	}
 }
 

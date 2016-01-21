@@ -20,13 +20,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments skipped or on non-HIDDEN channel */
 public class Tool {
-	public static boolean showFileNames = true;
+	public static boolean showFileNames = false;
 	public static boolean showTokens = false;
 
 	public static void main(String[] args)
@@ -35,28 +38,29 @@ public class Tool {
 		if ( args.length<2 ) {
 			System.err.println("ExtractFeatures root-dir-of-samples test-file");
 		}
+		int tabSize = 4; // TODO: MAKE AN ARGUMENT
 		String corpusDir = args[0];
 		String testFilename = args[1];
-		Corpus corpus = train(corpusDir);
-		InputDocument testDoc = load(testFilename);
-		String output = format(corpus, testDoc);
+		Corpus corpus = train(corpusDir, tabSize);
+		InputDocument testDoc = load(testFilename, tabSize);
+		String output = format(corpus, testDoc, tabSize);
 		System.out.println(output);
 	}
 
 	/** Given a corpus, format the document by tokenizing and using the
 	 *  corpus to locate newline and whitespace injection points.
 	 */
-	public static String format(Corpus corpus, InputDocument testDoc) throws Exception {
+	public static String format(Corpus corpus, InputDocument testDoc, int tabSize) throws Exception {
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
-		Formatter formatter = new Formatter(corpus, testDoc.tokens);
+		Formatter formatter = new Formatter(corpus, testDoc.tokens, tabSize);
 		ParseTreeWalker.DEFAULT.walk(formatter, testDoc.tree);
 		return formatter.getOutput();
 	}
 
-	public static Corpus train(String rootDir) throws Exception {
+	public static Corpus train(String rootDir, int tabSize) throws Exception {
 		List<String> allFiles = getFilenames(new File(rootDir), ".*\\.java");
-		List<InputDocument> documents = load(allFiles);
-		return processSampleDocs(documents);
+		List<InputDocument> documents = load(allFiles, tabSize);
+		return processSampleDocs(documents, tabSize);
 	}
 
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
@@ -74,7 +78,7 @@ public class Tool {
 		bw.close();
 	}
 
-	public static Corpus processSampleDocs(List<InputDocument> docs)
+	public static Corpus processSampleDocs(List<InputDocument> docs, int tabSize)
 		throws Exception
 	{
 		List<int[]> featureVectors = new ArrayList<>();
@@ -82,7 +86,7 @@ public class Tool {
 		List<Integer> injectWS = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc, JavaLexer.class, JavaParser.class, "compilationUnit");
+			process(doc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 			for (int i=0; i<doc.features.size(); i++) {
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
@@ -97,12 +101,13 @@ public class Tool {
 	public static void process(InputDocument doc,
 							   Class<? extends Lexer> lexerClass,
 							   Class<? extends Parser> parserClass,
-							   String startRuleName)
+							   String startRuleName,
+							   int tabSize)
 		throws Exception
 	{
 		parse(doc, lexerClass, parserClass, startRuleName);
 
-		CollectFeatures collect = new CollectFeatures(doc.tokens);
+		CollectFeatures collect = new CollectFeatures(doc.tokens, tabSize);
 		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
 		doc.features = collect.getFeatures();
 		doc.injectNewlines = collect.getInjectNewlines();
@@ -129,7 +134,7 @@ public class Tool {
 							 String startRuleName)
 		throws Exception
 	{
-		ANTLRInputStream input = new ANTLRInputStream(doc.content, doc.content.length);
+		ANTLRInputStream input = new ANTLRInputStream(doc.content);
 		Constructor<? extends Lexer> lexerCtor =
 			lexerClass.getConstructor(CharStream.class);
 		Lexer lexer = lexerCtor.newInstance(input);
@@ -156,11 +161,11 @@ public class Tool {
 	}
 
 	/** Get all file contents into input array */
-	public static List<InputDocument> load(List<String> fileNames) throws IOException {
+	public static List<InputDocument> load(List<String> fileNames, int tabSize) throws IOException {
 		List<InputDocument> input = new ArrayList<InputDocument>(fileNames.size());
 		int i = 0;
 		for (String f : fileNames) {
-			InputDocument doc = load(f);
+			InputDocument doc = load(f, tabSize);
 			doc.index = i++;
 			input.add(doc);
 		}
@@ -168,25 +173,11 @@ public class Tool {
 		return input;
 	}
 
-	public static InputDocument load(String fileName) throws IOException {
-		File f = new File(fileName);
-		int size = (int)f.length();
-		FileInputStream fis = new FileInputStream(fileName);
-		InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
-		char[] data = null;
-		long numRead = 0;
-		try {
-			data = new char[size];
-			numRead = isr.read(data);
-		}
-		finally {
-			isr.close();
-		}
-		if ( numRead != size ) {
-			data = Arrays.copyOf(data, (int) numRead);
-//			System.err.println("read error; read="+numRead+"!="+f.length()());
-		}
-		return new InputDocument(fileName, data);
+	public static InputDocument load(String fileName, int tabSize) throws IOException {
+		Path path = FileSystems.getDefault().getPath(fileName);
+		byte[] filearray = Files.readAllBytes(path);
+		String content = new String(filearray);
+		return new InputDocument(fileName, expandTabs(content, tabSize));
 	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
@@ -348,5 +339,34 @@ public class Tool {
 		int ws_distance = Tool.levenshteinDistance(original_text_with_ws, formatted);
 		float normalized_ws_distance = ((float) ws_distance)/max_ws;
 		return normalized_ws_distance;
+	}
+
+	public static String spaces(int n) {
+		StringBuilder buf = new StringBuilder();
+		for (int sp=1; sp<=n; sp++) buf.append(" ");
+		return buf.toString();
+	}
+
+	public static String expandTabs(String s, int tabSize) {
+		if ( s==null ) return null;
+		StringBuilder buf = new StringBuilder();
+		int col = 0;
+		for (int i = 0; i<s.length(); i++) {
+			char c = s.charAt(i);
+			switch ( c ) {
+				case '\n' :
+					col = 0;
+					buf.append(c);
+					break;
+				case '\t' :
+					buf.append(spaces(tabSize - col % tabSize));
+					break;
+				default :
+					col++;
+					buf.append(c);
+					break;
+			}
+		}
+		return buf.toString();
 	}
 }

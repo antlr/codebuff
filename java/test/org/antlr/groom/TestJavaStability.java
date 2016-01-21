@@ -31,10 +31,10 @@ public class TestJavaStability {
 
 	@Test
 	public void testStability() throws Exception {
-		Corpus corpus = Tool.train(fileName);
-		InputDocument testDoc = Tool.load(fileName);
-		String output = Tool.format(corpus, testDoc);
-		double d = Tool.docDiff(new String(testDoc.content), output, JavaLexer.class);
+		Corpus corpus = Tool.train(fileName, 4);
+		InputDocument testDoc = Tool.load(fileName, 4);
+		String output = Tool.format(corpus, testDoc, 4);
+		double d = Tool.docDiff(testDoc.content, output, JavaLexer.class);
 		System.out.println("Diff is "+d);
 		System.out.println(output);
 		assertTrue(d<0.05);

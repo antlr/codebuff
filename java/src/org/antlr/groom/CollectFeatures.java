@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /*
@@ -40,8 +41,11 @@ public class CollectFeatures extends JavaBaseListener {
 	protected List<Integer> injectNewlines = new ArrayList<>();
 	protected List<Integer> injectWS = new ArrayList<>();
 
-	public CollectFeatures(CommonTokenStream tokens) {
+	protected int tabSize;
+
+	public CollectFeatures(CommonTokenStream tokens, int tabSize) {
 		this.tokens = tokens;
+		this.tabSize = tabSize;
 	}
 
 	@Override
@@ -55,7 +59,7 @@ public class CollectFeatures extends JavaBaseListener {
 			return;
 		}
 
-		int[] features = getNodeFeatures(tokens, node);
+		int[] features = getNodeFeatures(tokens, node, tabSize);
 		Token prevToken = tokens.LT(-1);
 		boolean precedingNL = curToken.getLine() > prevToken.getLine();
 
@@ -81,12 +85,12 @@ public class CollectFeatures extends JavaBaseListener {
 		return prev;
 	}
 
-	public static int[] getNodeFeatures(CommonTokenStream tokens, TerminalNode node) {
+	public static int[] getNodeFeatures(CommonTokenStream tokens, TerminalNode node, int tabSize) {
 		Token curToken = node.getSymbol();
 //		if ( curToken.getType()==Token.EOF ) return null;
 
 		int i = curToken.getTokenIndex();
-		tokens.seek(i); // see so that LT(1) is tokens.get(i);
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 //		if ( tokens.LT(-2)==null ) { // do we have 2 previous tokens?
 //			return null;
 //		}
@@ -102,6 +106,26 @@ public class CollectFeatures extends JavaBaseListener {
 		int earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, i);
+		// look for alignment
+		if ( tokensOnPreviousLine.size()>0 ) {
+			Token alignedToken = findAlignedToken(tokensOnPreviousLine, curToken);
+			tokens.seek(i); // seek so that LT(1) is tokens.get(i);
+			Token prevToken = tokens.LT(-1);
+			int prevIndent = tokensOnPreviousLine.get(0).getCharPositionInLine();
+			int curIndent = curToken.getCharPositionInLine();
+			boolean tabbed = curIndent>prevIndent && curIndent%tabSize==0;
+			boolean precedingNL = curToken.getLine()>prevToken.getLine();
+			if ( precedingNL &&
+				alignedToken!=null &&
+				alignedToken!=tokensOnPreviousLine.get(0) &&
+				!tabbed ) {
+				// if cur token is on new line and it lines up and it's not left edge,
+				// it's alignment not 0 indent
+				printAlignment(tokens, curToken, tokensOnPreviousLine, alignedToken);
+			}
+		}
+
 		return new int[] {
 			window.get(0).getType(),
 			window.get(1).getType(), prevTokenEndCharPos,
@@ -110,15 +134,59 @@ public class CollectFeatures extends JavaBaseListener {
 		};
 	}
 
-//	public static Token getPreviousToken(CommonTokenStream tokens, int tokIndex) {
-//		for (int i=tokIndex-1; i>=0; i--) {
-//			Token t = tokens.get(i);
-//			if ( t.getChannel()==Token.DEFAULT_CHANNEL ) {
-//				return t;
-//			}
-//		}
-//		return null; // no such token
-//	}
+	public static Token findAlignedToken(List<Token> tokens, Token leftEdgeToken) {
+		for (Token t : tokens) {
+			if ( t.getCharPositionInLine() == leftEdgeToken.getCharPositionInLine() ) {
+				return t;
+			}
+		}
+		return null;
+	}
+
+	/** Search backwards from tokIndex into 'tokens' stream and get all on-channel
+	 *  tokens on previous line with respect to token at tokIndex.
+	 *  return empty list if none found. First token in returned list is
+	 *  the first token on the line.
+	 */
+	public static List<Token> getTokensOnPreviousLine(CommonTokenStream tokens, int tokIndex) {
+		// first find previous line by looking for real token on line < tokens.get(i)
+		Token curToken = tokens.get(tokIndex);
+		int curLine = curToken.getLine();
+		int prevLine = 0;
+		for (int i=tokIndex-1; i>=0; i--) {
+			Token t = tokens.get(i);
+			if ( t.getChannel()==Token.DEFAULT_CHANNEL && t.getLine()<curLine ) {
+				prevLine = t.getLine();
+				tokIndex = i; // start collecting at this index
+				break;
+			}
+		}
+
+		// Now collect the on-channel real tokens for this line
+		List<Token> online = new ArrayList<>();
+		for (int i=tokIndex; i>=0; i--) {
+			Token t = tokens.get(i);
+			if ( t.getLine()<prevLine ) break; // found last token on that previous line
+			if ( t.getChannel()==Token.DEFAULT_CHANNEL && t.getLine()==prevLine ) {
+				online.add(t);
+			}
+		}
+		Collections.reverse(online);
+		return online;
+	}
+
+	public static void printAlignment(CommonTokenStream tokens, Token curToken, List<Token> tokensOnPreviousLine, Token alignedToken) {
+		int alignedCol = alignedToken.getCharPositionInLine();
+		int indent = tokensOnPreviousLine.get(0).getCharPositionInLine();
+		int first = tokensOnPreviousLine.get(0).getTokenIndex();
+		int last = tokensOnPreviousLine.get(tokensOnPreviousLine.size()-1).getTokenIndex();
+		System.out.println(Tool.spaces(alignedCol-indent)+"\u2193");
+		for (int j=first; j<=last; j++) {
+			System.out.print(tokens.get(j).getText());
+		}
+		System.out.println();
+		System.out.println(Tool.spaces(alignedCol-indent)+curToken.getText());
+	}
 
 	public List<int[]> getFeatures() {
 		return features;
