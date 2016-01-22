@@ -14,17 +14,14 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments skipped or on non-HIDDEN channel */
@@ -84,17 +81,21 @@ public class Tool {
 		List<int[]> featureVectors = new ArrayList<>();
 		List<Integer> injectNewlines = new ArrayList<>();
 		List<Integer> injectWS = new ArrayList<>();
+		List<Integer> indent = new ArrayList<>();
+		List<Integer> levelsToCommonAncestor = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			process(doc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 			for (int i=0; i<doc.features.size(); i++) {
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
+				indent.add(doc.indent.get(i));
+				levelsToCommonAncestor.add(doc.levelsToCommonAncestor.get(i));
 				featureVectors.add(doc.features.get(i));
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(featureVectors, injectNewlines, injectWS);
+		return new Corpus(featureVectors, injectNewlines, injectWS, indent, levelsToCommonAncestor);
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
@@ -112,6 +113,8 @@ public class Tool {
 		doc.features = collect.getFeatures();
 		doc.injectNewlines = collect.getInjectNewlines();
 		doc.injectWS = collect.getInjectWS();
+		doc.indent = collect.getIndent();
+		doc.levelsToCommonAncestor = collect.getLevelsToCommonAncestor();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
@@ -337,7 +340,7 @@ public class Tool {
 		int formatted_ws = formatted.length() - non_ws;
 		int max_ws = Math.max(original_ws, formatted_ws);
 		int ws_distance = Tool.levenshteinDistance(original_text_with_ws, formatted);
-		float normalized_ws_distance = ((float) ws_distance)/max_ws;
+		double normalized_ws_distance = ((float) ws_distance)/max_ws;
 		return normalized_ws_distance;
 	}
 
@@ -369,4 +372,15 @@ public class Tool {
 		}
 		return buf.toString();
 	}
+
+//	public static class Foo {
+//		public static void main(String[] args) {
+//			String s =
+//			"                            noSuchAttributeReported = true;\n"+
+//			"                            errMgr.runTimeError(this, scope,\n"+
+//			"                                                ErrorType.NO_SUCH_ATTRIBUTE,\n"+
+//			"                                                argument.getKey());\n";
+//			System.out.println(expandTabs(s, 4));
+//		}
+//	}
 }

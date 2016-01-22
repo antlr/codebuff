@@ -14,6 +14,8 @@ public class InputDocument {
 	public List<int[]> features;
 	public List<Integer> injectNewlines;
 	public List<Integer> injectWS;
+	public List<Integer> indent;
+	public List<Integer> levelsToCommonAncestor;
 
 	public InputDocument(InputDocument d, int index) {
 		this.fileName = d.fileName;

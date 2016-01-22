@@ -43,6 +43,10 @@ public class CollectFeatures extends JavaBaseListener {
 	protected List<int[]> features = new ArrayList<>();
 	protected List<Integer> injectNewlines = new ArrayList<>();
 	protected List<Integer> injectWS = new ArrayList<>();
+	protected List<Integer> indent = new ArrayList<>();
+	/** steps to common ancestor whose first token is alignment anchor */
+	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
+	protected Token firstTokenOnLine = null;
 
 	protected int tabSize;
 
@@ -63,18 +67,76 @@ public class CollectFeatures extends JavaBaseListener {
 			return;
 		}
 
-		int[] features = getNodeFeatures(root, tokens, node, tabSize);
+		int[] features = getNodeFeatures(tokens, node, tabSize);
 		Token prevToken = tokens.LT(-1);
 		boolean precedingNL = curToken.getLine() > prevToken.getLine();
-
 //		System.out.printf("%5s: ", precedingNL);
 //		System.out.printf("%s\n", Tool.toString(features));
 		this.injectNewlines.add(precedingNL ? 1 : 0);
-		int ws = curToken.getCharPositionInLine() -
-			(prevToken.getCharPositionInLine()+prevToken.getText().length());
+
+		int columnDelta = 0;
+		int ws = 0;
+		int levelsToCommonAncestor = 0;
+		if ( precedingNL ) {
+			if ( firstTokenOnLine!=null ) {
+				columnDelta = curToken.getCharPositionInLine() - firstTokenOnLine.getCharPositionInLine();
+			}
+			firstTokenOnLine = curToken;
+			ParserRuleContext commonAncestor = getFirstTokenOfCommonAncestor(root, tokens, i, tabSize);
+			List<? extends Tree> ancestors = Trees.getAncestors(node);
+			Collections.reverse(ancestors);
+			levelsToCommonAncestor = ancestors.indexOf(commonAncestor);
+		}
+		else {
+			ws = curToken.getCharPositionInLine() -
+				(prevToken.getCharPositionInLine()+prevToken.getText().length());
+		}
+
+		this.indent.add(columnDelta);
 
 		this.injectWS.add(ws); // likely negative if precedingNL
+
+		this.levelsToCommonAncestor.add(levelsToCommonAncestor);
+
 		this.features.add(features);
+	}
+
+	/** Return number of steps to common ancestor whose first token is alignment anchor.
+	 *  Return null if no such common ancestor.
+	 */
+	public static ParserRuleContext getFirstTokenOfCommonAncestor(
+		ParserRuleContext root,
+		CommonTokenStream tokens,
+		int tokIndex,
+		int tabSize)
+	{
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokIndex);
+		// look for alignment
+		if ( tokensOnPreviousLine.size()>0 ) {
+			Token curToken = tokens.get(tokIndex);
+			Token alignedToken = findAlignedToken(tokensOnPreviousLine, curToken);
+			tokens.seek(tokIndex); // seek so that LT(1) is tokens.get(i);
+			Token prevToken = tokens.LT(-1);
+			int prevIndent = tokensOnPreviousLine.get(0).getCharPositionInLine();
+			int curIndent = curToken.getCharPositionInLine();
+			boolean tabbed = curIndent>prevIndent && curIndent%tabSize==0;
+			boolean precedingNL = curToken.getLine()>prevToken.getLine();
+			if ( precedingNL &&
+				alignedToken!=null &&
+				alignedToken!=tokensOnPreviousLine.get(0) &&
+				!tabbed ) {
+				// if cur token is on new line and it lines up and it's not left edge,
+				// it's alignment not 0 indent
+//				printAlignment(tokens, curToken, tokensOnPreviousLine, alignedToken);
+				ParserRuleContext commonAncestor = Trees.getRootOfSubtreeEnclosingRegion(root, alignedToken.getTokenIndex(), curToken.getTokenIndex());
+//				System.out.println("common ancestor: "+JavaParser.ruleNames[commonAncestor.getRuleIndex()]);
+				if ( commonAncestor.getStart()==alignedToken ) {
+					// aligned with first token of common ancestor
+					return commonAncestor;
+				}
+			}
+		}
+		return null;
 	}
 
 	/** Walk upwards from node while p.start == token */
@@ -103,15 +165,11 @@ public class CollectFeatures extends JavaBaseListener {
 		return null;
 	}
 
-	public static int[] getNodeFeatures(ParserRuleContext root, CommonTokenStream tokens, TerminalNode node, int tabSize) {
+	public static int[] getNodeFeatures(CommonTokenStream tokens, TerminalNode node, int tabSize) {
 		Token curToken = node.getSymbol();
-//		if ( curToken.getType()==Token.EOF ) return null;
 
 		int i = curToken.getTokenIndex();
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-//		if ( tokens.LT(-2)==null ) { // do we have 2 previous tokens?
-//			return null;
-//		}
 
 		// Get a 4-gram of tokens with current token in 3rd position
 		List<Token> window =
@@ -123,31 +181,6 @@ public class CollectFeatures extends JavaBaseListener {
 		int earliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
 		int earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
-
-		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, i);
-		// look for alignment
-		if ( tokensOnPreviousLine.size()>0 ) {
-			Token alignedToken = findAlignedToken(tokensOnPreviousLine, curToken);
-			tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-			Token prevToken = tokens.LT(-1);
-			int prevIndent = tokensOnPreviousLine.get(0).getCharPositionInLine();
-			int curIndent = curToken.getCharPositionInLine();
-			boolean tabbed = curIndent>prevIndent && curIndent%tabSize==0;
-			boolean precedingNL = curToken.getLine()>prevToken.getLine();
-			if ( precedingNL &&
-				alignedToken!=null &&
-				alignedToken!=tokensOnPreviousLine.get(0) &&
-				!tabbed )
-			{
-				// if cur token is on new line and it lines up and it's not left edge,
-				// it's alignment not 0 indent
-				printAlignment(tokens, curToken, tokensOnPreviousLine, alignedToken);
-				System.out.println("earliest: "+JavaParser.ruleNames[earliestAncestorRuleIndex]);
-				ParserRuleContext commonAncestor = Trees.getRootOfSubtreeEnclosingRegion(root, alignedToken.getTokenIndex(), curToken.getTokenIndex());
-				System.out.println("common ancestor: "+JavaParser.ruleNames[commonAncestor.getRuleIndex()]);
-
-			}
-		}
 
 		return new int[] {
 			window.get(0).getType(),
@@ -221,5 +254,13 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public List<Integer> getInjectWS() {
 		return injectWS;
+	}
+
+	public List<Integer> getLevelsToCommonAncestor() {
+		return levelsToCommonAncestor;
+	}
+
+	public List<Integer> getIndent() {
+		return indent;
 	}
 }

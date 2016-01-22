@@ -1,6 +1,7 @@
 package org.antlr.groom;
 
 import org.antlr.v4.runtime.misc.Utils;
+import org.apache.commons.collections4.Bag;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -153,23 +154,32 @@ public class TestkNN {
 	public void testVotesT0T0() {
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T0, T0};
-		int[] votes = c.votes(X.size(), unknown);
-		assertEquals("[1, 5, 3]", Arrays.toString(votes)); // all categories are equally voted for given X and k=len(X)
+		Bag<Integer> votes = c.votes(X.size(), unknown);
+		assertEquals("[1, 5, 3]", Arrays.toString(getCounts(votes))); // all categories are equally voted for given X and k=len(X)
 
 		votes = c.votes(1, unknown);
-		assertEquals("[1, 0, 0]", Arrays.toString(votes));
+		assertEquals("[1]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(2, unknown);
-		assertEquals("[1, 1, 0]", Arrays.toString(votes));
+		assertEquals("[1, 1]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(3, unknown);
-		assertEquals("[1, 1, 1]", Arrays.toString(votes));
+		assertEquals("[1, 1, 1]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(4, unknown);
-		assertEquals("[1, 2, 1]", Arrays.toString(votes));
+		assertEquals("[1, 2, 1]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(5, unknown);
-		assertEquals("[1, 3, 1]", Arrays.toString(votes));
+		assertEquals("[1, 3, 1]", Arrays.toString(getCounts(votes)));
+	}
+
+	public int[] getCounts(Bag<Integer> votes) {
+		int[] votesA = new int[votes.size()];
+		for (Integer v : votes.uniqueSet()) {
+			int count = votes.getCount(v);
+			votesA[v] = count;
+		}
+		return votesA;
 	}
 
 	@Test
@@ -223,23 +233,23 @@ public class TestkNN {
 	public void testVotesT1T0() {
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T1, T0};
-		int[] votes = c.votes(X.size(), unknown);
-		assertEquals("[1, 5, 3]", Arrays.toString(votes)); // all categories are equally voted for given X and k=len(X)
+		Bag<Integer> votes = c.votes(X.size(), unknown);
+		assertEquals("[1, 5, 3]", Arrays.toString(getCounts(votes))); // all categories are equally voted for given X and k=len(X)
 
 		votes = c.votes(1, unknown);
-		assertEquals("[0, 1, 0]", Arrays.toString(votes));
+		assertEquals("[0, 1, 0]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(2, unknown);
-		assertEquals("[1, 1, 0]", Arrays.toString(votes));
+		assertEquals("[1, 1, 0]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(3, unknown);
-		assertEquals("[1, 2, 0]", Arrays.toString(votes));
+		assertEquals("[1, 2, 0]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(4, unknown);
-		assertEquals("[1, 2, 1]", Arrays.toString(votes));
+		assertEquals("[1, 2, 1]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(5, unknown);
-		assertEquals("[1, 3, 1]", Arrays.toString(votes));
+		assertEquals("[1, 3, 1]", Arrays.toString(getCounts(votes)));
 	}
 
 
