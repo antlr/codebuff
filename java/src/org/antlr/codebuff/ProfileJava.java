@@ -1,4 +1,4 @@
-package org.antlr.groom;
+package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;

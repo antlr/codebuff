@@ -1,4 +1,4 @@
-package org.antlr.groom;
+package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -93,6 +93,7 @@ public class CollectFeatures extends JavaBaseListener {
 		}
 
 		this.indent.add(columnDelta);
+		System.out.println(" indent "+columnDelta);
 
 		this.injectWS.add(ws); // likely negative if precedingNL
 
@@ -182,12 +183,14 @@ public class CollectFeatures extends JavaBaseListener {
 		int earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
-		return new int[] {
+		int[] features = {
 			window.get(0).getType(),
 			window.get(1).getType(), prevTokenEndCharPos,
 			window.get(2).getType(), earliestAncestorRuleIndex, earliestAncestorWidth,
 			window.get(3).getType(),
 		};
+//		System.out.print(curToken+": "+CodekNNClassifier._toString(features));
+		return features;
 	}
 
 	public static Token findAlignedToken(List<Token> tokens, Token leftEdgeToken) {

@@ -1,9 +1,5 @@
-package org.antlr.groom;
+package org.antlr.codebuff;
 
-import org.apache.commons.collections4.Bag;
-import org.apache.commons.collections4.bag.HashBag;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +11,7 @@ public abstract class kNNClassifier {
 	protected List<Integer> Y;
 	protected boolean[] categorical;
 //	public final int numCategories;
+	public boolean dumpVotes = false;
 
 	public static class Neighbor {
 		public final int category;
@@ -62,12 +59,12 @@ public abstract class kNNClassifier {
 	 *  integer (and 0).
 	 */
 	public int classify(int k, int[] unknown, double distanceThreshold) {
-		Bag<Integer> votes = votes(k, unknown, distanceThreshold);
+		HashBag<Integer> votes = votes(k, unknown, distanceThreshold);
 		int max = Integer.MIN_VALUE;
 		int catWithMostVotes = 0;
-		for (Integer category : votes) {
-			if ( category > max ) {
-				max = category;
+		for (Integer category : votes.keySet()) {
+			if ( votes.get(category) > max ) {
+				max = votes.get(category);
 				catWithMostVotes = category;
 			}
 		}
@@ -75,14 +72,14 @@ public abstract class kNNClassifier {
 		return catWithMostVotes;
 	}
 
-	public Bag<Integer> votes(int k, int[] unknown) {
+	public HashBag<Integer> votes(int k, int[] unknown) {
 		return votes(k, unknown, 1.0);
 	}
 
-	public Bag<Integer> votes(int k, int[] unknown, double distanceThreshold) {
+	public HashBag<Integer> votes(int k, int[] unknown, double distanceThreshold) {
 		Neighbor[] kNN = kNN(k, unknown);
 		// each neighbor gets a vote
-		Bag<Integer> votes = new HashBag<>();
+		HashBag<Integer> votes = new HashBag<>();
 		Map<Integer, List<Integer>> charPos = new HashMap<>();
 		Map<Integer, List<Integer>> widths = new HashMap<>();
 		Map<Integer, List<Integer>> sum = new HashMap<>();
@@ -99,7 +96,9 @@ public abstract class kNNClassifier {
 //			sum[kNN[i].category].add(features[CollectFeatures.INDEX_PREV_END_COLUMN]+
 //									 features[CollectFeatures.INDEX_ANCESTOR_WIDTH]);
 		}
-//		System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+votes);
+		if ( dumpVotes ) {
+			System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+votes);
+		}
 //		System.out.println(Arrays.toString(charPos));
 //		System.out.println(Arrays.toString(widths));
 //		System.out.println(Arrays.toString(sum));

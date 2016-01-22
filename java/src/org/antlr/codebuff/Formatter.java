@@ -1,14 +1,9 @@
-package org.antlr.groom;
+package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.Tree;
-import org.antlr.v4.runtime.tree.Trees;
-
-import java.util.Collections;
-import java.util.List;
 
 public class Formatter extends JavaBaseListener {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.4; // anything more than 40% different is probably too far
@@ -42,6 +37,7 @@ public class Formatter extends JavaBaseListener {
 		indentClassifier = new CodekNNClassifier(corpus.X,
 												 corpus.indent,
 												 CollectFeatures.CATEGORICAL);
+		indentClassifier.dumpVotes = true;
 
 		alignClassifier = new CodekNNClassifier(corpus.X,
 												corpus.levelsToCommonAncestor,

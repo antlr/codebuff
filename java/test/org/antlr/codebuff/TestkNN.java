@@ -1,7 +1,6 @@
-package org.antlr.groom;
+package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.misc.Utils;
-import org.apache.commons.collections4.Bag;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -154,14 +153,14 @@ public class TestkNN {
 	public void testVotesT0T0() {
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T0, T0};
-		Bag<Integer> votes = c.votes(X.size(), unknown);
+		HashBag<Integer> votes = c.votes(X.size(), unknown);
 		assertEquals("[1, 5, 3]", Arrays.toString(getCounts(votes))); // all categories are equally voted for given X and k=len(X)
 
 		votes = c.votes(1, unknown);
-		assertEquals("[1]", Arrays.toString(getCounts(votes)));
+		assertEquals("[1, 0, 0]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(2, unknown);
-		assertEquals("[1, 1]", Arrays.toString(getCounts(votes)));
+		assertEquals("[1, 1, 0]", Arrays.toString(getCounts(votes)));
 
 		votes = c.votes(3, unknown);
 		assertEquals("[1, 1, 1]", Arrays.toString(getCounts(votes)));
@@ -173,11 +172,10 @@ public class TestkNN {
 		assertEquals("[1, 3, 1]", Arrays.toString(getCounts(votes)));
 	}
 
-	public int[] getCounts(Bag<Integer> votes) {
-		int[] votesA = new int[votes.size()];
-		for (Integer v : votes.uniqueSet()) {
-			int count = votes.getCount(v);
-			votesA[v] = count;
+	public int[] getCounts(HashBag<Integer> votes) {
+		int[] votesA = new int[3];
+		for (Integer I : votes.keySet()) {
+			votesA[I] = votes.get(I);
 		}
 		return votesA;
 	}
@@ -233,7 +231,7 @@ public class TestkNN {
 	public void testVotesT1T0() {
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T1, T0};
-		Bag<Integer> votes = c.votes(X.size(), unknown);
+		HashBag<Integer> votes = c.votes(X.size(), unknown);
 		assertEquals("[1, 5, 3]", Arrays.toString(getCounts(votes))); // all categories are equally voted for given X and k=len(X)
 
 		votes = c.votes(1, unknown);

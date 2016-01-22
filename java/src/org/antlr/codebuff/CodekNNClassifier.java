@@ -1,9 +1,7 @@
-package org.antlr.groom;
+package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.Vocabulary;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -51,6 +49,10 @@ public class CodekNNClassifier extends kNNClassifier {
 	}
 
 	public String toString(int[] features) {
+		return _toString(features);
+	}
+
+	public static String _toString(int[] features) {
 		Vocabulary v = JavaParser.VOCABULARY;
 		return String.format(
 			"%s %s %d %s, %s %d %s",
