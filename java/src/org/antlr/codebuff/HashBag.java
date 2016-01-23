@@ -21,6 +21,11 @@ public class HashBag<T> implements Map<T, Integer> {
 		public void inc() { i++; }
 
 		public int asInt() { return i; }
+
+		@Override
+		public String toString() {
+			return String.valueOf(i);
+		}
 	}
 
 	@Override
@@ -103,5 +108,10 @@ public class HashBag<T> implements Map<T, Integer> {
 	@Override
 	public Set<Entry<T, Integer>> entrySet() {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public String toString() {
+		return data.toString();
 	}
 }

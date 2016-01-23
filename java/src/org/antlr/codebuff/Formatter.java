@@ -1,12 +1,16 @@
 package org.antlr.codebuff;
 
+import org.antlr.groom.JavaBaseListener;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.Collections;
+import java.util.List;
+
 public class Formatter extends JavaBaseListener {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.4; // anything more than 40% different is probably too far
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.1; // anything more than 10% different is probably too far
 
 	protected StringBuilder output = new StringBuilder();
 	protected ParserRuleContext root;
@@ -56,11 +60,11 @@ public class Formatter extends JavaBaseListener {
 		if ( curToken.getType()==Token.EOF ) return;
 
 		int i = curToken.getTokenIndex();
-		tokens.seek(i); // see so that LT(1) is tokens.get(i);
-		if ( tokens.LT(-2)==null ) { // do we have 2 previous tokens?
-			output.append(curToken.getText());
+		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) {
 			return;
 		}
+
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 
 		String tokText = curToken.getText();
 
@@ -71,11 +75,12 @@ public class Formatter extends JavaBaseListener {
 
 		int injectNewline = newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = indentClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
-		int levelsToCommonAncestor = alignClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
-		if ( injectNewline==1 ) {
-			output.append("\n");
+//		int levelsToCommonAncestor = alignClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
+		if ( injectNewline>0 ) {
+			output.append(Tool.newlines(injectNewline));
 			line++;
 			currentIndent += indent;
+			if ( currentIndent<0 ) currentIndent = 0; // don't allow bad indents to accumulate
 			charPosInLine = currentIndent;
 			output.append(Tool.spaces(currentIndent));
 //			if ( levelsToCommonAncestor>0 ) {

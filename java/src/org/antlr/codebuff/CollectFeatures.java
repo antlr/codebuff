@@ -12,9 +12,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/*
-NOTE: I think multiple newlines are counted as one during training.
- */
 public class CollectFeatures extends JavaBaseListener {
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -62,22 +59,30 @@ public class CollectFeatures extends JavaBaseListener {
 		if ( curToken.getType()==Token.EOF ) return;
 
 		int i = curToken.getTokenIndex();
+		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) return;
+
 		tokens.seek(i); // see so that LT(1) is tokens.get(i);
-		if ( tokens.LT(-2)==null ) { // do we have 2 previous tokens?
-			return;
+		Token prevToken = tokens.LT(-1);
+
+		// find number of blank lines
+		int[] features = getNodeFeatures(tokens, node, tabSize);
+
+		int precedingNL = 0; // how many lines to inject
+		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
+			List<Token> wsTokensBeforeCurrentToken = tokens.getHiddenTokensToLeft(i);
+			for (Token t : wsTokensBeforeCurrentToken) {
+				precedingNL += Tool.count(t.getText(), '\n');
+			}
 		}
 
-		int[] features = getNodeFeatures(tokens, node, tabSize);
-		Token prevToken = tokens.LT(-1);
-		boolean precedingNL = curToken.getLine() > prevToken.getLine();
 //		System.out.printf("%5s: ", precedingNL);
 //		System.out.printf("%s\n", Tool.toString(features));
-		this.injectNewlines.add(precedingNL ? 1 : 0);
+		this.injectNewlines.add(precedingNL);
 
 		int columnDelta = 0;
 		int ws = 0;
 		int levelsToCommonAncestor = 0;
-		if ( precedingNL ) {
+		if ( precedingNL>0 ) {
 			if ( firstTokenOnLine!=null ) {
 				columnDelta = curToken.getCharPositionInLine() - firstTokenOnLine.getCharPositionInLine();
 			}
@@ -93,7 +98,6 @@ public class CollectFeatures extends JavaBaseListener {
 		}
 
 		this.indent.add(columnDelta);
-		System.out.println(" indent "+columnDelta);
 
 		this.injectWS.add(ws); // likely negative if precedingNL
 

@@ -31,8 +31,8 @@ public class TestJavaStability {
 
 	@Test
 	public void testStability() throws Exception {
-		Corpus corpus = Tool.train(fileName, 4);
-		InputDocument testDoc = Tool.load(fileName, 4);
+		Corpus corpus = Tool.train(fileName, JavaLexer.class, JavaParser.class, 4);
+		InputDocument testDoc = Tool.load(fileName, JavaLexer.class, 4);
 		String output = Tool.format(corpus, testDoc, 4);
 		double d = Tool.docDiff(testDoc.content, output, JavaLexer.class);
 		System.out.println("Diff is "+d);

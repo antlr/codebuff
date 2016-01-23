@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Utils;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -38,8 +39,8 @@ public class Tool {
 		int tabSize = 4; // TODO: MAKE AN ARGUMENT
 		String corpusDir = args[0];
 		String testFilename = args[1];
-		Corpus corpus = train(corpusDir, tabSize);
-		InputDocument testDoc = load(testFilename, tabSize);
+		Corpus corpus = train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
+		InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
 		String output = format(corpus, testDoc, tabSize);
 		System.out.println(output);
 	}
@@ -47,17 +48,28 @@ public class Tool {
 	/** Given a corpus, format the document by tokenizing and using the
 	 *  corpus to locate newline and whitespace injection points.
 	 */
-	public static String format(Corpus corpus, InputDocument testDoc, int tabSize) throws Exception {
+	public static String format(Corpus corpus, InputDocument testDoc,
+								int tabSize)
+		throws Exception
+	{
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc.tree, testDoc.tokens, tabSize);
 		ParseTreeWalker.DEFAULT.walk(formatter, testDoc.tree);
-		return formatter.getOutput();
+		testDoc.tokens.seek(0);
+		Token secondToken = testDoc.tokens.LT(2);
+		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
+		return prefix+formatter.getOutput();
 	}
 
-	public static Corpus train(String rootDir, int tabSize) throws Exception {
+	public static Corpus train(String rootDir,
+							   Class<? extends Lexer> lexerClass,
+							   Class<? extends Parser> parserClass,
+							   int tabSize)
+		throws Exception
+	{
 		List<String> allFiles = getFilenames(new File(rootDir), ".*\\.java");
-		List<InputDocument> documents = load(allFiles, tabSize);
-		return processSampleDocs(documents, tabSize);
+		List<InputDocument> documents = load(allFiles, lexerClass, tabSize);
+		return processSampleDocs(documents, lexerClass, parserClass, tabSize);
 	}
 
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
@@ -75,7 +87,10 @@ public class Tool {
 		bw.close();
 	}
 
-	public static Corpus processSampleDocs(List<InputDocument> docs, int tabSize)
+	public static Corpus processSampleDocs(List<InputDocument> docs,
+										   Class<? extends Lexer> lexerClass,
+										   Class<? extends Parser> parserClass,
+										   int tabSize)
 		throws Exception
 	{
 		List<int[]> featureVectors = new ArrayList<>();
@@ -85,7 +100,7 @@ public class Tool {
 		List<Integer> levelsToCommonAncestor = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+			process(doc, lexerClass, parserClass, "compilationUnit", tabSize);
 			for (int i=0; i<doc.features.size(); i++) {
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
@@ -164,11 +179,15 @@ public class Tool {
 	}
 
 	/** Get all file contents into input array */
-	public static List<InputDocument> load(List<String> fileNames, int tabSize) throws IOException {
+	public static List<InputDocument> load(List<String> fileNames,
+										   Class<? extends Lexer> lexerClass,
+										   int tabSize)
+		throws Exception
+	{
 		List<InputDocument> input = new ArrayList<InputDocument>(fileNames.size());
 		int i = 0;
 		for (String f : fileNames) {
-			InputDocument doc = load(f, tabSize);
+			InputDocument doc = load(f, lexerClass, tabSize);
 			doc.index = i++;
 			input.add(doc);
 		}
@@ -176,11 +195,39 @@ public class Tool {
 		return input;
 	}
 
-	public static InputDocument load(String fileName, int tabSize) throws IOException {
+	public static InputDocument load(String fileName,
+									 Class<? extends Lexer> lexerClass,
+									 int tabSize)
+		throws Exception
+	{
 		Path path = FileSystems.getDefault().getPath(fileName);
 		byte[] filearray = Files.readAllBytes(path);
 		String content = new String(filearray);
-		return new InputDocument(fileName, expandTabs(content, tabSize));
+		String notabs = expandTabs(content, tabSize);
+		CommonTokenStream tokens = tokenize(notabs, lexerClass);
+		// delete any whitespace on a line by itself, including the newline
+		// most likely left over from a comment skipped by lexer
+		StringBuilder buf = new StringBuilder();
+		int i=0;
+		while ( i<tokens.size()-1 ) {
+			Token t = tokens.get(i);
+			buf.append(t.getText());
+			// if we see whitespace followed by whitespace, it must have been
+			// split up by a comment or other skipped token. Assume we want to
+			// delete the 2nd one.
+			// "\n    " then "   " should become "\n    "
+			// "\n\n    " then "   " should become "\n\n    "
+			if ( t.getText().matches("\n+ +") ) {
+				Token next = tokens.get(i+1);
+				if ( next.getText().matches("\n +") ) {
+					// delete by bumping i so we don't see next in next iteration
+					i++;
+				}
+			}
+			i++;
+		}
+
+		return new InputDocument(fileName, buf.toString());
 	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
@@ -227,12 +274,36 @@ public class Tool {
 
 	public static int L0_Distance(boolean[] categorical, int[] A, int[] B) {
 		int count = 0; // count how many mismatched categories there are
-		int num_categorical = 0;
 		for (int i=0; i<A.length; i++) {
 			if ( categorical[i] ) {
-				num_categorical++;
 				if ( A[i] != B[i] ) {
 					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	/** A distance of 0 should count much more than non-0. Also, penalize
+	 *  mismatches closer to current token than those farther away. A
+	 *  mismatch of current token ought to be huge distance.
+	 *
+	 *  I'll try penalty of 4 for missing current token, 2x for neighbors,
+	 *  and 1x for farther. Count 2 if earliest ancestor is diff too.
+	 *
+	 *  WARNING: currently assumes a specific element is current token
+	 *  ({@link CollectFeatures#INDEX_TYPE}).
+	 */
+	public static int weightedL0_Distance(boolean[] categorical, int[] A, int[] B) {
+		int count = 0; // count how many mismatched categories there are
+		for (int i=0; i<A.length; i++) {
+			if ( categorical[i] ) {
+				if ( A[i] != B[i] ) {
+					if ( i==CollectFeatures.INDEX_TYPE ) count += 4;
+					else if ( i==CollectFeatures.INDEX_PREV_TYPE ) count += 2;
+					else if ( i==CollectFeatures.INDEX_NEXT_TYPE ) count += 2;
+					else if ( i==CollectFeatures.INDEX_EARLIEST_ANCESTOR ) count += 1;
+					else count++;
 				}
 			}
 		}
@@ -308,6 +379,48 @@ public class Tool {
 	    return v1[t.length()];
 	}
 
+	/* Compare whitespace and give an approximate Levenshtein distance /
+	   edit distance. MUCH faster to use this than pure Levenshtein which
+	   must consider all of the "real" text that is in common.
+
+		when only 1 kind of char, just substract lengths
+		Orig    Altered Distance
+		AB      A B     1
+		AB      A  B    2
+		AB      A   B   3
+		A B     A  B    1
+
+		A B     AB      1
+		A  B    AB      2
+		A   B   AB      3
+
+		when ' ' and '\n', we count separately.
+
+		A\nB    A B     spaces delta=1, newline delete=1, distance = 2
+		A\nB    A  B    spaces delta=2, newline delete=1, distance = 3
+		A\n\nB  A B     spaces delta=1, newline delete=2, distance = 3
+		A\n \nB A B     spaces delta=0, newline delete=2, distance = 2
+		A\n \nB A\nB    spaces delta=1, newline delete=1, distance = 2
+		A \nB   A\n B   spaces delta=0, newline delete=0, distance = 0
+						levenshtein would count this as 2 I think but
+						for our doc distance, I think it's ok to measure as same
+	 */
+//	public static int editDistance(String s, String t) {
+//	}
+
+	/*
+			A \nB   A\n B   spaces delta=0, newline delete=0, distance = 0
+						levenshtein would count this as 2 I think but
+						for our doc distance, I think it's ok to measure as same
+	 */
+	public static int whitespaceEditDistance(String s, String t) {
+		int s_spaces = count(s, ' ');
+		int s_nls = count(s, '\n');
+		int t_spaces = count(t, ' ');
+		int t_nls = count(t, '\n');
+		return Math.abs(s_spaces - t_spaces) + Math.abs(s_nls - t_nls);
+	}
+
 	/** Compute a document difference metric 0-1.0 between two documents that
 	 *  are identical other than (likely) the whitespace and comments.
 	 *
@@ -327,27 +440,91 @@ public class Tool {
 	                             Class<? extends Lexer> lexerClass)
 		throws Exception
 	{
-		// strip all but real tokens and whitespace (on hidden channel)
+		// Grammar must strip all but real tokens and whitespace (and put that on hidden channel)
 		CommonTokenStream original_tokens = tokenize(original, lexerClass);
-		int non_ws = 0;
-		for (Token tok : original_tokens.getTokens()) {
-			if ( tok.getType()!=Token.EOF && tok.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL ) {
-				non_ws += tok.getText().length();
-			}
+//		String s = original_tokens.getText();
+		CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+//		String t = formatted_tokens.getText();
+
+		// walk token streams and examine whitespace in between tokens
+		int i = 1;
+		int ws_distance = 0;
+		int original_ws = 0;
+		int formatted_ws = 0;
+		while ( true ) {
+			Token ot = original_tokens.LT(i);
+			if ( ot==null || ot.getType()==Token.EOF ) break;
+			List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
+			original_ws += tokenText(ows).length();
+
+			Token ft = formatted_tokens.LT(i);
+			if ( ft==null || ft.getType()==Token.EOF ) break;
+			List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
+			formatted_ws += tokenText(fws).length();
+
+			ws_distance += whitespaceEditDistance(tokenText(ows), tokenText(fws));
+			i++;
 		}
-		String original_text_with_ws = original_tokens.getText();
-		int original_ws = original_text_with_ws.length() - non_ws;
-		int formatted_ws = formatted.length() - non_ws;
+		// it's probably ok to ignore ws diffs after last real token
+
+//		int non_ws = 0;
+//		for (Token tok : original_tokens.getTokens()) {
+//			if ( tok.getType()!=Token.EOF && tok.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL ) {
+//				non_ws += tok.getText().length();
+//			}
+//		}
+//		String original_text_with_ws = original_tokens.getText();
+//		int original_ws = original_text_with_ws.length() - non_ws;
+//		int formatted_ws = formatted.length() - non_ws;
+//		int ws_distance = Tool.levenshteinDistance(original_text_with_ws, formatted);
 		int max_ws = Math.max(original_ws, formatted_ws);
-		int ws_distance = Tool.levenshteinDistance(original_text_with_ws, formatted);
 		double normalized_ws_distance = ((float) ws_distance)/max_ws;
 		return normalized_ws_distance;
+	}
+
+	public static String tokenText(List<Token> tokens) {
+		if ( tokens==null ) return "";
+		StringBuilder buf = new StringBuilder();
+		for (Token t : tokens) {
+			buf.append(t.getText());
+		}
+		return buf.toString();
+	}
+
+	public static int getNumberRealTokens(CommonTokenStream tokens, int from, int to) {
+		if ( tokens==null ) return 0;
+		int n = 0;
+		if ( from<0 ) from = 0;
+		if ( to>tokens.size() ) to = tokens.size()-1;
+		for (int i = from; i <= to; i++) {
+			Token t = tokens.get(i);
+			if ( t.getChannel()==Token.DEFAULT_CHANNEL ) {
+				n++;
+			}
+		}
+		return n;
 	}
 
 	public static String spaces(int n) {
 		StringBuilder buf = new StringBuilder();
 		for (int sp=1; sp<=n; sp++) buf.append(" ");
 		return buf.toString();
+	}
+
+	public static String newlines(int n) {
+		StringBuilder buf = new StringBuilder();
+		for (int sp=1; sp<=n; sp++) buf.append("\n");
+		return buf.toString();
+	}
+
+	public static int count(String s, char x) {
+		int n = 0;
+		for (int i = 0; i<s.length(); i++) {
+			if ( s.charAt(i)==x ) {
+				n++;
+			}
+		}
+		return n;
 	}
 
 	public static String expandTabs(String s, int tabSize) {

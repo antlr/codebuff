@@ -78,7 +78,6 @@ public abstract class kNNClassifier {
 
 	public HashBag<Integer> votes(int k, int[] unknown, double distanceThreshold) {
 		Neighbor[] kNN = kNN(k, unknown);
-		// each neighbor gets a vote
 		HashBag<Integer> votes = new HashBag<>();
 		Map<Integer, List<Integer>> charPos = new HashMap<>();
 		Map<Integer, List<Integer>> widths = new HashMap<>();
