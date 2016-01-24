@@ -1,10 +1,13 @@
 package org.antlr.codebuff;
 
 import org.antlr.groom.JavaBaseListener;
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Tree;
+import org.antlr.v4.runtime.tree.Trees;
 
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +59,7 @@ public class Formatter extends JavaBaseListener {
 
 	@Override
 	public void visitTerminal(TerminalNode node) {
-		Token curToken = node.getSymbol();
+		CommonToken curToken = (CommonToken)node.getSymbol();
 		if ( curToken.getType()==Token.EOF ) return;
 
 		int i = curToken.getTokenIndex();
@@ -75,21 +78,24 @@ public class Formatter extends JavaBaseListener {
 
 		int injectNewline = newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = indentClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
-//		int levelsToCommonAncestor = alignClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			currentIndent += indent;
-			if ( currentIndent<0 ) currentIndent = 0; // don't allow bad indents to accumulate
-			charPosInLine = currentIndent;
-			output.append(Tool.spaces(currentIndent));
-//			if ( levelsToCommonAncestor>0 ) {
-//				List<? extends Tree> ancestors = Trees.getAncestors(node);
-//				Collections.reverse(ancestors);
-//				ParserRuleContext commonAncestor =
-//					(ParserRuleContext)ancestors.get(levelsToCommonAncestor);
-//				output.append(Tool.spaces(commonAncestor.getStart().getCharPositionInLine()));
-//			}
+			int levelsToCommonAncestor = alignClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
+			if ( levelsToCommonAncestor>0 ) {
+				List<? extends Tree> ancestors = Trees.getAncestors(node);
+				Collections.reverse(ancestors);
+				ParserRuleContext commonAncestor =
+					(ParserRuleContext)ancestors.get(levelsToCommonAncestor);
+				charPosInLine = commonAncestor.getStart().getCharPositionInLine();
+				output.append(Tool.spaces(charPosInLine));
+			}
+			else {
+				currentIndent += indent;
+				if ( currentIndent<0 ) currentIndent = 0; // don't allow bad indents to accumulate
+				charPosInLine = currentIndent;
+				output.append(Tool.spaces(currentIndent));
+			}
 //			else { //if ( indent>0 ) {
 //				output.append(Tool.spaces(currentIndent));
 //				output.append(Tool.spaces(indent));
@@ -102,6 +108,11 @@ public class Formatter extends JavaBaseListener {
 			output.append(Tool.spaces(ws));
 			charPosInLine += ws;
 		}
+		// update Token object with position information now that we are about
+		// to emit it.
+		curToken.setLine(line);
+		curToken.setCharPositionInLine(charPosInLine);
+		// emit
 		output.append(tokText);
 		charPosInLine += tokText.length();
 	}
