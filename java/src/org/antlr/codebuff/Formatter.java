@@ -13,11 +13,13 @@ import java.util.Collections;
 import java.util.List;
 
 public class Formatter extends JavaBaseListener {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.1; // anything more than 10% different is probably too far
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15; // anything more than 15% different is probably too far
 
 	protected StringBuilder output = new StringBuilder();
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
+	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
+
 	protected CodekNNClassifier newlineClassifier;
 	protected CodekNNClassifier wsClassifier;
 	protected CodekNNClassifier indentClassifier;
@@ -33,7 +35,7 @@ public class Formatter extends JavaBaseListener {
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
-		doc.originalTokens = Tool.copy(tokens);
+		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new CodekNNClassifier(corpus.X,
 												  corpus.injectNewlines,
@@ -45,7 +47,7 @@ public class Formatter extends JavaBaseListener {
 		indentClassifier = new CodekNNClassifier(corpus.X,
 												 corpus.indent,
 												 CollectFeatures.CATEGORICAL);
-		indentClassifier.dumpVotes = true;
+//		indentClassifier.dumpVotes = true;
 
 		alignClassifier = new CodekNNClassifier(corpus.X,
 												corpus.levelsToCommonAncestor,
@@ -79,6 +81,21 @@ public class Formatter extends JavaBaseListener {
 
 		int injectNewline = newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = indentClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
+
+		// compare prediction of newline against original, alert about any diffs
+		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
+		if ( prevToken.getType()==JavaLexer.WS ) {
+			int actual = Tool.count(prevToken.getText(), '\n');
+			if ( injectNewline!=actual ) {
+				System.out.printf("line %d: found %d actual %d:\n\t",
+								  line, injectNewline, actual,
+								  CodekNNClassifier._toString(features));
+				newlineClassifier.dumpVotes = true;
+				newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
+				newlineClassifier.dumpVotes = false;
+			}
+		}
+
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
