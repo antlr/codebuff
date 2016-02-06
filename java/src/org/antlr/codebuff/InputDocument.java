@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -11,6 +12,7 @@ public class InputDocument {
 	public int index;
 	public ParserRuleContext tree;
 	public CommonTokenStream tokens;
+	public List<CommonToken> originalTokens; // copy of tokens with line/col info
 	public List<int[]> features;
 	public List<Integer> injectNewlines;
 	public List<Integer> injectWS;

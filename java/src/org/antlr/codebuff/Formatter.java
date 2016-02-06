@@ -30,9 +30,10 @@ public class Formatter extends JavaBaseListener {
 
 	protected int tabSize;
 
-	public Formatter(Corpus corpus, ParserRuleContext root, CommonTokenStream tokens, int tabSize) {
-		this.root = root;
-		this.tokens = tokens;
+	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
+		this.root = doc.tree;
+		this.tokens = doc.tokens;
+		doc.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new CodekNNClassifier(corpus.X,
 												  corpus.injectNewlines,

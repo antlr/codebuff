@@ -48,12 +48,11 @@ public class Tool {
 	/** Given a corpus, format the document by tokenizing and using the
 	 *  corpus to locate newline and whitespace injection points.
 	 */
-	public static String format(Corpus corpus, InputDocument testDoc,
-								int tabSize)
+	public static String format(Corpus corpus, InputDocument testDoc, int tabSize)
 		throws Exception
 	{
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
-		Formatter formatter = new Formatter(corpus, testDoc.tree, testDoc.tokens, tabSize);
+		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		ParseTreeWalker.DEFAULT.walk(formatter, testDoc.tree);
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
@@ -270,6 +269,16 @@ public class Tool {
 			ct.setLine(0);
 			ct.setCharPositionInLine(-1);
 		}
+	}
+
+	public static List<CommonToken> copy(CommonTokenStream tokens) {
+		List<CommonToken> copy = new ArrayList<>();
+		tokens.fill();
+		for (Token t : tokens.getTokens()) {
+			CommonToken ct = (CommonToken)t;
+			copy.add(new CommonToken(t));
+		}
+		return copy;
 	}
 
 	public static int L0_Distance(boolean[] categorical, int[] A, int[] B) {
