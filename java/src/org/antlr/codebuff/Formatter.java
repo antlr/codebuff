@@ -16,6 +16,7 @@ public class Formatter extends JavaBaseListener {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15; // anything more than 15% different is probably too far
 
 	protected StringBuilder output = new StringBuilder();
+	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
@@ -33,6 +34,7 @@ public class Formatter extends JavaBaseListener {
 	protected int tabSize;
 
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
+		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
@@ -84,12 +86,17 @@ public class Formatter extends JavaBaseListener {
 
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
+		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 		if ( prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actual ) {
-				System.out.printf("line %d: found %d actual %d:\n\t",
-								  line, injectNewline, actual,
-								  CodekNNClassifier._toString(features));
+				System.out.println();
+				System.out.printf("line %d: found %d actual %d:\n",
+								  originalCurToken.getLine(), injectNewline, actual);
+				System.out.println(doc.getLine(originalCurToken.getLine()));
+				System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
+				System.out.println("^");
+				System.out.print("\t");
 				newlineClassifier.dumpVotes = true;
 				newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
 				newlineClassifier.dumpVotes = false;
