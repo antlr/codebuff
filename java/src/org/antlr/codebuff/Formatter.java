@@ -10,16 +10,20 @@ import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Formatter extends JavaBaseListener {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15; // anything more than 15% different is probably too far
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.25; // anything more than 15% different is probably too far
 
 	protected StringBuilder output = new StringBuilder();
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
+
+	protected Map<Token, TerminalNode> tokenToNodeMap = new HashMap<>();
 
 	protected CodekNNClassifier newlineClassifier;
 	protected CodekNNClassifier wsClassifier;
@@ -67,6 +71,8 @@ public class Formatter extends JavaBaseListener {
 		CommonToken curToken = (CommonToken)node.getSymbol();
 		if ( curToken.getType()==Token.EOF ) return;
 
+		tokenToNodeMap.put(curToken, node); // make an index for fast lookup.
+
 		int i = curToken.getTokenIndex();
 		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) {
 			return;
@@ -76,7 +82,7 @@ public class Formatter extends JavaBaseListener {
 
 		String tokText = curToken.getText();
 
-		int[] features = CollectFeatures.getNodeFeatures(tokens, node, tabSize);
+		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, tokens, node, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;

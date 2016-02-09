@@ -3,6 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
@@ -10,27 +11,30 @@ import org.antlr.v4.runtime.tree.Trees;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CollectFeatures extends JavaBaseListener {
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
 	public static final int INDEX_PREV_END_COLUMN   = 2;
-	public static final int INDEX_TYPE              = 3;
-	public static final int INDEX_EARLIEST_ANCESTOR = 4;
-	public static final int INDEX_ANCESTOR_WIDTH    = 5;
-	public static final int INDEX_NEXT_TYPE         = 6;
+	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 3;
+	public static final int INDEX_TYPE              = 4;
+	public static final int INDEX_EARLIEST_ANCESTOR = 5;
+	public static final int INDEX_ANCESTOR_WIDTH    = 6;
+	public static final int INDEX_NEXT_TYPE         = 7;
 
 	public static final String[] FEATURE_NAMES = {
 		"prev^2 type",
-		"prev type", "prev end column",
+		"prev type", "prev end column", "previous earliest ancestor rule",
 		"type", "earliest ancestor rule", "earliest ancestor width",
 		"next type",
 	};
 
 	public static final boolean[] CATEGORICAL = {
 		true,
-		true, false,
+		true, false, true,
 		true, true, false,
 		true
 	};
@@ -45,6 +49,8 @@ public class CollectFeatures extends JavaBaseListener {
 	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
 	protected Token firstTokenOnLine = null;
 
+	protected Map<Token, TerminalNode> tokenToNodeMap = new HashMap<>();
+
 	protected int tabSize;
 
 	public CollectFeatures(ParserRuleContext root, CommonTokenStream tokens, int tabSize) {
@@ -58,6 +64,8 @@ public class CollectFeatures extends JavaBaseListener {
 		Token curToken = node.getSymbol();
 		if ( curToken.getType()==Token.EOF ) return;
 
+		tokenToNodeMap.put(curToken, node); // make an index for fast lookup.
+
 		int i = curToken.getTokenIndex();
 		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) return;
 
@@ -65,7 +73,7 @@ public class CollectFeatures extends JavaBaseListener {
 		Token prevToken = tokens.LT(-1);
 
 		// find number of blank lines
-		int[] features = getNodeFeatures(tokens, node, tabSize);
+		int[] features = getNodeFeatures(tokenToNodeMap, tokens, node, tabSize);
 
 		int precedingNL = 0; // how many lines to inject
 		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
@@ -156,6 +164,18 @@ public class CollectFeatures extends JavaBaseListener {
 		return prev;
 	}
 
+	/** Walk upwards from node while p.stop == token */
+	public static ParserRuleContext earliestAncestorStoppingAtToken(ParserRuleContext node, Token token) {
+		ParserRuleContext p = node;
+		ParserRuleContext prev = null;
+		while (p!=null && p.getStop()==token) {
+			prev = p;
+			p = p.getParent();
+		}
+		if ( prev==null ) return node;
+		return prev;
+	}
+
 	public static ParserRuleContext deepestCommonAncestor(ParserRuleContext t1, ParserRuleContext t2) {
 		if ( t1==t2 ) return t1;
 		List<? extends Tree> t1_ancestors = Trees.getAncestors(t1);
@@ -170,7 +190,11 @@ public class CollectFeatures extends JavaBaseListener {
 		return null;
 	}
 
-	public static int[] getNodeFeatures(CommonTokenStream tokens, TerminalNode node, int tabSize) {
+	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
+	                                    CommonTokenStream tokens,
+	                                    TerminalNode node,
+	                                    int tabSize)
+	{
 		Token curToken = node.getSymbol();
 
 		int i = curToken.getTokenIndex();
@@ -180,16 +204,23 @@ public class CollectFeatures extends JavaBaseListener {
 		List<Token> window =
 			Arrays.asList(tokens.LT(-2), tokens.LT(-1), tokens.LT(1), tokens.LT(2));
 
-		// Get context information
-		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
+		// Get context information for previous token
+		Token prevToken = tokens.LT(-1);
+		TerminalNode prevTerminalNode = tokenToNodeMap.get(prevToken);
+		ParserRuleContext parent = (ParserRuleContext)prevTerminalNode.getParent();
+		ParserRuleContext earliestAncestor = earliestAncestorStoppingAtToken(parent, prevToken);
+		int prevEarliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
+
+		// Get context information for current token
+		parent = (ParserRuleContext)node.getParent();
+		earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
 		int earliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
 		int earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
 		int[] features = {
 			window.get(0).getType(),
-			window.get(1).getType(), prevTokenEndCharPos,
+			window.get(1).getType(), prevTokenEndCharPos, prevEarliestAncestorRuleIndex,
 			window.get(2).getType(), earliestAncestorRuleIndex, earliestAncestorWidth,
 			window.get(3).getType(),
 		};
@@ -269,5 +300,23 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public List<Integer> getIndent() {
 		return indent;
+	}
+
+	public static String _toString(int[] features) {
+		Vocabulary v = org.antlr.groom.JavaParser.VOCABULARY;
+		return String.format(
+			"%s %s %d %s %s %s %d %s",
+			v.getDisplayName(features[INDEX_PREV2_TYPE]),
+
+			v.getDisplayName(features[INDEX_PREV_TYPE]),
+			features[INDEX_PREV_END_COLUMN],
+			JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]],
+
+			v.getDisplayName(features[INDEX_TYPE]),
+			JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]],
+			features[INDEX_ANCESTOR_WIDTH],
+
+			v.getDisplayName(features[INDEX_NEXT_TYPE])
+		);
 	}
 }

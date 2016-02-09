@@ -312,6 +312,7 @@ public class Tool {
 					else if ( i==CollectFeatures.INDEX_PREV_TYPE ) count += 2;
 					else if ( i==CollectFeatures.INDEX_NEXT_TYPE ) count += 2;
 					else if ( i==CollectFeatures.INDEX_EARLIEST_ANCESTOR ) count += 1;
+					else if ( i==CollectFeatures.INDEX_PREV_EARLIEST_ANCESTOR ) count += 1;
 					else count++;
 				}
 			}

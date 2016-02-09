@@ -1,12 +1,6 @@
 package org.antlr.codebuff;
 
-import org.antlr.groom.JavaParser;
-import org.antlr.v4.runtime.Vocabulary;
-
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /*
  It would appear the context information provides the strongest evidence for
@@ -36,8 +30,8 @@ import java.util.Map;
  */
 
 public class CodekNNClassifier extends kNNClassifier {
-	/** 4 for current token, 2 for both adjacent, and 1 for distant tokens. 1 for earliest ancestor mismatch */
-	public static final int MAX_L0_DISTANCE_COUNT = 10;
+	/** 4 for current token, 2 for both adjacent, and 1 for distant tokens. 1 each for earliest ancestor mismatches */
+	public static final int MAX_L0_DISTANCE_COUNT = 11;
 
 	public CodekNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
 		super(X, Y, categorical);
@@ -96,17 +90,7 @@ public class CodekNNClassifier extends kNNClassifier {
 	}
 
 	public String toString(int[] features) {
-		return _toString(features);
+		return CollectFeatures._toString(features);
 	}
 
-	public static String _toString(int[] features) {
-		Vocabulary v = JavaParser.VOCABULARY;
-		return String.format(
-			"%s %s %d %s, %s %d %s",
-			v.getDisplayName(features[0]),
-			v.getDisplayName(features[1]), features[2],
-			v.getDisplayName(features[3]), JavaParser.ruleNames[features[4]], features[5],
-			v.getDisplayName(features[6])
-							);
-	}
 }
