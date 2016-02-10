@@ -30,8 +30,6 @@ import java.util.List;
  */
 
 public class CodekNNClassifier extends kNNClassifier {
-	/** 4 for current token, 2 for both adjacent, and 1 for distant tokens. 1 each for earliest ancestor mismatches */
-	public static final int MAX_L0_DISTANCE_COUNT = 11;
 
 	public CodekNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
 		super(X, Y, categorical);
@@ -86,7 +84,7 @@ public class CodekNNClassifier extends kNNClassifier {
 	public double distance(int[] A, int[] B) {
 //		return ((float)Tool.L0_Distance(categorical, A, B))/num_categorical;
 		float d = (float) Tool.weightedL0_Distance(categorical, A, B);
-		return d / MAX_L0_DISTANCE_COUNT;
+		return d / CollectFeatures.MAX_L0_DISTANCE_COUNT;
 	}
 
 	public String toString(int[] features) {

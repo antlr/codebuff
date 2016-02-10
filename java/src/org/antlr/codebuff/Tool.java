@@ -54,6 +54,7 @@ public class Tool {
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		ParseTreeWalker.DEFAULT.walk(formatter, testDoc.tree);
+		System.out.println("misclassified: "+formatter.misclassified);
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
@@ -294,30 +295,30 @@ public class Tool {
 	}
 
 	/** A distance of 0 should count much more than non-0. Also, penalize
-	 *  mismatches closer to current token than those farther away. A
-	 *  mismatch of current token ought to be huge distance.
-	 *
-	 *  I'll try penalty of 4 for missing current token, 2x for neighbors,
-	 *  and 1x for farther. Count 2 if earliest ancestor is diff too.
-	 *
-	 *  WARNING: currently assumes a specific element is current token
-	 *  ({@link CollectFeatures#INDEX_TYPE}).
+	 *  mismatches closer to current token than those farther away.
 	 */
 	public static int weightedL0_Distance(boolean[] categorical, int[] A, int[] B) {
 		int count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
 			if ( categorical[i] ) {
 				if ( A[i] != B[i] ) {
-					if ( i==CollectFeatures.INDEX_TYPE ) count += 4;
-					else if ( i==CollectFeatures.INDEX_PREV_TYPE ) count += 2;
-					else if ( i==CollectFeatures.INDEX_NEXT_TYPE ) count += 2;
-					else if ( i==CollectFeatures.INDEX_EARLIEST_ANCESTOR ) count += 1;
-					else if ( i==CollectFeatures.INDEX_PREV_EARLIEST_ANCESTOR ) count += 1;
-					else count++;
+					count += CollectFeatures.mismatchCost[i];
 				}
 			}
 		}
 		return count;
+	}
+
+	public static int max(List<Integer> Y) {
+		int max = 0;
+		for (int y : Y) max = Math.max(max, y);
+		return max;
+	}
+
+	public static int sum(int[] a) {
+		int s = 0;
+		for (int x : a) s += x;
+		return s;
 	}
 
 //	// From https://en.wikipedia.org/wiki/Levenshtein_distance

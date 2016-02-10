@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures extends JavaBaseListener {
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15; // anything more than 15% different is probably too far
+
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
 	public static final int INDEX_PREV_END_COLUMN   = 2;
@@ -31,6 +33,19 @@ public class CollectFeatures extends JavaBaseListener {
 		"type", "earliest ancestor rule", "earliest ancestor width",
 		"next type",
 	};
+
+	public static final int[] mismatchCost = {
+		1,  // INDEX_PREV2_TYPE
+		2,  // INDEX_PREV_TYPE
+		1,  // INDEX_PREV_END_COLUMN
+		2,  // INDEX_PREV_EARLIEST_ANCESTOR
+		2,  // INDEX_TYPE
+		2,  // INDEX_EARLIEST_ANCESTOR
+		1,  // INDEX_ANCESTOR_WIDTH
+		2   // INDEX_NEXT_TYPE
+	};
+
+	public static final int MAX_L0_DISTANCE_COUNT = Tool.sum(mismatchCost);
 
 	public static final boolean[] CATEGORICAL = {
 		true,

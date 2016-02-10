@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Formatter extends JavaBaseListener {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.25; // anything more than 15% different is probably too far
 
 	protected StringBuilder output = new StringBuilder();
 	protected InputDocument doc;
@@ -36,6 +35,8 @@ public class Formatter extends JavaBaseListener {
 	protected int currentIndent = 0;
 
 	protected int tabSize;
+
+	protected int misclassified = 0;
 
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
 		this.doc = doc;
@@ -87,8 +88,8 @@ public class Formatter extends JavaBaseListener {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		int injectNewline = newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
-		int indent = indentClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
+		int injectNewline = newlineClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int indent = indentClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
@@ -96,6 +97,7 @@ public class Formatter extends JavaBaseListener {
 		if ( prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actual ) {
+				misclassified++;
 				System.out.println();
 				System.out.printf("### line %d: found %d actual %d:\n",
 								  originalCurToken.getLine(), injectNewline, actual);
@@ -103,7 +105,7 @@ public class Formatter extends JavaBaseListener {
 				System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
 				System.out.println("^");
 				newlineClassifier.dumpVotes = true;
-				newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
+				newlineClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 				newlineClassifier.dumpVotes = false;
 			}
 		}
@@ -111,7 +113,7 @@ public class Formatter extends JavaBaseListener {
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			int levelsToCommonAncestor = alignClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
+			int levelsToCommonAncestor = alignClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 			if ( levelsToCommonAncestor>0 ) {
 				List<? extends Tree> ancestors = Trees.getAncestors(node);
 				Collections.reverse(ancestors);
@@ -134,7 +136,7 @@ public class Formatter extends JavaBaseListener {
 		}
 		else {
 			// inject whitespace instead of \n?
-			int ws = wsClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD); // the class is the number of WS chars
+			int ws = wsClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD); // the class is the number of WS chars
 			output.append(Tool.spaces(ws));
 			charPosInLine += ws;
 		}

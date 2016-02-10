@@ -41,18 +41,6 @@ public abstract class kNNClassifier {
 //		numCategories = max(Y) + 1;
 	}
 
-	public int max(List<Integer> Y) {
-		int max = 0;
-		for (int y : Y) max = Math.max(max, y);
-		return max;
-	}
-
-	public int count(int[] a) {
-		int max = 0;
-		for (int x : a) max = Math.max(max, x);
-		return max;
-	}
-
 	public int classify(int k, int[] unknown) {
 		return classify(k, unknown, 1.0);
 	}
