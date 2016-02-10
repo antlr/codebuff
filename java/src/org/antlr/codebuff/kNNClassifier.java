@@ -1,5 +1,7 @@
 package org.antlr.codebuff;
 
+import org.antlr.v4.runtime.misc.Utils;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +15,7 @@ public abstract class kNNClassifier {
 //	public final int numCategories;
 	public boolean dumpVotes = false;
 
-	public static class Neighbor {
+	public class Neighbor {
 		public final int category;
 		public final double distance;
 		public final int corpusVectorIndex;
@@ -27,7 +29,8 @@ public abstract class kNNClassifier {
 		@Override
 		public String toString() {
 //			return String.format("(@%d,cat=%d,d=%1.2f)", corpusVectorIndex, category, distance);
-			return String.format("(cat=%d,d=%1.2f)", category, distance);
+			String features = CollectFeatures._toString(X.get(corpusVectorIndex));
+			return String.format("%s (cat=%d,d=%1.2f)", features, category, distance);
 		}
 	}
 
@@ -96,7 +99,9 @@ public abstract class kNNClassifier {
 //									 features[CollectFeatures.INDEX_ANCESTOR_WIDTH]);
 		}
 		if ( dumpVotes ) {
-			System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+votes);
+			System.out.println(toString(unknown)+"->"+votes);
+			kNN = Arrays.copyOfRange(kNN, 0,16);
+			System.out.println(Utils.join(kNN, "\n"));
 		}
 //		System.out.println(Arrays.toString(charPos));
 //		System.out.println(Arrays.toString(widths));

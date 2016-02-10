@@ -97,12 +97,11 @@ public class Formatter extends JavaBaseListener {
 			int actual = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actual ) {
 				System.out.println();
-				System.out.printf("line %d: found %d actual %d:\n",
+				System.out.printf("### line %d: found %d actual %d:\n",
 								  originalCurToken.getLine(), injectNewline, actual);
 				System.out.println(doc.getLine(originalCurToken.getLine()));
 				System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
 				System.out.println("^");
-				System.out.print("\t");
 				newlineClassifier.dumpVotes = true;
 				newlineClassifier.classify(k, features, MAX_CONTEXT_DIFF_THRESHOLD);
 				newlineClassifier.dumpVotes = false;
