@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,13 @@ public class CollectFeatures extends JavaBaseListener {
 		"prev type", "prev end column", "previous earliest ancestor rule",
 		"type", "earliest ancestor rule", "earliest ancestor width",
 		"next type",
+	};
+
+	public static final String[][] ABBREV_FEATURE_NAMES = {
+		{"", "LT(-2)"},
+		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "ancestor"},
+		{"","LT(1)"},    {"LT(1)", "ancestor"}, {"LT(1)", "ancestor width"},
+		{"", "LT(2)"},
 	};
 
 	public static final int[] mismatchCost = {
@@ -320,7 +328,7 @@ public class CollectFeatures extends JavaBaseListener {
 	public static String _toString(int[] features) {
 		Vocabulary v = org.antlr.groom.JavaParser.VOCABULARY;
 		return String.format(
-			"%15s %15s %2d %18s | %15s %18s %2d %15s",
+			"%-15s %-15s %7d %-18s | %-15s %-18s %8d %-15s",
 			v.getDisplayName(features[INDEX_PREV2_TYPE]),
 
 			v.getDisplayName(features[INDEX_PREV_TYPE]),
@@ -332,6 +340,43 @@ public class CollectFeatures extends JavaBaseListener {
 			features[INDEX_ANCESTOR_WIDTH],
 
 			v.getDisplayName(features[INDEX_NEXT_TYPE])
-		);
+		                    );
+	}
+
+	public static String featureNameHeader() {
+		String top = String.format(
+			"%-15s %-15s %7s %-18s | %-15s %-18s %8s %-15s",
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV2_TYPE][0], 15),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_TYPE][0], 15),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_END_COLUMN][0], 7),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_EARLIEST_ANCESTOR][0], 18),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_TYPE][0], 15),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_EARLIEST_ANCESTOR][0], 18),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_ANCESTOR_WIDTH][0], 7),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_NEXT_TYPE][0], 15)
+		                          );
+		String bottom = String.format(
+			"%-15s %-15s %7s %-18s | %-15s %-18s %8s %-15s",
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV2_TYPE][1], 15),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_TYPE][1], 15),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_END_COLUMN][1], 7),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_EARLIEST_ANCESTOR][1], 18),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_TYPE][1], 15),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_EARLIEST_ANCESTOR][1], 18),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_ANCESTOR_WIDTH][1], 7),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_NEXT_TYPE][1], 15)
+		                             );
+		String line = String.format(
+			"%-15s %-15s %7s %-18s | %-15s %-18s %8s %-15s",
+			Tool.sequence(15,"="),
+			Tool.sequence(15,"="),
+			Tool.sequence(7,"="),
+			Tool.sequence(18,"="),
+			Tool.sequence(15,"="),
+			Tool.sequence(18,"="),
+			Tool.sequence(8,"="),
+			Tool.sequence(15,"=")
+		                           );
+		return top+"\n"+bottom+"\n"+line;
 	}
 }

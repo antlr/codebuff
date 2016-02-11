@@ -517,14 +517,22 @@ public class Tool {
 	}
 
 	public static String spaces(int n) {
-		StringBuilder buf = new StringBuilder();
-		for (int sp=1; sp<=n; sp++) buf.append(" ");
-		return buf.toString();
+		return sequence(n, " ");
+//		StringBuilder buf = new StringBuilder();
+//		for (int sp=1; sp<=n; sp++) buf.append(" ");
+//		return buf.toString();
 	}
 
 	public static String newlines(int n) {
+		return sequence(n, "\n");
+//		StringBuilder buf = new StringBuilder();
+//		for (int sp=1; sp<=n; sp++) buf.append("\n");
+//		return buf.toString();
+	}
+
+	public static String sequence(int n, String s) {
 		StringBuilder buf = new StringBuilder();
-		for (int sp=1; sp<=n; sp++) buf.append("\n");
+		for (int sp=1; sp<=n; sp++) buf.append(s);
 		return buf.toString();
 	}
 
