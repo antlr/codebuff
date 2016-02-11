@@ -37,8 +37,8 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static final String[][] ABBREV_FEATURE_NAMES = {
 		{"", "LT(-2)"},
-		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "ancestor"},
-		{"","LT(1)"},    {"LT(1)", "ancestor"}, {"LT(1)", "ancestor width"},
+		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "right ancestor"},
+		{"","LT(1)"},    {"LT(1)", "left ancestor"}, {"LT(1) anc.", "width"},
 		{"", "LT(2)"},
 	};
 
@@ -333,10 +333,10 @@ public class CollectFeatures extends JavaBaseListener {
 
 			v.getDisplayName(features[INDEX_PREV_TYPE]),
 			features[INDEX_PREV_END_COLUMN],
-			JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]],
+			StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]], "..", 18),
 
 			v.getDisplayName(features[INDEX_TYPE]),
-			JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]],
+			StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]], "..", 18),
 			features[INDEX_ANCESTOR_WIDTH],
 
 			v.getDisplayName(features[INDEX_NEXT_TYPE])
