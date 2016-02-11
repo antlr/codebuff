@@ -1,6 +1,5 @@
 package org.antlr.codebuff;
 
-import org.antlr.groom.JavaBaseListener;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;

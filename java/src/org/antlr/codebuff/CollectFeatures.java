@@ -339,7 +339,7 @@ public class CollectFeatures extends JavaBaseListener {
 	}
 
 	public static String _toString(int[] features) {
-		Vocabulary v = org.antlr.groom.JavaParser.VOCABULARY;
+		Vocabulary v = JavaParser.VOCABULARY;
 		return String.format(
 			"%-15s %-15s %7s %-18s %8s | %-15s %-18s %8s %-15s",
 			StringUtils.center(v.getDisplayName(features[INDEX_PREV2_TYPE]), 15),
