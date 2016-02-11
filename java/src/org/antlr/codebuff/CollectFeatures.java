@@ -175,7 +175,9 @@ public class CollectFeatures extends JavaBaseListener {
 		return null;
 	}
 
-	/** Walk upwards from node while p.start == token */
+	/** Walk upwards from node while p.start == token; return null if there is
+	 *  no ancestor starting at token.
+	 */
 	public static ParserRuleContext earliestAncestorStartingAtToken(ParserRuleContext node, Token token) {
 		ParserRuleContext p = node;
 		ParserRuleContext prev = null;
@@ -183,11 +185,12 @@ public class CollectFeatures extends JavaBaseListener {
 			prev = p;
 			p = p.getParent();
 		}
-		if ( prev==null ) return node;
 		return prev;
 	}
 
-	/** Walk upwards from node while p.stop == token */
+	/** Walk upwards from node while p.stop == token; return null if there is
+	 *  no ancestor stopping at token.
+	 */
 	public static ParserRuleContext earliestAncestorStoppingAtToken(ParserRuleContext node, Token token) {
 		ParserRuleContext p = node;
 		ParserRuleContext prev = null;
@@ -232,13 +235,20 @@ public class CollectFeatures extends JavaBaseListener {
 		TerminalNode prevTerminalNode = tokenToNodeMap.get(prevToken);
 		ParserRuleContext parent = (ParserRuleContext)prevTerminalNode.getParent();
 		ParserRuleContext earliestAncestor = earliestAncestorStoppingAtToken(parent, prevToken);
-		int prevEarliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
+		int prevEarliestAncestorRuleIndex = -1;
+		if ( earliestAncestor!=null ) {
+			prevEarliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
+		}
 
 		// Get context information for current token
 		parent = (ParserRuleContext)node.getParent();
 		earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
-		int earliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
-		int earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
+		int earliestAncestorRuleIndex = -1;
+		int earliestAncestorWidth = -1;
+		if ( earliestAncestor!=null ) {
+			earliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
+			earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
+		}
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
 		int[] features = {
@@ -333,10 +343,10 @@ public class CollectFeatures extends JavaBaseListener {
 
 			v.getDisplayName(features[INDEX_PREV_TYPE]),
 			features[INDEX_PREV_END_COLUMN],
-			StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]], "..", 18),
+			features[INDEX_PREV_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]], "..", 18) : "",
 
 			v.getDisplayName(features[INDEX_TYPE]),
-			StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]], "..", 18),
+			features[INDEX_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]], "..", 18) : "",
 			features[INDEX_ANCESTOR_WIDTH],
 
 			v.getDisplayName(features[INDEX_NEXT_TYPE])
