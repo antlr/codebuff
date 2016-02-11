@@ -87,7 +87,7 @@ public abstract class kNNClassifier {
 //									 features[CollectFeatures.INDEX_ANCESTOR_WIDTH]);
 		}
 		if ( dumpVotes ) {
-			System.out.println(CollectFeatures.featureNameHeader());
+			System.out.print(CollectFeatures.featureNameHeader());
 			System.out.println(toString(unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0,16);
 			System.out.println(Utils.join(kNN, "\n"));

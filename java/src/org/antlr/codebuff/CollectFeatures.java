@@ -38,8 +38,8 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static final String[][] ABBREV_FEATURE_NAMES = {
 		{"", "LT(-2)"},
-		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "right ancestor"}, {"ancestor", "width"},
-		{"", "LT(1)"},    {"LT(1)", "left ancestor"}, {"ancestor", "width"},
+		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "right ancestor"}, {"ancest.", "width"},
+		{"", "LT(1)"},    {"LT(1)", "left ancestor"}, {"ancest.", "width"},
 		{"", "LT(2)"},
 	};
 
@@ -57,11 +57,37 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static final int MAX_L0_DISTANCE_COUNT = Tool.sum(mismatchCost);
 
-	public static final boolean[] CATEGORICAL = {
+	public static final boolean[] CATEGORICAL = { // TODO: remove this.
 		true,
 		true, false, true, false,
 		true, true, false,
 		true
+	};
+
+	public static enum FeatureType { TOKEN, RULE, INT };
+
+	public static final FeatureType[] FEATURE_TYPES = {
+		FeatureType.TOKEN,
+		FeatureType.TOKEN,
+		FeatureType.INT,
+		FeatureType.RULE,
+		FeatureType.INT,
+		FeatureType.TOKEN,
+		FeatureType.RULE,
+		FeatureType.INT,
+		FeatureType.TOKEN
+	};
+
+	public static final int[] featureDisplayWidth = {
+		12, // INDEX_PREV2_TYPE
+		12, // INDEX_PREV_TYPE
+		7,  // INDEX_PREV_END_COLUMN
+		15, // INDEX_PREV_EARLIEST_ANCESTOR
+		7,  // INDEX_PREV_ANCESTOR_WIDTH
+		12, // INDEX_TYPE
+		15, // INDEX_EARLIEST_ANCESTOR
+		7,  // INDEX_ANCESTOR_WIDTH
+		12  // INDEX_NEXT_TYPE
 	};
 
 	protected ParserRuleContext root;
@@ -340,60 +366,68 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static String _toString(int[] features) {
 		Vocabulary v = JavaParser.VOCABULARY;
-		return String.format(
-			"%-15s %-15s %7s %-18s %8s | %-15s %-18s %8s %-15s",
-			StringUtils.center(v.getDisplayName(features[INDEX_PREV2_TYPE]), 15),
-
-			StringUtils.center(v.getDisplayName(features[INDEX_PREV_TYPE]), 15),
-			features[INDEX_PREV_END_COLUMN],
-			features[INDEX_PREV_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]], "..", 18) : "",
-			features[INDEX_PREV_ANCESTOR_WIDTH]>=0 ? features[INDEX_PREV_ANCESTOR_WIDTH] : "",
-
-			StringUtils.center(v.getDisplayName(features[INDEX_TYPE]), 15),
-			features[INDEX_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]], "..", 18) : "",
-			features[INDEX_ANCESTOR_WIDTH]>=0 ? features[INDEX_ANCESTOR_WIDTH] : "",
-
-			StringUtils.center(v.getDisplayName(features[INDEX_NEXT_TYPE]), 15)
-			                  );
+		StringBuilder buf = new StringBuilder();
+		for (int i=0; i<featureDisplayWidth.length; i++) {
+			if ( i>0 ) buf.append(" ");
+			if ( i==INDEX_TYPE ) {
+				buf.append("| "); // separate prev from current tokens
+			}
+			switch ( FEATURE_TYPES[i] ) {
+				case TOKEN :
+					String tokenName = v.getDisplayName(features[i]);
+					String abbrev = StringUtils.abbreviateMiddle(tokenName, "*", featureDisplayWidth[i]);
+					String centered = StringUtils.center(abbrev, featureDisplayWidth[i]);
+					buf.append(String.format("%"+featureDisplayWidth[i]+"s", centered));
+					break;
+				case RULE :
+					if ( features[i]>=0 ) {
+						String ruleName = JavaParser.ruleNames[features[i]];
+						abbrev = StringUtils.abbreviateMiddle(ruleName, "*", featureDisplayWidth[i]);
+						buf.append(String.format("%"+featureDisplayWidth[i]+"s", abbrev));
+					}
+					else {
+						buf.append(Tool.sequence(featureDisplayWidth[i], " "));
+					}
+					break;
+				case INT :
+					if ( features[i]>=0 ) {
+						buf.append(String.format("%"+featureDisplayWidth[i]+"s", String.valueOf(features[i])));
+					}
+					else {
+						buf.append(Tool.sequence(featureDisplayWidth[i], " "));
+					}
+					break;
+			}
+		}
+		return buf.toString();
 	}
 
 	public static String featureNameHeader() {
-		String top = String.format(
-			"%-15s %-15s %7s %-18s %-8s | %-15s %-18s %8s %-15s",
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV2_TYPE][0], 15),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_TYPE][0], 15),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_END_COLUMN][0], 7),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_EARLIEST_ANCESTOR][0], 18),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_ANCESTOR_WIDTH][0], 8),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_TYPE][0], 15),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_EARLIEST_ANCESTOR][0], 18),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_ANCESTOR_WIDTH][0], 7),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_NEXT_TYPE][0], 15)
-		                          );
-		String bottom = String.format(
-			"%-15s %-15s %7s %-18s %-8s | %-15s %-18s %8s %-15s",
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV2_TYPE][1], 15),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_TYPE][1], 15),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_END_COLUMN][1], 7),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_EARLIEST_ANCESTOR][1], 18),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_ANCESTOR_WIDTH][1], 8),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_TYPE][1], 15),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_EARLIEST_ANCESTOR][1], 18),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_ANCESTOR_WIDTH][1], 7),
-			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_NEXT_TYPE][1], 15)
-		                             );
-		String line = String.format(
-			"%-15s %-15s %7s %-18s %-8s | %-15s %-18s %8s %-15s",
-			Tool.sequence(15,"="),
-			Tool.sequence(15,"="),
-			Tool.sequence(7,"="),
-			Tool.sequence(18,"="),
-			Tool.sequence(8,"="),
-			Tool.sequence(15,"="),
-			Tool.sequence(18,"="),
-			Tool.sequence(8,"="),
-			Tool.sequence(15,"=")
-		                           );
-		return top+"\n"+bottom+"\n"+line;
+		StringBuilder buf = new StringBuilder();
+		for (int i=0; i<featureDisplayWidth.length; i++) {
+			if ( i>0 ) buf.append(" ");
+			if ( i==INDEX_TYPE ) {
+				buf.append("| "); // separate prev from current tokens
+			}
+			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][0], featureDisplayWidth[i]));
+		}
+		buf.append("\n");
+		for (int i=0; i<featureDisplayWidth.length; i++) {
+			if ( i>0 ) buf.append(" ");
+			if ( i==INDEX_TYPE ) {
+				buf.append("| "); // separate prev from current tokens
+			}
+			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][1], featureDisplayWidth[i]));
+		}
+		buf.append("\n");
+		for (int i=0; i<featureDisplayWidth.length; i++) {
+			if ( i>0 ) buf.append(" ");
+			if ( i==INDEX_TYPE ) {
+				buf.append("| "); // separate prev from current tokens
+			}
+			buf.append(Tool.sequence(featureDisplayWidth[i],"="));
+		}
+		buf.append("\n");
+		return buf.toString();
 	}
 }
