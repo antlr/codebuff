@@ -17,28 +17,29 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures extends JavaBaseListener {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15; // anything more than 15% different is probably too far
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.14;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
 	public static final int INDEX_PREV_END_COLUMN   = 2;
 	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 3;
-	public static final int INDEX_TYPE              = 4;
-	public static final int INDEX_EARLIEST_ANCESTOR = 5;
-	public static final int INDEX_ANCESTOR_WIDTH    = 6;
-	public static final int INDEX_NEXT_TYPE         = 7;
+	public static final int INDEX_PREV_ANCESTOR_WIDTH = 4;
+	public static final int INDEX_TYPE              = 5;
+	public static final int INDEX_EARLIEST_ANCESTOR = 6;
+	public static final int INDEX_ANCESTOR_WIDTH    = 7;
+	public static final int INDEX_NEXT_TYPE         = 8;
 
 	public static final String[] FEATURE_NAMES = {
 		"prev^2 type",
-		"prev type", "prev end column", "previous earliest ancestor rule",
+		"prev type", "prev end column", "previous earliest ancestor rule", "previous earliest ancestor width",
 		"type", "earliest ancestor rule", "earliest ancestor width",
 		"next type",
 	};
 
 	public static final String[][] ABBREV_FEATURE_NAMES = {
 		{"", "LT(-2)"},
-		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "right ancestor"},
-		{"","LT(1)"},    {"LT(1)", "left ancestor"}, {"LT(1) anc.", "width"},
+		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "right ancestor"}, {"ancestor", "width"},
+		{"", "LT(1)"},    {"LT(1)", "left ancestor"}, {"ancestor", "width"},
 		{"", "LT(2)"},
 	};
 
@@ -47,6 +48,7 @@ public class CollectFeatures extends JavaBaseListener {
 		2,  // INDEX_PREV_TYPE
 		1,  // INDEX_PREV_END_COLUMN
 		2,  // INDEX_PREV_EARLIEST_ANCESTOR
+		1,  // INDEX_PREV_ANCESTOR_WIDTH
 		2,  // INDEX_TYPE
 		2,  // INDEX_EARLIEST_ANCESTOR
 		1,  // INDEX_ANCESTOR_WIDTH
@@ -57,7 +59,7 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static final boolean[] CATEGORICAL = {
 		true,
-		true, false, true,
+		true, false, true, false,
 		true, true, false,
 		true
 	};
@@ -235,8 +237,10 @@ public class CollectFeatures extends JavaBaseListener {
 		ParserRuleContext parent = (ParserRuleContext)prevTerminalNode.getParent();
 		ParserRuleContext earliestAncestor = earliestAncestorStoppingAtToken(parent, prevToken);
 		int prevEarliestAncestorRuleIndex = -1;
+		int prevEarliestAncestorWidth = -1;
 		if ( earliestAncestor!=null ) {
 			prevEarliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
+			prevEarliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
 		}
 
 		// Get context information for current token
@@ -252,7 +256,7 @@ public class CollectFeatures extends JavaBaseListener {
 
 		int[] features = {
 			window.get(0).getType(),
-			window.get(1).getType(), prevTokenEndCharPos, prevEarliestAncestorRuleIndex,
+			window.get(1).getType(), prevTokenEndCharPos, prevEarliestAncestorRuleIndex, prevEarliestAncestorWidth,
 			window.get(2).getType(), earliestAncestorRuleIndex, earliestAncestorWidth,
 			window.get(3).getType(),
 		};
@@ -337,16 +341,17 @@ public class CollectFeatures extends JavaBaseListener {
 	public static String _toString(int[] features) {
 		Vocabulary v = org.antlr.groom.JavaParser.VOCABULARY;
 		return String.format(
-			"%-15s %-15s %7d %-18s | %-15s %-18s %8d %-15s",
+			"%-15s %-15s %7s %-18s %8s | %-15s %-18s %8s %-15s",
 			StringUtils.center(v.getDisplayName(features[INDEX_PREV2_TYPE]), 15),
 
 			StringUtils.center(v.getDisplayName(features[INDEX_PREV_TYPE]), 15),
 			features[INDEX_PREV_END_COLUMN],
 			features[INDEX_PREV_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]], "..", 18) : "",
+			features[INDEX_PREV_ANCESTOR_WIDTH]>=0 ? features[INDEX_PREV_ANCESTOR_WIDTH] : "",
 
 			StringUtils.center(v.getDisplayName(features[INDEX_TYPE]), 15),
 			features[INDEX_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]], "..", 18) : "",
-			features[INDEX_ANCESTOR_WIDTH],
+			features[INDEX_ANCESTOR_WIDTH]>=0 ? features[INDEX_ANCESTOR_WIDTH] : "",
 
 			StringUtils.center(v.getDisplayName(features[INDEX_NEXT_TYPE]), 15)
 			                  );
@@ -354,33 +359,36 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static String featureNameHeader() {
 		String top = String.format(
-			"%-15s %-15s %7s %-18s | %-15s %-18s %8s %-15s",
+			"%-15s %-15s %7s %-18s %-8s | %-15s %-18s %8s %-15s",
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV2_TYPE][0], 15),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_TYPE][0], 15),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_END_COLUMN][0], 7),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_EARLIEST_ANCESTOR][0], 18),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_ANCESTOR_WIDTH][0], 8),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_TYPE][0], 15),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_EARLIEST_ANCESTOR][0], 18),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_ANCESTOR_WIDTH][0], 7),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_NEXT_TYPE][0], 15)
 		                          );
 		String bottom = String.format(
-			"%-15s %-15s %7s %-18s | %-15s %-18s %8s %-15s",
+			"%-15s %-15s %7s %-18s %-8s | %-15s %-18s %8s %-15s",
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV2_TYPE][1], 15),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_TYPE][1], 15),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_END_COLUMN][1], 7),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_EARLIEST_ANCESTOR][1], 18),
+			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_PREV_ANCESTOR_WIDTH][1], 8),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_TYPE][1], 15),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_EARLIEST_ANCESTOR][1], 18),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_ANCESTOR_WIDTH][1], 7),
 			StringUtils.center(ABBREV_FEATURE_NAMES[INDEX_NEXT_TYPE][1], 15)
 		                             );
 		String line = String.format(
-			"%-15s %-15s %7s %-18s | %-15s %-18s %8s %-15s",
+			"%-15s %-15s %7s %-18s %-8s | %-15s %-18s %8s %-15s",
 			Tool.sequence(15,"="),
 			Tool.sequence(15,"="),
 			Tool.sequence(7,"="),
 			Tool.sequence(18,"="),
+			Tool.sequence(8,"="),
 			Tool.sequence(15,"="),
 			Tool.sequence(18,"="),
 			Tool.sequence(8,"="),
