@@ -198,7 +198,6 @@ public class CollectFeatures extends JavaBaseListener {
 			prev = p;
 			p = p.getParent();
 		}
-		if ( prev==null ) return node;
 		return prev;
 	}
 
