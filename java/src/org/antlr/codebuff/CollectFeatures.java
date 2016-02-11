@@ -57,14 +57,7 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static final int MAX_L0_DISTANCE_COUNT = Tool.sum(mismatchCost);
 
-	public static final boolean[] CATEGORICAL = { // TODO: remove this.
-		true,
-		true, false, true, false,
-		true, true, false,
-		true
-	};
-
-	public static enum FeatureType { TOKEN, RULE, INT };
+	public enum FeatureType { TOKEN, RULE, INT };
 
 	public static final FeatureType[] FEATURE_TYPES = {
 		FeatureType.TOKEN,

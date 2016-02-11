@@ -11,8 +11,6 @@ import java.util.Map;
 public abstract class kNNClassifier {
 	protected List<int[]> X;
 	protected List<Integer> Y;
-	protected boolean[] categorical;
-//	public final int numCategories;
 	public boolean dumpVotes = false;
 
 	public class Neighbor {
@@ -34,11 +32,9 @@ public abstract class kNNClassifier {
 		}
 	}
 
-	public kNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
+	public kNNClassifier(List<int[]> X, List<Integer> Y) {
 		this.X = X;
 		this.Y = Y;
-		this.categorical = categorical;
-//		numCategories = max(Y) + 1;
 	}
 
 	public int classify(int k, int[] unknown) {

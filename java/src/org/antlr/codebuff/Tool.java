@@ -297,10 +297,12 @@ public class Tool {
 	/** A distance of 0 should count much more than non-0. Also, penalize
 	 *  mismatches closer to current token than those farther away.
 	 */
-	public static int weightedL0_Distance(boolean[] categorical, int[] A, int[] B) {
+	public static int weightedL0_Distance(CollectFeatures.FeatureType[] featureTypes, int[] A, int[] B) {
 		int count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
-			if ( categorical[i] ) {
+			if ( featureTypes[i]==CollectFeatures.FeatureType.TOKEN ||
+				 featureTypes[i]==CollectFeatures.FeatureType.RULE )
+			{
 				if ( A[i] != B[i] ) {
 					count += CollectFeatures.mismatchCost[i];
 				}

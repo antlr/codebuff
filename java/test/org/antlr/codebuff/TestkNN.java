@@ -25,7 +25,7 @@ public class TestkNN {
 
 	public static class CategoricalkNNClassifier extends kNNClassifier {
 		public CategoricalkNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
-			super(X, Y, categorical);
+			super(X, Y);
 		}
 
 		public double distance(int[] A, int[] B) {

@@ -31,50 +31,9 @@ import java.util.List;
 
 public class CodekNNClassifier extends kNNClassifier {
 
-	public CodekNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
-		super(X, Y, categorical);
+	public CodekNNClassifier(List<int[]> X, List<Integer> Y) {
+		super(X, Y);
 	}
-
-//	public int classify(int k, int[] unknown, double distanceThreshold) {
-//		Map<Integer, Double> votes = __votes(k, unknown, distanceThreshold);
-//		double max = Double.MIN_VALUE;
-//		int catWithMostVotes = 0;
-//		for (Integer category : votes.keySet()) {
-//			if ( votes.get(category) > max ) {
-//				max = votes.get(category);
-//				catWithMostVotes = category;
-//			}
-//		}
-//
-//		return catWithMostVotes;
-//	}
-//
-//	public Map<Integer, Double> __votes(int k, int[] unknown, double distanceThreshold) {
-//		Neighbor[] kNN = kNN(k, unknown);
-////		HashBag<Integer> votes = new HashBag<>();
-//
-//		Map<Integer, Double> votes = new HashMap<>();
-//		for (int i=0; i<k && i<kNN.length; i++) {
-//			// Don't count any votes for training samples too distant.
-//			if ( kNN[i].distance > distanceThreshold ) break;
-//			// now give more weight to closer matches. Distance is P(match)
-//			// so 1-P(match) gives boost to P(match)=1.0 and kills P(match)=0.0 cases
-//			double d = kNN[i].distance;
-//			int cat = kNN[i].category;
-//			Double existing = votes.get(cat);
-//			if ( existing==null ) {
-//				votes.put(cat, 1.0);
-//			}
-//			else {
-//				votes.put(cat, existing+(1-d));
-//			}
-//		}
-//		if ( dumpVotes ) {
-//			System.out.println(toString(unknown)+"->"+Arrays.toString(kNN)+"->"+votes);
-//		}
-//
-//		return votes;
-//	}
 
 	/** Compute distance as a probability of match, based
 	 *  solely on context information.
@@ -83,7 +42,7 @@ public class CodekNNClassifier extends kNNClassifier {
 	 */
 	public double distance(int[] A, int[] B) {
 //		return ((float)Tool.L0_Distance(categorical, A, B))/num_categorical;
-		float d = (float) Tool.weightedL0_Distance(categorical, A, B);
+		float d = (float) Tool.weightedL0_Distance(CollectFeatures.FEATURE_TYPES, A, B);
 		return d / CollectFeatures.MAX_L0_DISTANCE_COUNT;
 	}
 

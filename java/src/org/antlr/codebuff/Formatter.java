@@ -44,20 +44,16 @@ public class Formatter extends JavaBaseListener {
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new CodekNNClassifier(corpus.X,
-												  corpus.injectNewlines,
-												  CollectFeatures.CATEGORICAL);
+												  corpus.injectNewlines);
 		wsClassifier = new CodekNNClassifier(corpus.X,
-											 corpus.injectWS,
-											 CollectFeatures.CATEGORICAL);
+											 corpus.injectWS);
 
 		indentClassifier = new CodekNNClassifier(corpus.X,
-												 corpus.indent,
-												 CollectFeatures.CATEGORICAL);
+												 corpus.indent);
 //		indentClassifier.dumpVotes = true;
 
 		alignClassifier = new CodekNNClassifier(corpus.X,
-												corpus.levelsToCommonAncestor,
-												CollectFeatures.CATEGORICAL);
+												corpus.levelsToCommonAncestor);
 		k = (int)Math.sqrt(corpus.X.size());
 		this.tabSize = tabSize;
 	}
