@@ -339,18 +339,18 @@ public class CollectFeatures extends JavaBaseListener {
 		Vocabulary v = org.antlr.groom.JavaParser.VOCABULARY;
 		return String.format(
 			"%-15s %-15s %7d %-18s | %-15s %-18s %8d %-15s",
-			v.getDisplayName(features[INDEX_PREV2_TYPE]),
+			StringUtils.center(v.getDisplayName(features[INDEX_PREV2_TYPE]), 15),
 
-			v.getDisplayName(features[INDEX_PREV_TYPE]),
+			StringUtils.center(v.getDisplayName(features[INDEX_PREV_TYPE]), 15),
 			features[INDEX_PREV_END_COLUMN],
 			features[INDEX_PREV_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_PREV_EARLIEST_ANCESTOR]], "..", 18) : "",
 
-			v.getDisplayName(features[INDEX_TYPE]),
+			StringUtils.center(v.getDisplayName(features[INDEX_TYPE]), 15),
 			features[INDEX_EARLIEST_ANCESTOR]>=0 ? StringUtils.abbreviateMiddle(JavaParser.ruleNames[features[INDEX_EARLIEST_ANCESTOR]], "..", 18) : "",
 			features[INDEX_ANCESTOR_WIDTH],
 
-			v.getDisplayName(features[INDEX_NEXT_TYPE])
-		                    );
+			StringUtils.center(v.getDisplayName(features[INDEX_NEXT_TYPE]), 15)
+			                  );
 	}
 
 	public static String featureNameHeader() {
