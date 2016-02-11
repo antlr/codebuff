@@ -100,7 +100,8 @@ public class Formatter extends JavaBaseListener {
 				misclassified++;
 				System.out.println();
 				System.out.printf("### line %d: found %d actual %d:\n",
-								  originalCurToken.getLine(), injectNewline, actual);
+				                  originalCurToken.getLine(), injectNewline, actual);
+				System.out.println(doc.getLine(originalCurToken.getLine()-1));
 				System.out.println(doc.getLine(originalCurToken.getLine()));
 				System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
 				System.out.println("^");
