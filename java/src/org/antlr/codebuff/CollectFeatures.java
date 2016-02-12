@@ -38,8 +38,8 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static final String[][] ABBREV_FEATURE_NAMES = {
 		{"", "LT(-2)"},
-		{"", "LT(-1)"},  {"LT(-1)", "end col"}, {"LT(-1)", "right ancestor"}, {"ancest.", "width"},
-		{"", "LT(1)"},    {"LT(1)", "left ancestor"}, {"ancest.", "width"},
+		{"", "LT(-1)"},  {"LT(-1)", "end col"},      {"LT(-1)", "right ancestor"}, {"ancest.", "width"},
+		{"", "LT(1)"},   {"LT(1)", "left ancestor"}, {"ancest.", "width"},
 		{"", "LT(2)"},
 	};
 
@@ -57,9 +57,16 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static final int MAX_L0_DISTANCE_COUNT = Tool.sum(mismatchCost);
 
-	public enum FeatureType { TOKEN, RULE, INT };
+	public enum FeatureType {
+		TOKEN(12), RULE(15), INT(7);
+		public int displayWidth;
 
-	public static final FeatureType[] FEATURE_TYPES = {
+		FeatureType(int displayWidth) {
+			this.displayWidth = displayWidth;
+		}
+	};
+
+	public static final FeatureType[] FEATURES = {
 		FeatureType.TOKEN,
 		FeatureType.TOKEN,
 		FeatureType.INT,
@@ -69,18 +76,6 @@ public class CollectFeatures extends JavaBaseListener {
 		FeatureType.RULE,
 		FeatureType.INT,
 		FeatureType.TOKEN
-	};
-
-	public static final int[] featureDisplayWidth = {
-		12, // INDEX_PREV2_TYPE
-		12, // INDEX_PREV_TYPE
-		7,  // INDEX_PREV_END_COLUMN
-		15, // INDEX_PREV_EARLIEST_ANCESTOR
-		7,  // INDEX_PREV_ANCESTOR_WIDTH
-		12, // INDEX_TYPE
-		15, // INDEX_EARLIEST_ANCESTOR
-		7,  // INDEX_ANCESTOR_WIDTH
-		12  // INDEX_NEXT_TYPE
 	};
 
 	protected ParserRuleContext root;
@@ -360,34 +355,34 @@ public class CollectFeatures extends JavaBaseListener {
 	public static String _toString(int[] features) {
 		Vocabulary v = JavaParser.VOCABULARY;
 		StringBuilder buf = new StringBuilder();
-		for (int i=0; i<featureDisplayWidth.length; i++) {
+		for (int i=0; i<FEATURES.length; i++) {
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			switch ( FEATURE_TYPES[i] ) {
+			switch ( FEATURES[i] ) {
 				case TOKEN :
 					String tokenName = v.getDisplayName(features[i]);
-					String abbrev = StringUtils.abbreviateMiddle(tokenName, "*", featureDisplayWidth[i]);
-					String centered = StringUtils.center(abbrev, featureDisplayWidth[i]);
-					buf.append(String.format("%"+featureDisplayWidth[i]+"s", centered));
+					String abbrev = StringUtils.abbreviateMiddle(tokenName, "*", FEATURES[i].displayWidth);
+					String centered = StringUtils.center(abbrev, FEATURES[i].displayWidth);
+					buf.append(String.format("%"+FEATURES[i].displayWidth+"s", centered));
 					break;
 				case RULE :
 					if ( features[i]>=0 ) {
 						String ruleName = JavaParser.ruleNames[features[i]];
-						abbrev = StringUtils.abbreviateMiddle(ruleName, "*", featureDisplayWidth[i]);
-						buf.append(String.format("%"+featureDisplayWidth[i]+"s", abbrev));
+						abbrev = StringUtils.abbreviateMiddle(ruleName, "*", FEATURES[i].displayWidth);
+						buf.append(String.format("%"+FEATURES[i].displayWidth+"s", abbrev));
 					}
 					else {
-						buf.append(Tool.sequence(featureDisplayWidth[i], " "));
+						buf.append(Tool.sequence(FEATURES[i].displayWidth, " "));
 					}
 					break;
 				case INT :
 					if ( features[i]>=0 ) {
-						buf.append(String.format("%"+featureDisplayWidth[i]+"s", String.valueOf(features[i])));
+						buf.append(String.format("%"+FEATURES[i].displayWidth+"s", String.valueOf(features[i])));
 					}
 					else {
-						buf.append(Tool.sequence(featureDisplayWidth[i], " "));
+						buf.append(Tool.sequence(FEATURES[i].displayWidth, " "));
 					}
 					break;
 			}
@@ -397,28 +392,28 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static String featureNameHeader() {
 		StringBuilder buf = new StringBuilder();
-		for (int i=0; i<featureDisplayWidth.length; i++) {
+		for (int i=0; i<FEATURES.length; i++) {
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][0], featureDisplayWidth[i]));
+			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][0], FEATURES[i].displayWidth));
 		}
 		buf.append("\n");
-		for (int i=0; i<featureDisplayWidth.length; i++) {
+		for (int i=0; i<FEATURES.length; i++) {
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][1], featureDisplayWidth[i]));
+			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][1], FEATURES[i].displayWidth));
 		}
 		buf.append("\n");
-		for (int i=0; i<featureDisplayWidth.length; i++) {
+		for (int i=0; i<FEATURES.length; i++) {
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			buf.append(Tool.sequence(featureDisplayWidth[i],"="));
+			buf.append(Tool.sequence(FEATURES[i].displayWidth,"="));
 		}
 		buf.append("\n");
 		return buf.toString();

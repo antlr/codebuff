@@ -42,7 +42,7 @@ public class CodekNNClassifier extends kNNClassifier {
 	 */
 	public double distance(int[] A, int[] B) {
 //		return ((float)Tool.L0_Distance(categorical, A, B))/num_categorical;
-		float d = (float) Tool.weightedL0_Distance(CollectFeatures.FEATURE_TYPES, A, B);
+		float d = (float) Tool.weightedL0_Distance(CollectFeatures.FEATURES, A, B);
 		return d / CollectFeatures.MAX_L0_DISTANCE_COUNT;
 	}
 
