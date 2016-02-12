@@ -13,7 +13,7 @@ public class InputDocument {
 	public int index;
 	public ParserRuleContext tree;
 	public CommonTokenStream tokens;
-	public List<int[]> features;
+	public List<int[]> featureVectors;
 	public List<Integer> injectNewlines;
 	public List<Integer> injectWS;
 	public List<Integer> indent;

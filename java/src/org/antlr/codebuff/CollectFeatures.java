@@ -17,26 +17,30 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures extends JavaBaseListener {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.14;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.10;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
-	public static final int INDEX_PREV_END_COLUMN   = 2;
-	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 3;
-	public static final int INDEX_PREV_ANCESTOR_WIDTH = 4;
-	public static final int INDEX_TYPE              = 5;
-	public static final int INDEX_EARLIEST_ANCESTOR = 6;
-	public static final int INDEX_ANCESTOR_WIDTH    = 7;
-	public static final int INDEX_NEXT_TYPE         = 8;
+	public static final int INDEX_PREV_RULE         = 2; // what rule is prev token in?
+	public static final int INDEX_PREV_END_COLUMN   = 3;
+	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 4;
+	public static final int INDEX_PREV_ANCESTOR_WIDTH = 5;
+	public static final int INDEX_TYPE              = 6;
+	public static final int INDEX_RULE              = 7; // what rule are we in?
+	public static final int INDEX_EARLIEST_ANCESTOR = 8;
+	public static final int INDEX_ANCESTOR_WIDTH    = 9;
+	public static final int INDEX_NEXT_TYPE         = 10;
 
 	public static FeatureMetaData[] FEATURES = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"LT(-1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 2),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 2)
 	};
@@ -221,6 +225,7 @@ public class CollectFeatures extends JavaBaseListener {
 		Token prevToken = tokens.LT(-1);
 		TerminalNode prevTerminalNode = tokenToNodeMap.get(prevToken);
 		ParserRuleContext parent = (ParserRuleContext)prevTerminalNode.getParent();
+		int prevTokenRuleIndex = parent.getRuleIndex();
 		ParserRuleContext earliestAncestor = earliestAncestorStoppingAtToken(parent, prevToken);
 		int prevEarliestAncestorRuleIndex = -1;
 		int prevEarliestAncestorWidth = -1;
@@ -231,6 +236,7 @@ public class CollectFeatures extends JavaBaseListener {
 
 		// Get context information for current token
 		parent = (ParserRuleContext)node.getParent();
+		int curTokenRuleIndex = parent.getRuleIndex();
 		earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
 		int earliestAncestorRuleIndex = -1;
 		int earliestAncestorWidth = -1;
@@ -242,8 +248,17 @@ public class CollectFeatures extends JavaBaseListener {
 
 		int[] features = {
 			window.get(0).getType(),
-			window.get(1).getType(), prevTokenEndCharPos, prevEarliestAncestorRuleIndex, prevEarliestAncestorWidth,
-			window.get(2).getType(), earliestAncestorRuleIndex, earliestAncestorWidth,
+
+			window.get(1).getType(),
+			prevTokenRuleIndex,
+			prevTokenEndCharPos,
+			prevEarliestAncestorRuleIndex,
+			prevEarliestAncestorWidth,
+
+			window.get(2).getType(),
+			curTokenRuleIndex,
+			earliestAncestorRuleIndex,
+			earliestAncestorWidth,
 			window.get(3).getType(),
 		};
 //		System.out.print(curToken+": "+CodekNNClassifier._toString(features));

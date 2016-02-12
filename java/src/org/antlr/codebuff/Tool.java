@@ -77,7 +77,7 @@ public class Tool {
 //		bw.write(Utils.join(CollectFeatures.FEATURE_NAMES, ", "));
 		bw.write("\n");
 		for (InputDocument doc : documents) {
-			for (int[] record : doc.features) {
+			for (int[] record : doc.featureVectors) {
 				String r = join(record, ", ");
 				bw.write(r);
 				bw.write('\n');
@@ -100,12 +100,13 @@ public class Tool {
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			process(doc, lexerClass, parserClass, "compilationUnit", tabSize);
-			for (int i=0; i<doc.features.size(); i++) {
+			for (int i=0; i<doc.featureVectors.size(); i++) {
+				int[] featureVec = doc.featureVectors.get(i);
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
 				indent.add(doc.indent.get(i));
 				levelsToCommonAncestor.add(doc.levelsToCommonAncestor.get(i));
-				featureVectors.add(doc.features.get(i));
+				featureVectors.add(featureVec);
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
@@ -124,7 +125,7 @@ public class Tool {
 
 		CollectFeatures collect = new CollectFeatures(doc.tree, doc.tokens, tabSize);
 		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
-		doc.features = collect.getFeatures();
+		doc.featureVectors = collect.getFeatures();
 		doc.injectNewlines = collect.getInjectNewlines();
 		doc.injectWS = collect.getInjectWS();
 		doc.indent = collect.getIndent();
