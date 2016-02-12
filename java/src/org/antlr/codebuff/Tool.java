@@ -10,7 +10,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.misc.Utils;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.BufferedWriter;
@@ -75,7 +74,7 @@ public class Tool {
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
 		FileWriter fw = new FileWriter(dir+"/style.csv");
 		BufferedWriter bw = new BufferedWriter(fw);
-		bw.write(Utils.join(CollectFeatures.FEATURE_NAMES, ", "));
+//		bw.write(Utils.join(CollectFeatures.FEATURE_NAMES, ", "));
 		bw.write("\n");
 		for (InputDocument doc : documents) {
 			for (int[] record : doc.features) {
@@ -297,14 +296,14 @@ public class Tool {
 	/** A distance of 0 should count much more than non-0. Also, penalize
 	 *  mismatches closer to current token than those farther away.
 	 */
-	public static int weightedL0_Distance(CollectFeatures.FeatureType[] featureTypes, int[] A, int[] B) {
+	public static int weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
 		int count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
-			if ( featureTypes[i]==CollectFeatures.FeatureType.TOKEN ||
-				 featureTypes[i]==CollectFeatures.FeatureType.RULE )
+			if ( featureTypes[i].type==FeatureType.TOKEN ||
+				 featureTypes[i].type==FeatureType.RULE )
 			{
 				if ( A[i] != B[i] ) {
-					count += CollectFeatures.mismatchCost[i];
+					count += featureTypes[i].mismatchCost;
 				}
 			}
 		}

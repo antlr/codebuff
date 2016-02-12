@@ -29,54 +29,26 @@ public class CollectFeatures extends JavaBaseListener {
 	public static final int INDEX_ANCESTOR_WIDTH    = 7;
 	public static final int INDEX_NEXT_TYPE         = 8;
 
-	public static final String[] FEATURE_NAMES = {
-		"prev^2 type",
-		"prev type", "prev end column", "previous earliest ancestor rule", "previous earliest ancestor width",
-		"type", "earliest ancestor rule", "earliest ancestor width",
-		"next type",
+	public static FeatureMetaData[] FEATURES = {
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 2)
 	};
 
-	public static final String[][] ABBREV_FEATURE_NAMES = {
-		{"", "LT(-2)"},
-		{"", "LT(-1)"},  {"LT(-1)", "end col"},      {"LT(-1)", "right ancestor"}, {"ancest.", "width"},
-		{"", "LT(1)"},   {"LT(1)", "left ancestor"}, {"ancest.", "width"},
-		{"", "LT(2)"},
-	};
-
-	public static final int[] mismatchCost = {
-		1,  // INDEX_PREV2_TYPE
-		2,  // INDEX_PREV_TYPE
-		1,  // INDEX_PREV_END_COLUMN
-		2,  // INDEX_PREV_EARLIEST_ANCESTOR
-		1,  // INDEX_PREV_ANCESTOR_WIDTH
-		2,  // INDEX_TYPE
-		2,  // INDEX_EARLIEST_ANCESTOR
-		1,  // INDEX_ANCESTOR_WIDTH
-		2   // INDEX_NEXT_TYPE
-	};
-
-	public static final int MAX_L0_DISTANCE_COUNT = Tool.sum(mismatchCost);
-
-	public enum FeatureType {
-		TOKEN(12), RULE(15), INT(7);
-		public int displayWidth;
-
-		FeatureType(int displayWidth) {
-			this.displayWidth = displayWidth;
+	public static final int MAX_L0_DISTANCE_COUNT;
+	static {
+		int n = 0;
+		for (int i=0; i<FEATURES.length; i++) {
+			n += FEATURES[i].mismatchCost;
 		}
-	};
-
-	public static final FeatureType[] FEATURES = {
-		FeatureType.TOKEN,
-		FeatureType.TOKEN,
-		FeatureType.INT,
-		FeatureType.RULE,
-		FeatureType.INT,
-		FeatureType.TOKEN,
-		FeatureType.RULE,
-		FeatureType.INT,
-		FeatureType.TOKEN
-	};
+		MAX_L0_DISTANCE_COUNT = n;
+	}
 
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
@@ -360,29 +332,30 @@ public class CollectFeatures extends JavaBaseListener {
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			switch ( FEATURES[i] ) {
+			int displayWidth = FEATURES[i].type.displayWidth;
+			switch ( FEATURES[i].type ) {
 				case TOKEN :
 					String tokenName = v.getDisplayName(features[i]);
-					String abbrev = StringUtils.abbreviateMiddle(tokenName, "*", FEATURES[i].displayWidth);
-					String centered = StringUtils.center(abbrev, FEATURES[i].displayWidth);
-					buf.append(String.format("%"+FEATURES[i].displayWidth+"s", centered));
+					String abbrev = StringUtils.abbreviateMiddle(tokenName, "*", displayWidth);
+					String centered = StringUtils.center(abbrev, displayWidth);
+					buf.append(String.format("%"+displayWidth+"s", centered));
 					break;
 				case RULE :
 					if ( features[i]>=0 ) {
 						String ruleName = JavaParser.ruleNames[features[i]];
-						abbrev = StringUtils.abbreviateMiddle(ruleName, "*", FEATURES[i].displayWidth);
-						buf.append(String.format("%"+FEATURES[i].displayWidth+"s", abbrev));
+						abbrev = StringUtils.abbreviateMiddle(ruleName, "*", displayWidth);
+						buf.append(String.format("%"+displayWidth+"s", abbrev));
 					}
 					else {
-						buf.append(Tool.sequence(FEATURES[i].displayWidth, " "));
+						buf.append(Tool.sequence(displayWidth, " "));
 					}
 					break;
 				case INT :
 					if ( features[i]>=0 ) {
-						buf.append(String.format("%"+FEATURES[i].displayWidth+"s", String.valueOf(features[i])));
+						buf.append(String.format("%"+displayWidth+"s", String.valueOf(features[i])));
 					}
 					else {
-						buf.append(Tool.sequence(FEATURES[i].displayWidth, " "));
+						buf.append(Tool.sequence(displayWidth, " "));
 					}
 					break;
 			}
@@ -397,7 +370,8 @@ public class CollectFeatures extends JavaBaseListener {
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][0], FEATURES[i].displayWidth));
+			int displayWidth = FEATURES[i].type.displayWidth;
+			buf.append(StringUtils.center(FEATURES[i].abbrevHeaderRows[0], displayWidth));
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {
@@ -405,7 +379,8 @@ public class CollectFeatures extends JavaBaseListener {
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			buf.append(StringUtils.center(ABBREV_FEATURE_NAMES[i][1], FEATURES[i].displayWidth));
+			int displayWidth = FEATURES[i].type.displayWidth;
+			buf.append(StringUtils.center(FEATURES[i].abbrevHeaderRows[1], displayWidth));
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {
@@ -413,7 +388,8 @@ public class CollectFeatures extends JavaBaseListener {
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
-			buf.append(Tool.sequence(FEATURES[i].displayWidth,"="));
+			int displayWidth = FEATURES[i].type.displayWidth;
+			buf.append(Tool.sequence(displayWidth,"="));
 		}
 		buf.append("\n");
 		return buf.toString();
