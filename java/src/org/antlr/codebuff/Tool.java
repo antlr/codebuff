@@ -124,7 +124,8 @@ public class Tool {
 		parse(doc, lexerClass, parserClass, startRuleName);
 
 		CollectFeatures collect = new CollectFeatures(doc.tree, doc.tokens, tabSize);
-		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
+		collect.computeFeatureVectors();
+//		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
 		doc.featureVectors = collect.getFeatures();
 		doc.injectNewlines = collect.getInjectNewlines();
 		doc.injectWS = collect.getInjectWS();

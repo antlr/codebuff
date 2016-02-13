@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
@@ -19,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CollectFeatures extends JavaBaseListener {
+public class CollectFeatures {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.10;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
@@ -101,12 +102,14 @@ public class CollectFeatures extends JavaBaseListener {
 	}
 
 	public void computeFeatureVectors() {
-		for (int i = 0; i<tokens.size(); i++) {
-
+		List<Token> realTokens = getRealTokens(tokens);
+		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
+			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
+			computeFeatureVectorForToken(tokenIndexInStream);
 		}
 	}
 
-	public void computeFeatureVectors(int i) {
+	public void computeFeatureVectorForToken(int i) {
 		if ( tokenToNodeMap.isEmpty() ) indexTree();
 
 		Token curToken = tokens.get(i);
@@ -140,61 +143,6 @@ public class CollectFeatures extends JavaBaseListener {
 			firstTokenOnLine = curToken;
 			ParserRuleContext commonAncestor = getFirstTokenOfCommonAncestor(root, tokens, i, tabSize);
 			List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
-			Collections.reverse(ancestors);
-			levelsToCommonAncestor = ancestors.indexOf(commonAncestor);
-		}
-		else {
-			ws = curToken.getCharPositionInLine() -
-				(prevToken.getCharPositionInLine()+prevToken.getText().length());
-		}
-
-		this.indent.add(columnDelta);
-
-		this.injectWS.add(ws); // likely negative if precedingNL
-
-		this.levelsToCommonAncestor.add(levelsToCommonAncestor);
-
-		this.features.add(features);
-	}
-
-	@Override
-	public void visitTerminal(TerminalNode node) {
-		Token curToken = node.getSymbol();
-		if ( curToken.getType()==Token.EOF ) return;
-
-		tokenToNodeMap.put(curToken, node); // make an index for fast lookup.
-
-		int i = curToken.getTokenIndex();
-		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) return;
-
-		tokens.seek(i); // see so that LT(1) is tokens.get(i);
-		Token prevToken = tokens.LT(-1);
-
-		// find number of blank lines
-		int[] features = getNodeFeatures(tokenToNodeMap, tokens, i, tabSize);
-
-		int precedingNL = 0; // how many lines to inject
-		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
-			List<Token> wsTokensBeforeCurrentToken = tokens.getHiddenTokensToLeft(i);
-			for (Token t : wsTokensBeforeCurrentToken) {
-				precedingNL += Tool.count(t.getText(), '\n');
-			}
-		}
-
-//		System.out.printf("%5s: ", precedingNL);
-//		System.out.printf("%s\n", Tool.toString(features));
-		this.injectNewlines.add(precedingNL);
-
-		int columnDelta = 0;
-		int ws = 0;
-		int levelsToCommonAncestor = 0;
-		if ( precedingNL>0 ) {
-			if ( firstTokenOnLine!=null ) {
-				columnDelta = curToken.getCharPositionInLine() - firstTokenOnLine.getCharPositionInLine();
-			}
-			firstTokenOnLine = curToken;
-			ParserRuleContext commonAncestor = getFirstTokenOfCommonAncestor(root, tokens, i, tabSize);
-			List<? extends Tree> ancestors = Trees.getAncestors(node);
 			Collections.reverse(ancestors);
 			levelsToCommonAncestor = ancestors.indexOf(commonAncestor);
 		}
@@ -491,5 +439,14 @@ public class CollectFeatures extends JavaBaseListener {
 		}
 		buf.append("\n");
 		return buf.toString();
+	}
+
+	public static List<Token> getRealTokens(CommonTokenStream tokens) {
+		List<Token> real = new ArrayList<Token>();
+		for (int i=0; i<tokens.size(); i++) {
+			Token t = tokens.get(i);
+			if ( t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL ) real.add(t);
+		}
+		return real;
 	}
 }
