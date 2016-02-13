@@ -68,7 +68,7 @@ public class CollectFeatures {
 	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
 	protected Token firstTokenOnLine = null;
 
-	protected Map<Token, TerminalNode> tokenToNodeMap = new HashMap<>();
+	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	protected int tabSize;
 
@@ -76,29 +76,6 @@ public class CollectFeatures {
 		this.root = root;
 		this.tokens = tokens;
 		this.tabSize = tabSize;
-	}
-
-	/** Make an index for fast lookup from Token to tree leaf */
-	public void indexTree() {
-		ParseTreeWalker.DEFAULT.walk(
-			new ParseTreeListener() {
-				@Override
-				public void visitTerminal(TerminalNode node) {
-					Token curToken = node.getSymbol();
-					tokenToNodeMap.put(curToken, node);
-				}
-
-				@Override
-				public void visitErrorNode(ErrorNode node) { }
-
-				@Override
-				public void enterEveryRule(ParserRuleContext ctx) { }
-
-				@Override
-				public void exitEveryRule(ParserRuleContext ctx) { }
-			},
-		    root
-		);
 	}
 
 	public void computeFeatureVectors() {
@@ -110,7 +87,9 @@ public class CollectFeatures {
 	}
 
 	public void computeFeatureVectorForToken(int i) {
-		if ( tokenToNodeMap.isEmpty() ) indexTree();
+		if ( tokenToNodeMap == null ) {
+			tokenToNodeMap = indexTree(root);
+		}
 
 		Token curToken = tokens.get(i);
 		if ( curToken.getType()==Token.EOF ) return;
@@ -441,11 +420,43 @@ public class CollectFeatures {
 		return buf.toString();
 	}
 
+	/** Make an index for fast lookup from Token to tree leaf */
+	public static Map<Token, TerminalNode> indexTree(ParserRuleContext root) {
+		Map<Token, TerminalNode> tokenToNodeMap = new HashMap<>();
+		ParseTreeWalker.DEFAULT.walk(
+			new ParseTreeListener() {
+				@Override
+				public void visitTerminal(TerminalNode node) {
+					Token curToken = node.getSymbol();
+					tokenToNodeMap.put(curToken, node);
+				}
+
+				@Override
+				public void visitErrorNode(ErrorNode node) {
+				}
+
+				@Override
+				public void enterEveryRule(ParserRuleContext ctx) {
+				}
+
+				@Override
+				public void exitEveryRule(ParserRuleContext ctx) {
+				}
+			},
+			root
+		                            );
+		return tokenToNodeMap;
+	}
+
 	public static List<Token> getRealTokens(CommonTokenStream tokens) {
 		List<Token> real = new ArrayList<Token>();
 		for (int i=0; i<tokens.size(); i++) {
 			Token t = tokens.get(i);
-			if ( t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL ) real.add(t);
+			if ( t.getType()!=Token.EOF &&
+				 t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL )
+			{
+				real.add(t);
+			}
 		}
 		return real;
 	}
