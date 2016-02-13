@@ -78,7 +78,7 @@ public class Formatter extends JavaBaseListener {
 
 		String tokText = curToken.getText();
 
-		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, tokens, node, tabSize);
+		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, tokens, i, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;

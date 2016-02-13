@@ -4,6 +4,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
@@ -74,6 +77,86 @@ public class CollectFeatures extends JavaBaseListener {
 		this.tabSize = tabSize;
 	}
 
+	/** Make an index for fast lookup from Token to tree leaf */
+	public void indexTree() {
+		ParseTreeWalker.DEFAULT.walk(
+			new ParseTreeListener() {
+				@Override
+				public void visitTerminal(TerminalNode node) {
+					Token curToken = node.getSymbol();
+					tokenToNodeMap.put(curToken, node);
+				}
+
+				@Override
+				public void visitErrorNode(ErrorNode node) { }
+
+				@Override
+				public void enterEveryRule(ParserRuleContext ctx) { }
+
+				@Override
+				public void exitEveryRule(ParserRuleContext ctx) { }
+			},
+		    root
+		);
+	}
+
+	public void computeFeatureVectors() {
+		for (int i = 0; i<tokens.size(); i++) {
+
+		}
+	}
+
+	public void computeFeatureVectors(int i) {
+		if ( tokenToNodeMap.isEmpty() ) indexTree();
+
+		Token curToken = tokens.get(i);
+		if ( curToken.getType()==Token.EOF ) return;
+
+		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) return;
+
+		tokens.seek(i); // see so that LT(1) is tokens.get(i);
+		Token prevToken = tokens.LT(-1);
+
+		// find number of blank lines
+		int[] features = getNodeFeatures(tokenToNodeMap, tokens, i, tabSize);
+
+		int precedingNL = 0; // how many lines to inject
+		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
+			List<Token> wsTokensBeforeCurrentToken = tokens.getHiddenTokensToLeft(i);
+			for (Token t : wsTokensBeforeCurrentToken) {
+				precedingNL += Tool.count(t.getText(), '\n');
+			}
+		}
+
+		this.injectNewlines.add(precedingNL);
+
+		int columnDelta = 0;
+		int ws = 0;
+		int levelsToCommonAncestor = 0;
+		if ( precedingNL>0 ) {
+			if ( firstTokenOnLine!=null ) {
+				columnDelta = curToken.getCharPositionInLine() - firstTokenOnLine.getCharPositionInLine();
+			}
+			firstTokenOnLine = curToken;
+			ParserRuleContext commonAncestor = getFirstTokenOfCommonAncestor(root, tokens, i, tabSize);
+			List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
+			Collections.reverse(ancestors);
+			levelsToCommonAncestor = ancestors.indexOf(commonAncestor);
+		}
+		else {
+			ws = curToken.getCharPositionInLine() -
+				(prevToken.getCharPositionInLine()+prevToken.getText().length());
+		}
+
+		this.indent.add(columnDelta);
+
+		this.injectWS.add(ws); // likely negative if precedingNL
+
+		this.levelsToCommonAncestor.add(levelsToCommonAncestor);
+
+		this.features.add(features);
+	}
+
 	@Override
 	public void visitTerminal(TerminalNode node) {
 		Token curToken = node.getSymbol();
@@ -88,7 +171,7 @@ public class CollectFeatures extends JavaBaseListener {
 		Token prevToken = tokens.LT(-1);
 
 		// find number of blank lines
-		int[] features = getNodeFeatures(tokenToNodeMap, tokens, node, tabSize);
+		int[] features = getNodeFeatures(tokenToNodeMap, tokens, i, tabSize);
 
 		int precedingNL = 0; // how many lines to inject
 		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
@@ -209,12 +292,12 @@ public class CollectFeatures extends JavaBaseListener {
 
 	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
 	                                    CommonTokenStream tokens,
-	                                    TerminalNode node,
+	                                    int i,
 	                                    int tabSize)
 	{
+		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
 		Token curToken = node.getSymbol();
 
-		int i = curToken.getTokenIndex();
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 
 		// Get a 4-gram of tokens with current token in 3rd position
