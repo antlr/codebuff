@@ -9,11 +9,10 @@ import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Formatter extends JavaBaseListener {
+public class Formatter {
 
 	protected StringBuilder output = new StringBuilder();
 	protected InputDocument doc;
@@ -21,7 +20,7 @@ public class Formatter extends JavaBaseListener {
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
 
-	protected Map<Token, TerminalNode> tokenToNodeMap = new HashMap<>();
+	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	protected CodekNNClassifier newlineClassifier;
 	protected CodekNNClassifier wsClassifier;
@@ -62,23 +61,27 @@ public class Formatter extends JavaBaseListener {
 		return output.toString();
 	}
 
-	@Override
-	public void visitTerminal(TerminalNode node) {
-		CommonToken curToken = (CommonToken)node.getSymbol();
-		if ( curToken.getType()==Token.EOF ) return;
-
-		tokenToNodeMap.put(curToken, node); // make an index for fast lookup.
-
-		int i = curToken.getTokenIndex();
-		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) {
-			return;
+	public String format() {
+		if ( tokenToNodeMap == null ) {
+			tokenToNodeMap = CollectFeatures.indexTree(root);
 		}
+
+		List<Token> realTokens = CollectFeatures.getRealTokens(tokens);
+		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
+			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
+			processToken(tokenIndexInStream);
+		}
+		return output.toString();
+	}
+
+	public void processToken(int i) {
+		CommonToken curToken = (CommonToken)tokens.get(i);
 
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 
 		String tokText = curToken.getText();
 
-		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, tokens, node, tabSize);
+		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, tokens, i, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
@@ -111,7 +114,7 @@ public class Formatter extends JavaBaseListener {
 			line++;
 			int levelsToCommonAncestor = alignClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 			if ( levelsToCommonAncestor>0 ) {
-				List<? extends Tree> ancestors = Trees.getAncestors(node);
+				List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
 				Collections.reverse(ancestors);
 				ParserRuleContext commonAncestor =
 					(ParserRuleContext)ancestors.get(levelsToCommonAncestor);
@@ -144,5 +147,4 @@ public class Formatter extends JavaBaseListener {
 		output.append(tokText);
 		charPosInLine += tokText.length();
 	}
-
 }

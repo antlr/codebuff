@@ -10,7 +10,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -52,12 +51,12 @@ public class Tool {
 	{
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
-		ParseTreeWalker.DEFAULT.walk(formatter, testDoc.tree);
+		String formattedOutput = formatter.format();
 		System.out.println("misclassified: "+formatter.misclassified);
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
-		return prefix+formatter.getOutput();
+		return prefix+formattedOutput;
 	}
 
 	public static Corpus train(String rootDir,
@@ -124,7 +123,8 @@ public class Tool {
 		parse(doc, lexerClass, parserClass, startRuleName);
 
 		CollectFeatures collect = new CollectFeatures(doc.tree, doc.tokens, tabSize);
-		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
+		collect.computeFeatureVectors();
+//		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
 		doc.featureVectors = collect.getFeatures();
 		doc.injectNewlines = collect.getInjectNewlines();
 		doc.injectWS = collect.getInjectWS();
