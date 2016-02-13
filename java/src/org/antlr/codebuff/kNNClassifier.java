@@ -9,6 +9,7 @@ import java.util.Map;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
+	protected List<InputDocument> documents;
 	protected List<int[]> X;
 	protected List<Integer> Y;
 	public boolean dumpVotes = false;
@@ -26,13 +27,16 @@ public abstract class kNNClassifier {
 
 		@Override
 		public String toString() {
-//			return String.format("(@%d,cat=%d,d=%1.2f)", corpusVectorIndex, category, distance);
-			String features = CollectFeatures._toString(X.get(corpusVectorIndex));
-			return String.format("%s (cat=%d,d=%1.2f)", features, category, distance);
+			int[] X = kNNClassifier.this.X.get(corpusVectorIndex);
+			String features = CollectFeatures._toString(X);
+			InputDocument doc = documents.get(corpusVectorIndex);
+			int line = CollectFeatures.getInfoLine(X);
+			return String.format("%s (cat=%d,d=%1.2f): %s", features, category, distance, doc.getLine(line));
 		}
 	}
 
-	public kNNClassifier(List<int[]> X, List<Integer> Y) {
+	public kNNClassifier(List<InputDocument> documents, List<int[]> X, List<Integer> Y) {
+		this.documents = documents;
 		this.X = X;
 		this.Y = Y;
 	}
@@ -85,7 +89,7 @@ public abstract class kNNClassifier {
 		if ( dumpVotes ) {
 			System.out.print(CollectFeatures.featureNameHeader());
 			System.out.println(toString(unknown)+"->"+votes);
-			kNN = Arrays.copyOfRange(kNN, 0,16);
+			kNN = Arrays.copyOfRange(kNN, 0,25);
 			System.out.println(Utils.join(kNN, "\n"));
 		}
 //		System.out.println(Arrays.toString(charPos));
@@ -96,13 +100,13 @@ public abstract class kNNClassifier {
 	}
 
 	public Neighbor[] kNN(int k, int[] unknown) {
-		Neighbor[] distances = distances(k, unknown);
+		Neighbor[] distances = distances(unknown);
 		Arrays.sort(distances,
 		            (Neighbor o1, Neighbor o2) -> Double.compare(o1.distance,o2.distance));
 		return Arrays.copyOfRange(distances, 0, k);
 	}
 
-	public Neighbor[] distances(int k, int[] unknown) {
+	public Neighbor[] distances(int[] unknown) {
 		int n = X.size(); // num training samples
 		Neighbor[] distances = new Neighbor[n];
 		for (int i=0; i<n; i++) {

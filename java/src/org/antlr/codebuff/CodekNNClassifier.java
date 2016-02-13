@@ -31,8 +31,8 @@ import java.util.List;
 
 public class CodekNNClassifier extends kNNClassifier {
 
-	public CodekNNClassifier(List<int[]> X, List<Integer> Y) {
-		super(X, Y);
+	public CodekNNClassifier(List<InputDocument> documents, List<int[]> X, List<Integer> Y) {
+		super(documents, X, Y);
 	}
 
 	/** Compute distance as a probability of match, based

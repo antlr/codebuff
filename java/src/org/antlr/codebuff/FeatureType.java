@@ -1,7 +1,8 @@
 package org.antlr.codebuff;
 
 public enum FeatureType {
-	TOKEN(12), RULE(15), INT(7);
+	TOKEN(12), RULE(14), INT(7),
+	INFO_FILE(4), INFO_LINE(5), INFO_CHARPOS(3);
 	public int displayWidth;
 
 	FeatureType(int displayWidth) {

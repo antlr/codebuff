@@ -42,16 +42,20 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
-		newlineClassifier = new CodekNNClassifier(corpus.X,
+		newlineClassifier = new CodekNNClassifier(corpus.documents,
+												  corpus.X,
 												  corpus.injectNewlines);
-		wsClassifier = new CodekNNClassifier(corpus.X,
+		wsClassifier = new CodekNNClassifier(corpus.documents,
+											 corpus.X,
 											 corpus.injectWS);
 
-		indentClassifier = new CodekNNClassifier(corpus.X,
+		indentClassifier = new CodekNNClassifier(corpus.documents,
+												 corpus.X,
 												 corpus.indent);
 //		indentClassifier.dumpVotes = true;
 
-		alignClassifier = new CodekNNClassifier(corpus.X,
+		alignClassifier = new CodekNNClassifier(corpus.documents,
+												corpus.X,
 												corpus.levelsToCommonAncestor);
 		k = (int)Math.sqrt(corpus.X.size());
 		this.tabSize = tabSize;
@@ -81,7 +85,7 @@ public class Formatter {
 
 		String tokText = curToken.getText();
 
-		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, tokens, i, tabSize);
+		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, doc, i, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
@@ -97,7 +101,7 @@ public class Formatter {
 			if ( injectNewline!=actual ) {
 				misclassified++;
 				System.out.println();
-				System.out.printf("### line %d: found %d actual %d:\n",
+				System.out.printf("### line %d: predicted %d actual %d:\n",
 				                  originalCurToken.getLine(), injectNewline, actual);
 				System.out.println(doc.getLine(originalCurToken.getLine()-1));
 				System.out.println(doc.getLine(originalCurToken.getLine()));

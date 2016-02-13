@@ -25,7 +25,7 @@ public class TestkNN {
 
 	public static class CategoricalkNNClassifier extends kNNClassifier {
 		public CategoricalkNNClassifier(List<int[]> X, List<Integer> Y, boolean[] categorical) {
-			super(X, Y);
+			super(null, X, Y);
 		}
 
 		public double distance(int[] A, int[] B) {
@@ -82,7 +82,7 @@ public class TestkNN {
 	public void testDistances() {
 		int k = 3;
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
-		kNNClassifier.Neighbor[] distances = c.distances(k, new int[] {T0,T0});
+		kNNClassifier.Neighbor[] distances = c.distances(new int[] {T0,T0});
 		String expecting =
 			"(cat=0,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
 			"(cat=1,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00), " +
@@ -90,7 +90,7 @@ public class TestkNN {
 		String result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(k, new int[] {T0,T1});
+		distances = c.distances(new int[] {T0,T1});
 		expecting =
 			"(cat=0,d=0.50), (cat=1,d=0.00), (cat=2,d=0.50), " +
 			"(cat=1,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00), " +
@@ -98,7 +98,7 @@ public class TestkNN {
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(k, new int[] {T1,T0});
+		distances = c.distances(new int[] {T1,T0});
 		expecting =
 			"(cat=0,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00), " +
 			"(cat=1,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
@@ -106,7 +106,7 @@ public class TestkNN {
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(k, new int[] {T1,T1});
+		distances = c.distances(new int[] {T1,T1});
 		expecting =
 			"(cat=0,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00), " +
 			"(cat=1,d=0.50), (cat=1,d=0.00), (cat=2,d=0.50), " +
@@ -114,7 +114,7 @@ public class TestkNN {
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(k, new int[] {T1,T2});
+		distances = c.distances(new int[] {T1,T2});
 		expecting =
 			"(cat=0,d=1.00), (cat=1,d=1.00), (cat=2,d=0.50), " +
 			"(cat=1,d=0.50), (cat=1,d=0.50), (cat=2,d=0.00), " +

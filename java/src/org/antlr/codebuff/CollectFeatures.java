@@ -34,20 +34,30 @@ public class CollectFeatures {
 	public static final int INDEX_EARLIEST_ANCESTOR = 8;
 	public static final int INDEX_ANCESTOR_WIDTH    = 9;
 	public static final int INDEX_NEXT_TYPE         = 10;
+	public static final int INDEX_INFO_FILE         = 11;
+	public static final int INDEX_INFO_LINE         = 12;
+	public static final int INDEX_INFO_CHARPOS      = 13;
 
 	public static FeatureMetaData[] FEATURES = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
-		new FeatureMetaData(FeatureType.RULE, new String[] {"LT(-1)", "rule"}, 2),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.RULE, new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 1),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 2)
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 2),
+		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
+
+	public static int getCurrentTokenType(int[] features) { return features[INDEX_TYPE]; }
+	public static int getInfoLine(int[] features) { return features[INDEX_INFO_LINE]; }
+	public static int getInfoCharPos(int[] features) { return features[INDEX_INFO_CHARPOS]; }
 
 	public static final int MAX_L0_DISTANCE_COUNT;
 	static {
@@ -58,6 +68,7 @@ public class CollectFeatures {
 		MAX_L0_DISTANCE_COUNT = n;
 	}
 
+	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<int[]> features = new ArrayList<>();
@@ -72,9 +83,10 @@ public class CollectFeatures {
 
 	protected int tabSize;
 
-	public CollectFeatures(ParserRuleContext root, CommonTokenStream tokens, int tabSize) {
-		this.root = root;
-		this.tokens = tokens;
+	public CollectFeatures(InputDocument doc, int tabSize) {
+		this.doc = doc;
+		this.root = doc.tree;
+		this.tokens = doc.tokens;
 		this.tabSize = tabSize;
 	}
 
@@ -94,13 +106,11 @@ public class CollectFeatures {
 		Token curToken = tokens.get(i);
 		if ( curToken.getType()==Token.EOF ) return;
 
-		if ( Tool.getNumberRealTokens(tokens, 0, i-1)<2 ) return;
-
 		tokens.seek(i); // see so that LT(1) is tokens.get(i);
 		Token prevToken = tokens.LT(-1);
 
 		// find number of blank lines
-		int[] features = getNodeFeatures(tokenToNodeMap, tokens, i, tabSize);
+		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, tabSize);
 
 		int precedingNL = 0; // how many lines to inject
 		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
@@ -218,10 +228,11 @@ public class CollectFeatures {
 	}
 
 	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
-	                                    CommonTokenStream tokens,
+										InputDocument doc,
 	                                    int i,
 	                                    int tabSize)
 	{
+		CommonTokenStream tokens = doc.tokens;
 		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
 		Token curToken = node.getSymbol();
 
@@ -270,6 +281,11 @@ public class CollectFeatures {
 			earliestAncestorRuleIndex,
 			earliestAncestorWidth,
 			window.get(3).getType(),
+
+			// info
+			0, // file
+			curToken.getLine(),
+			curToken.getCharPositionInLine()
 		};
 //		System.out.print(curToken+": "+CodekNNClassifier._toString(features));
 		return features;
@@ -376,6 +392,8 @@ public class CollectFeatures {
 					}
 					break;
 				case INT :
+				case INFO_LINE:
+				case INFO_CHARPOS:
 					if ( features[i]>=0 ) {
 						buf.append(String.format("%"+displayWidth+"s", String.valueOf(features[i])));
 					}
@@ -383,6 +401,11 @@ public class CollectFeatures {
 						buf.append(Tool.sequence(displayWidth, " "));
 					}
 					break;
+				case INFO_FILE:
+					buf.append(Tool.sequence(displayWidth, " "));
+					break;
+				default :
+					System.err.println("NO STRING FOR FEATURE TYPE: "+ FEATURES[i].type);
 			}
 		}
 		return buf.toString();

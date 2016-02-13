@@ -91,6 +91,7 @@ public class Tool {
 										   int tabSize)
 		throws Exception
 	{
+		List<InputDocument> documents = new ArrayList<>();
 		List<int[]> featureVectors = new ArrayList<>();
 		List<Integer> injectNewlines = new ArrayList<>();
 		List<Integer> injectWS = new ArrayList<>();
@@ -100,6 +101,7 @@ public class Tool {
 			if ( showFileNames ) System.out.println(doc);
 			process(doc, lexerClass, parserClass, "compilationUnit", tabSize);
 			for (int i=0; i<doc.featureVectors.size(); i++) {
+				documents.add(doc);
 				int[] featureVec = doc.featureVectors.get(i);
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
@@ -109,7 +111,7 @@ public class Tool {
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(featureVectors, injectNewlines, injectWS, indent, levelsToCommonAncestor);
+		return new Corpus(documents, featureVectors, injectNewlines, injectWS, indent, levelsToCommonAncestor);
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
@@ -122,7 +124,7 @@ public class Tool {
 	{
 		parse(doc, lexerClass, parserClass, startRuleName);
 
-		CollectFeatures collect = new CollectFeatures(doc.tree, doc.tokens, tabSize);
+		CollectFeatures collect = new CollectFeatures(doc, tabSize);
 		collect.computeFeatureVectors();
 //		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
 		doc.featureVectors = collect.getFeatures();
