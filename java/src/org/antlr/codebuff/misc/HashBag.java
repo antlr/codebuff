@@ -1,15 +1,14 @@
-package org.antlr.codebuff;
+package org.antlr.codebuff.misc;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class HashBag<T> implements Map<T, Integer> {
-	protected Map<T, MutableInt> data = new HashMap<T, MutableInt>();
+	protected Map<T, MutableInt> data = new HashMap<>();
 
 	public static class MutableInt {
 		public int i;
@@ -113,5 +112,18 @@ public class HashBag<T> implements Map<T, Integer> {
 	@Override
 	public String toString() {
 		return data.toString();
+	}
+
+	public T getMostFrequent() {
+		T t = null;
+		int max = 0;
+		for (T key : data.keySet()) {
+			MutableInt count = data.get(key);
+			if ( count.asInt()>max ) {
+				max = count.asInt();
+				t = key;
+			}
+		}
+		return t;
 	}
 }
