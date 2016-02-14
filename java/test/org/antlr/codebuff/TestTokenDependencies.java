@@ -22,27 +22,27 @@ import java.util.Set;
  * Sample counts of rule nodes and unique token lists:
 
  80 block: ['{', '}']
-197 blockStatement:
-  3 classBody: ['{', '}']
+ 197 blockStatement:
+ 3 classBody: ['{', '}']
  52 classBodyDeclaration:
-  5 typeArguments: ['<', ',', '>']
-  9 typeArguments: ['<', '>']
+ 5 typeArguments: ['<', ',', '>']
+ 9 typeArguments: ['<', '>']
  14 qualifiedName: [Identifier, '.', Identifier, '.', Identifier]
-  6 qualifiedName: [Identifier]
-  1 typeDeclaration:
-  8 typeSpec: ['[', ']']
-173 typeSpec:
+ 6 qualifiedName: [Identifier]
+ 1 typeDeclaration:
+ 8 typeSpec: ['[', ']']
+ 173 typeSpec:
  40 parExpression: ['(', ')']
-  1 classDeclaration: ['class', Identifier, 'extends']
-  2 classDeclaration: ['class', Identifier]
-  1 enumDeclaration: ['enum', Identifier, '{', '}']
-  1 expression: ['!']
-  9 expression: ['!=']
-  2 expression: ['&&']
-109 expression: ['(', ')']
-  1 forControl: [';', ';']
-  3 forControl:
-...
+ 1 classDeclaration: ['class', Identifier, 'extends']
+ 2 classDeclaration: ['class', Identifier]
+ 1 enumDeclaration: ['enum', Identifier, '{', '}']
+ 1 expression: ['!']
+ 9 expression: ['!=']
+ 2 expression: ['&&']
+ 109 expression: ['(', ')']
+ 1 forControl: [';', ';']
+ 3 forControl:
+ ...
 
  Repeated tokens should not be counted as most likely they are separators or terminators
  but not always. E.g., forControl: [';', ';']
@@ -101,9 +101,27 @@ import java.util.Set;
  and then would pick ('return',';') as the dependency. Ah. We need pairs
  not by rule but rule and which alternative. Otherwise rules with lots of
  alts will not be able to pick stuff out. Well, that info isn't available
- except for interpreted parsing. dang.
-  */
+ except for interpreted parsing. dang. I would have to subclass the
+ ATN simulator to create different context objects. Doable but ignore for now.
+
+ For matching symbols like {}, [], let's use that info to get a unique match
+ when this algorithm doesn't give one.
+ */
 public class TestTokenDependencies {
+	/** a bit of "overfitting" or tailoring to the most common pairs in all
+	 *  computer languages to improve accuracy when choosing pairs.
+	 *  I.e., it never makes sense to choose ('@',')') when ('(',')') is
+	 *  available.  Don't assume these pairs exist, just give them
+	 *  preference IF they exist in the dependency pairs.
+	 */
+	public static final char[] CommonPairs = new char[255];
+	static {
+		CommonPairs['}'] = '{';
+		CommonPairs[')'] = '(';
+		CommonPairs[']'] = '[';
+		CommonPairs['>'] = '<';
+	}
+
 	public static class Foo extends JavaBaseListener {
 		// ack. Map a rule name to a bag of (t1,t2) tuples that counts occurrences
 		public Map<String,HashBag<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
@@ -157,6 +175,8 @@ public class TestTokenDependencies {
 		Foo listener = new Foo();
 		ParseTreeWalker.DEFAULT.walk(listener, testDoc.tree);
 
+		Vocabulary vocab = JavaParser.VOCABULARY;
+
 		/* strip out tuples (a,b) with a or b in rule dup token set
 		 E.g., before removing ',' dup, we have:
 		 elementValueArrayInitializer: 4:'{',',' 1:'{','}' 4:',','}'
@@ -177,16 +197,48 @@ public class TestTokenDependencies {
 			}
 		}
 
+		// Pick unique matching pairs (a,b). If b is right symbol of
+		// obvious pair like [...], then choose that when ambiguous.
+		Map<String,List<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
 		for (String ruleName : listener.ruleToPairsBag.keySet()) {
 			HashBag<Pair<Integer, Integer>> pairsBag = listener.ruleToPairsBag.get(ruleName);
-			Pair<Integer, Integer> mostFrequentPair = pairsBag.getMostFrequent();
-			String t1name = JavaParser.tokenNames[mostFrequentPair.a];
-			String t2name = JavaParser.tokenNames[mostFrequentPair.b];
-//			System.out.println(ruleName+": "+t1name+" "+t2name);
-			Set<Integer> ruleDups = listener.ruleToDupTokensSet.get(ruleName);
+			Map<Integer, Pair<Integer, Integer>> rightSymbolToPair = new HashMap<>();
+			for (Pair<Integer, Integer> p : pairsBag.keySet()) {
+				Pair<Integer, Integer> existingPair = rightSymbolToPair.get(p.b);
+				String t1name = JavaParser.tokenNames[p.a];
+				String t2name = JavaParser.tokenNames[p.b];
+				if ( existingPair!=null ) {
+//					System.out.println("dup map: "+t1name+","+t2name);
+					String t1literal = vocab.getLiteralName(p.a);
+					String t2literal = vocab.getLiteralName(p.b);
+					if ( t1literal!=null && t1literal.length()==3 &&
+						t2literal!=null && t2literal.length()==3 )
+					{
+						char leftChar = t1literal.charAt(1);
+						char rightChar = t2literal.charAt(1);
+						if ( CommonPairs[rightChar] == leftChar ) {
+//							System.out.println("found pref "+t1name+","+t2name);
+							rightSymbolToPair.put(p.b, p); // remap
+						} // else leave existing pair
+					}
+				}
+				else {
+					rightSymbolToPair.put(p.b, p);
+				}
+			}
+			ruleToPairsBag.put(ruleName, new ArrayList<>(rightSymbolToPair.values()));
+//			System.out.print(ruleName+": ");
+//			for (Pair<Integer,Integer> p : rightSymbolToPair.values()) {
+//				System.out.print(pairsBag.get(p)+":"+JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+//			}
+//			System.out.println();
+		}
+
+		for (String ruleName : ruleToPairsBag.keySet()) {
+			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
 			System.out.print(ruleName+": ");
-			for (Pair<Integer,Integer> p : pairsBag.keySet()) {
-				System.out.print(pairsBag.get(p)+":"+JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+			for (Pair<Integer,Integer> p : pairs) {
+				System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
 			}
 			System.out.println();
 		}
