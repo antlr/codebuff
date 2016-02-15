@@ -9,7 +9,10 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments skipped or on non-HIDDEN channel */
 public class Tool {
@@ -67,6 +71,31 @@ public class Tool {
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), ".*\\.java");
 		List<InputDocument> documents = load(allFiles, lexerClass, tabSize);
+
+		// Parse all documents into parse trees before training begins
+		for (InputDocument doc : documents) {
+			if ( showFileNames ) System.out.println(doc);
+			parse(doc, lexerClass, parserClass, "compilationUnit"); // TODO: make ruleName generic
+		}
+
+		// Walk all documents to compute matching token dependencies (we need this for feature computation)
+		Vocabulary vocab = getLexer(lexerClass, null).getVocabulary();
+		String[] ruleNames = getParser(parserClass, null).getRuleNames();
+		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ruleNames);
+		for (InputDocument doc : documents) {
+			ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
+		}
+		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
+
+		for (String ruleName : ruleToPairsBag.keySet()) {
+			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+			System.out.print(ruleName+": ");
+			for (Pair<Integer,Integer> p : pairs) {
+				System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+			}
+			System.out.println();
+		}
+
 		return processSampleDocs(documents, lexerClass, parserClass, tabSize);
 	}
 
@@ -99,7 +128,9 @@ public class Tool {
 		List<Integer> levelsToCommonAncestor = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc, lexerClass, parserClass, "compilationUnit", tabSize);
+			parse(doc, lexerClass, parserClass, "compilationUnit"); // TODO: make ruleName generic
+			process(doc, tabSize);
+
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
 				int[] featureVec = doc.featureVectors.get(i);
@@ -115,32 +146,24 @@ public class Tool {
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc,
-							   Class<? extends Lexer> lexerClass,
-							   Class<? extends Parser> parserClass,
-							   String startRuleName,
-							   int tabSize)
+	public static void process(InputDocument doc, int tabSize)
 		throws Exception
 	{
-		parse(doc, lexerClass, parserClass, startRuleName);
+		CollectFeatures collector = new CollectFeatures(doc, tabSize);
+		collector.computeFeatureVectors();
 
-		CollectFeatures collect = new CollectFeatures(doc, tabSize);
-		collect.computeFeatureVectors();
-//		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
-		doc.featureVectors = collect.getFeatures();
-		doc.injectNewlines = collect.getInjectNewlines();
-		doc.injectWS = collect.getInjectWS();
-		doc.indent = collect.getIndent();
-		doc.levelsToCommonAncestor = collect.getLevelsToCommonAncestor();
+		doc.featureVectors = collector.getFeatures();
+		doc.injectNewlines = collector.getInjectNewlines();
+		doc.injectWS = collector.getInjectWS();
+		doc.indent = collector.getIndent();
+		doc.levelsToCommonAncestor = collector.getLevelsToCommonAncestor();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
 		throws Exception
 	{
 		ANTLRInputStream input = new ANTLRInputStream(doc);
-		Constructor<? extends Lexer> lexerCtor =
-			lexerClass.getConstructor(CharStream.class);
-		Lexer lexer = lexerCtor.newInstance(input);
+		Lexer lexer = getLexer(lexerClass, input);
 
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		tokens.fill();
@@ -155,13 +178,9 @@ public class Tool {
 		throws Exception
 	{
 		ANTLRInputStream input = new ANTLRInputStream(doc.content);
-		Constructor<? extends Lexer> lexerCtor =
-			lexerClass.getConstructor(CharStream.class);
-		Lexer lexer = lexerCtor.newInstance(input);
+		Lexer lexer = getLexer(lexerClass, input);
 		input.name = doc.fileName;
 
-		Constructor<? extends Parser> parserCtor =
-			parserClass.getConstructor(TokenStream.class);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 
 		if ( showTokens ) {
@@ -171,13 +190,25 @@ public class Tool {
 			}
 		}
 
-		Parser parser = parserCtor.newInstance(tokens);
-		parser.setBuildParseTree(true);
+		doc.parser = getParser(parserClass, tokens);
+		doc.parser.setBuildParseTree(true);
 		Method startRule = parserClass.getMethod(startRuleName);
-		ParserRuleContext tree = (ParserRuleContext)startRule.invoke(parser, (Object[]) null);
+		ParserRuleContext tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[]) null);
 
 		doc.tokens = tokens;
 		doc.tree = tree;
+	}
+
+	public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+		Constructor<? extends Parser> parserCtor =
+			parserClass.getConstructor(TokenStream.class);
+		return parserCtor.newInstance(tokens);
+	}
+
+	public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+		Constructor<? extends Lexer> lexerCtor =
+			lexerClass.getConstructor(CharStream.class);
+		return lexerCtor.newInstance(input);
 	}
 
 	/** Get all file contents into input array */

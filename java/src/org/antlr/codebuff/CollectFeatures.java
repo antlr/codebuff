@@ -30,13 +30,14 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 4;
 	public static final int INDEX_PREV_ANCESTOR_WIDTH = 5;
 	public static final int INDEX_TYPE              = 6;
-	public static final int INDEX_RULE              = 7; // what rule are we in?
-	public static final int INDEX_EARLIEST_ANCESTOR = 8;
-	public static final int INDEX_ANCESTOR_WIDTH    = 9;
-	public static final int INDEX_NEXT_TYPE         = 10;
-	public static final int INDEX_INFO_FILE         = 11;
-	public static final int INDEX_INFO_LINE         = 12;
-	public static final int INDEX_INFO_CHARPOS      = 13;
+	public static final int INDEX_MATCHING_TOKEN_HAD_NL = 7;
+	public static final int INDEX_RULE              = 8; // what rule are we in?
+	public static final int INDEX_EARLIEST_ANCESTOR = 9;
+	public static final int INDEX_ANCESTOR_WIDTH    = 10;
+	public static final int INDEX_NEXT_TYPE         = 11;
+	public static final int INDEX_INFO_FILE         = 12;
+	public static final int INDEX_INFO_LINE         = 13;
+	public static final int INDEX_INFO_CHARPOS      = 14;
 
 	public static FeatureMetaData[] FEATURES = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -46,6 +47,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[] {"Pair", "had\\n"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
@@ -267,6 +269,7 @@ public class CollectFeatures {
 		}
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
+
 		int[] features = {
 			window.get(0).getType(),
 
@@ -276,7 +279,8 @@ public class CollectFeatures {
 			prevEarliestAncestorRuleIndex,
 			prevEarliestAncestorWidth,
 
-			window.get(2).getType(),
+			window.get(2).getType(), // LT(1)
+			0,
 			curTokenRuleIndex,
 			earliestAncestorRuleIndex,
 			earliestAncestorWidth,
@@ -289,6 +293,9 @@ public class CollectFeatures {
 		};
 //		System.out.print(curToken+": "+CodekNNClassifier._toString(features));
 		return features;
+	}
+
+	public static void foo() {
 	}
 
 	public static Token findAlignedToken(List<Token> tokens, Token leftEdgeToken) {
@@ -365,8 +372,7 @@ public class CollectFeatures {
 		return indent;
 	}
 
-	public static String _toString(int[] features) {
-		Vocabulary v = JavaParser.VOCABULARY;
+	public static String _toString(Vocabulary v, String[] ruleNames, int[] features) {
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( i>0 ) buf.append(" ");
@@ -383,7 +389,7 @@ public class CollectFeatures {
 					break;
 				case RULE :
 					if ( features[i]>=0 ) {
-						String ruleName = JavaParser.ruleNames[features[i]];
+						String ruleName = ruleNames[features[i]];
 						abbrev = StringUtils.abbreviateMiddle(ruleName, "*", displayWidth);
 						buf.append(String.format("%"+displayWidth+"s", abbrev));
 					}
@@ -403,6 +409,9 @@ public class CollectFeatures {
 					break;
 				case INFO_FILE:
 					buf.append(Tool.sequence(displayWidth, " "));
+					break;
+				case BOOL :
+					buf.append(features[i]==1?"true":"false");
 					break;
 				default :
 					System.err.println("NO STRING FOR FEATURE TYPE: "+ FEATURES[i].type);

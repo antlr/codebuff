@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ public class InputDocument {
 	public List<String> lines;
 	public int index;
 	public ParserRuleContext tree;
+	public Parser parser;
 	public CommonTokenStream tokens;
 	public List<int[]> featureVectors;
 	public List<Integer> injectNewlines;

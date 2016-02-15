@@ -30,24 +30,19 @@ import java.util.List;
  */
 
 public class CodekNNClassifier extends kNNClassifier {
-
 	public CodekNNClassifier(List<InputDocument> documents, List<int[]> X, List<Integer> Y) {
 		super(documents, X, Y);
 	}
 
-	/** Compute distance as a probability of match, based
-	 *  solely on context information.
-	 *
-	 *  Ratio of num differences / num total context positions.
+	/**
+	 * Compute distance as a probability of match, based
+	 * solely on context information.
+	 * <p>
+	 * Ratio of num differences / num total context positions.
 	 */
 	public double distance(int[] A, int[] B) {
 //		return ((float)Tool.L0_Distance(categorical, A, B))/num_categorical;
 		float d = (float) Tool.weightedL0_Distance(CollectFeatures.FEATURES, A, B);
-		return d / CollectFeatures.MAX_L0_DISTANCE_COUNT;
+		return d/CollectFeatures.MAX_L0_DISTANCE_COUNT;
 	}
-
-	public String toString(int[] features) {
-		return CollectFeatures._toString(features);
-	}
-
 }
