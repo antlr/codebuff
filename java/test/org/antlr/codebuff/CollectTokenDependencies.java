@@ -137,38 +137,41 @@ public class CollectTokenDependencies implements ParseTreeListener {
 	/** We need parser vocabulary so we can filter for literals like '{' vs ID */
 	protected Vocabulary vocab;
 
-	public CollectTokenDependencies(Vocabulary vocab) {
+	protected String[] ruleNames;
+
+	public CollectTokenDependencies(Vocabulary vocab, String[] ruleNames) {
 		this.vocab = vocab;
+		this.ruleNames = ruleNames;
 	}
 
 	@Override
 	public void enterEveryRule(ParserRuleContext ctx) {
-		String ruleName = JavaParser.ruleNames[ctx.getRuleIndex()];
+		String ruleName = ruleNames[ctx.getRuleIndex()];
 		List<TerminalNode> tnodes = getDirectTerminalChildren(ctx);
 		// Find all ordered unique pairs of literals;
 		// no (a,a) pairs and only literals like '{', 'begin', '}', ...
 		// Add a for (a,a) into ruleToRepeatedTokensSet for later filtering
 		for (int i=0; i<tnodes.size(); i++) {
 			for (int j = i+1; j<tnodes.size(); j++) {
-				TerminalNode t1 = tnodes.get(i);
-				TerminalNode t2 = tnodes.get(j);
-				int t1type = t1.getSymbol().getType();
-				int t2type = t2.getSymbol().getType();
+				TerminalNode a = tnodes.get(i);
+				TerminalNode b = tnodes.get(j);
+				int atype = a.getSymbol().getType();
+				int btype = b.getSymbol().getType();
 				// only include literals like '{' and ':' not IDENTIFIER etc...
-				if ( vocab.getLiteralName(t1type)==null || vocab.getLiteralName(t2type)==null ) {
+				if ( vocab.getLiteralName(atype)==null || vocab.getLiteralName(btype)==null ) {
 					continue;
 				}
 
-				if ( t1type==t2type ) {
+				if ( atype==btype ) {
 					Set<Integer> repeatedTokensSet = ruleToRepeatedTokensSet.get(ruleName);
 					if ( repeatedTokensSet==null ) {
 						repeatedTokensSet = new HashSet<>();
 						ruleToRepeatedTokensSet.put(ruleName, repeatedTokensSet);
 					}
-					repeatedTokensSet.add(t1type);
+					repeatedTokensSet.add(atype);
 				}
 				else {
-					Pair<Integer, Integer> pair = new Pair<>(t1type, t2type);
+					Pair<Integer, Integer> pair = new Pair<>(atype, btype);
 					HashBag<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleName);
 					if ( pairsBag==null ) {
 						pairsBag = new HashBag<>();
@@ -204,13 +207,13 @@ public class CollectTokenDependencies implements ParseTreeListener {
 			for (Pair<Integer, Integer> p : pairs) {
 				Pair<Integer, Integer> existingPair = rightSymbolToPair.get(p.b);
 				if ( existingPair!=null ) { // found existing mapping from b to (a,b)?
-					String t1literal = vocab.getLiteralName(p.a);
-					String t2literal = vocab.getLiteralName(p.b);
-					if ( t1literal!=null && t1literal.length()==3 &&
-						t2literal!=null && t2literal.length()==3 )
+					String aliteral = vocab.getLiteralName(p.a);
+					String bliteral = vocab.getLiteralName(p.b);
+					if ( aliteral!=null && aliteral.length()==3 &&
+						 bliteral!=null && bliteral.length()==3 )
 					{
-						char leftChar = t1literal.charAt(1);
-						char rightChar = t2literal.charAt(1);
+						char leftChar = aliteral.charAt(1);
+						char rightChar = bliteral.charAt(1);
 						if ( CommonPairs[rightChar] == leftChar ) {
 //							System.out.println("found pref "+t1name+","+t2name);
 							rightSymbolToPair.put(p.b, p); // remap
