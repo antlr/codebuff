@@ -128,7 +128,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 		CommonPairs['>'] = '<';
 	}
 
-	/** Map a rule name to a bag of (t1,t2) tuples that counts occurrences */
+	/** Map a rule name to a bag of (a,b) tuples that counts occurrences */
 	protected Map<String,HashBag<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
 
 	/** Track repeated token refs per rule */

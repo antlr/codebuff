@@ -91,6 +91,15 @@ public class Tool {
 										   int tabSize)
 		throws Exception
 	{
+//		// Map a rule name to a bag of (a,b) tuples that counts occurrences
+//		Map<String,HashBag<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
+//		// Track repeated token refs per rule
+//		Map<String,Set<Integer>> ruleToRepeatedTokensSet = new HashMap<>();
+//		Vocabulary vocab = lexerClass.newInstance().getVocabulary();
+//		String[] ruleNames = parserClass.newInstance().getRuleNames();
+//		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ruleNames);
+//		ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
+
 		List<InputDocument> documents = new ArrayList<>();
 		List<int[]> featureVectors = new ArrayList<>();
 		List<Integer> injectNewlines = new ArrayList<>();
@@ -99,7 +108,9 @@ public class Tool {
 		List<Integer> levelsToCommonAncestor = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc, lexerClass, parserClass, "compilationUnit", tabSize);
+			parse(doc, lexerClass, parserClass, "compilationUnit"); // TODO: make ruleName generic
+			process(doc, tabSize);
+
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
 				int[] featureVec = doc.featureVectors.get(i);
@@ -115,23 +126,17 @@ public class Tool {
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc,
-							   Class<? extends Lexer> lexerClass,
-							   Class<? extends Parser> parserClass,
-							   String startRuleName,
-							   int tabSize)
+	public static void process(InputDocument doc, int tabSize)
 		throws Exception
 	{
-		parse(doc, lexerClass, parserClass, startRuleName);
+		CollectFeatures collector = new CollectFeatures(doc, tabSize);
+		collector.computeFeatureVectors();
 
-		CollectFeatures collect = new CollectFeatures(doc, tabSize);
-		collect.computeFeatureVectors();
-//		ParseTreeWalker.DEFAULT.walk(collect, doc.tree);
-		doc.featureVectors = collect.getFeatures();
-		doc.injectNewlines = collect.getInjectNewlines();
-		doc.injectWS = collect.getInjectWS();
-		doc.indent = collect.getIndent();
-		doc.levelsToCommonAncestor = collect.getLevelsToCommonAncestor();
+		doc.featureVectors = collector.getFeatures();
+		doc.injectNewlines = collector.getInjectNewlines();
+		doc.injectWS = collector.getInjectWS();
+		doc.indent = collector.getIndent();
+		doc.levelsToCommonAncestor = collector.getLevelsToCommonAncestor();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
@@ -171,10 +176,10 @@ public class Tool {
 			}
 		}
 
-		Parser parser = parserCtor.newInstance(tokens);
-		parser.setBuildParseTree(true);
+		doc.parser = parserCtor.newInstance(tokens);
+		doc.parser.setBuildParseTree(true);
 		Method startRule = parserClass.getMethod(startRuleName);
-		ParserRuleContext tree = (ParserRuleContext)startRule.invoke(parser, (Object[]) null);
+		ParserRuleContext tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[]) null);
 
 		doc.tokens = tokens;
 		doc.tree = tree;
