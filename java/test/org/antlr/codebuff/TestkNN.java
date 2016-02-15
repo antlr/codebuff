@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.misc.Utils;
 import org.junit.Test;
 

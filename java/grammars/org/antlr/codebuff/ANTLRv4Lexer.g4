@@ -75,7 +75,7 @@ tokens {
 
 	@Override
 	public Token emit() {
-		if (_type == ID) {
+		if (_type == /*ID*/ 999999) { // ################### just testing
 			String firstChar = _input.getText(Interval.of(_tokenStartCharIndex, _tokenStartCharIndex));
 			if (Character.isUpperCase(firstChar.charAt(0))) {
 				_type = TOKEN_REF;
