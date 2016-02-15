@@ -214,7 +214,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 					{
 						char leftChar = aliteral.charAt(1);
 						char rightChar = bliteral.charAt(1);
-						if ( CommonPairs[rightChar] == leftChar ) {
+						if ( rightChar<255 && CommonPairs[rightChar] == leftChar ) {
 //							System.out.println("found pref "+t1name+","+t2name);
 							rightSymbolToPair.put(p.b, p); // remap
 						} // else leave existing pair
