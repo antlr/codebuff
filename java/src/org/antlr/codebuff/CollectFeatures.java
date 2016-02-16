@@ -5,12 +5,8 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.Tree;
-import org.antlr.v4.runtime.tree.Trees;
+import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.tree.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -30,7 +26,7 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 4;
 	public static final int INDEX_PREV_ANCESTOR_WIDTH = 5;
 	public static final int INDEX_TYPE              = 6;
-	public static final int INDEX_MATCHING_TOKEN_HAD_NL = 7;
+	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 7;
 	public static final int INDEX_RULE              = 8; // what rule are we in?
 	public static final int INDEX_EARLIEST_ANCESTOR = 9;
 	public static final int INDEX_ANCESTOR_WIDTH    = 10;
@@ -47,7 +43,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.BOOL,   new String[] {"Pair", "had\\n"}, 3),
+		new FeatureMetaData(FeatureType.BOOL,   new String[] {"Pair", "diff\\n"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
@@ -85,11 +81,14 @@ public class CollectFeatures {
 
 	protected int tabSize;
 
-	public CollectFeatures(InputDocument doc, int tabSize) {
+	protected static Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
+
+	public CollectFeatures(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairs) {
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
 		this.tabSize = tabSize;
+		ruleToPairsBag = ruleToPairs;
 	}
 
 	public void computeFeatureVectors() {
@@ -112,7 +111,7 @@ public class CollectFeatures {
 		Token prevToken = tokens.LT(-1);
 
 		// find number of blank lines
-		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, tabSize);
+		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
 
 		int precedingNL = 0; // how many lines to inject
 		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
@@ -232,6 +231,7 @@ public class CollectFeatures {
 	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
 										InputDocument doc,
 	                                    int i,
+										int line,
 	                                    int tabSize)
 	{
 		CommonTokenStream tokens = doc.tokens;
@@ -259,7 +259,7 @@ public class CollectFeatures {
 
 		// Get context information for current token
 		parent = (ParserRuleContext)node.getParent();
-		int curTokenRuleIndex = parent.getRuleIndex();
+		int curTokensParentRuleIndex = parent.getRuleIndex();
 		earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
 		int earliestAncestorRuleIndex = -1;
 		int earliestAncestorWidth = -1;
@@ -269,6 +269,11 @@ public class CollectFeatures {
 		}
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
+		// matchingSymbolOnDiffLine
+		// -1 means no pair exist
+		// 0  means they are on the same line
+		// 1  means they are on different lines
+		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, line, curToken, parent, curTokensParentRuleIndex);
 
 		int[] features = {
 			window.get(0).getType(),
@@ -280,8 +285,8 @@ public class CollectFeatures {
 			prevEarliestAncestorWidth,
 
 			window.get(2).getType(), // LT(1)
-			0,
-			curTokenRuleIndex,
+			matchingSymbolOnDiffLine,
+			curTokensParentRuleIndex,
 			earliestAncestorRuleIndex,
 			earliestAncestorWidth,
 			window.get(3).getType(),
@@ -295,7 +300,71 @@ public class CollectFeatures {
 		return features;
 	}
 
-	public static void foo() {
+	private static int getMatchingSymbolOnDiffLine(InputDocument doc, int line, Token curToken, ParserRuleContext parent, int curTokensParentRuleIndex) {
+		int matchingSymbolOnDiffLine = -1;
+		if (ruleToPairsBag != null) {
+			String ruleName = JavaParser.ruleNames[curTokensParentRuleIndex];
+			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+			if ( pairs!=null ) {
+				// Find appropriate pair given current token
+				// If more than one pair (a,b) with b=current token pick first one
+				// or if a common pair like ({,}), then give that one preference.
+				List<Integer> viableMatchingLeftTokenTypes = viableLeftTokenTypes(parent, curToken, pairs);
+				Vocabulary vocab = doc.parser.getVocabulary();
+				if ( !viableMatchingLeftTokenTypes.isEmpty() ) {
+					int matchingLeftTokenType = viableMatchingLeftTokenTypes.get(0); // by default just pick first
+					for (int j = 0; j < viableMatchingLeftTokenTypes.size(); j++) {
+						String aliteral = vocab.getLiteralName(viableMatchingLeftTokenTypes.get(j));
+						String bliteral = vocab.getLiteralName(curToken.getType());
+						if (aliteral != null && aliteral.length() == 3 &&
+							bliteral != null && bliteral.length() == 3) {
+							char leftChar = aliteral.charAt(1);
+							char rightChar = bliteral.charAt(1);
+							if (rightChar < 255 && CollectTokenDependencies.CommonPairs[rightChar] == leftChar) {
+								matchingLeftTokenType = viableMatchingLeftTokenTypes.get(j);
+								break;
+							}
+						}
+					}
+
+					List<TerminalNode> matchingLeftNodes = parent.getTokens(matchingLeftTokenType);
+					TerminalNode matchingLeftNode = null;
+					for (int j = matchingLeftNodes.size() - 1; j >= 0; j--) {
+						TerminalNode t = matchingLeftNodes.get(j);
+						if ( t.getSymbol().getTokenIndex() < curToken.getTokenIndex() ) {
+							matchingLeftNode = t;
+							break;
+						}
+					}
+
+					if (matchingLeftNode != null) {
+						int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
+						if (matchingLeftTokenLine == line) {
+							matchingSymbolOnDiffLine = 0;  // They are on the same line
+						} else {
+							matchingSymbolOnDiffLine = 1;  // They are on different lines
+						}
+					}
+					else {
+						System.err.println("can't find matching node for "+curToken);
+					}
+				}
+			}
+		}
+		return matchingSymbolOnDiffLine;
+	}
+
+	public static List<Integer> viableLeftTokenTypes(ParserRuleContext node,
+													 Token curToken,
+													 List<Pair<Integer,Integer>> pairs)
+	{
+		List<Integer> newPairs = new ArrayList<>();
+		for (Pair<Integer, Integer> p : pairs) {
+			if ( p.b==curToken.getType() && !node.getTokens(p.a).isEmpty() ) {
+				newPairs.add(p.a);
+			}
+		}
+		return newPairs;
 	}
 
 	public static Token findAlignedToken(List<Token> tokens, Token leftEdgeToken) {
@@ -411,7 +480,12 @@ public class CollectFeatures {
 					buf.append(Tool.sequence(displayWidth, " "));
 					break;
 				case BOOL :
-					buf.append(features[i]==1?"true":"false");
+					if ( features[i]!=-1 ) {
+						buf.append(features[i] == 1 ? "true" : "false");
+					}
+					else {
+						buf.append(Tool.sequence(displayWidth, " "));
+					}
 					break;
 				default :
 					System.err.println("NO STRING FOR FEATURE TYPE: "+ FEATURES[i].type);

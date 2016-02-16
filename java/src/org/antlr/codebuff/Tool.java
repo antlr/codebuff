@@ -1,15 +1,6 @@
 package org.antlr.codebuff;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonToken;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.Vocabulary;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -96,7 +87,7 @@ public class Tool {
 			System.out.println();
 		}
 
-		return processSampleDocs(documents, lexerClass, parserClass, tabSize);
+		return processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
 	}
 
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
@@ -117,7 +108,8 @@ public class Tool {
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   Class<? extends Lexer> lexerClass,
 										   Class<? extends Parser> parserClass,
-										   int tabSize)
+										   int tabSize,
+										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
@@ -128,8 +120,7 @@ public class Tool {
 		List<Integer> levelsToCommonAncestor = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			parse(doc, lexerClass, parserClass, "compilationUnit"); // TODO: make ruleName generic
-			process(doc, tabSize);
+			process(doc, tabSize, ruleToPairsBag);
 
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
@@ -146,10 +137,10 @@ public class Tool {
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc, int tabSize)
+	public static void process(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
 		throws Exception
 	{
-		CollectFeatures collector = new CollectFeatures(doc, tabSize);
+		CollectFeatures collector = new CollectFeatures(doc, tabSize, ruleToPairsBag);
 		collector.computeFeatureVectors();
 
 		doc.featureVectors = collector.getFeatures();
@@ -334,7 +325,9 @@ public class Tool {
 		int count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
 			if ( featureTypes[i].type==FeatureType.TOKEN ||
-				 featureTypes[i].type==FeatureType.RULE )
+				 featureTypes[i].type==FeatureType.RULE  ||
+				 featureTypes[i].type==FeatureType.BOOL
+				)
 			{
 				if ( A[i] != B[i] ) {
 					count += featureTypes[i].mismatchCost;
