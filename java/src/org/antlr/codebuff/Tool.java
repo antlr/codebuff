@@ -87,7 +87,7 @@ public class Tool {
 			System.out.println();
 		}
 
-		return processSampleDocs(documents, lexerClass, parserClass, tabSize);
+		return processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
 	}
 
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
@@ -108,7 +108,8 @@ public class Tool {
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   Class<? extends Lexer> lexerClass,
 										   Class<? extends Parser> parserClass,
-										   int tabSize)
+										   int tabSize,
+										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
@@ -119,7 +120,7 @@ public class Tool {
 		List<Integer> levelsToCommonAncestor = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc, tabSize);
+			process(doc, tabSize, ruleToPairsBag);
 
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
@@ -136,10 +137,10 @@ public class Tool {
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc, int tabSize)
+	public static void process(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
 		throws Exception
 	{
-		CollectFeatures collector = new CollectFeatures(doc, tabSize);
+		CollectFeatures collector = new CollectFeatures(doc, tabSize, ruleToPairsBag);
 		collector.computeFeatureVectors();
 
 		doc.featureVectors = collector.getFeatures();
@@ -324,7 +325,9 @@ public class Tool {
 		int count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
 			if ( featureTypes[i].type==FeatureType.TOKEN ||
-				 featureTypes[i].type==FeatureType.RULE )
+				 featureTypes[i].type==FeatureType.RULE  ||
+				 featureTypes[i].type==FeatureType.BOOL
+				)
 			{
 				if ( A[i] != B[i] ) {
 					count += featureTypes[i].mismatchCost;

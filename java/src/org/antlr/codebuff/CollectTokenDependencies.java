@@ -188,7 +188,8 @@ public class CollectTokenDependencies implements ParseTreeListener {
 	public Map<String, List<Pair<Integer, Integer>>> getDependencies() {
 		Map<String,List<Pair<Integer,Integer>>> ruleToPairsWoRepeats = stripPairsWithRepeatedTokens();
 
-		return pickUniquePairs(ruleToPairsWoRepeats);
+		return ruleToPairsWoRepeats;
+//		return pickUniquePairs(ruleToPairsWoRepeats);
 	}
 
 	/** Return new Map from rulename to unique matching pairs from b to
