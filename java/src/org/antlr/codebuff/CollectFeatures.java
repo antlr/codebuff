@@ -36,10 +36,11 @@ public class CollectFeatures {
 	public static final int INDEX_RULE              = 8; // what rule are we in?
 	public static final int INDEX_EARLIEST_ANCESTOR = 9;
 	public static final int INDEX_ANCESTOR_WIDTH    = 10;
-	public static final int INDEX_NEXT_TYPE         = 11;
-	public static final int INDEX_INFO_FILE         = 12;
-	public static final int INDEX_INFO_LINE         = 13;
-	public static final int INDEX_INFO_CHARPOS      = 14;
+	public static final int INDEX_SUM_ENDCOL_ANCESTOR_WIDTH = 11;
+	public static final int INDEX_NEXT_TYPE         = 12;
+	public static final int INDEX_INFO_FILE         = 13;
+	public static final int INDEX_INFO_LINE         = 14;
+	public static final int INDEX_INFO_CHARPOS      = 15;
 
 	public static FeatureMetaData[] FEATURES = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -53,6 +54,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
+		new FeatureMetaData(FeatureType.COL,   new String[] {"endcol+", "width"}, 0),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 2),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -295,6 +297,7 @@ public class CollectFeatures {
 			curTokensParentRuleIndex,
 			earliestAncestorRuleIndex,
 			earliestAncestorWidth,
+			prevTokenEndCharPos+earliestAncestorWidth,
 			window.get(3).getType(),
 
 			// info
@@ -458,6 +461,7 @@ public class CollectFeatures {
 					}
 					break;
 				case INT :
+				case COL :
 				case INFO_LINE:
 				case INFO_CHARPOS:
 					if ( features[i]>=0 ) {
