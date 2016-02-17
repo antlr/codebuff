@@ -1,12 +1,18 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Tree;
+import org.antlr.v4.runtime.tree.Trees;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -273,7 +279,7 @@ public class CollectFeatures {
 		// -1 means no pair exist
 		// 0  means they are on the same line
 		// 1  means they are on different lines
-		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, line, curToken, parent, curTokensParentRuleIndex);
+		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
 		int[] features = {
 			window.get(0).getType(),
@@ -300,7 +306,13 @@ public class CollectFeatures {
 		return features;
 	}
 
-	private static int getMatchingSymbolOnDiffLine(InputDocument doc, int line, Token curToken, ParserRuleContext parent, int curTokensParentRuleIndex) {
+	private static int getMatchingSymbolOnDiffLine(InputDocument doc,
+	                                               TerminalNode node,
+	                                               int line)
+	{
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		int curTokensParentRuleIndex = parent.getRuleIndex();
+		Token curToken = node.getSymbol();
 		int matchingSymbolOnDiffLine = -1;
 		if (ruleToPairsBag != null) {
 			String ruleName = JavaParser.ruleNames[curTokensParentRuleIndex];
@@ -312,38 +324,17 @@ public class CollectFeatures {
 				List<Integer> viableMatchingLeftTokenTypes = viableLeftTokenTypes(parent, curToken, pairs);
 				Vocabulary vocab = doc.parser.getVocabulary();
 				if ( !viableMatchingLeftTokenTypes.isEmpty() ) {
-					int matchingLeftTokenType = viableMatchingLeftTokenTypes.get(0); // by default just pick first
-					for (int j = 0; j < viableMatchingLeftTokenTypes.size(); j++) {
-						String aliteral = vocab.getLiteralName(viableMatchingLeftTokenTypes.get(j));
-						String bliteral = vocab.getLiteralName(curToken.getType());
-						if (aliteral != null && aliteral.length() == 3 &&
-							bliteral != null && bliteral.length() == 3) {
-							char leftChar = aliteral.charAt(1);
-							char rightChar = bliteral.charAt(1);
-							if (rightChar < 255 && CollectTokenDependencies.CommonPairs[rightChar] == leftChar) {
-								matchingLeftTokenType = viableMatchingLeftTokenTypes.get(j);
-								break;
-							}
-						}
-					}
-
+					int matchingLeftTokenType =
+						CollectTokenDependencies.getMatchingLeftTokenType(curToken, viableMatchingLeftTokenTypes, vocab);
 					List<TerminalNode> matchingLeftNodes = parent.getTokens(matchingLeftTokenType);
-					TerminalNode matchingLeftNode = null;
-					for (int j = matchingLeftNodes.size() - 1; j >= 0; j--) {
-						TerminalNode t = matchingLeftNodes.get(j);
-						if ( t.getSymbol().getTokenIndex() < curToken.getTokenIndex() ) {
-							matchingLeftNode = t;
-							break;
-						}
-					}
+					// get matching left node by getting last node to left of current token
+					List<TerminalNode> nodesToLeftOfCurrentToken =
+						BuffUtils.filter(matchingLeftNodes, n -> n.getSymbol().getTokenIndex()<curToken.getTokenIndex());
+					TerminalNode matchingLeftNode = nodesToLeftOfCurrentToken.get(nodesToLeftOfCurrentToken.size()-1);
 
 					if (matchingLeftNode != null) {
 						int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
-						if (matchingLeftTokenLine == line) {
-							matchingSymbolOnDiffLine = 0;  // They are on the same line
-						} else {
-							matchingSymbolOnDiffLine = 1;  // They are on different lines
-						}
+						matchingSymbolOnDiffLine = matchingLeftTokenLine != line ? 1 : 0;
 					}
 					else {
 						System.err.println("can't find matching node for "+curToken);

@@ -3,6 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -186,48 +187,28 @@ public class CollectTokenDependencies implements ParseTreeListener {
 	/** Return the list of token dependences for each rule in a Map.
 	 */
 	public Map<String, List<Pair<Integer, Integer>>> getDependencies() {
-		Map<String,List<Pair<Integer,Integer>>> ruleToPairsWoRepeats = stripPairsWithRepeatedTokens();
-
-		return ruleToPairsWoRepeats;
-//		return pickUniquePairs(ruleToPairsWoRepeats);
+		return stripPairsWithRepeatedTokens();
 	}
 
-	/** Return new Map from rulename to unique matching pairs from b to
-	 *  some (a,b) for each rule.
-	 *
-	 *  If b is right symbol of obvious pair like [...], then choose matching
-	 *  symbol if ambiguous b->(a,b) mappings exist; i.e., (a,b) exists for |a|>1.
-	 */
-	public Map<String, List<Pair<Integer, Integer>>> pickUniquePairs(
-		Map<String,	List<Pair<Integer, Integer>>> ruleToPairsWoRepeats)
+	public static int getMatchingLeftTokenType(Token curToken,
+	                                           List<Integer> viableMatchingLeftTokenTypes,
+	                                           Vocabulary vocab)
 	{
-		Map<String,List<Pair<Integer,Integer>>> ruleToUniquePairs = new HashMap<>();
-		for (String ruleName : ruleToPairsWoRepeats.keySet()) {
-			List<Pair<Integer, Integer>> pairs = ruleToPairsWoRepeats.get(ruleName);
-			Map<Integer, Pair<Integer, Integer>> rightSymbolToPair = new HashMap<>();
-			for (Pair<Integer, Integer> p : pairs) {
-				Pair<Integer, Integer> existingPair = rightSymbolToPair.get(p.b);
-				if ( existingPair!=null ) { // found existing mapping from b to (a,b)?
-					String aliteral = vocab.getLiteralName(p.a);
-					String bliteral = vocab.getLiteralName(p.b);
-					if ( aliteral!=null && aliteral.length()==3 &&
-						 bliteral!=null && bliteral.length()==3 )
-					{
-						char leftChar = aliteral.charAt(1);
-						char rightChar = bliteral.charAt(1);
-						if ( rightChar<255 && CommonPairs[rightChar] == leftChar ) {
-//							System.out.println("found pref "+t1name+","+t2name);
-							rightSymbolToPair.put(p.b, p); // remap
-						} // else leave existing pair
-					}
-				}
-				else {
-					rightSymbolToPair.put(p.b, p);
+		int matchingLeftTokenType = viableMatchingLeftTokenTypes.get(0); // by default just pick first
+		for (int ttype : viableMatchingLeftTokenTypes) {
+			String aliteral = vocab.getLiteralName(ttype);
+			String bliteral = vocab.getLiteralName(curToken.getType());
+			if ( aliteral!=null && aliteral.length()==3 &&
+				 bliteral!=null && bliteral.length()==3 ) {
+				char leftChar = aliteral.charAt(1);
+				char rightChar = bliteral.charAt(1);
+				if (rightChar < 255 && CommonPairs[rightChar] == leftChar) {
+					matchingLeftTokenType = ttype;
+					break;
 				}
 			}
-			ruleToUniquePairs.put(ruleName, new ArrayList<>(rightSymbolToPair.values()));
 		}
-		return ruleToUniquePairs;
+		return matchingLeftTokenType;
 	}
 
 	/** Return a new map from rulename to List of (a,b) pairs stripped of
