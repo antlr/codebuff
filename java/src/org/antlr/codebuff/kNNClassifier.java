@@ -18,11 +18,13 @@ public abstract class kNNClassifier {
 	public class Neighbor {
 		public final int category;
 		public final double distance;
+		public final double widthDistance; // this is part of distance
 		public final int corpusVectorIndex;
 
-		public Neighbor(int category, double distance, int corpusVectorIndex) {
+		public Neighbor(int category, double distance, double widthDistance, int corpusVectorIndex) {
 			this.category = category;
 			this.distance = distance;
+			this.widthDistance = widthDistance;
 			this.corpusVectorIndex = corpusVectorIndex;
 		}
 
@@ -32,7 +34,7 @@ public abstract class kNNClassifier {
 			InputDocument doc = documents.get(corpusVectorIndex);
 			String features = CollectFeatures._toString(doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
 			int line = CollectFeatures.getInfoLine(X);
-			return String.format("%s (cat=%d,d=%1.2f): %s", features, category, distance, doc.getLine(line));
+			return String.format("%s (cat=%d,d=%1.2f=%1.2f+%1.2f): %s", features, category, distance, distance-widthDistance, widthDistance, doc.getLine(line));
 		}
 	}
 
@@ -114,10 +116,11 @@ public abstract class kNNClassifier {
 		Neighbor[] distances = new Neighbor[n];
 		for (int i = 0; i<n; i++) {
 			int[] x = X.get(i);
-			distances[i] = new Neighbor(Y.get(i), distance(x, unknown), i);
+			double[] _distances = distance(x, unknown);
+			distances[i] = new Neighbor(Y.get(i), _distances[0], _distances[1], i);
 		}
 		return distances;
 	}
 
-	public abstract double distance(int[] A, int[] B);
+	public abstract double[] distance(int[] A, int[] B);
 }
