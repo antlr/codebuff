@@ -40,9 +40,24 @@ public class CodekNNClassifier extends kNNClassifier {
 	 * <p>
 	 * Ratio of num differences / num total context positions.
 	 */
-	public double distance(int[] A, int[] B) {
+	public double[] distance(int[] A, int[] B) {
 //		return ((float)Tool.L0_Distance(categorical, A, B))/num_categorical;
+
+		// first get distance measure related to token/rule matching
 		float d = (float) Tool.weightedL0_Distance(CollectFeatures.FEATURES, A, B);
-		return d/CollectFeatures.MAX_L0_DISTANCE_COUNT;
+		float contextDistance = d/CollectFeatures.MAX_L0_DISTANCE_COUNT;
+
+		// now consider column + ancestor width
+		double widthDistance = 0.0;
+		for (int i=0; i<A.length; i++) {
+			if ( CollectFeatures.FEATURES[i].type==FeatureType.COL ) {
+				double Asigmoid = Tool.sigmoid(A[i], 80);
+				double Bsigmoid = Tool.sigmoid(B[i], 80);
+//				System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
+				widthDistance += Math.abs(Asigmoid-Bsigmoid);
+			}
+		}
+
+		return new double[] {contextDistance + widthDistance, widthDistance};
 	}
 }

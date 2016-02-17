@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.10;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -283,6 +283,10 @@ public class CollectFeatures {
 		// 1  means they are on different lines
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
+		int sumEndColAndAncestorWidth = -1;
+		if ( earliestAncestorWidth>=0 ) {
+			sumEndColAndAncestorWidth = prevTokenEndCharPos+earliestAncestorWidth;
+		}
 		int[] features = {
 			window.get(0).getType(),
 
@@ -297,7 +301,7 @@ public class CollectFeatures {
 			curTokensParentRuleIndex,
 			earliestAncestorRuleIndex,
 			earliestAncestorWidth,
-			prevTokenEndCharPos+earliestAncestorWidth,
+			sumEndColAndAncestorWidth,
 			window.get(3).getType(),
 
 			// info
