@@ -30,8 +30,8 @@ import java.util.List;
  */
 
 public class CodekNNClassifier extends kNNClassifier {
-	public CodekNNClassifier(List<InputDocument> documents, List<int[]> X, List<Integer> Y) {
-		super(documents, X, Y);
+	public CodekNNClassifier(Corpus corpus, List<Integer> Y) {
+		super(corpus, Y);
 	}
 
 	/**

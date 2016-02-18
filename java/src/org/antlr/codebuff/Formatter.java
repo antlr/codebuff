@@ -42,21 +42,11 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
-		newlineClassifier = new CodekNNClassifier(corpus.documents,
-												  corpus.X,
-												  corpus.injectNewlines);
-		wsClassifier = new CodekNNClassifier(corpus.documents,
-											 corpus.X,
-											 corpus.injectWS);
-
-		indentClassifier = new CodekNNClassifier(corpus.documents,
-												 corpus.X,
-												 corpus.indent);
+		newlineClassifier = new CodekNNClassifier(corpus, corpus.injectNewlines);
+		wsClassifier = new CodekNNClassifier(corpus, corpus.injectWS);
+		indentClassifier = new CodekNNClassifier(corpus, corpus.indent);
 //		indentClassifier.dumpVotes = true;
-
-		alignClassifier = new CodekNNClassifier(corpus.documents,
-												corpus.X,
-												corpus.levelsToCommonAncestor);
+		alignClassifier = new CodekNNClassifier(corpus, corpus.levelsToCommonAncestor);
 		k = (int)Math.sqrt(corpus.X.size());
 		this.tabSize = tabSize;
 	}
