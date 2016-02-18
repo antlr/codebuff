@@ -3,6 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.misc.Utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -68,7 +69,7 @@ public abstract class kNNClassifier {
 	}
 
 	public HashBag<Integer> votes(int k, int[] unknown, double distanceThreshold) {
-		Neighbor[] kNN = kNN(k, unknown);
+		Neighbor[] kNN = kNN(k, distanceThreshold, unknown);
 		HashBag<Integer> votes = new HashBag<>();
 		for (int i = 0; i<k && i<kNN.length; i++) {
 			// Don't count any votes for training samples too distant.
@@ -81,27 +82,31 @@ public abstract class kNNClassifier {
 			System.out.print(CollectFeatures.featureNameHeader());
 			InputDocument firstDoc = documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
 			System.out.println(CollectFeatures._toString(firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
-			kNN = Arrays.copyOfRange(kNN, 0, 25);
+			kNN = Arrays.copyOfRange(kNN, 0, Math.min(25,kNN.length));
 			System.out.println(Utils.join(kNN, "\n"));
 		}
 		return votes;
 	}
 
-	public Neighbor[] kNN(int k, int[] unknown) {
-		Neighbor[] distances = distances(unknown);
+	public Neighbor[] kNN(int k, double distanceThreshold, int[] unknown) {
+		Neighbor[] distances = distances(unknown, distanceThreshold);
 		Arrays.sort(distances,
 		            (Neighbor o1, Neighbor o2) -> Double.compare(o1.distance, o2.distance));
-		return Arrays.copyOfRange(distances, 0, k);
+		return Arrays.copyOfRange(distances, 0, Math.min(k,distances.length));
 	}
 
-	public Neighbor[] distances(int[] unknown) {
+	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
 		int n = X.size(); // num training samples
-		Neighbor[] distances = new Neighbor[n];
+		List<Neighbor> distances = new ArrayList<>();
 		for (int i = 0; i<n; i++) {
 			int[] x = X.get(i);
-			distances[i] = new Neighbor(Y.get(i), distance(x, unknown), i);
+			double d = distance(x, unknown);
+			if ( d<=distanceThreshold ) {
+				Neighbor neighbor = new Neighbor(Y.get(i), d, i);
+				distances.add(neighbor);
+			}
 		}
-		return distances;
+		return distances.toArray(new Neighbor[distances.size()]);
 	}
 
 	public abstract double distance(int[] A, int[] B);
