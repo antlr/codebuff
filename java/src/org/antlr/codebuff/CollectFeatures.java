@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.10;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -36,10 +36,11 @@ public class CollectFeatures {
 	public static final int INDEX_RULE              = 8; // what rule are we in?
 	public static final int INDEX_EARLIEST_ANCESTOR = 9;
 	public static final int INDEX_ANCESTOR_WIDTH    = 10;
-	public static final int INDEX_NEXT_TYPE         = 11;
-	public static final int INDEX_INFO_FILE         = 12;
-	public static final int INDEX_INFO_LINE         = 13;
-	public static final int INDEX_INFO_CHARPOS      = 14;
+	public static final int INDEX_SUM_ENDCOL_ANCESTOR_WIDTH = 11;
+	public static final int INDEX_NEXT_TYPE         = 12;
+	public static final int INDEX_INFO_FILE         = 13;
+	public static final int INDEX_INFO_LINE         = 14;
+	public static final int INDEX_INFO_CHARPOS      = 15;
 
 	public static FeatureMetaData[] FEATURES = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -53,7 +54,8 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 2),
+		new FeatureMetaData(FeatureType.COL,   new String[] {"endcol+", "width"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -281,6 +283,10 @@ public class CollectFeatures {
 		// 1  means they are on different lines
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
+		int sumEndColAndAncestorWidth = -1;
+		if ( earliestAncestorWidth>=0 ) {
+			sumEndColAndAncestorWidth = prevTokenEndCharPos+earliestAncestorWidth;
+		}
 		int[] features = {
 			window.get(0).getType(),
 
@@ -295,6 +301,7 @@ public class CollectFeatures {
 			curTokensParentRuleIndex,
 			earliestAncestorRuleIndex,
 			earliestAncestorWidth,
+			sumEndColAndAncestorWidth,
 			window.get(3).getType(),
 
 			// info
@@ -458,6 +465,7 @@ public class CollectFeatures {
 					}
 					break;
 				case INT :
+				case COL :
 				case INFO_LINE:
 				case INFO_CHARPOS:
 					if ( features[i]>=0 ) {

@@ -1,6 +1,15 @@
 package org.antlr.codebuff;
 
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -321,20 +330,32 @@ public class Tool {
 	/** A distance of 0 should count much more than non-0. Also, penalize
 	 *  mismatches closer to current token than those farther away.
 	 */
-	public static int weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
-		int count = 0; // count how many mismatched categories there are
+	public static double weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
+		double count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
 			if ( featureTypes[i].type==FeatureType.TOKEN ||
-				 featureTypes[i].type==FeatureType.RULE  ||
-				 featureTypes[i].type==FeatureType.BOOL
+				featureTypes[i].type==FeatureType.RULE  ||
+				featureTypes[i].type==FeatureType.BOOL
 				)
 			{
 				if ( A[i] != B[i] ) {
 					count += featureTypes[i].mismatchCost;
 				}
 			}
+			else if ( featureTypes[i].type==FeatureType.COL ) {
+				double Asigmoid = sigmoid(A[i], 80);
+				double Bsigmoid = sigmoid(B[i], 80);
+//				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
+//					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
+//				}
+				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
+			}
 		}
 		return count;
+	}
+
+	public static double sigmoid(int x, float center) {
+		return 1.0 / (1.0 + Math.exp(-0.2*(x-center)));
 	}
 
 	public static int max(List<Integer> Y) {

@@ -4,9 +4,7 @@ import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.misc.Utils;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
@@ -32,7 +30,7 @@ public abstract class kNNClassifier {
 			InputDocument doc = documents.get(corpusVectorIndex);
 			String features = CollectFeatures._toString(doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
 			int line = CollectFeatures.getInfoLine(X);
-			return String.format("%s (cat=%d,d=%1.2f): %s", features, category, distance, doc.getLine(line));
+			return String.format("%s (cat=%d,d=%1.3f): %s", features, category, distance, doc.getLine(line));
 		}
 	}
 
@@ -72,21 +70,12 @@ public abstract class kNNClassifier {
 	public HashBag<Integer> votes(int k, int[] unknown, double distanceThreshold) {
 		Neighbor[] kNN = kNN(k, unknown);
 		HashBag<Integer> votes = new HashBag<>();
-		Map<Integer, List<Integer>> charPos = new HashMap<>();
-		Map<Integer, List<Integer>> widths = new HashMap<>();
-		Map<Integer, List<Integer>> sum = new HashMap<>();
-//		List<Integer>[] charPos = new List[numCategories];
-//		List<Integer>[] widths = new List[numCategories];
-//		List<Integer>[] sum = new List[numCategories];
 		for (int i = 0; i<k && i<kNN.length; i++) {
 			// Don't count any votes for training samples too distant.
-			if ( kNN[i].distance>distanceThreshold ) break;
+			if ( kNN[i].distance>distanceThreshold ) {
+				break;
+			}
 			votes.add(kNN[i].category);
-//			int[] features = X.get(kNN[i].corpusVectorIndex);
-//			charPos[kNN[i].category].add(features[CollectFeatures.INDEX_PREV_END_COLUMN]);
-//			widths[kNN[i].category].add(features[CollectFeatures.INDEX_ANCESTOR_WIDTH]);
-//			sum[kNN[i].category].add(features[CollectFeatures.INDEX_PREV_END_COLUMN]+
-//									 features[CollectFeatures.INDEX_ANCESTOR_WIDTH]);
 		}
 		if ( dumpVotes ) {
 			System.out.print(CollectFeatures.featureNameHeader());
@@ -95,10 +84,6 @@ public abstract class kNNClassifier {
 			kNN = Arrays.copyOfRange(kNN, 0, 25);
 			System.out.println(Utils.join(kNN, "\n"));
 		}
-//		System.out.println(Arrays.toString(charPos));
-//		System.out.println(Arrays.toString(widths));
-//		System.out.println(Arrays.toString(sum));
-
 		return votes;
 	}
 
