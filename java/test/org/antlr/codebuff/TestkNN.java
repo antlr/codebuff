@@ -83,7 +83,7 @@ public class TestkNN {
 	public void testDistances() {
 		int k = 3;
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
-		kNNClassifier.Neighbor[] distances = c.distances(new int[] {T0,T0});
+		kNNClassifier.Neighbor[] distances = c.distances(new int[] {T0,T0}, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		String expecting =
 			"(cat=0,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
 			"(cat=1,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00), " +
@@ -91,7 +91,7 @@ public class TestkNN {
 		String result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(new int[] {T0,T1});
+		distances = c.distances(new int[] {T0,T1}, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		expecting =
 			"(cat=0,d=0.50), (cat=1,d=0.00), (cat=2,d=0.50), " +
 			"(cat=1,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00), " +
@@ -99,7 +99,7 @@ public class TestkNN {
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(new int[] {T1,T0});
+		distances = c.distances(new int[] {T1,T0}, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		expecting =
 			"(cat=0,d=0.50), (cat=1,d=1.00), (cat=2,d=1.00), " +
 			"(cat=1,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
@@ -107,7 +107,7 @@ public class TestkNN {
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(new int[] {T1,T1});
+		distances = c.distances(new int[] {T1,T1}, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		expecting =
 			"(cat=0,d=1.00), (cat=1,d=0.50), (cat=2,d=1.00), " +
 			"(cat=1,d=0.50), (cat=1,d=0.00), (cat=2,d=0.50), " +
@@ -115,7 +115,7 @@ public class TestkNN {
 		result = Utils.join(distances, ", ");
 		assertEquals(expecting, result);
 
-		distances = c.distances(new int[] {T1,T2});
+		distances = c.distances(new int[] {T1,T2}, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		expecting =
 			"(cat=0,d=1.00), (cat=1,d=1.00), (cat=2,d=0.50), " +
 			"(cat=1,d=0.50), (cat=1,d=0.50), (cat=2,d=0.00), " +
@@ -128,7 +128,7 @@ public class TestkNN {
 	public void testNeighborsT0T0() {
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T0, T0};
-		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), unknown);
+		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD, unknown);
 		// sorted by distance
 		String expecting =
 			"(cat=0,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50), " +
@@ -137,13 +137,13 @@ public class TestkNN {
 		String result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
-		neighbors = c.kNN(1, unknown);
+		neighbors = c.kNN(1, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD, unknown);
 		// sorted by distance
 		expecting =	"(cat=0,d=0.00)";
 		result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
-		neighbors = c.kNN(3, unknown);
+		neighbors = c.kNN(3, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD, unknown);
 		// sorted by distance
 		expecting =	"(cat=0,d=0.00), (cat=1,d=0.50), (cat=2,d=0.50)";
 		result = Utils.join(neighbors, ", ");
@@ -205,7 +205,7 @@ public class TestkNN {
 	public void testNeighborsT1T0() {
 		kNNClassifier c = new CategoricalkNNClassifier(X, Y, categorical);
 		int[] unknown = {T1, T0};
-		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), unknown);
+		kNNClassifier.Neighbor[] neighbors = c.kNN(X.size(), CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD, unknown);
 		// sorted by distance
 		String expecting =
 			"(cat=1,d=0.00), (cat=0,d=0.50), (cat=1,d=0.50), " +
@@ -214,13 +214,13 @@ public class TestkNN {
 		String result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
-		neighbors = c.kNN(1, unknown);
+		neighbors = c.kNN(1, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD, unknown);
 		// sorted by distance
 		expecting =	"(cat=1,d=0.00)";
 		result = Utils.join(neighbors, ", ");
 		assertEquals(expecting, result);
 
-		neighbors = c.kNN(3, unknown);
+		neighbors = c.kNN(3, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD, unknown);
 		// sorted by distance
 		expecting =	"(cat=1,d=0.00), (cat=0,d=0.50), (cat=1,d=0.50)";
 		result = Utils.join(neighbors, ", ");
