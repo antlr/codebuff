@@ -57,6 +57,8 @@ public class Tool {
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
 		System.out.println("misclassified: "+formatter.misclassified);
+		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
+		System.out.println("Diff is "+d);
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
