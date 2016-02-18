@@ -330,8 +330,8 @@ public class Tool {
 	/** A distance of 0 should count much more than non-0. Also, penalize
 	 *  mismatches closer to current token than those farther away.
 	 */
-	public static int weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
-		int count = 0; // count how many mismatched categories there are
+	public static double weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
+		double count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
 			if ( featureTypes[i].type==FeatureType.TOKEN ||
 				featureTypes[i].type==FeatureType.RULE  ||
@@ -345,8 +345,10 @@ public class Tool {
 			else if ( featureTypes[i].type==FeatureType.COL ) {
 				double Asigmoid = sigmoid(A[i], 80);
 				double Bsigmoid = sigmoid(B[i], 80);
-//				System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid);
-				count += Math.abs(Asigmoid-Bsigmoid);
+//				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
+//					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
+//				}
+				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
 			}
 		}
 		return count;

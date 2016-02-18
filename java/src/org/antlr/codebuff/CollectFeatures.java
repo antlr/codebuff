@@ -54,8 +54,8 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
-		new FeatureMetaData(FeatureType.COL,   new String[] {"endcol+", "width"}, 0),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 2),
+		new FeatureMetaData(FeatureType.COL,   new String[] {"endcol+", "width"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
