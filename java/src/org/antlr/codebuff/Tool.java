@@ -57,6 +57,8 @@ public class Tool {
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
 		System.out.println("misclassified: "+formatter.misclassified);
+		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
+		System.out.println("Diff is "+d);
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
@@ -330,8 +332,8 @@ public class Tool {
 	/** A distance of 0 should count much more than non-0. Also, penalize
 	 *  mismatches closer to current token than those farther away.
 	 */
-	public static int weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
-		int count = 0; // count how many mismatched categories there are
+	public static double weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
+		double count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
 			if ( featureTypes[i].type==FeatureType.TOKEN ||
 				featureTypes[i].type==FeatureType.RULE  ||
@@ -341,6 +343,14 @@ public class Tool {
 				if ( A[i] != B[i] ) {
 					count += featureTypes[i].mismatchCost;
 				}
+			}
+			else if ( featureTypes[i].type==FeatureType.COL ) {
+				double Asigmoid = sigmoid(A[i], 80);
+				double Bsigmoid = sigmoid(B[i], 80);
+//				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
+//					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
+//				}
+				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
 			}
 		}
 		return count;
