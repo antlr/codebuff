@@ -9,35 +9,12 @@ import java.util.List;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
-	protected List<InputDocument> documents;
-	protected List<int[]> X;
+	protected Corpus corpus;
 	protected List<Integer> Y;
 	public boolean dumpVotes = false;
 
-	public class Neighbor {
-		public final int category;
-		public final double distance;
-		public final int corpusVectorIndex;
-
-		public Neighbor(int category, double distance, int corpusVectorIndex) {
-			this.category = category;
-			this.distance = distance;
-			this.corpusVectorIndex = corpusVectorIndex;
-		}
-
-		@Override
-		public String toString() {
-			int[] X = kNNClassifier.this.X.get(corpusVectorIndex);
-			InputDocument doc = documents.get(corpusVectorIndex);
-			String features = CollectFeatures._toString(doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
-			int line = CollectFeatures.getInfoLine(X);
-			return String.format("%s (cat=%d,d=%1.3f): %s", features, category, distance, doc.getLine(line));
-		}
-	}
-
-	public kNNClassifier(List<InputDocument> documents, List<int[]> X, List<Integer> Y) {
-		this.documents = documents;
-		this.X = X;
+	public kNNClassifier(Corpus corpus, List<Integer> Y) {
+		this.corpus = corpus;
 		this.Y = Y;
 	}
 
@@ -80,7 +57,7 @@ public abstract class kNNClassifier {
 		}
 		if ( dumpVotes ) {
 			System.out.print(CollectFeatures.featureNameHeader());
-			InputDocument firstDoc = documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
+			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
 			System.out.println(CollectFeatures._toString(firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(25,kNN.length));
 			System.out.println(Utils.join(kNN, "\n"));
@@ -92,17 +69,25 @@ public abstract class kNNClassifier {
 		Neighbor[] distances = distances(unknown, distanceThreshold);
 		Arrays.sort(distances,
 		            (Neighbor o1, Neighbor o2) -> Double.compare(o1.distance, o2.distance));
-		return Arrays.copyOfRange(distances, 0, Math.min(k,distances.length));
+		return Arrays.copyOfRange(distances, 0, Math.min(k, distances.length));
 	}
 
 	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
-		int n = X.size(); // num training samples
+//		TokenContext ctx = new TokenContext(
+//			unknown[CollectFeatures.INDEX_PREV2_TYPE],
+//			unknown[CollectFeatures.INDEX_PREV_TYPE],
+//			unknown[CollectFeatures.INDEX_TYPE],
+//			unknown[CollectFeatures.INDEX_NEXT_TYPE]
+//		);
+		List<Integer> vectorIndexesMatchingTokenContext = corpus.curRuleIndexToVectorsMap.get(unknown[CollectFeatures.INDEX_RULE]);
+		int n = vectorIndexesMatchingTokenContext.size(); // num training samples
 		List<Neighbor> distances = new ArrayList<>();
 		for (int i = 0; i<n; i++) {
-			int[] x = X.get(i);
+			Integer vectorIndex = vectorIndexesMatchingTokenContext.get(i);
+			int[] x = corpus.X.get(vectorIndex);
 			double d = distance(x, unknown);
 			if ( d<=distanceThreshold ) {
-				Neighbor neighbor = new Neighbor(Y.get(i), d, i);
+				Neighbor neighbor = new Neighbor(this, Y.get(vectorIndex), d, vectorIndex);
 				distances.add(neighbor);
 			}
 		}
