@@ -342,6 +342,12 @@ public class Tool {
 					count += featureTypes[i].mismatchCost;
 				}
 			}
+			else if ( featureTypes[i].type==FeatureType.COL ) {
+				double Asigmoid = sigmoid(A[i], 80);
+				double Bsigmoid = sigmoid(B[i], 80);
+//				System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid);
+				count += Math.abs(Asigmoid-Bsigmoid);
+			}
 		}
 		return count;
 	}
