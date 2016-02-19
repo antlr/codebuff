@@ -79,6 +79,8 @@ public class Formatter {
 	}
 
 	public void processToken(int i) {
+		int oldOutputLength = output.length();
+
 		CommonToken curToken = (CommonToken)tokens.get(i);
 
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
@@ -96,6 +98,7 @@ public class Formatter {
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
+
 		if ( prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actual ) {
@@ -103,10 +106,7 @@ public class Formatter {
 				System.out.println();
 				System.out.printf("### line %d: predicted %d actual %d:\n",
 				                  originalCurToken.getLine(), injectNewline, actual);
-				System.out.println(doc.getLine(originalCurToken.getLine()-1));
-				System.out.println(doc.getLine(originalCurToken.getLine()));
-				System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
-				System.out.println("^");
+				printOriginalFilePiece(originalCurToken);
 				newlineClassifier.dumpVotes = true;
 				newlineClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 				newlineClassifier.dumpVotes = false;
@@ -147,8 +147,52 @@ public class Formatter {
 		// to emit it.
 		curToken.setLine(line);
 		curToken.setCharPositionInLine(charPosInLine);
+
+		//result evaluate
+		String addedString = output.substring(oldOutputLength);
+
+		if(prevToken.getType() == JavaLexer.WS) doc.allWhiteSpaceCount++;
+
+		if (addedString.length() > 0) {
+			if (!(prevToken.getType() == JavaLexer.WS)) {
+				doc.incorrectWhiteSpaceCount++;
+
+				if (doc.dumpIncorrectWS) {
+					System.out.printf("\n*** Extra WS - line %d:\n", originalCurToken.getLine());
+					printOriginalFilePiece(originalCurToken);
+					System.out.println("added : " + Tool.dumpWhiteSpace(addedString));
+				}
+			}
+			else if (!Tool.TwoWSEqual(prevToken.getText(), addedString)) {
+				doc.incorrectWhiteSpaceCount++;
+
+				if (doc.dumpIncorrectWS) {
+					System.out.printf("\n*** Incorrect WS - line %d:\n", originalCurToken.getLine());
+					printOriginalFilePiece(originalCurToken);
+					System.out.println("should: " + Tool.dumpWhiteSpace(prevToken.getText()));
+					System.out.println("added : " + Tool.dumpWhiteSpace(addedString));
+				}
+			}
+		}
+		else if (prevToken.getType() == JavaLexer.WS) {
+			doc.incorrectWhiteSpaceCount++;
+
+			if (doc.dumpIncorrectWS) {
+				System.out.printf("\n***Miss a WS - line %d:\n", originalCurToken.getLine());
+				printOriginalFilePiece(originalCurToken);
+				System.out.println("should: " + Tool.dumpWhiteSpace(prevToken.getText()));
+			}
+		}
+
 		// emit
 		output.append(tokText);
 		charPosInLine += tokText.length();
+	}
+
+	private void printOriginalFilePiece(CommonToken originalCurToken) {
+		System.out.println(doc.getLine(originalCurToken.getLine()-1));
+		System.out.println(doc.getLine(originalCurToken.getLine()));
+		System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
+		System.out.println("^");
 	}
 }

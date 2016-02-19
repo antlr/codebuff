@@ -20,6 +20,9 @@ public class InputDocument {
 	public List<Integer> injectWS;
 	public List<Integer> indent;
 	public List<Integer> levelsToCommonAncestor;
+	public int allWhiteSpaceCount = 0;
+	public int incorrectWhiteSpaceCount = 0;
+	public boolean dumpIncorrectWS = true;
 
 	public InputDocument(InputDocument d, int index) {
 		this.fileName = d.fileName;
@@ -37,6 +40,14 @@ public class InputDocument {
 			lines = Arrays.asList(content.split("\n"));
 		}
 		return lines.get(line-1);
+	}
+
+	public double getIncorrectWSRate() {
+		if (allWhiteSpaceCount == 0) {
+			System.err.printf("File: %s's all white space count is zero\n", fileName);
+			return -1.0;
+		}
+		return (double) incorrectWhiteSpaceCount / allWhiteSpaceCount;
 	}
 
 	@Override

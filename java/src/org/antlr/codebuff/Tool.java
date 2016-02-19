@@ -57,6 +57,7 @@ public class Tool {
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
 		System.out.println("misclassified: "+formatter.misclassified);
+		System.out.printf("Incorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100 * testDoc.getIncorrectWSRate());
 		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
 		System.out.println("Diff is "+d);
 		testDoc.tokens.seek(0);
@@ -287,6 +288,18 @@ public class Tool {
 	}
 
 	public static String join(int[] array, String separator) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < array.length; i++) {
+			builder.append(array[i]);
+			if (i < array.length - 1) {
+				builder.append(separator);
+			}
+		}
+
+		return builder.toString();
+	}
+
+	public static String join(String[] array, String separator) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < array.length; i++) {
 			builder.append(array[i]);
@@ -618,6 +631,50 @@ public class Tool {
 			}
 		}
 		return buf.toString();
+	}
+
+	public static String dumpWhiteSpace(String s) {
+		String[] whiteSpaces = new String[s.length()];
+		for (int i=0; i<s.length(); i++) {
+			char c = s.charAt(i);
+			switch ( c ) {
+				case '\n' :
+					whiteSpaces[i] = "\\n";
+					break;
+				case '\t' :
+					whiteSpaces[i] = "\\t";
+					break;
+				case '\r' :
+					whiteSpaces[i] = "\\r";
+					break;
+				case '\u000C' :
+					whiteSpaces[i] = "\\u000C";
+					break;
+				case ' ' :
+					whiteSpaces[i] = "ws";
+					break;
+				default :
+					whiteSpaces[i] = String.valueOf(c);
+					break;
+			}
+		}
+		return join(whiteSpaces, " | ");
+	}
+
+	// In some case, before a new line sign, there maybe some white space.
+	// But those white spaces won't change the look of file.
+	// To compare if two WS are the same, we should remove all the shite space before the first '\n'
+	public static boolean TwoWSEqual(String a, String b) {
+		String newA = a;
+		String newB = b;
+
+		int aStartNLIndex = a.indexOf('\n');
+		int bStartNLIndex = b.indexOf('\n');
+
+		if (aStartNLIndex > 0) newA = a.substring(aStartNLIndex);
+		if (bStartNLIndex > 0) newB = b.substring(bStartNLIndex);
+
+		return newA.equals(newB);
 	}
 
 //	public static class Foo {
