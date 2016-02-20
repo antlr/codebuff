@@ -56,13 +56,16 @@ public class Tool {
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
-		System.out.println("misclassified: "+formatter.misclassified);
-		System.out.printf("Incorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100 * testDoc.getIncorrectWSRate());
-		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
-		System.out.println("Diff is "+d);
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
+		testDoc.dumpIncorrectWS = true;
+		Tool.resultEvaluate(testDoc, prefix + formattedOutput, JavaLexer.class);
+		System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100 * testDoc.getIncorrectWSRate());
+		System.out.println("misclassified: "+formatter.misclassified);
+		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
+		System.out.println("Diff is "+d);
+
 		return prefix+formattedOutput;
 	}
 
@@ -557,6 +560,88 @@ public class Tool {
 		return normalized_ws_distance;
 	}
 
+	public static void resultEvaluate(InputDocument doc,
+								      String formatted,
+								      Class<? extends Lexer> lexerClass)
+		throws Exception {
+		doc.allWhiteSpaceCount = 0;
+		doc.incorrectWhiteSpaceCount = 0;
+
+		String original = doc.content;
+
+		// Grammar must strip all but real tokens and whitespace (and put that on hidden channel)
+		CommonTokenStream original_tokens = tokenize(original, lexerClass);
+		CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+
+		// walk token streams and examine whitespace in between tokens
+		int i = 1;
+		int j = 1;
+
+		while ( true ) {
+			if (i >= original_tokens.size()) break;
+			if (j >= formatted_tokens.size()) break;
+
+			Token ot = original_tokens.get(i);
+			Token ft = formatted_tokens.get(j);
+
+			if (ot.getType() == JavaLexer.WS) {
+				doc.allWhiteSpaceCount++;
+
+				if (ft.getType() != JavaLexer.WS) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+						System.out.println("should: " + Tool.dumpWhiteSpace(ot.getText()));
+					}
+
+					// move ot to catch up ft
+					while (true) {
+						if (i >= original_tokens.size()) break;
+						ot = original_tokens.get(i);
+						if (ft.getText().equals(ot.getText()) && ft.getType() == ot.getType()) break;
+						i++;
+					}
+				} else if (!TwoWSEqual(ot.getText(), ft.getText())) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+						System.out.println("should: " + Tool.dumpWhiteSpace(ot.getText()));
+						System.out.println("actual: " + Tool.dumpWhiteSpace(ft.getText()));
+					}
+				}
+			} else {
+				if (ft.getType() == JavaLexer.WS) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+						System.out.println("actual: " + Tool.dumpWhiteSpace(ft.getText()));
+					}
+
+					// move ft to catch up ot
+					while (true) {
+						if (j >= formatted_tokens.size()) break;
+						ft = formatted_tokens.get(j);
+						if (ft.getText().equals(ot.getText()) && ft.getType() == ot.getType()) break;
+						j++;
+					}
+				} else if (!(ft.getText().equals(ot.getText()) && ft.getType() == ot.getType())) {
+					System.err.println("Something wrong in result evaluator for the file of: " + doc.fileName + "\nThis result value could not be adopted.");
+					break;
+				}
+			}
+
+			i++;
+			j++;
+		}
+	}
+
+
 	public static String tokenText(List<Token> tokens) {
 		if ( tokens==null ) return "";
 		StringBuilder buf = new StringBuilder();
@@ -675,6 +760,13 @@ public class Tool {
 		if (bStartNLIndex > 0) newB = b.substring(bStartNLIndex);
 
 		return newA.equals(newB);
+	}
+
+	public static void printOriginalFilePiece(InputDocument doc, CommonToken originalCurToken) {
+		System.out.println(doc.getLine(originalCurToken.getLine()-1));
+		System.out.println(doc.getLine(originalCurToken.getLine()));
+		System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
+		System.out.println("^");
 	}
 
 //	public static class Foo {

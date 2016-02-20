@@ -22,7 +22,8 @@ public class InputDocument {
 	public List<Integer> levelsToCommonAncestor;
 	public int allWhiteSpaceCount = 0;
 	public int incorrectWhiteSpaceCount = 0;
-	public boolean dumpIncorrectWS = true;
+	public int misclassifiedNewLineCount = 0;
+	public boolean dumpIncorrectWS = false;
 
 	public InputDocument(InputDocument d, int index) {
 		this.fileName = d.fileName;
