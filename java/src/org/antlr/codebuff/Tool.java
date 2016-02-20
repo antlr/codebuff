@@ -56,12 +56,16 @@ public class Tool {
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
-		System.out.println("misclassified: "+formatter.misclassified);
-		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
-		System.out.println("Diff is "+d);
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
+		testDoc.dumpIncorrectWS = true;
+		Tool.resultEvaluate(testDoc, prefix + formattedOutput, JavaLexer.class);
+		System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100 * testDoc.getIncorrectWSRate());
+		System.out.println("misclassified: "+formatter.misclassified);
+		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
+		System.out.println("Diff is "+d);
+
 		return prefix+formattedOutput;
 	}
 
@@ -287,6 +291,18 @@ public class Tool {
 	}
 
 	public static String join(int[] array, String separator) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < array.length; i++) {
+			builder.append(array[i]);
+			if (i < array.length - 1) {
+				builder.append(separator);
+			}
+		}
+
+		return builder.toString();
+	}
+
+	public static String join(String[] array, String separator) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < array.length; i++) {
 			builder.append(array[i]);
@@ -544,6 +560,72 @@ public class Tool {
 		return normalized_ws_distance;
 	}
 
+	public static void resultEvaluate(InputDocument doc,
+									  String formatted,
+									  Class<? extends Lexer> lexerClass)
+		throws Exception {
+		doc.allWhiteSpaceCount = 0;
+		doc.incorrectWhiteSpaceCount = 0;
+
+		String original = doc.content;
+
+		// Grammar must strip all but real tokens and whitespace (and put that on hidden channel)
+		CommonTokenStream original_tokens = tokenize(original, lexerClass);
+		CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+
+		// walk token streams and examine whitespace in between tokens
+		int i = 1;
+
+		while ( true ) {
+			Token ot = original_tokens.LT(i);
+			if ( ot==null || ot.getType()==Token.EOF ) break;
+			List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
+			String original_ws = tokenText(ows);
+
+			Token ft = formatted_tokens.LT(i);
+			if ( ft==null || ft.getType()==Token.EOF ) break;
+			List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
+			String formatted_ws = tokenText(fws);
+
+			if (original_ws.length() == 0) {
+				if (formatted_ws.length() != 0) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+						System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
+					}
+				}
+			}
+			else {
+				doc.allWhiteSpaceCount++;
+
+				if (formatted_ws.length() == 0) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken) ot);
+						System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
+					}
+				}
+				else if (!TwoWSEqual(original_ws, formatted_ws)) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+						System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
+						System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
+					}
+				}
+			}
+
+			i++;
+		}
+	}
+
 	public static String tokenText(List<Token> tokens) {
 		if ( tokens==null ) return "";
 		StringBuilder buf = new StringBuilder();
@@ -618,6 +700,57 @@ public class Tool {
 			}
 		}
 		return buf.toString();
+	}
+
+	public static String dumpWhiteSpace(String s) {
+		String[] whiteSpaces = new String[s.length()];
+		for (int i=0; i<s.length(); i++) {
+			char c = s.charAt(i);
+			switch ( c ) {
+				case '\n' :
+					whiteSpaces[i] = "\\n";
+					break;
+				case '\t' :
+					whiteSpaces[i] = "\\t";
+					break;
+				case '\r' :
+					whiteSpaces[i] = "\\r";
+					break;
+				case '\u000C' :
+					whiteSpaces[i] = "\\u000C";
+					break;
+				case ' ' :
+					whiteSpaces[i] = "ws";
+					break;
+				default :
+					whiteSpaces[i] = String.valueOf(c);
+					break;
+			}
+		}
+		return join(whiteSpaces, " | ");
+	}
+
+	// In some case, before a new line sign, there maybe some white space.
+	// But those white spaces won't change the look of file.
+	// To compare if two WS are the same, we should remove all the shite space before the first '\n'
+	public static boolean TwoWSEqual(String a, String b) {
+		String newA = a;
+		String newB = b;
+
+		int aStartNLIndex = a.indexOf('\n');
+		int bStartNLIndex = b.indexOf('\n');
+
+		if (aStartNLIndex > 0) newA = a.substring(aStartNLIndex);
+		if (bStartNLIndex > 0) newB = b.substring(bStartNLIndex);
+
+		return newA.equals(newB);
+	}
+
+	public static void printOriginalFilePiece(InputDocument doc, CommonToken originalCurToken) {
+		System.out.println(doc.getLine(originalCurToken.getLine()-1));
+		System.out.println(doc.getLine(originalCurToken.getLine()));
+		System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
+		System.out.println("^");
 	}
 
 //	public static class Foo {

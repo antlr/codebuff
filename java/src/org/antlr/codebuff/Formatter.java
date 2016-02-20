@@ -96,17 +96,16 @@ public class Formatter {
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
+
 		if ( prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actual ) {
 				misclassified++;
+				doc.misclassifiedNewLineCount++;
 				System.out.println();
 				System.out.printf("### line %d: predicted %d actual %d:\n",
 				                  originalCurToken.getLine(), injectNewline, actual);
-				System.out.println(doc.getLine(originalCurToken.getLine()-1));
-				System.out.println(doc.getLine(originalCurToken.getLine()));
-				System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
-				System.out.println("^");
+				Tool.printOriginalFilePiece(doc, originalCurToken);
 				newlineClassifier.dumpVotes = true;
 				newlineClassifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 				newlineClassifier.dumpVotes = false;
@@ -147,8 +146,11 @@ public class Formatter {
 		// to emit it.
 		curToken.setLine(line);
 		curToken.setCharPositionInLine(charPosInLine);
+
 		// emit
 		output.append(tokText);
 		charPosInLine += tokText.length();
 	}
+
+
 }
