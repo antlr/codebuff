@@ -561,8 +561,8 @@ public class Tool {
 	}
 
 	public static void resultEvaluate(InputDocument doc,
-								      String formatted,
-								      Class<? extends Lexer> lexerClass)
+									  String formatted,
+									  Class<? extends Lexer> lexerClass)
 		throws Exception {
 		doc.allWhiteSpaceCount = 0;
 		doc.incorrectWhiteSpaceCount = 0;
@@ -575,72 +575,56 @@ public class Tool {
 
 		// walk token streams and examine whitespace in between tokens
 		int i = 1;
-		int j = 1;
 
 		while ( true ) {
-			if (i >= original_tokens.size()) break;
-			if (j >= formatted_tokens.size()) break;
+			Token ot = original_tokens.LT(i);
+			if ( ot==null || ot.getType()==Token.EOF ) break;
+			List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
+			String original_ws = tokenText(ows);
 
-			Token ot = original_tokens.get(i);
-			Token ft = formatted_tokens.get(j);
+			Token ft = formatted_tokens.LT(i);
+			if ( ft==null || ft.getType()==Token.EOF ) break;
+			List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
+			String formatted_ws = tokenText(fws);
 
-			if (ot.getType() == JavaLexer.WS) {
-				doc.allWhiteSpaceCount++;
-
-				if (ft.getType() != JavaLexer.WS) {
-					doc.incorrectWhiteSpaceCount++;
-
-					if (doc.dumpIncorrectWS) {
-						System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
-						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-						System.out.println("should: " + Tool.dumpWhiteSpace(ot.getText()));
-					}
-
-					// move ot to catch up ft
-					while (true) {
-						if (i >= original_tokens.size()) break;
-						ot = original_tokens.get(i);
-						if (ft.getText().equals(ot.getText()) && ft.getType() == ot.getType()) break;
-						i++;
-					}
-				} else if (!TwoWSEqual(ot.getText(), ft.getText())) {
-					doc.incorrectWhiteSpaceCount++;
-
-					if (doc.dumpIncorrectWS) {
-						System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
-						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-						System.out.println("should: " + Tool.dumpWhiteSpace(ot.getText()));
-						System.out.println("actual: " + Tool.dumpWhiteSpace(ft.getText()));
-					}
-				}
-			} else {
-				if (ft.getType() == JavaLexer.WS) {
+			if (original_ws.length() == 0) {
+				if (formatted_ws.length() != 0) {
 					doc.incorrectWhiteSpaceCount++;
 
 					if (doc.dumpIncorrectWS) {
 						System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
 						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-						System.out.println("actual: " + Tool.dumpWhiteSpace(ft.getText()));
+						System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
 					}
+				}
+			}
+			else {
+				doc.allWhiteSpaceCount++;
 
-					// move ft to catch up ot
-					while (true) {
-						if (j >= formatted_tokens.size()) break;
-						ft = formatted_tokens.get(j);
-						if (ft.getText().equals(ot.getText()) && ft.getType() == ot.getType()) break;
-						j++;
+				if (formatted_ws.length() == 0) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken) ot);
+						System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
 					}
-				} else if (!(ft.getText().equals(ot.getText()) && ft.getType() == ot.getType())) {
-					System.err.println("Something wrong in result evaluator for the file of: " + doc.fileName + "\nThis result value could not be adopted.");
-					break;
+				}
+				else if (!TwoWSEqual(original_ws, formatted_ws)) {
+					doc.incorrectWhiteSpaceCount++;
+
+					if (doc.dumpIncorrectWS) {
+						System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
+						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+						System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
+						System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
+					}
 				}
 			}
 
 			i++;
-			j++;
 		}
 	}
-
 
 	public static String tokenText(List<Token> tokens) {
 		if ( tokens==null ) return "";
