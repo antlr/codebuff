@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.HashBag;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.misc.Utils;
 
 import java.util.ArrayList;
@@ -79,16 +80,24 @@ public abstract class kNNClassifier {
 //			unknown[CollectFeatures.INDEX_TYPE],
 //			unknown[CollectFeatures.INDEX_NEXT_TYPE]
 //		);
-		List<Integer> vectorIndexesMatchingTokenContext = corpus.curRuleIndexToVectorsMap.get(unknown[CollectFeatures.INDEX_RULE]);
-		int n = vectorIndexesMatchingTokenContext.size(); // num training samples
+		int curTokenRuleIndex = unknown[CollectFeatures.INDEX_RULE];
+		int prevTokenRuleIndex = unknown[CollectFeatures.INDEX_PREV_RULE];
+		Pair<Integer, Integer> key = new Pair<>(curTokenRuleIndex, prevTokenRuleIndex);
+		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
 		List<Neighbor> distances = new ArrayList<>();
-		for (int i = 0; i<n; i++) {
-			Integer vectorIndex = vectorIndexesMatchingTokenContext.get(i);
-			int[] x = corpus.X.get(vectorIndex);
-			double d = distance(x, unknown);
-			if ( d<=distanceThreshold ) {
-				Neighbor neighbor = new Neighbor(this, Y.get(vectorIndex), d, vectorIndex);
-				distances.add(neighbor);
+		if ( vectorIndexesMatchingTokenContext==null ) {
+			System.err.println("no matching contexts for "+CollectFeatures._toString(JavaParser.VOCABULARY, JavaParser.ruleNames, unknown));
+		}
+		else {
+			int n = vectorIndexesMatchingTokenContext.size(); // num training samples
+			for (int i = 0; i<n; i++) {
+				Integer vectorIndex = vectorIndexesMatchingTokenContext.get(i);
+				int[] x = corpus.X.get(vectorIndex);
+				double d = distance(x, unknown);
+				if ( d<=distanceThreshold ) {
+					Neighbor neighbor = new Neighbor(this, Y.get(vectorIndex), d, vectorIndex);
+					distances.add(neighbor);
+				}
 			}
 		}
 		return distances.toArray(new Neighbor[distances.size()]);

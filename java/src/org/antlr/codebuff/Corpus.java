@@ -1,5 +1,7 @@
 package org.antlr.codebuff;
 
+import org.antlr.v4.runtime.misc.Pair;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +19,8 @@ public class Corpus {
 	// map tuple (LT(-2),LT(-1),LT(1),LT(2)) to list of vector indexes with those tokens
 //	Map<TokenContext, List<Integer>> tokenContextMap;
 
-//	Map<Integer, List<Integer>> curTokenToVectorsMap;
-	Map<Integer, List<Integer>> curRuleIndexToVectorsMap;
+	//	Map<Integer, List<Integer>> curTokenToVectorsMap;
+	Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
 
 	public Corpus(List<InputDocument> documents,
 				  List<int[]> X,
@@ -37,15 +39,18 @@ public class Corpus {
 	}
 
 	public void buildTokenContextIndex() {
-		curRuleIndexToVectorsMap = new HashMap<>();
+		curAndPrevTokenRuleIndexToVectorsMap = new HashMap<>();
 		for (int i=0; i<X.size(); i++) {
-			int curRuleIndex = X.get(i)[CollectFeatures.INDEX_RULE];
-			List<Integer> vectorIndexes = curRuleIndexToVectorsMap.get(curRuleIndex);
+			int curTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_RULE];
+			int prevTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_PREV_RULE];
+			Pair<Integer, Integer> key = new Pair<>(curTokenRuleIndex, prevTokenRuleIndex);
+			List<Integer> vectorIndexes = curAndPrevTokenRuleIndexToVectorsMap.get(key);
 			if ( vectorIndexes==null ) {
 				vectorIndexes = new ArrayList<>();
-				curRuleIndexToVectorsMap.put(curRuleIndex, vectorIndexes);
+				curAndPrevTokenRuleIndexToVectorsMap.put(key, vectorIndexes);
 			}
 			vectorIndexes.add(i);
+
 //			TokenContext ctx = new TokenContext(
 //				X.get(i)[CollectFeatures.INDEX_PREV2_TYPE],
 //				X.get(i)[CollectFeatures.INDEX_PREV_TYPE],
