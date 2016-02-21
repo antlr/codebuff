@@ -102,7 +102,9 @@ public class Tool {
 			System.out.println();
 		}
 
-		return processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
+		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
+		corpus.buildTokenContextIndex();
+		return corpus;
 	}
 
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
