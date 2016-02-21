@@ -86,7 +86,13 @@ public abstract class kNNClassifier {
 		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
 		List<Neighbor> distances = new ArrayList<>();
 		if ( vectorIndexesMatchingTokenContext==null ) {
-			System.err.println("no matching contexts for "+CollectFeatures._toString(JavaParser.VOCABULARY, JavaParser.ruleNames, unknown));
+			// no matching contexts for this feature, rely on full training set
+			int n = corpus.X.size(); // num training samples
+			for (int i = 0; i<n; i++) {
+				int[] x = corpus.X.get(i);
+				Neighbor neighbor = new Neighbor(this, Y.get(i), distance(x, unknown), i);
+				distances.add(neighbor);
+			}
 		}
 		else {
 			int n = vectorIndexesMatchingTokenContext.size(); // num training samples
