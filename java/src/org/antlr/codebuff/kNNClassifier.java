@@ -52,7 +52,7 @@ public abstract class kNNClassifier {
 			}
 			votes.add(kNN[i].category);
 		}
-		if ( dumpVotes ) {
+		if ( dumpVotes && kNN.length>0 ) {
 			System.out.print(CollectFeatures.featureNameHeader());
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
 			System.out.println(CollectFeatures._toString(firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
