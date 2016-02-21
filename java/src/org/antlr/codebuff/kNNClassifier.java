@@ -19,10 +19,6 @@ public abstract class kNNClassifier {
 		this.Y = Y;
 	}
 
-	public int classify(int k, int[] unknown) {
-		return classify(k, unknown, 1.0);
-	}
-
 	/**
 	 * Walk all training samples and compute distance(). Return indexes of k
 	 * smallest distance values.  Categories can be any negative or positive
@@ -74,19 +70,13 @@ public abstract class kNNClassifier {
 	}
 
 	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
-//		TokenContext ctx = new TokenContext(
-//			unknown[CollectFeatures.INDEX_PREV2_TYPE],
-//			unknown[CollectFeatures.INDEX_PREV_TYPE],
-//			unknown[CollectFeatures.INDEX_TYPE],
-//			unknown[CollectFeatures.INDEX_NEXT_TYPE]
-//		);
 		int curTokenRuleIndex = unknown[CollectFeatures.INDEX_RULE];
 		int prevTokenRuleIndex = unknown[CollectFeatures.INDEX_PREV_RULE];
 		Pair<Integer, Integer> key = new Pair<>(curTokenRuleIndex, prevTokenRuleIndex);
 		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
 		List<Neighbor> distances = new ArrayList<>();
 		if ( vectorIndexesMatchingTokenContext==null ) {
-			// no matching contexts for this feature, rely on full training set
+			// no matching contexts for this feature, must rely on full training set
 			int n = corpus.X.size(); // num training samples
 			for (int i = 0; i<n; i++) {
 				int[] x = corpus.X.get(i);
