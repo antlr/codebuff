@@ -34,7 +34,8 @@ public class Formatter {
 
 	protected int tabSize;
 
-	protected int misclassified = 0;
+	protected boolean debug_NL = true;
+	protected int misclassified_NL = 0;
 
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
 		this.doc = doc;
@@ -87,10 +88,10 @@ public class Formatter {
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 
-		if ( prevToken.getType()==JavaLexer.WS ) {
+		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actual ) {
-				misclassified++;
+				misclassified_NL++;
 				doc.misclassifiedNewLineCount++;
 				System.out.println();
 				System.out.printf("### line %d: predicted %d actual %d:\n",
@@ -141,6 +142,4 @@ public class Formatter {
 		output.append(tokText);
 		charPosInLine += tokText.length();
 	}
-
-
 }
