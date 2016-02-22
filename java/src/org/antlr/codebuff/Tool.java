@@ -60,9 +60,9 @@ public class Tool {
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
 		testDoc.dumpIncorrectWS = true;
-		Tool.resultEvaluate(testDoc, prefix + formattedOutput, JavaLexer.class);
-		System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100 * testDoc.getIncorrectWSRate());
-		System.out.println("misclassified: "+formatter.misclassified);
+		Tool.resultEvaluate(testDoc, prefix+formattedOutput, JavaLexer.class);
+		System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100*testDoc.getIncorrectWSRate());
+		System.out.println("misclassified: "+formatter.misclassified_NL);
 		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
 		System.out.println("Diff is "+d);
 
@@ -102,7 +102,9 @@ public class Tool {
 			System.out.println();
 		}
 
-		return processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
+		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
+		corpus.buildTokenContextIndex();
+		return corpus;
 	}
 
 	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {

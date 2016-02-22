@@ -34,7 +34,8 @@ public class Formatter {
 
 	protected int tabSize;
 
-	protected int misclassified = 0;
+	protected boolean debug_NL = true;
+	protected int misclassified_NL = 0;
 
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
 		this.doc = doc;
@@ -42,21 +43,11 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
-		newlineClassifier = new CodekNNClassifier(corpus.documents,
-												  corpus.X,
-												  corpus.injectNewlines);
-		wsClassifier = new CodekNNClassifier(corpus.documents,
-											 corpus.X,
-											 corpus.injectWS);
-
-		indentClassifier = new CodekNNClassifier(corpus.documents,
-												 corpus.X,
-												 corpus.indent);
+		newlineClassifier = new CodekNNClassifier(corpus, corpus.injectNewlines);
+		wsClassifier = new CodekNNClassifier(corpus, corpus.injectWS);
+		indentClassifier = new CodekNNClassifier(corpus, corpus.indent);
 //		indentClassifier.dumpVotes = true;
-
-		alignClassifier = new CodekNNClassifier(corpus.documents,
-												corpus.X,
-												corpus.levelsToCommonAncestor);
+		alignClassifier = new CodekNNClassifier(corpus, corpus.levelsToCommonAncestor);
 		k = (int)Math.sqrt(corpus.X.size());
 		this.tabSize = tabSize;
 	}
@@ -97,10 +88,10 @@ public class Formatter {
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 
-		if ( prevToken.getType()==JavaLexer.WS ) {
+		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actual ) {
-				misclassified++;
+				misclassified_NL++;
 				doc.misclassifiedNewLineCount++;
 				System.out.println();
 				System.out.printf("### line %d: predicted %d actual %d:\n",
@@ -151,6 +142,4 @@ public class Formatter {
 		output.append(tokText);
 		charPosInLine += tokText.length();
 	}
-
-
 }
