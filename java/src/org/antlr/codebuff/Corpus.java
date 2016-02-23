@@ -8,6 +8,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Corpus {
+	public static final int NUM_DEPENDENT_VARS = 4;
+	public static final int INDEX_FEATURE_NEWLINES = 0;
+	public static final int INDEX_FEATURE_WS = 1;
+	public static final int INDEX_FEATURE_INDENT = 2;
+	public static final int INDEX_FEATURE_LEVELS_TO_ANCESTOR = 3;
+
 	List<InputDocument> documents; // an entry for each X
 	List<int[]> X;
 	List<Integer> injectNewlines;
