@@ -773,7 +773,10 @@ public class Tool {
 
 		for (InputDocument testDoc: testDocs) {
 			String formattedDoc = format(corpus, testDoc, tabSize);
+			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
+			testDoc.dumpIncorrectWS = false;
 			double differenceRatio = compare(testDoc, formattedDoc, JavaLexer.class);
+			testDoc.dumpIncorrectWS = dumpIncorrectWSOldValue;
 			differenceRatios.add(differenceRatio);
 		}
 		return differenceRatios;
