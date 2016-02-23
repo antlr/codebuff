@@ -80,12 +80,16 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int indent = classifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int injectNewline = categories[Corpus.INDEX_FEATURE_NEWLINES];
+		int indent = categories[Corpus.INDEX_FEATURE_INDENT];
+		int ws = categories[Corpus.INDEX_FEATURE_WS];
+		int levelsToCommonAncestor = categories[Corpus.INDEX_FEATURE_LEVELS_TO_ANCESTOR];
 
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
+
 
 		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
@@ -105,7 +109,6 @@ public class Formatter {
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			int levelsToCommonAncestor = classifier.classify(k, features, corpus.levelsToCommonAncestor, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 			if ( levelsToCommonAncestor>0 ) {
 				List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
 				Collections.reverse(ancestors);
@@ -120,15 +123,9 @@ public class Formatter {
 				charPosInLine = currentIndent;
 				output.append(Tool.spaces(currentIndent));
 			}
-//			else { //if ( indent>0 ) {
-//				output.append(Tool.spaces(currentIndent));
-//				output.append(Tool.spaces(indent));
-//				currentIndent += indent;
-//			}
 		}
 		else {
 			// inject whitespace instead of \n?
-			int ws = classifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD); // the class is the number of WS chars
 			output.append(Tool.spaces(ws));
 			charPosInLine += ws;
 		}
