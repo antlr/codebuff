@@ -60,7 +60,7 @@ public class Tool {
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
 		testDoc.dumpIncorrectWS = true;
-		Tool.resultEvaluate(testDoc, prefix+formattedOutput, JavaLexer.class);
+		Tool.compare(testDoc, prefix+formattedOutput, JavaLexer.class);
 		System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100*testDoc.getIncorrectWSRate());
 		System.out.println("misclassified: "+formatter.misclassified_NL);
 		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
@@ -562,10 +562,16 @@ public class Tool {
 		return normalized_ws_distance;
 	}
 
-	public static void resultEvaluate(InputDocument doc,
-									  String formatted,
-									  Class<? extends Lexer> lexerClass)
-		throws Exception {
+	/** Compare an input document's original text with its formatted output
+	 *  and return the ratio of the incorrectWhiteSpaceCount to total whitespace
+	 *  count in the original document text. It is a measure of document
+	 *  similarity.
+	 */
+	public static double compare(InputDocument doc,
+	                             String formatted,
+	                             Class<? extends Lexer> lexerClass)
+		throws Exception
+	{
 		doc.allWhiteSpaceCount = 0;
 		doc.incorrectWhiteSpaceCount = 0;
 
@@ -626,6 +632,7 @@ public class Tool {
 
 			i++;
 		}
+		return ((double)doc.incorrectWhiteSpaceCount) / doc.allWhiteSpaceCount;
 	}
 
 	public static String tokenText(List<Token> tokens) {
