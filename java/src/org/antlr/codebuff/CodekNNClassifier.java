@@ -1,7 +1,5 @@
 package org.antlr.codebuff;
 
-import java.util.List;
-
 /*
  It would appear the context information provides the strongest evidence for
  injecting a new line or not.  The column number and even the width of the next
@@ -30,8 +28,8 @@ import java.util.List;
  */
 
 public class CodekNNClassifier extends kNNClassifier {
-	public CodekNNClassifier(Corpus corpus, List<Integer> Y) {
-		super(corpus, Y);
+	public CodekNNClassifier(Corpus corpus) {
+		super(corpus);
 	}
 
 	/**

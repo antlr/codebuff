@@ -1,24 +1,22 @@
 package org.antlr.codebuff;
 
 public class Neighbor {
-	private org.antlr.codebuff.kNNClassifier kNNClassifier;
-	public final int category;
+	public Corpus corpus;
 	public final double distance;
-	public final int corpusVectorIndex;
+	public final int corpusVectorIndex; // refers to both X (independent) and Y (dependent/predictor) variables
 
-	public Neighbor(kNNClassifier kNNClassifier, int category, double distance, int corpusVectorIndex) {
-		this.kNNClassifier = kNNClassifier;
-		this.category = category;
+	public Neighbor(Corpus corpus, double distance, int corpusVectorIndex) {
+		this.corpus = corpus;
 		this.distance = distance;
 		this.corpusVectorIndex = corpusVectorIndex;
 	}
 
 	@Override
 	public String toString() {
-		int[] X = kNNClassifier.corpus.X.get(corpusVectorIndex);
-		InputDocument doc = kNNClassifier.corpus.documents.get(corpusVectorIndex);
+		int[] X = corpus.X.get(corpusVectorIndex);
+		InputDocument doc = corpus.documents.get(corpusVectorIndex);
 		String features = CollectFeatures._toString(doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
 		int line = CollectFeatures.getInfoLine(X);
-		return String.format("%s (cat=%d,d=%1.3f): %s", features, category, distance, doc.getLine(line));
+		return String.format("%s (cat=%d,d=%1.3f): %s", features, -1, distance, doc.getLine(line));
 	}
 }
