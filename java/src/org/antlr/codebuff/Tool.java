@@ -24,6 +24,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -761,6 +762,37 @@ public class Tool {
 		System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
 		System.out.println("^");
 	}
+
+	/** Given a corpus, format the given input documents and compute their document
+	 *  similarities with {@link #compare}.
+	 */
+	public static ArrayList<Double> validateResults(Corpus corpus, List<InputDocument> testDocs, int tabSize)
+		throws Exception
+	{
+		ArrayList<Double> differenceRatios = new ArrayList<>();
+
+		for (InputDocument testDoc: testDocs) {
+			String formattedDoc = format(corpus, testDoc, tabSize);
+			double differenceRatio = compare(testDoc, formattedDoc, JavaLexer.class);
+			differenceRatios.add(differenceRatio);
+		}
+		return differenceRatios;
+	}
+
+	// return the median value of validate results array
+	public static double validate(Corpus corpus, List<InputDocument> testDocs, int tabSize)
+		throws Exception
+	{
+		ArrayList<Double> differenceRatios = validateResults(corpus, testDocs, tabSize);
+		Collections.sort(differenceRatios);
+		if (differenceRatios.size() % 2 == 1) return differenceRatios.get(differenceRatios.size() / 2);
+		else if (differenceRatios.size() == 0) {
+			System.err.println("Don't have enough results to get median value from validate results array!");
+			return -1;
+		}
+		else return (differenceRatios.get(differenceRatios.size() / 2) + differenceRatios.get(differenceRatios.size() / 2 - 1))/2;
+	}
+
 
 //	public static class Foo {
 //		public static void main(String[] args) {
