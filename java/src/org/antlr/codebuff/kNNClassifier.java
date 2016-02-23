@@ -11,12 +11,10 @@ import java.util.List;
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
 	protected Corpus corpus;
-	protected List<Integer> Y;
 	public boolean dumpVotes = false;
 
-	public kNNClassifier(Corpus corpus, List<Integer> Y) {
+	public kNNClassifier(Corpus corpus) {
 		this.corpus = corpus;
-		this.Y = Y;
 	}
 
 	/**
@@ -24,8 +22,8 @@ public abstract class kNNClassifier {
 	 * smallest distance values.  Categories can be any negative or positive
 	 * integer (and 0).
 	 */
-	public int classify(int k, int[] unknown, double distanceThreshold) {
-		HashBag<Integer> votes = votes(k, unknown, distanceThreshold);
+	public int classify(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+		HashBag<Integer> votes = votes(k, unknown, Y, distanceThreshold);
 		int max = Integer.MIN_VALUE;
 		int catWithMostVotes = 0;
 		for (Integer category : votes.keySet()) {
@@ -38,11 +36,7 @@ public abstract class kNNClassifier {
 		return catWithMostVotes;
 	}
 
-	public HashBag<Integer> votes(int k, int[] unknown) {
-		return votes(k, unknown, 1.0);
-	}
-
-	public HashBag<Integer> votes(int k, int[] unknown, double distanceThreshold) {
+	public HashBag<Integer> votes(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		Neighbor[] kNN = kNN(k, distanceThreshold, unknown);
 		HashBag<Integer> votes = new HashBag<>();
 		for (int i = 0; i<k && i<kNN.length; i++) {
@@ -50,7 +44,7 @@ public abstract class kNNClassifier {
 			if ( kNN[i].distance>distanceThreshold ) {
 				break;
 			}
-			votes.add(kNN[i].category);
+			votes.add(Y.get(kNN[i].corpusVectorIndex));
 		}
 		if ( dumpVotes && kNN.length>0 ) {
 			System.out.print(CollectFeatures.featureNameHeader());
@@ -80,7 +74,7 @@ public abstract class kNNClassifier {
 			int n = corpus.X.size(); // num training samples
 			for (int i = 0; i<n; i++) {
 				int[] x = corpus.X.get(i);
-				Neighbor neighbor = new Neighbor(this, Y.get(i), distance(x, unknown), i);
+				Neighbor neighbor = new Neighbor(corpus, distance(x, unknown), i);
 				distances.add(neighbor);
 			}
 		}
@@ -91,7 +85,7 @@ public abstract class kNNClassifier {
 				int[] x = corpus.X.get(vectorIndex);
 				double d = distance(x, unknown);
 				if ( d<=distanceThreshold ) {
-					Neighbor neighbor = new Neighbor(this, Y.get(vectorIndex), d, vectorIndex);
+					Neighbor neighbor = new Neighbor(corpus, d, vectorIndex);
 					distances.add(neighbor);
 				}
 			}
