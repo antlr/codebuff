@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -86,10 +87,32 @@ public class Formatter {
 		int ws = categories[Corpus.INDEX_FEATURE_WS];
 		int levelsToCommonAncestor = categories[Corpus.INDEX_FEATURE_LEVELS_TO_ANCESTOR];
 
+		HashBag<Integer> votes = classifier.votes(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		if ( votes.size()>1 ) {
+			int totalVotes =votes.totalCount();
+			int endcol = features[CollectFeatures.INDEX_PREV_END_COLUMN];
+			System.out.println("newline votes: "+votes+
+				                   ", col="+endcol);
+			Integer no_NL_votes = votes.get(0);
+			if ( no_NL_votes!=null ) {
+				votes.remove(0);
+				int votesWithoutZero = votes.totalCount();
+				double pNL = Tool.sigmoid(endcol, 70);
+				System.out.printf("no NL: %1.2f, NL: %1.2f; p(NL)=%1.2f\n",
+				                  no_NL_votes/(float) totalVotes, votesWithoutZero/(float) totalVotes,
+				                  pNL);
+				double adjusted_NL = pNL*(votesWithoutZero/(float) totalVotes);
+				double adjusted_noNL = (1.0-pNL)*no_NL_votes/(float) totalVotes;
+				System.out.printf("adjusted no NL: %1.2f, NL: %1.2f\n", adjusted_noNL, adjusted_NL);
+				if ( adjusted_NL > adjusted_noNL ) {
+					injectNewline = 1;
+				}
+			}
+		}
+
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
-
 
 		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
 			int actual = Tool.count(prevToken.getText(), '\n');
