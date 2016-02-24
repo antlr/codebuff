@@ -10,24 +10,25 @@ import java.util.List;
  * Created by morganzhang on 2/23/16.
  */
 public class FeatureMetaDataTweaker {
-	private static HashMap<Integer, Double> testParameters;
-	private static ArrayList<Integer> allIndexOfFeatureNeedToTweak;
+	private static ArrayList<Integer> allIndexOfFeatureNeedToTweak;  // stores the index of FeatureMetaData that need to be change
 	private static FeatureMetaData[] ORIGINAL_FEATURES;
+
+	// resultMap stores all results, the key is validated value, the value is a list of parameter combinations with the same validate value
+	// Each hashMap in the arraylist is a parameter combination, key is the index of FeatureMetaData, the value is misMatchCost
 	private static HashMap<Double, ArrayList<HashMap<Integer, Double>>> resultMap;
 	private static Corpus corpus;
 	private static ArrayList<InputDocument> testDocs;
 	private static int tabSize;
-	private static int eachParameterStepTime;
-	private static int allDifferentCombination;
+	private static int eachParameterStepTime;  // how many times a parameter would change
+	private static int allDifferentCombination;  // how many times in total it would test
 
 	private static double minValueForParameter = 1.5;
 	private static double maxValueForParameter = 2.0;
 	private static double step = 0.2;
-	private static int showResultMaxAmount = 10;
+	private static int showResultMaxAmount = 10;  // top n results we want to see
 
 	public FeatureMetaDataTweaker(FeatureMetaData[] originalFeatures, Corpus c, ArrayList<InputDocument> docs, int tSize) {
 		ORIGINAL_FEATURES = originalFeatures;
-		testParameters = new HashMap<>();
 		resultMap = new HashMap<>();
 		allIndexOfFeatureNeedToTweak = new ArrayList<>();
 
@@ -36,9 +37,8 @@ public class FeatureMetaDataTweaker {
 		tabSize = tSize;
 
 		for (int i=0; i<originalFeatures.length; i++) {
-			if (originalFeatures[i].mismatchCost > 0 && i<5) {
+			if (originalFeatures[i].mismatchCost > 0 && i<4) {
 				allIndexOfFeatureNeedToTweak.add(i);
-				testParameters.put(i, 0.0);
 			}
 		}
 
@@ -47,13 +47,11 @@ public class FeatureMetaDataTweaker {
 
 		allDifferentCombination = (int)Math.pow(eachParameterStepTime, allIndexOfFeatureNeedToTweak.size());
 
-		CollectFeatures.FEATURES = ORIGINAL_FEATURES;
-
 		System.out.println("\n=== Brute Force Parameters ===");
 		System.out.printf("Each parameter try from %f to %f, step %f \n", minValueForParameter, maxValueForParameter, step);
 		System.out.printf("There are %d parameters, and each parameter need change %d times, it will finally test %d combinations.\n", allIndexOfFeatureNeedToTweak.size(), eachParameterStepTime, allDifferentCombination);
 		System.out.println("Testing parameters are: ");
-		for (int i: testParameters.keySet()) {
+		for (int i: allIndexOfFeatureNeedToTweak) {
 			System.out.println(Tool.join(originalFeatures[i].abbrevHeaderRows, " "));
 		}
 		System.out.println();
@@ -75,12 +73,18 @@ public class FeatureMetaDataTweaker {
 		int showedResultCount = 0;
 		for (double resultValue: resultValueArray) {
 			ArrayList<HashMap<Integer, Double>> parametersArray = resultMap.get(resultValue);
-			for (HashMap<Integer, Double> parameters: parametersArray) showValidateResult(parameters, resultValue);
+			for (HashMap<Integer, Double> parameters: parametersArray) printValidateResult(parameters, resultValue);
 			showedResultCount += parametersArray.size();
 			if (showedResultCount > showResultMaxAmount) break;
 		}
+		System.out.println("=== Best Parameter Combination End ===");
+
+		CollectFeatures.FEATURES = ORIGINAL_FEATURES;
 	}
 
+	// Generate all possible parameter combinations and return it as a list
+	// The inside list is a combination of parameter.
+	// The i parameter of the inside list's FeatureMetaDada index == allIndexOfFeatureNeedToTweak.get(i)
 	private static ArrayList<ArrayList<Double>> bruteForceParameterGenerator() {
 		ArrayList<ArrayList<Double>> testParametersArray = new ArrayList<>();
 
@@ -128,10 +132,10 @@ public class FeatureMetaDataTweaker {
 		newValue.add(testParametersMap);
 		resultMap.put(validateResult, newValue);
 
-		showValidateResult(testParametersMap, validateResult);
+		printValidateResult(testParametersMap, validateResult);
 	}
 
-	private static void showValidateResult(HashMap<Integer, Double> testParametersMap, double validateResult) {
+	private static void printValidateResult(HashMap<Integer, Double> testParametersMap, double validateResult) {
 		System.out.printf("Validate Result: %1.3f", validateResult);
 		for (int i: allIndexOfFeatureNeedToTweak) {
 			System.out.printf(" %s : %1.1f |", Tool.join(ORIGINAL_FEATURES[i].abbrevHeaderRows, " "), testParametersMap.get(i));
