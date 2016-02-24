@@ -1,5 +1,7 @@
 package org.antlr.codebuff;
 
+import java.util.List;
+
 public class Neighbor {
 	public Corpus corpus;
 	public final double distance;
@@ -11,12 +13,11 @@ public class Neighbor {
 		this.corpusVectorIndex = corpusVectorIndex;
 	}
 
-	@Override
-	public String toString() {
+	public String toString(List<Integer> Y) {
 		int[] X = corpus.X.get(corpusVectorIndex);
 		InputDocument doc = corpus.documents.get(corpusVectorIndex);
 		String features = CollectFeatures._toString(doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
 		int line = CollectFeatures.getInfoLine(X);
-		return String.format("%s (cat=%d,d=%1.3f): %s", features, -1, distance, doc.getLine(line));
+		return String.format("%s (cat=%d,d=%1.3f): %s", features, Y.get(corpusVectorIndex), distance, doc.getLine(line));
 	}
 }

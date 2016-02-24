@@ -2,7 +2,6 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.misc.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +74,13 @@ public abstract class kNNClassifier {
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
 			System.out.println(CollectFeatures._toString(firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(25, kNN.length));
-			System.out.println(Utils.join(kNN, "\n"));
+			StringBuilder buf = new StringBuilder();
+			for (int i = 0; i<kNN.length; i++) {
+				Neighbor n = kNN[i];
+				buf.append(n.toString(Y));
+				buf.append("\n");
+			}
+			System.out.println(buf);
 		}
 		return votes;
 	}
