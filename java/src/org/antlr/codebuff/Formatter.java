@@ -96,13 +96,15 @@ public class Formatter {
 			if ( injectNewline!=actual ) {
 				misclassified_NL++;
 				doc.misclassifiedNewLineCount++;
-				System.out.println();
-				System.out.printf("### line %d: predicted %d actual %d:\n",
-				                  originalCurToken.getLine(), injectNewline, actual);
-				Tool.printOriginalFilePiece(doc, originalCurToken);
-				newlineClassifier.dumpVotes = true;
-				newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-				newlineClassifier.dumpVotes = false;
+				if (doc.dumpVotes) {
+					System.out.println();
+					System.out.printf("### line %d: predicted %d actual %d:\n",
+						originalCurToken.getLine(), injectNewline, actual);
+					Tool.printOriginalFilePiece(doc, originalCurToken);
+					newlineClassifier.dumpVotes = true;
+					newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+					newlineClassifier.dumpVotes = false;
+				}
 			}
 		}
 

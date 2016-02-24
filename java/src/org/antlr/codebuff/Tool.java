@@ -54,18 +54,24 @@ public class Tool {
 	public static String format(Corpus corpus, InputDocument testDoc, int tabSize)
 		throws Exception
 	{
+		return format(corpus, testDoc, tabSize, true);
+	}
+
+	public static String format(Corpus corpus, InputDocument testDoc, int tabSize, boolean showFormattedResult)
+		throws Exception
+	{
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
-		testDoc.dumpIncorrectWS = true;
+		testDoc.dumpIncorrectWS = false;
 		Tool.compare(testDoc, prefix+formattedOutput, JavaLexer.class);
-		System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100*testDoc.getIncorrectWSRate());
-		System.out.println("misclassified: "+formatter.misclassified_NL);
+		if (showFormattedResult) System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100*testDoc.getIncorrectWSRate());
+		if (showFormattedResult) System.out.println("misclassified: "+formatter.misclassified_NL);
 		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
-		System.out.println("Diff is "+d);
+		if (showFormattedResult) System.out.println("Diff is "+d);
 
 		return prefix+formattedOutput;
 	}
@@ -772,7 +778,7 @@ public class Tool {
 		ArrayList<Double> differenceRatios = new ArrayList<>();
 
 		for (InputDocument testDoc: testDocs) {
-			String formattedDoc = format(corpus, testDoc, tabSize);
+			String formattedDoc = format(corpus, testDoc, tabSize, false);
 			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
 			testDoc.dumpIncorrectWS = false;
 			double differenceRatio = compare(testDoc, formattedDoc, JavaLexer.class);
