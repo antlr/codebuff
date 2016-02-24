@@ -24,6 +24,7 @@ public class InputDocument {
 	public int incorrectWhiteSpaceCount = 0;
 	public int misclassifiedNewLineCount = 0;
 	public boolean dumpIncorrectWS = false;
+	public boolean dumpVotes = false;
 
 	public InputDocument(InputDocument d, int index) {
 		this.fileName = d.fileName;
