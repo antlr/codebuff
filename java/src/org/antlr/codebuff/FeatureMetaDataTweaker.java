@@ -37,7 +37,7 @@ public class FeatureMetaDataTweaker {
 		tabSize = tSize;
 
 		for (int i=0; i<originalFeatures.length; i++) {
-			if (originalFeatures[i].mismatchCost > 0 && i<4) {
+			if (originalFeatures[i].mismatchCost > 0) {
 				allIndexOfFeatureNeedToTweak.add(i);
 			}
 		}
