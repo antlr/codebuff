@@ -54,6 +54,6 @@ public class Optimizer {
 	}
 
 	public static void main(String[] args) {
-		minimize(Optimizer::cost, x0s[0], LEARNING_RATE, h, PRECISION);
+//		minimize(Optimizer::cost, x0s[0], LEARNING_RATE, h, PRECISION);
 	}
 }
