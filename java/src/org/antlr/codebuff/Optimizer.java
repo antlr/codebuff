@@ -4,7 +4,19 @@ import java.util.Arrays;
 import java.util.function.Function;
 
 public class Optimizer {
+	public static final int LEARNING_RATE = 10;
+	public static final double h = 0.0001;
+	public static final double PRECISION = 0.0000001; // can't be too small as f(x)-f(xprev) prec is low
+
 	/** Use a simple gradient descent approach to find weights */
+	/*
+	LEARNING_RATE = 10
+	h = 0.0001
+	PRECISION = 0.0000001 # can't be too small as f(x)-f(xprev) prec is low
+	def f(x): return np.cos(3*np.pi*x) / x
+	x0s = [runif_(.1,1.2), runif_(.1,1.2)] # random starting positions
+	tracex = minimize(f, x0s[0], LEARNING_RATE, h, PRECISION)
+	 */
 	public static double[] minimize(Function<double[], Double> f, double[] x0, double eta, double h, double precision) {
 		double[] x = Arrays.copyOf(x0, x0.length);
 		double[] prev_x = null;
@@ -23,6 +35,8 @@ public class Optimizer {
 		return x;
 	}
 
+	public static double cost(double[] parameters) { return 0.0; }
+
 	public static double[] vector_scalar_add(double[] x, double v) {
 		double[] y = new double[x.length];
 		for (int i = 0; i<x.length; i++) {
@@ -37,5 +51,9 @@ public class Optimizer {
 			y[i] = x[i] - v;
 		}
 		return y;
+	}
+
+	public static void main(String[] args) {
+//		minimize(Optimizer::cost, x0s[0], LEARNING_RATE, h, PRECISION);
 	}
 }
