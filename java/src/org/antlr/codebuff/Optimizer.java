@@ -35,6 +35,40 @@ public class Optimizer {
 		return x;
 	}
 
+	public static double[] minimize2(Function<double[], Double> f, double[] x0, double eta, double h, double precision) {
+		double[] x = Arrays.copyOf(x0, x0.length);
+		double[] prev_x = null;
+		while ( true ) {
+			prev_x = x;
+
+			double[] finite_diff = finiteDifferenceForAllParameter(f, x, h);
+
+			for (int i=0; i<x.length; i++) {
+				x[i] = x[i] - eta * finite_diff[i];
+			}
+
+			// print "f(%1.12f) = %1.12f" % (x, f(x)),
+			double delta = f.apply(x) - f.apply(prev_x);
+			// print ", delta = %1.20f" % delta
+			// stop when small change in vertical but not heading down
+			if ( delta >= 0 && Math.abs(delta) < precision ) {
+				break;
+			}
+		}
+		return x;
+	}
+
+	// calculate finite difference for each parameter independently
+	public static double[] finiteDifferenceForAllParameter(Function<double[], Double> f, double[] x, double h) {
+		double[] finiteDifferences = new double[x.length];
+		for (int i=0; i<x.length; i++) {
+			double[] newX = x;
+			newX[i] += h;
+			finiteDifferences[i] = f.apply(newX) - f.apply(x);
+		}
+		return finiteDifferences;
+	}
+
 	public static double cost(double[] parameters) { return 0.0; }
 
 	public static double[] vector_scalar_add(double[] x, double v) {
