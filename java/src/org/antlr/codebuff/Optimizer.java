@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class Optimizer {
-	public static final int LEARNING_RATE = 1000000;
-	public static final double h = 0.0001;
+	public static final long LEARNING_RATE = 10;
+	public static final double h = 0.1;
 	public static final double PRECISION = 0.0000001; // can't be too small as f(x)-f(xprev) prec is low
 
 	/** Use a simple gradient descent approach to find weights */
@@ -41,8 +41,9 @@ public class Optimizer {
 	public static double[] minimize2(Function<double[], Double> f, double[] x0, double eta, double h, double precision) {
 		double[] x = Arrays.copyOf(x0, x0.length);
 		double[] prev_x = null;
+		double oldResult = 0;
 		while ( true ) {
-			prev_x = x;
+			prev_x = Arrays.copyOf(x, x.length);
 
 			double[] finite_diff = finiteDifferenceForAllParameter(f, x, h);
 
@@ -50,31 +51,34 @@ public class Optimizer {
 				x[i] = x[i] - eta * finite_diff[i];
 			}
 
-			double oldValue = f.apply(prev_x);
-			double newValue = f.apply(x);
+			double newResult = f.apply(x);
 
-			// print "f(%1.12f) = %1.12f" % (x, f(x)),
-			double delta = newValue - oldValue;
+			double delta = newResult - oldResult;
 
-			System.out.printf("New Result: " + newValue + " New Parameter: ");
+			System.out.printf("New Result: " + newResult + " New Parameter: ");
 			for (int i=0; i<x.length; i++) System.out.printf(x[i] + ", ");
-			// print ", delta = %1.20f" % delta
-			// stop when small change in vertical but not heading down
+			System.out.println();
+
 			if ( delta >= 0 && Math.abs(delta) < precision ) {
+				System.out.println("Old Result: " + oldResult);
 				break;
 			}
+			oldResult = newResult;
 		}
 		return x;
 	}
 
 	// calculate finite difference for each parameter independently
-	public static double[] finiteDifferenceForAllParameter(Function<double[], Double> f, double[] x, double h) {
+	public static double[] finiteDifferenceForAllParameter(Function<double[], Double> f, double[] x0, double h) {
+		double[] x = Arrays.copyOf(x0, x0.length);
+		double oldValue = f.apply(x);
 		double[] finiteDifferences = new double[x.length];
 		for (int i=0; i<x.length; i++) {
-			double[] newX = x;
+			double[] newX = Arrays.copyOf(x, x.length);
 			newX[i] += h;
-			System.out.printf(i + " ");
-			finiteDifferences[i] = f.apply(newX) - f.apply(x);
+			double newValue = f.apply(newX);
+			System.out.printf(i + ": " + (newValue - oldValue) + " | ");
+			finiteDifferences[i] = newValue - oldValue;
 		}
 		return finiteDifferences;
 	}
@@ -115,7 +119,7 @@ public class Optimizer {
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
 
-		double[] originalParameters = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		double[] originalParameters = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 		Tester t = new Tester(CollectFeatures.FEATURES, corpus, documents, tabSize);
 		minimize2(Tester::test, originalParameters, LEARNING_RATE, h, PRECISION);
 	}
