@@ -19,7 +19,7 @@ public class InputDocument {
 	public List<Integer> injectNewlines;
 	public List<Integer> injectWS;
 	public List<Integer> indent;
-	public List<Integer> levelsToCommonAncestor;
+	public List<Integer> alignWithPrevious;
 	public int allWhiteSpaceCount = 0;
 	public int incorrectWhiteSpaceCount = 0;
 	public int misclassifiedNewLineCount = 0;

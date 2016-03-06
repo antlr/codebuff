@@ -82,7 +82,9 @@ public class CollectFeatures {
 	protected List<Integer> injectWS = new ArrayList<>();
 	protected List<Integer> indent = new ArrayList<>();
 	/** steps to common ancestor whose first token is alignment anchor */
-	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
+//	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
+	protected List<Integer> alignWithPrevious = new ArrayList<>();
+
 	protected Token firstTokenOnLine = null;
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
@@ -118,7 +120,6 @@ public class CollectFeatures {
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 		Token prevToken = tokens.LT(-1);
 
-		// find number of blank lines
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
 
 		int precedingNL = 0; // how many lines to inject
@@ -150,11 +151,35 @@ public class CollectFeatures {
 				(prevToken.getCharPositionInLine()+prevToken.getText().length());
 		}
 
+
+		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
+		int aligned = 0;
+
+		// are we aligned with a prior sibling (in a list)?
+		if ( earliestAncestor!=null ) {
+			ParserRuleContext rootOfList = earliestAncestor.getParent();
+			List<ParserRuleContext> siblings = rootOfList.getRuleContexts(earliestAncestor.getClass());
+			if ( siblings.size()>1 ) {
+				ParserRuleContext firstSibling = siblings.get(0);
+				Token firstSiblingStartToken = firstSibling.getStart();
+				if ( firstSiblingStartToken!=curToken && // can't align with yourself
+					 firstSiblingStartToken.getCharPositionInLine() == curToken.getCharPositionInLine() )
+				{
+					System.out.println("aligned "+
+					                   doc.parser.getRuleNames()[rootOfList.getRuleIndex()]+
+					                   " has "+siblings.size()+" "+doc.parser.getRuleNames()[earliestAncestor.getRuleIndex()]+" siblings");
+				}
+			}
+		}
+
+
 		this.indent.add(columnDelta);
 
 		this.injectWS.add(ws); // likely negative if precedingNL
 
-		this.levelsToCommonAncestor.add(levelsToCommonAncestor);
+		this.alignWithPrevious.add(aligned);
 
 		this.features.add(features);
 	}
@@ -432,8 +457,8 @@ public class CollectFeatures {
 		return injectWS;
 	}
 
-	public List<Integer> getLevelsToCommonAncestor() {
-		return levelsToCommonAncestor;
+	public List<Integer> getAlignWithPrevious() {
+		return alignWithPrevious;
 	}
 
 	public List<Integer> getIndent() {
