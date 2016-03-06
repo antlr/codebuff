@@ -5,10 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.Tree;
-import org.antlr.v4.runtime.tree.Trees;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -84,7 +81,7 @@ public class Formatter {
 		int injectNewline = categories[Corpus.INDEX_FEATURE_NEWLINES];
 		int indent = categories[Corpus.INDEX_FEATURE_INDENT];
 		int ws = categories[Corpus.INDEX_FEATURE_WS];
-		int levelsToCommonAncestor = categories[Corpus.INDEX_FEATURE_LEVELS_TO_ANCESTOR];
+		int alignWithPrevious = categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS];
 
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
@@ -111,13 +108,23 @@ public class Formatter {
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			if ( levelsToCommonAncestor>0 ) {
-				List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
-				Collections.reverse(ancestors);
-				ParserRuleContext commonAncestor =
-					(ParserRuleContext)ancestors.get(levelsToCommonAncestor);
-				charPosInLine = commonAncestor.getStart().getCharPositionInLine();
-				output.append(Tool.spaces(charPosInLine));
+			if ( alignWithPrevious>0 ) {
+				TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+				ParserRuleContext parent = (ParserRuleContext)node.getParent();
+				ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingAtToken(parent, curToken);
+				ParserRuleContext commonAncestor = earliestAncestor.getParent();
+				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+				int myIndex = siblings.indexOf(earliestAncestor);
+				int prevIndex = myIndex - 1;
+				if ( prevIndex>=0 ) {
+					ParserRuleContext prevSibling = siblings.get(prevIndex);
+					Token prevSiblingStartToken = prevSibling.getStart();
+					charPosInLine = prevSiblingStartToken.getCharPositionInLine();
+					output.append(Tool.spaces(charPosInLine));
+				}
+				else {
+					// TODO: what to do when we are first in list or only sibling? fail over to indent?
+				}
 			}
 			else {
 				currentIndent += indent;

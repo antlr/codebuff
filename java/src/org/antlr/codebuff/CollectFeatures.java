@@ -159,16 +159,17 @@ public class CollectFeatures {
 
 		// are we aligned with a prior sibling (in a list)?
 		if ( earliestAncestor!=null ) {
-			ParserRuleContext rootOfList = earliestAncestor.getParent();
-			List<ParserRuleContext> siblings = rootOfList.getRuleContexts(earliestAncestor.getClass());
+			ParserRuleContext commonAncestor = earliestAncestor.getParent();
+			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
 			if ( siblings.size()>1 ) {
 				ParserRuleContext firstSibling = siblings.get(0);
 				Token firstSiblingStartToken = firstSibling.getStart();
 				if ( firstSiblingStartToken!=curToken && // can't align with yourself
 					 firstSiblingStartToken.getCharPositionInLine() == curToken.getCharPositionInLine() )
 				{
+					aligned = 1;
 					System.out.println("aligned "+
-					                   doc.parser.getRuleNames()[rootOfList.getRuleIndex()]+
+					                   doc.parser.getRuleNames()[commonAncestor.getRuleIndex()]+
 					                   " has "+siblings.size()+" "+doc.parser.getRuleNames()[earliestAncestor.getRuleIndex()]+" siblings");
 				}
 			}

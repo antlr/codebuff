@@ -31,7 +31,7 @@ public abstract class kNNClassifier {
 		categories[Corpus.INDEX_FEATURE_INDENT] = getCategoryWithMostVotes(votesBag);
 
 		votesBag = getVotesBag(kNN, k, unknown, corpus.alignWithPrevious);
-		categories[Corpus.INDEX_FEATURE_LEVELS_TO_ANCESTOR] = getCategoryWithMostVotes(votesBag);
+		categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS] = getCategoryWithMostVotes(votesBag);
 
 		return categories;
 	}
