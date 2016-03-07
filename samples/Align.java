@@ -9,5 +9,10 @@ class Align {
 	@Override
 	public static void f(int i,
 						 int z,
-						 float foo);
+						 float foo)
+	{
+		x = 1+
+			2+
+			3;
+	}
 }

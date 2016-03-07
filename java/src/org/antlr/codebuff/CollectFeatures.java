@@ -87,6 +87,8 @@ public class CollectFeatures {
 
 	protected Token firstTokenOnLine = null;
 
+	protected int currentIndent = 0;
+
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	protected int tabSize;
@@ -103,6 +105,7 @@ public class CollectFeatures {
 
 	public void computeFeatureVectors() {
 		List<Token> realTokens = getRealTokens(tokens);
+		firstTokenOnLine = realTokens.get(0); // init to first token of file
 		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			computeFeatureVectorForToken(tokenIndexInStream);
@@ -133,48 +136,41 @@ public class CollectFeatures {
 
 		this.injectNewlines.add(precedingNL);
 
-		int columnDelta = 0;
-		int ws = 0;
-		int levelsToCommonAncestor = 0;
-		if ( precedingNL>0 ) {
-			if ( firstTokenOnLine!=null ) {
-				columnDelta = curToken.getCharPositionInLine() - firstTokenOnLine.getCharPositionInLine();
-			}
-			firstTokenOnLine = curToken;
-			ParserRuleContext commonAncestor = getFirstTokenOfCommonAncestor(root, tokens, i, tabSize);
-			List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
-			Collections.reverse(ancestors);
-			levelsToCommonAncestor = ancestors.indexOf(commonAncestor);
-		}
-		else {
-			ws = curToken.getCharPositionInLine() -
-				(prevToken.getCharPositionInLine()+prevToken.getText().length());
-		}
-
-
 		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
 		int aligned = 0;
 
-		// are we aligned with a prior sibling (in a list)?
-		if ( earliestAncestor!=null ) {
+		// at a newline, are we aligned with a prior sibling (in a list)?
+		int columnDelta = 0;
+		if ( precedingNL>0 && earliestAncestor!=null ) {
 			ParserRuleContext commonAncestor = earliestAncestor.getParent();
 			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
 			if ( siblings.size()>1 ) {
 				ParserRuleContext firstSibling = siblings.get(0);
 				Token firstSiblingStartToken = firstSibling.getStart();
 				if ( firstSiblingStartToken!=curToken && // can't align with yourself
-					 firstSiblingStartToken.getCharPositionInLine() == curToken.getCharPositionInLine() )
+					firstSiblingStartToken.getCharPositionInLine() == curToken.getCharPositionInLine() )
 				{
 					aligned = 1;
-					System.out.println("aligned "+
-					                   doc.parser.getRuleNames()[commonAncestor.getRuleIndex()]+
-					                   " has "+siblings.size()+" "+doc.parser.getRuleNames()[earliestAncestor.getRuleIndex()]+" siblings");
+//					System.out.println("aligned "+
+//						                   doc.parser.getRuleNames()[commonAncestor.getRuleIndex()]+
+//						                   " has "+siblings.size()+" "+doc.parser.getRuleNames()[earliestAncestor.getRuleIndex()]+" siblings");
 				}
 			}
 		}
 
+		if ( precedingNL>0 && aligned!=1 ) {
+			columnDelta = curToken.getCharPositionInLine() - currentIndent;
+			currentIndent = curToken.getCharPositionInLine();
+//			System.out.println("set current indent at "+curToken+" to "+currentIndent);
+		}
+
+		int ws = 0;
+		if ( precedingNL==0 ) {
+			ws = curToken.getCharPositionInLine() -
+				(prevToken.getCharPositionInLine()+prevToken.getText().length());
+		}
 
 		this.indent.add(columnDelta);
 
@@ -264,9 +260,9 @@ public class CollectFeatures {
 	}
 
 	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
-										InputDocument doc,
+	                                    InputDocument doc,
 	                                    int i,
-										int line,
+	                                    int line,
 	                                    int tabSize)
 	{
 		CommonTokenStream tokens = doc.tokens;
@@ -380,8 +376,8 @@ public class CollectFeatures {
 	}
 
 	public static List<Integer> viableLeftTokenTypes(ParserRuleContext node,
-													 Token curToken,
-													 List<Pair<Integer,Integer>> pairs)
+	                                                 Token curToken,
+	                                                 List<Pair<Integer,Integer>> pairs)
 	{
 		List<Integer> newPairs = new ArrayList<>();
 		for (Pair<Integer, Integer> p : pairs) {
@@ -585,7 +581,7 @@ public class CollectFeatures {
 		for (int i=0; i<tokens.size(); i++) {
 			Token t = tokens.get(i);
 			if ( t.getType()!=Token.EOF &&
-				 t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL )
+				t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL )
 			{
 				real.add(t);
 			}

@@ -77,6 +77,7 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
+		classifier.dumpVotes = true;
 		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int injectNewline = categories[Corpus.INDEX_FEATURE_NEWLINES];
 		int indent = categories[Corpus.INDEX_FEATURE_INDENT];
@@ -108,23 +109,23 @@ public class Formatter {
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			if ( alignWithPrevious>0 ) {
-				TerminalNode node = tokenToNodeMap.get(tokens.get(i));
-				ParserRuleContext parent = (ParserRuleContext)node.getParent();
-				ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingAtToken(parent, curToken);
+			TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+			ParserRuleContext parent = (ParserRuleContext)node.getParent();
+			int myIndex = 0;
+			ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingAtToken(parent, curToken);
+			if ( earliestAncestor!=null ) {
 				ParserRuleContext commonAncestor = earliestAncestor.getParent();
 				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-				int myIndex = siblings.indexOf(earliestAncestor);
-				int prevIndex = myIndex - 1;
-				if ( prevIndex>=0 ) {
-					ParserRuleContext prevSibling = siblings.get(prevIndex);
-					Token prevSiblingStartToken = prevSibling.getStart();
-					charPosInLine = prevSiblingStartToken.getCharPositionInLine();
-					output.append(Tool.spaces(charPosInLine));
-				}
-				else {
-					// TODO: what to do when we are first in list or only sibling? fail over to indent?
-				}
+				myIndex = siblings.indexOf(earliestAncestor);
+			}
+			if ( myIndex>0 && alignWithPrevious>0 ) { // align with first sibling's start token
+				ParserRuleContext commonAncestor = earliestAncestor.getParent();
+				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+				ParserRuleContext firstSibling = siblings.get(0);
+				Token firstSiblingStartToken = firstSibling.getStart();
+				// align but don't update currentIndent
+				charPosInLine = firstSiblingStartToken.getCharPositionInLine();
+				output.append(Tool.spaces(charPosInLine));
 			}
 			else {
 				currentIndent += indent;
