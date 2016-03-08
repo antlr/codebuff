@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 1.0; //0.15;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -124,16 +124,6 @@ public class CollectFeatures {
 	public static int getCurrentTokenType(int[] features) { return features[INDEX_TYPE]; }
 	public static int getInfoLine(int[] features) { return features[INDEX_INFO_LINE]; }
 	public static int getInfoCharPos(int[] features) { return features[INDEX_INFO_CHARPOS]; }
-
-	public static final int MAX_L0_DISTANCE_COUNT;
-	static {
-		int n = 0;
-		for (int i=0; i<FEATURES.length; i++) {
-			n += FEATURES[i].mismatchCost;
-		}
-		MAX_L0_DISTANCE_COUNT = n;
-		assert FEATURES.length == NUM_FEATURES;
-	}
 
 	protected InputDocument doc;
 	protected ParserRuleContext root;
@@ -521,7 +511,7 @@ public class CollectFeatures {
 		return indent;
 	}
 
-	public static String _toString(Vocabulary v, String[] ruleNames, int[] features) {
+	public static String _toString(FeatureMetaData[] FEATURES, Vocabulary v, String[] ruleNames, int[] features) {
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( i>0 ) buf.append(" ");
@@ -575,7 +565,7 @@ public class CollectFeatures {
 		return buf.toString();
 	}
 
-	public static String featureNameHeader() {
+	public static String featureNameHeader(FeatureMetaData[] FEATURES) {
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( i>0 ) buf.append(" ");

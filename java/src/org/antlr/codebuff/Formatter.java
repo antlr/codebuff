@@ -5,10 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.Tree;
-import org.antlr.v4.runtime.tree.Trees;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +34,7 @@ public class Formatter {
 
 	protected boolean debug_NL = true;
 	protected int misclassified_NL = 0;
+	protected int misclassified_WS = 0;
 
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
 		this.corpus = corpus;
@@ -84,14 +82,13 @@ public class Formatter {
 
 //		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int indent = indentClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int ws = wsClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int align = alignClassifier.classify(k, features, corpus.levelsToCommonAncestor, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
-
 
 		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
 			int actualNL = Tool.count(prevToken.getText(), '\n');

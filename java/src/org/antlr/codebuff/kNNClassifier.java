@@ -83,14 +83,14 @@ public abstract class kNNClassifier {
 			votes.add(Y.get(kNN[i].corpusVectorIndex));
 		}
 		if ( dumpVotes && kNN.length>0 ) {
-			System.out.print(CollectFeatures.featureNameHeader());
+			System.out.print(CollectFeatures.featureNameHeader(FEATURES));
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
-			System.out.println(CollectFeatures._toString(firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+			System.out.println(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
 			StringBuilder buf = new StringBuilder();
 			for (int i = 0; i<kNN.length; i++) {
 				Neighbor n = kNN[i];
-				buf.append(n.toString(Y));
+				buf.append(n.toString(FEATURES, Y));
 				buf.append("\n");
 			}
 			System.out.println(buf);

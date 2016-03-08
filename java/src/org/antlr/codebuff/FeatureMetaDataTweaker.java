@@ -79,7 +79,7 @@ public class FeatureMetaDataTweaker {
 		}
 		System.out.println("=== Best Parameter Combination End ===");
 
-		CollectFeatures.FEATURES = ORIGINAL_FEATURES;
+		CollectFeatures.FEATURES_ALL = ORIGINAL_FEATURES;
 	}
 
 	// Generate all possible parameter combinations and return it as a list
@@ -118,7 +118,7 @@ public class FeatureMetaDataTweaker {
 	}
 
 	public static void test(FeatureMetaData[] testFeatures, HashMap<Integer, Double> testParametersMap) throws Exception {
-		CollectFeatures.FEATURES = testFeatures;
+		CollectFeatures.FEATURES_ALL = testFeatures;
 
 		double validateResult = Tool.validate(corpus, testDocs, tabSize);
 
@@ -159,7 +159,7 @@ public class FeatureMetaDataTweaker {
 
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
-		FeatureMetaDataTweaker f = new FeatureMetaDataTweaker(CollectFeatures.FEATURES, corpus, documents, tabSize);
+		FeatureMetaDataTweaker f = new FeatureMetaDataTweaker(CollectFeatures.FEATURES_ALL, corpus, documents, tabSize);
 		FeatureMetaDataTweaker.tweakParameterAndTest();
 	}
 }
