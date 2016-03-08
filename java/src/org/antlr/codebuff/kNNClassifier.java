@@ -10,7 +10,7 @@ import java.util.List;
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
 	protected Corpus corpus;
-	public boolean dumpVotes = true;
+	public boolean dumpVotes = false;
 
 	public kNNClassifier(Corpus corpus) {
 		this.corpus = corpus;
