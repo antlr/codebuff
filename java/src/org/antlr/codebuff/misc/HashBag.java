@@ -10,23 +10,6 @@ import java.util.Set;
 public class HashBag<T> implements Map<T, Integer> {
 	protected Map<T, MutableInt> data = new HashMap<>();
 
-	public static class MutableInt {
-		public int i;
-
-		public MutableInt(int i) {
-			this.i = i;
-		}
-
-		public void inc() { i++; }
-
-		public int asInt() { return i; }
-
-		@Override
-		public String toString() {
-			return String.valueOf(i);
-		}
-	}
-
 	@Override
 	public void clear() {
 		data.clear();

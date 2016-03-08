@@ -1,11 +1,14 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.HashBag;
+import org.antlr.codebuff.misc.MutableDouble;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
@@ -46,7 +49,6 @@ public abstract class kNNClassifier {
 		return getCategoryWithMostVotes(votes);
 	}
 
-	// TODO: upon tie, choose category with smallest sum of distances
 	public int getCategoryWithMostVotes(HashBag<Integer> votes) {
 		int max = Integer.MIN_VALUE;
 		int catWithMostVotes = 0;
@@ -74,7 +76,7 @@ public abstract class kNNClassifier {
 			System.out.print(CollectFeatures.featureNameHeader());
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
 			System.out.println(CollectFeatures._toString(firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
-			kNN = Arrays.copyOfRange(kNN, 0, Math.min(25, kNN.length));
+			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
 			StringBuilder buf = new StringBuilder();
 			for (int i = 0; i<kNN.length; i++) {
 				Neighbor n = kNN[i];
@@ -84,6 +86,22 @@ public abstract class kNNClassifier {
 			System.out.println(buf);
 		}
 		return votes;
+	}
+
+	/** Same as getVotesBag except sum the distances for each category rather than just count the instances */
+	// TODO: not using just yet. I think we need to specialize features per classification
+	public Map<Integer, MutableDouble> getCategoryDistanceMap(Neighbor[] kNN, int k, int[] unknown, List<Integer> Y) {
+		Map<Integer, MutableDouble> catToDist = new HashMap<>();
+		for (int i = 0; i<k && i<kNN.length; i++) {
+			Integer category = Y.get(kNN[i].corpusVectorIndex);
+			MutableDouble sum = catToDist.get(category);
+			if ( sum==null ) {
+				sum = new MutableDouble(0.0);
+				catToDist.put(category, sum);
+			}
+			sum.add(kNN[i].distance);
+		}
+		return catToDist;
 	}
 
 	public Neighbor[] kNN(int[] unknown, int k, double distanceThreshold) {
