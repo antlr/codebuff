@@ -21,7 +21,7 @@ public class Formatter {
 
 	protected CodekNNClassifier classifier;
 	protected CodekNNClassifier newlineClassifier;
-//	protected CodekNNClassifier wsClassifier;
+	protected CodekNNClassifier wsClassifier;
 //	protected CodekNNClassifier indentClassifier;
 //	protected CodekNNClassifier alignClassifier;
 	protected int k;
@@ -34,6 +34,7 @@ public class Formatter {
 
 	protected boolean debug_NL = true;
 	protected int misclassified_NL = 0;
+	protected int misclassified_WS = 0;
 
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
 		this.corpus = corpus;
@@ -43,6 +44,7 @@ public class Formatter {
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new CodekNNClassifier(corpus); // keep separate so we can dump votes for this only
+		wsClassifier = new CodekNNClassifier(corpus); // keep separate so we can dump votes for this only
 		classifier = new CodekNNClassifier(corpus);
 		k = (int)Math.sqrt(corpus.X.size());
 		this.tabSize = tabSize;
@@ -77,7 +79,6 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		classifier.dumpVotes = true;
 		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int injectNewline = categories[Corpus.INDEX_FEATURE_NEWLINES];
 		int indent = categories[Corpus.INDEX_FEATURE_INDENT];
@@ -90,18 +91,32 @@ public class Formatter {
 
 
 		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
-			int actual = Tool.count(prevToken.getText(), '\n');
-			if ( injectNewline!=actual ) {
+			int actualNL = Tool.count(prevToken.getText(), '\n');
+			if ( injectNewline!=actualNL ) {
 				misclassified_NL++;
 				doc.misclassifiedNewLineCount++;
 				if (doc.dumpVotes) {
 					System.out.println();
-					System.out.printf("### line %d: predicted %d actual %d:\n",
-						originalCurToken.getLine(), injectNewline, actual);
+					System.out.printf("### line %d: predicted %d \\n actual %d:\n",
+						originalCurToken.getLine(), injectNewline, actualNL);
 					Tool.printOriginalFilePiece(doc, originalCurToken);
 					newlineClassifier.dumpVotes = true;
 					newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 					newlineClassifier.dumpVotes = false;
+				}
+			}
+			int actualWS = Tool.count(prevToken.getText(), ' ');
+			if ( injectNewline==0 && ws!=actualWS ) {
+				misclassified_WS++;
+				doc.misclassifiedWSCount++;
+				if (doc.dumpVotes) {
+					System.out.println();
+					System.out.printf("### line %d: predicted %d ' ' actual %d:\n",
+						originalCurToken.getLine(), ws, actualWS);
+					Tool.printOriginalFilePiece(doc, originalCurToken);
+					wsClassifier.dumpVotes = true;
+					wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+					wsClassifier.dumpVotes = false;
 				}
 			}
 		}

@@ -46,6 +46,7 @@ public abstract class kNNClassifier {
 		return getCategoryWithMostVotes(votes);
 	}
 
+	// TODO: upon tie, choose category with smallest sum of distances
 	public int getCategoryWithMostVotes(HashBag<Integer> votes) {
 		int max = Integer.MIN_VALUE;
 		int catWithMostVotes = 0;
