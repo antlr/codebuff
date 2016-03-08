@@ -100,13 +100,15 @@ public class Tool {
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
 
-		for (String ruleName : ruleToPairsBag.keySet()) {
-			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
-			System.out.print(ruleName+": ");
-			for (Pair<Integer,Integer> p : pairs) {
-				System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+		if ( false ) {
+			for (String ruleName : ruleToPairsBag.keySet()) {
+				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+				System.out.print(ruleName+": ");
+				for (Pair<Integer, Integer> p : pairs) {
+					System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 
 		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
