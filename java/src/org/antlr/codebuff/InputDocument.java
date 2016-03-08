@@ -23,8 +23,8 @@ public class InputDocument {
 	public int allWhiteSpaceCount = 0;
 	public int incorrectWhiteSpaceCount = 0;
 	public int misclassifiedNewLineCount = 0;
-	public boolean dumpIncorrectWS = false;
-	public boolean dumpVotes = false;
+	public boolean dumpIncorrectWS = true;
+	public boolean dumpVotes = true;
 
 	public InputDocument(InputDocument d, int index) {
 		this.fileName = d.fileName;

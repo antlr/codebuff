@@ -9,11 +9,21 @@ import java.util.List;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
-	protected Corpus corpus;
+	protected final Corpus corpus;
+	protected final FeatureMetaData[] FEATURES;
+	protected final int maxDistanceCount;
+
 	public boolean dumpVotes = false;
 
-	public kNNClassifier(Corpus corpus) {
+	public kNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES) {
 		this.corpus = corpus;
+		this.FEATURES = FEATURES;
+		assert FEATURES.length <= CollectFeatures.NUM_FEATURES;
+		int n = 0;
+		for (int i=0; i<FEATURES.length; i++) {
+			n += FEATURES[i].mismatchCost;
+		}
+		maxDistanceCount = n;
 	}
 
 	/** Classify unknown for all Y at once */

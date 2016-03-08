@@ -41,7 +41,71 @@ public class CollectFeatures {
 
 	public static final int NUM_FEATURES            = 12;
 
-	public static FeatureMetaData[] FEATURES = {
+	public static FeatureMetaData[] FEATURES_INJECT_NL = {
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
+		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+	};
+
+	public static FeatureMetaData[] FEATURES_INJECT_WS = {
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
+		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+	};
+
+	public static FeatureMetaData[] FEATURES_INDENT = {
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
+		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+	};
+
+	public static FeatureMetaData[] FEATURES_ALIGN = {
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
+		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+	};
+
+	public static FeatureMetaData[] FEATURES_ALL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),

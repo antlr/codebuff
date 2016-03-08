@@ -22,11 +22,11 @@ public class Formatter {
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
-	protected CodekNNClassifier classifier;
+//	protected CodekNNClassifier classifier;
 	protected CodekNNClassifier newlineClassifier;
-//	protected CodekNNClassifier wsClassifier;
-//	protected CodekNNClassifier indentClassifier;
-//	protected CodekNNClassifier alignClassifier;
+	protected CodekNNClassifier wsClassifier;
+	protected CodekNNClassifier indentClassifier;
+	protected CodekNNClassifier alignClassifier;
 	protected int k;
 
 	protected int line = 1;
@@ -45,8 +45,10 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
-		newlineClassifier = new CodekNNClassifier(corpus); // keep separate so we can dump votes for this only
-		classifier = new CodekNNClassifier(corpus);
+		newlineClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_NL);
+		wsClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_NL);
+		indentClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INDENT);
+		alignClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_ALIGN);
 		k = (int)Math.sqrt(corpus.X.size());
 		this.tabSize = tabSize;
 	}
@@ -80,11 +82,11 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int injectNewline = categories[Corpus.INDEX_FEATURE_NEWLINES];
-		int indent = categories[Corpus.INDEX_FEATURE_INDENT];
-		int ws = categories[Corpus.INDEX_FEATURE_WS];
-		int levelsToCommonAncestor = categories[Corpus.INDEX_FEATURE_LEVELS_TO_ANCESTOR];
+//		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int indent = indentClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int ws = wsClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int align = alignClassifier.classify(k, features, corpus.levelsToCommonAncestor, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
