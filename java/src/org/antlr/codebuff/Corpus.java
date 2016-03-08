@@ -12,14 +12,14 @@ public class Corpus {
 	public static final int INDEX_FEATURE_NEWLINES = 0;
 	public static final int INDEX_FEATURE_WS = 1;
 	public static final int INDEX_FEATURE_INDENT = 2;
-	public static final int INDEX_FEATURE_LEVELS_TO_ANCESTOR = 3;
+	public static final int INDEX_FEATURE_ALIGN_WITH_PREVIOUS = 3;
 
 	List<InputDocument> documents; // an entry for each X
 	List<int[]> X;
 	List<Integer> injectNewlines;
 	List<Integer> injectWS;
 	List<Integer> indent;
-	List<Integer> levelsToCommonAncestor; // steps to common ancestor whose first token is alignment anchor
+	List<Integer> alignWithPrevious; // steps to common ancestor whose first token is alignment anchor
 
 	/** an index to narrow down the number of vectors we compute distance() on each classification.
 	 *  The key is (previous token's rule index, current token's rule index). It yields
@@ -32,14 +32,14 @@ public class Corpus {
 				  List<Integer> injectNewlines,
 				  List<Integer> injectWS,
 				  List<Integer> indent,
-				  List<Integer> levelsToCommonAncestor)
+				  List<Integer> alignWithPrevious)
 	{
 		this.documents = documents;
 		this.X = X;
 		this.injectNewlines = injectNewlines;
 		this.injectWS = injectWS;
 		this.indent = indent;
-		this.levelsToCommonAncestor = levelsToCommonAncestor;
+		this.alignWithPrevious = alignWithPrevious;
 	}
 
 	public void buildTokenContextIndex() {

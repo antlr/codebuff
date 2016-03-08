@@ -5,10 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.Tree;
-import org.antlr.v4.runtime.tree.Trees;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -22,11 +19,11 @@ public class Formatter {
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
-	protected CodekNNClassifier classifier;
+//	protected CodekNNClassifier classifier;
 	protected CodekNNClassifier newlineClassifier;
-//	protected CodekNNClassifier wsClassifier;
-//	protected CodekNNClassifier indentClassifier;
-//	protected CodekNNClassifier alignClassifier;
+	protected CodekNNClassifier wsClassifier;
+	protected CodekNNClassifier indentClassifier;
+	protected CodekNNClassifier alignClassifier;
 	protected int k;
 
 	protected int line = 1;
@@ -37,6 +34,7 @@ public class Formatter {
 
 	protected boolean debug_NL = true;
 	protected int misclassified_NL = 0;
+	protected int misclassified_WS = 0;
 
 	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
 		this.corpus = corpus;
@@ -45,8 +43,10 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
-		newlineClassifier = new CodekNNClassifier(corpus); // keep separate so we can dump votes for this only
-		classifier = new CodekNNClassifier(corpus);
+		newlineClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_NL);
+		wsClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_WS);
+		indentClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INDENT);
+		alignClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_ALIGN);
 		k = (int)Math.sqrt(corpus.X.size());
 		this.tabSize = tabSize;
 	}
@@ -80,30 +80,43 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int injectNewline = categories[Corpus.INDEX_FEATURE_NEWLINES];
-		int indent = categories[Corpus.INDEX_FEATURE_INDENT];
-		int ws = categories[Corpus.INDEX_FEATURE_WS];
-		int levelsToCommonAncestor = categories[Corpus.INDEX_FEATURE_LEVELS_TO_ANCESTOR];
+//		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 
-
 		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
-			int actual = Tool.count(prevToken.getText(), '\n');
-			if ( injectNewline!=actual ) {
+			int actualNL = Tool.count(prevToken.getText(), '\n');
+			if ( injectNewline!=actualNL ) {
 				misclassified_NL++;
 				doc.misclassifiedNewLineCount++;
 				if (doc.dumpVotes) {
 					System.out.println();
-					System.out.printf("### line %d: predicted %d actual %d:\n",
-						originalCurToken.getLine(), injectNewline, actual);
+					System.out.printf("### line %d: predicted %d \\n actual %d:\n",
+						originalCurToken.getLine(), injectNewline, actualNL);
 					Tool.printOriginalFilePiece(doc, originalCurToken);
 					newlineClassifier.dumpVotes = true;
 					newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 					newlineClassifier.dumpVotes = false;
+				}
+			}
+			int actualWS = Tool.count(prevToken.getText(), ' ');
+			if ( injectNewline==0 && ws!=actualWS ) {
+				misclassified_WS++;
+				doc.misclassifiedWSCount++;
+				if (doc.dumpVotes) {
+					System.out.println();
+					System.out.printf("### line %d: predicted %d ' ' actual %d:\n",
+						originalCurToken.getLine(), ws, actualWS);
+					Tool.printOriginalFilePiece(doc, originalCurToken);
+					wsClassifier.dumpVotes = true;
+					wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+					wsClassifier.dumpVotes = false;
 				}
 			}
 		}
@@ -111,12 +124,22 @@ public class Formatter {
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			if ( levelsToCommonAncestor>0 ) {
-				List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
-				Collections.reverse(ancestors);
-				ParserRuleContext commonAncestor =
-					(ParserRuleContext)ancestors.get(levelsToCommonAncestor);
-				charPosInLine = commonAncestor.getStart().getCharPositionInLine();
+			TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+			ParserRuleContext parent = (ParserRuleContext)node.getParent();
+			int myIndex = 0;
+			ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingAtToken(parent, curToken);
+			if ( earliestAncestor!=null ) {
+				ParserRuleContext commonAncestor = earliestAncestor.getParent();
+				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+				myIndex = siblings.indexOf(earliestAncestor);
+			}
+			if ( myIndex>0 && alignWithPrevious>0 ) { // align with first sibling's start token
+				ParserRuleContext commonAncestor = earliestAncestor.getParent();
+				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+				ParserRuleContext firstSibling = siblings.get(0);
+				Token firstSiblingStartToken = firstSibling.getStart();
+				// align but don't update currentIndent
+				charPosInLine = firstSiblingStartToken.getCharPositionInLine();
 				output.append(Tool.spaces(charPosInLine));
 			}
 			else {

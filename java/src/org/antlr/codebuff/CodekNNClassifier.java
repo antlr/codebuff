@@ -28,8 +28,9 @@ package org.antlr.codebuff;
  */
 
 public class CodekNNClassifier extends kNNClassifier {
-	public CodekNNClassifier(Corpus corpus) {
-		super(corpus);
+
+	public CodekNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES) {
+		super(corpus, FEATURES);
 	}
 
 	/**
@@ -40,7 +41,7 @@ public class CodekNNClassifier extends kNNClassifier {
 	 */
 	public double distance(int[] A, int[] B) {
 //		return ((float)Tool.L0_Distance(categorical, A, B))/num_categorical;
-		double d = Tool.weightedL0_Distance(CollectFeatures.FEATURES, A, B);
-		return d/CollectFeatures.MAX_L0_DISTANCE_COUNT;
+		double d = Tool.weightedL0_Distance(FEATURES, A, B);
+		return d/maxDistanceCount;
 	}
 }

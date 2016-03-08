@@ -100,13 +100,15 @@ public class Tool {
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
 
-		for (String ruleName : ruleToPairsBag.keySet()) {
-			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
-			System.out.print(ruleName+": ");
-			for (Pair<Integer,Integer> p : pairs) {
-				System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+		if ( false ) {
+			for (String ruleName : ruleToPairsBag.keySet()) {
+				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+				System.out.print(ruleName+": ");
+				for (Pair<Integer, Integer> p : pairs) {
+					System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 
 		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
@@ -141,7 +143,7 @@ public class Tool {
 		List<Integer> injectNewlines = new ArrayList<>();
 		List<Integer> injectWS = new ArrayList<>();
 		List<Integer> indent = new ArrayList<>();
-		List<Integer> levelsToCommonAncestor = new ArrayList<>();
+		List<Integer> alignWithPrevious = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			process(doc, tabSize, ruleToPairsBag);
@@ -152,12 +154,12 @@ public class Tool {
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
 				indent.add(doc.indent.get(i));
-				levelsToCommonAncestor.add(doc.levelsToCommonAncestor.get(i));
+				alignWithPrevious.add(doc.alignWithPrevious.get(i));
 				featureVectors.add(featureVec);
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(documents, featureVectors, injectNewlines, injectWS, indent, levelsToCommonAncestor);
+		return new Corpus(documents, featureVectors, injectNewlines, injectWS, indent, alignWithPrevious);
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
@@ -171,7 +173,7 @@ public class Tool {
 		doc.injectNewlines = collector.getInjectNewlines();
 		doc.injectWS = collector.getInjectWS();
 		doc.indent = collector.getIndent();
-		doc.levelsToCommonAncestor = collector.getLevelsToCommonAncestor();
+		doc.alignWithPrevious = collector.getAlignWithPrevious();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
