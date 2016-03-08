@@ -44,7 +44,7 @@ public class Formatter {
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_NL);
-		wsClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_NL);
+		wsClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_WS);
 		indentClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INDENT);
 		alignClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_ALIGN);
 		k = (int)Math.sqrt(corpus.X.size());

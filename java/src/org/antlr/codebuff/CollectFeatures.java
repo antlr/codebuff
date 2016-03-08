@@ -61,10 +61,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
+		new FeatureMetaData(FeatureType.UNUSED, new String[] {"",""}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 3),
+		new FeatureMetaData(FeatureType.UNUSED, new String[] {"",""}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
@@ -77,10 +77,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
+		new FeatureMetaData(FeatureType.UNUSED, new String[] {"",""}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.UNUSED, new String[] {"",""}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
@@ -93,10 +93,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
+		new FeatureMetaData(FeatureType.UNUSED, new String[] {"",""}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.UNUSED, new String[] {"",""}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
@@ -514,6 +514,7 @@ public class CollectFeatures {
 	public static String _toString(FeatureMetaData[] FEATURES, Vocabulary v, String[] ruleNames, int[] features) {
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
+			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
@@ -568,6 +569,7 @@ public class CollectFeatures {
 	public static String featureNameHeader(FeatureMetaData[] FEATURES) {
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
+			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
@@ -577,6 +579,7 @@ public class CollectFeatures {
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {
+			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
@@ -586,6 +589,7 @@ public class CollectFeatures {
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {
+			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
