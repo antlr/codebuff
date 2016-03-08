@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 public class FeatureMetaData {
+	public static final FeatureMetaData UNUSED = new FeatureMetaData(FeatureType.UNUSED, null, 0);
 	public String[] abbrevHeaderRows;
 	public FeatureType type;
 	public double mismatchCost;
@@ -10,4 +11,5 @@ public class FeatureMetaData {
 		this.mismatchCost = mismatchCost;
 		this.type = type;
 	}
+
 }
