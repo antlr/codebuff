@@ -30,17 +30,16 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_RULE         = 2; // what rule is prev token in?
 	public static final int INDEX_PREV_END_COLUMN   = 3;
 	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 4;
-	public static final int INDEX_PREV_ANCESTOR_WIDTH = 5;
-	public static final int INDEX_TYPE              = 6;
-	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 7;
-	public static final int INDEX_RULE              = 8; // what rule are we in?
-	public static final int INDEX_EARLIEST_ANCESTOR = 9;
-	public static final int INDEX_ANCESTOR_WIDTH    = 10;
-	public static final int INDEX_SUM_ENDCOL_ANCESTOR_WIDTH = 11;
-	public static final int INDEX_NEXT_TYPE         = 12;
-	public static final int INDEX_INFO_FILE         = 13;
-	public static final int INDEX_INFO_LINE         = 14;
-	public static final int INDEX_INFO_CHARPOS      = 15;
+	public static final int INDEX_TYPE              = 5;
+	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 6;
+	public static final int INDEX_RULE              = 7; // what rule are we in?
+	public static final int INDEX_EARLIEST_ANCESTOR = 8;
+	public static final int INDEX_NEXT_TYPE         = 9;
+	public static final int INDEX_INFO_FILE         = 10;
+	public static final int INDEX_INFO_LINE         = 11;
+	public static final int INDEX_INFO_CHARPOS      = 12;
+
+	public static final int NUM_FEATURES            = 12;
 
 	public static FeatureMetaData[] FEATURES = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -48,13 +47,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.BOOL,   new String[] {"Pair", "diff\\n"}, 3),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancest.", "width"}, 0),
-		new FeatureMetaData(FeatureType.COL,   new String[] {"endcol+", "width"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -72,6 +68,7 @@ public class CollectFeatures {
 			n += FEATURES[i].mismatchCost;
 		}
 		MAX_L0_DISTANCE_COUNT = n;
+		assert FEATURES.length == NUM_FEATURES;
 	}
 
 	protected InputDocument doc;
@@ -295,14 +292,11 @@ public class CollectFeatures {
 			prevTokenRuleIndex,
 			prevTokenEndCharPos,
 			prevEarliestAncestorRuleIndex,
-			prevEarliestAncestorWidth,
 
 			window.get(2).getType(), // LT(1)
 			matchingSymbolOnDiffLine,
 			curTokensParentRuleIndex,
 			earliestAncestorRuleIndex,
-			earliestAncestorWidth,
-			sumEndColAndAncestorWidth,
 			window.get(3).getType(),
 
 			// info
@@ -310,6 +304,7 @@ public class CollectFeatures {
 			curToken.getLine(),
 			curToken.getCharPositionInLine()
 		};
+		assert features.length == NUM_FEATURES;
 //		System.out.print(curToken+": "+CodekNNClassifier._toString(features));
 		return features;
 	}
