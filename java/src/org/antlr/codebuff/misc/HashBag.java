@@ -97,6 +97,15 @@ public class HashBag<T> implements Map<T, Integer> {
 		return data.toString();
 	}
 
+	public int totalCount() {
+		int n = 0;
+		for (T key : data.keySet()) { // sum each count
+			MutableInt count = data.get(key);
+			n += count.asInt();
+		}
+		return n;
+	}
+
 	public T getMostFrequent() {
 		T t = null;
 		int max = 0;

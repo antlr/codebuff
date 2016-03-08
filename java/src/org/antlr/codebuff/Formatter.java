@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -32,7 +33,7 @@ public class Formatter {
 
 	protected int tabSize;
 
-	protected boolean debug_NL = true;
+	protected boolean debug_NL_WS = true;
 	protected int misclassified_NL = 0;
 	protected int misclassified_WS = 0;
 
@@ -86,11 +87,35 @@ public class Formatter {
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
+		// Try to weight NL probability according to line length.
+		HashBag<Integer> votes = newlineClassifier.votes(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		if ( votes.size()>1 ) {
+			int totalVotes =votes.totalCount();
+			int endcol = features[CollectFeatures.INDEX_PREV_END_COLUMN];
+			System.out.println("newline votes: "+votes+", col="+endcol);
+			Integer no_NL_votes = votes.get(0);
+			if ( no_NL_votes!=null ) {
+				votes.remove(0);
+				int votesWithoutZero = votes.totalCount();
+				double pNL = Tool.sigmoid(endcol, 70);
+				System.out.printf("p(no NL): %1.2f, p(NL): %1.2f; sigmoid p(NL|endcol=%d)=%1.2f",
+				                  no_NL_votes/(float) totalVotes, votesWithoutZero/(float) totalVotes,
+				                  endcol,
+				                  pNL);
+				double adjusted_NL = pNL*(votesWithoutZero/(float) totalVotes);
+				double adjusted_noNL = (1.0-pNL)*no_NL_votes/(float) totalVotes;
+				System.out.printf(", adjusted no NL: %1.2f, NL: %1.2f\n", adjusted_noNL, adjusted_NL);
+				if ( adjusted_NL > adjusted_noNL ) {
+					injectNewline = 1;
+				}
+			}
+		}
+
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 
-		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
+		if ( debug_NL_WS && prevToken.getType()==JavaLexer.WS ) {
 			int actualNL = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actualNL ) {
 				misclassified_NL++;
