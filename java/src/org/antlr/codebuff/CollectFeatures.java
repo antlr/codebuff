@@ -115,7 +115,7 @@ public class CollectFeatures {
 		Token curToken = tokens.get(i);
 		if ( curToken.getType()==Token.EOF ) return;
 
-		tokens.seek(i); // see so that LT(1) is tokens.get(i);
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 		Token prevToken = tokens.LT(-1);
 
 		// find number of blank lines
@@ -127,6 +127,7 @@ public class CollectFeatures {
 			for (Token t : wsTokensBeforeCurrentToken) {
 				precedingNL += Tool.count(t.getText(), '\n');
 			}
+//			System.out.println("^^^"+(prevToken.getCharPositionInLine()+prevToken.getText().length()));
 		}
 
 		this.injectNewlines.add(precedingNL);
