@@ -19,11 +19,12 @@ public class InputDocument {
 	public List<Integer> injectNewlines;
 	public List<Integer> injectWS;
 	public List<Integer> indent;
-	public List<Integer> levelsToCommonAncestor;
+	public List<Integer> alignWithPrevious;
 	public int allWhiteSpaceCount = 0;
 	public int incorrectWhiteSpaceCount = 0;
 	public int misclassifiedNewLineCount = 0;
-	public boolean dumpIncorrectWS = true;
+	public int misclassifiedWSCount = 0;
+	public boolean dumpIncorrectWS = false;
 	public boolean dumpVotes = true;
 
 	public InputDocument(InputDocument d, int index) {

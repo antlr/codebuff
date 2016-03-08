@@ -94,18 +94,32 @@ public class Formatter {
 
 
 		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
-			int actual = Tool.count(prevToken.getText(), '\n');
-			if ( injectNewline!=actual ) {
+			int actualNL = Tool.count(prevToken.getText(), '\n');
+			if ( injectNewline!=actualNL ) {
 				misclassified_NL++;
 				doc.misclassifiedNewLineCount++;
 				if (doc.dumpVotes) {
 					System.out.println();
-					System.out.printf("### line %d: predicted %d actual %d:\n",
-						originalCurToken.getLine(), injectNewline, actual);
+					System.out.printf("### line %d: predicted %d \\n actual %d:\n",
+						originalCurToken.getLine(), injectNewline, actualNL);
 					Tool.printOriginalFilePiece(doc, originalCurToken);
 					newlineClassifier.dumpVotes = true;
 					newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 					newlineClassifier.dumpVotes = false;
+				}
+			}
+			int actualWS = Tool.count(prevToken.getText(), ' ');
+			if ( injectNewline==0 && ws!=actualWS ) {
+				misclassified_WS++;
+				doc.misclassifiedWSCount++;
+				if (doc.dumpVotes) {
+					System.out.println();
+					System.out.printf("### line %d: predicted %d ' ' actual %d:\n",
+						originalCurToken.getLine(), ws, actualWS);
+					Tool.printOriginalFilePiece(doc, originalCurToken);
+					wsClassifier.dumpVotes = true;
+					wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+					wsClassifier.dumpVotes = false;
 				}
 			}
 		}
@@ -113,12 +127,22 @@ public class Formatter {
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			if ( levelsToCommonAncestor>0 ) {
-				List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
-				Collections.reverse(ancestors);
-				ParserRuleContext commonAncestor =
-					(ParserRuleContext)ancestors.get(levelsToCommonAncestor);
-				charPosInLine = commonAncestor.getStart().getCharPositionInLine();
+			TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+			ParserRuleContext parent = (ParserRuleContext)node.getParent();
+			int myIndex = 0;
+			ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingAtToken(parent, curToken);
+			if ( earliestAncestor!=null ) {
+				ParserRuleContext commonAncestor = earliestAncestor.getParent();
+				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+				myIndex = siblings.indexOf(earliestAncestor);
+			}
+			if ( myIndex>0 && alignWithPrevious>0 ) { // align with first sibling's start token
+				ParserRuleContext commonAncestor = earliestAncestor.getParent();
+				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+				ParserRuleContext firstSibling = siblings.get(0);
+				Token firstSiblingStartToken = firstSibling.getStart();
+				// align but don't update currentIndent
+				charPosInLine = firstSiblingStartToken.getCharPositionInLine();
 				output.append(Tool.spaces(charPosInLine));
 			}
 			else {

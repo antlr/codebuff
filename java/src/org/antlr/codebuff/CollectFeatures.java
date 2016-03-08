@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 1.0; //0.15;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -143,8 +143,12 @@ public class CollectFeatures {
 	protected List<Integer> injectWS = new ArrayList<>();
 	protected List<Integer> indent = new ArrayList<>();
 	/** steps to common ancestor whose first token is alignment anchor */
-	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
+//	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
+	protected List<Integer> alignWithPrevious = new ArrayList<>();
+
 	protected Token firstTokenOnLine = null;
+
+	protected int currentIndent = 0;
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
@@ -162,6 +166,7 @@ public class CollectFeatures {
 
 	public void computeFeatureVectors() {
 		List<Token> realTokens = getRealTokens(tokens);
+		firstTokenOnLine = realTokens.get(0); // init to first token of file
 		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			computeFeatureVectorForToken(tokenIndexInStream);
@@ -179,7 +184,6 @@ public class CollectFeatures {
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 		Token prevToken = tokens.LT(-1);
 
-		// find number of blank lines
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
 
 		int precedingNL = 0; // how many lines to inject
@@ -193,20 +197,38 @@ public class CollectFeatures {
 
 		this.injectNewlines.add(precedingNL);
 
+		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
+		int aligned = 0;
+
+		// at a newline, are we aligned with a prior sibling (in a list)?
 		int columnDelta = 0;
-		int ws = 0;
-		int levelsToCommonAncestor = 0;
-		if ( precedingNL>0 ) {
-			if ( firstTokenOnLine!=null ) {
-				columnDelta = curToken.getCharPositionInLine() - firstTokenOnLine.getCharPositionInLine();
+		if ( precedingNL>0 && earliestAncestor!=null ) {
+			ParserRuleContext commonAncestor = earliestAncestor.getParent();
+			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+			if ( siblings.size()>1 ) {
+				ParserRuleContext firstSibling = siblings.get(0);
+				Token firstSiblingStartToken = firstSibling.getStart();
+				if ( firstSiblingStartToken!=curToken && // can't align with yourself
+					firstSiblingStartToken.getCharPositionInLine() == curToken.getCharPositionInLine() )
+				{
+					aligned = 1;
+//					System.out.println("aligned "+
+//						                   doc.parser.getRuleNames()[commonAncestor.getRuleIndex()]+
+//						                   " has "+siblings.size()+" "+doc.parser.getRuleNames()[earliestAncestor.getRuleIndex()]+" siblings");
+				}
 			}
-			firstTokenOnLine = curToken;
-			ParserRuleContext commonAncestor = getFirstTokenOfCommonAncestor(root, tokens, i, tabSize);
-			List<? extends Tree> ancestors = Trees.getAncestors(tokenToNodeMap.get(curToken));
-			Collections.reverse(ancestors);
-			levelsToCommonAncestor = ancestors.indexOf(commonAncestor);
 		}
-		else {
+
+		if ( precedingNL>0 && aligned!=1 ) {
+			columnDelta = curToken.getCharPositionInLine() - currentIndent;
+			currentIndent = curToken.getCharPositionInLine();
+//			System.out.println("set current indent at "+curToken+" to "+currentIndent);
+		}
+
+		int ws = 0;
+		if ( precedingNL==0 ) {
 			ws = curToken.getCharPositionInLine() -
 				(prevToken.getCharPositionInLine()+prevToken.getText().length());
 		}
@@ -215,7 +237,7 @@ public class CollectFeatures {
 
 		this.injectWS.add(ws); // likely negative if precedingNL
 
-		this.levelsToCommonAncestor.add(levelsToCommonAncestor);
+		this.alignWithPrevious.add(aligned);
 
 		this.features.add(features);
 	}
@@ -299,9 +321,9 @@ public class CollectFeatures {
 	}
 
 	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
-										InputDocument doc,
+	                                    InputDocument doc,
 	                                    int i,
-										int line,
+	                                    int line,
 	                                    int tabSize)
 	{
 		CommonTokenStream tokens = doc.tokens;
@@ -413,8 +435,8 @@ public class CollectFeatures {
 	}
 
 	public static List<Integer> viableLeftTokenTypes(ParserRuleContext node,
-													 Token curToken,
-													 List<Pair<Integer,Integer>> pairs)
+	                                                 Token curToken,
+	                                                 List<Pair<Integer,Integer>> pairs)
 	{
 		List<Integer> newPairs = new ArrayList<>();
 		for (Pair<Integer, Integer> p : pairs) {
@@ -491,8 +513,8 @@ public class CollectFeatures {
 		return injectWS;
 	}
 
-	public List<Integer> getLevelsToCommonAncestor() {
-		return levelsToCommonAncestor;
+	public List<Integer> getAlignWithPrevious() {
+		return alignWithPrevious;
 	}
 
 	public List<Integer> getIndent() {
@@ -618,7 +640,7 @@ public class CollectFeatures {
 		for (int i=0; i<tokens.size(); i++) {
 			Token t = tokens.get(i);
 			if ( t.getType()!=Token.EOF &&
-				 t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL )
+				t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL )
 			{
 				real.add(t);
 			}
