@@ -757,7 +757,9 @@ public class Tool {
 	}
 
 	public static void printOriginalFilePiece(InputDocument doc, CommonToken originalCurToken) {
-		System.out.println(doc.getLine(originalCurToken.getLine()-1));
+		if ( originalCurToken.getLine()>1 ) {
+			System.out.println(doc.getLine(originalCurToken.getLine()-1));
+		}
 		System.out.println(doc.getLine(originalCurToken.getLine()));
 		System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
 		System.out.println("^");

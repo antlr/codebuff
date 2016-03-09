@@ -82,16 +82,17 @@ public class Formatter {
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
 		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+
+		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
+		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 
 		// Try to weight NL probability according to line length.
 		HashBag<Integer> votes = newlineClassifier.votes(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		if ( votes.size()>0 ) {
 			int totalVotes =votes.totalCount();
 			int endcol = features[CollectFeatures.INDEX_PREV_END_COLUMN];
-			System.out.printf("%-18s newline votes: %-20s", curToken.getText(), votes.toString());
+//			System.out.printf("%-18s newline votes: %-20s", curToken.getText(), votes.toString());
 			Integer no_NL_votes = votes.get(0);
 			if ( no_NL_votes!=null ) {
 				votes.remove(0);
@@ -101,30 +102,54 @@ public class Formatter {
 				float pCtxGivenNL = votesForAtLeastOneNL/(float) totalVotes;
 				double bayes_No_NL = pCtxGivenNo_NL * (1-pNL);
 				double bayes_NL = pCtxGivenNL * pNL;
-				System.out.printf("p(ctx|no NL)=%1.2f p(ctx|NL)=%1.2f sigmoid p(NL|endcol=%d)=%1.2f p(no NL|ctx,endcol)=%1.2f p(NL|ctx,endcol)=%1.2f",
-				                  pCtxGivenNo_NL,
-				                  pCtxGivenNL,
-				                  endcol,
-				                  pNL,
-				                  bayes_No_NL,
-				                  bayes_NL);
+//				System.out.printf("p(ctx|no NL)=%1.2f p(ctx|NL)=%1.2f sigmoid p(NL|endcol=%d)=%1.2f p(no NL|ctx,endcol)=%1.2f p(NL|ctx,endcol)=%1.2f",
+//				                  pCtxGivenNo_NL,
+//				                  pCtxGivenNL,
+//				                  endcol,
+//				                  pNL,
+//				                  bayes_No_NL,
+//				                  bayes_NL);
 				double adjusted_NL = pNL*pCtxGivenNL;
 				double adjusted_noNL = (1.0-pNL)*no_NL_votes/(float) totalVotes;
 //				System.out.printf(", adjusted no NL: %1.2f, NL: %1.2f\n", adjusted_noNL, adjusted_NL);
 				if ( adjusted_NL > adjusted_noNL ) {
 					injectNewline = 1;
 				}
-				System.out.println();
+//				System.out.println();
 			}
 			else {
-				System.out.println();
+//				System.out.println();
 			}
 		}
 
-		// compare prediction of newline against original, alert about any diffs
-		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
-		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
+		// If we inject a newline then feature "first token on line" becomes true.
+		// Used as required feature match for predicting alignment
+		if ( injectNewline>0 ) {
+			features[CollectFeatures.INDEX_FIRST_TOKEN_ON_LINE] = 1;
+		}
+		// Now we can predict alignment and indentation
+		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
+		if ( injectNewline>0 ) {
+			System.out.printf("### line %d: predicted align=%d\n",
+							  originalCurToken.getLine(), alignWithPrevious);
+			Tool.printOriginalFilePiece(doc, originalCurToken);
+			alignClassifier.dumpVotes = true;
+			alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+			alignClassifier.dumpVotes = false;
+		}
+
+		if ( injectNewline>0 ) {
+			System.out.printf("### line %d: predicted indent=%d\n",
+							  originalCurToken.getLine(), indent);
+			Tool.printOriginalFilePiece(doc, originalCurToken);
+			indentClassifier.dumpVotes = true;
+			indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+			indentClassifier.dumpVotes = false;
+		}
+
+		// compare prediction of newline against original, alert about any diffs
 		if ( debug_NL_WS && prevToken.getType()==JavaLexer.WS ) {
 			int actualNL = Tool.count(prevToken.getText(), '\n');
 			if ( injectNewline!=actualNL ) {

@@ -31,15 +31,16 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_END_COLUMN   = 3;
 	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 4;
 	public static final int INDEX_TYPE              = 5;
-	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 6;
-	public static final int INDEX_RULE              = 7; // what rule are we in?
-	public static final int INDEX_EARLIEST_ANCESTOR = 8;
-	public static final int INDEX_NEXT_TYPE         = 9;
-	public static final int INDEX_INFO_FILE         = 10;
-	public static final int INDEX_INFO_LINE         = 11;
-	public static final int INDEX_INFO_CHARPOS      = 12;
+	public static final int INDEX_FIRST_TOKEN_ON_LINE = 6;
+	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 7;
+	public static final int INDEX_RULE              = 8; // what rule are we in?
+	public static final int INDEX_EARLIEST_ANCESTOR = 9;
+	public static final int INDEX_NEXT_TYPE         = 10;
+	public static final int INDEX_INFO_FILE         = 11;
+	public static final int INDEX_INFO_LINE         = 12;
+	public static final int INDEX_INFO_CHARPOS      = 13;
 
-	public static final int NUM_FEATURES            = 12;
+	public static final int NUM_FEATURES            = 13;
 
 	public static FeatureMetaData[] FEATURES_INJECT_NL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -48,7 +49,8 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
@@ -65,6 +67,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 3),
 		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
@@ -80,6 +83,8 @@ public class CollectFeatures {
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+//		new FeatureMetaData(FeatureType.BOOL,  new String[] {"First", "token"}, 100), // first on a line. required matched
+		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
@@ -96,6 +101,7 @@ public class CollectFeatures {
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"First", "token"}, 100), // first on a line. required matched
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
@@ -112,7 +118,8 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"First", "token"}, 1), // first on a line
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
@@ -357,6 +364,8 @@ public class CollectFeatures {
 		// 1  means they are on different lines
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
+		int firstTokenOnLine = prevToken.getLine() < curToken.getLine() ? 1 : 0;
+
 		int sumEndColAndAncestorWidth = -1;
 		if ( earliestAncestorWidth>=0 ) {
 			sumEndColAndAncestorWidth = prevTokenEndCharPos+earliestAncestorWidth;
@@ -370,6 +379,7 @@ public class CollectFeatures {
 			prevEarliestAncestorRuleIndex,
 
 			window.get(2).getType(), // LT(1)
+			firstTokenOnLine,
 			matchingSymbolOnDiffLine,
 			curTokensParentRuleIndex,
 			earliestAncestorRuleIndex,
