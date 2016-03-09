@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.gui.GUIController;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonToken;
@@ -46,6 +47,8 @@ public class Tool {
 		InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
 		String output = format(corpus, testDoc, tabSize);
 		System.out.println(output);
+		GUIController controller = new GUIController(testDoc, output, JavaLexer.class);
+		controller.show();
 	}
 
 	/** Given a corpus, format the document by tokenizing and using the

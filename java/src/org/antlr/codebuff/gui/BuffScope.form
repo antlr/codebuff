@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.antlr.codebuff.gui.BuffScope">
+  <grid id="27dc6" binding="overallPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties>
+      <preferredSize width="800" height="800"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <splitpane id="52fa0" binding="codeAndResultsSplitPane">
+        <constraints border-constraint="Center"/>
+        <properties>
+          <continuousLayout value="true"/>
+          <orientation value="0"/>
+          <resizeWeight value="0.5"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <splitpane id="4f8d1" binding="origVsBuffedSplitPane">
+            <constraints>
+              <splitpane position="left"/>
+            </constraints>
+            <properties>
+              <continuousLayout value="true"/>
+              <dividerLocation value="252"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="ac97c" class="javax.swing.JTextPane" binding="formattedTextPane">
+                <constraints>
+                  <splitpane position="right"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <minimumSize width="200" height="100"/>
+                  <text value="original"/>
+                </properties>
+              </component>
+              <component id="a4510" class="javax.swing.JTextPane" binding="origTextPane">
+                <constraints>
+                  <splitpane position="left"/>
+                </constraints>
+                <properties>
+                  <editable value="false"/>
+                  <minimumSize width="200" height="100"/>
+                  <text value="Buffed text"/>
+                </properties>
+              </component>
+            </children>
+          </splitpane>
+          <component id="5fd8b" class="javax.swing.JTextArea" binding="analysisConsole">
+            <constraints>
+              <splitpane position="right"/>
+            </constraints>
+            <properties>
+              <editable value="false"/>
+              <preferredSize width="800" height="200"/>
+            </properties>
+          </component>
+        </children>
+      </splitpane>
+    </children>
+  </grid>
+</form>
