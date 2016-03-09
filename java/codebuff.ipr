@@ -248,4 +248,8 @@
       </SOURCES>
     </library>
   </component>
+  <component name="uidesigner-configuration">
+    <option name="INSTRUMENT_CLASSES" value="false" />
+    <option name="DEFAULT_FIELD_ACCESSIBILITY" value="public" />
+  </component>
 </project>
