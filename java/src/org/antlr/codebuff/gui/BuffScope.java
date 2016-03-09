@@ -15,7 +15,7 @@ public class BuffScope {
 	public JPanel injectNLTab;
 	public JPanel alignTab;
 	public JTextArea indentConsole;
-	public JTextPane injectWSConsole;
+	public JTextArea injectWSConsole;
 	public JPanel indentTab;
 	public JPanel injectWSTab;
 
@@ -94,13 +94,13 @@ public class BuffScope {
 		analysisTabbedPane = new JTabbedPane();
 		codeAndResultsSplitPane.setRightComponent(analysisTabbedPane);
 		injectNLTab = new JPanel();
-		injectNLTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+		injectNLTab.setLayout(new BorderLayout(0, 0));
 		analysisTabbedPane.addTab("Inject \\n", injectNLTab);
 		final JScrollPane scrollPane3 = new JScrollPane();
-		injectNLTab.add(scrollPane3, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+		scrollPane3.setVerticalScrollBarPolicy(20);
+		injectNLTab.add(scrollPane3, BorderLayout.CENTER);
 		injectNLConsole = new JTextArea();
 		injectNLConsole.setEditable(false);
-		injectNLConsole.setPreferredSize(new Dimension(800, 200));
 		scrollPane3.setViewportView(injectNLConsole);
 		alignTab = new JPanel();
 		alignTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
@@ -121,7 +121,8 @@ public class BuffScope {
 		analysisTabbedPane.addTab("Inject whitespace", injectWSTab);
 		final JScrollPane scrollPane6 = new JScrollPane();
 		injectWSTab.add(scrollPane6, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-		injectWSConsole = new JTextPane();
+		injectWSConsole = new JTextArea();
+		injectWSConsole.setEditable(false);
 		scrollPane6.setViewportView(injectWSConsole);
 	}
 

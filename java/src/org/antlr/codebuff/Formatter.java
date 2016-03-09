@@ -115,10 +115,8 @@ public class Formatter {
 		String alignAnalysis =
 			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
 			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		TokenPositionAnalysis a = new TokenPositionAnalysis(newlineAnalysis,
-		                                              alignAnalysis,
-		                                              indentAnalysis,
-		                                              wsAnalysis);
+		TokenPositionAnalysis a =
+			new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
 		analysis.setSize(i+1);
 		analysis.set(i, a);
 

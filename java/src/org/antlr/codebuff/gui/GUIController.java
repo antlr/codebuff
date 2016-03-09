@@ -100,20 +100,14 @@ public class GUIController {
 				if ( t!=null ) {
 					highlighter.addHighlight(t.getStartIndex(), t.getStopIndex()+1, painter);
 					TokenPositionAnalysis analysis = analysisPerToken.get(t.getTokenIndex());
-					switch ( scope.analysisTabbedPane.getSelectedIndex() ) {
-						case 0:
-							scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
-							break;
-						case 1:
-							scope.alignConsole.setText(analysis!=null ? analysis.align : "");
-							break;
-						case 2:
-							scope.indentConsole.setText(analysis!=null ? analysis.indent : "");
-							break;
-						case 3:
-							scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
-							break;
-					}
+					scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
+					scope.alignConsole.setText(analysis!=null ? analysis.align : "");
+					scope.indentConsole.setText(analysis!=null ? analysis.indent : "");
+					scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
+					scope.injectNLConsole.setCaretPosition(0);
+					scope.alignConsole.setCaretPosition(0);
+					scope.indentConsole.setCaretPosition(0);
+					scope.injectWSConsole.setCaretPosition(0);
 				}
 			}
 			catch (Exception ex) {
