@@ -98,6 +98,25 @@ public abstract class kNNClassifier {
 		return votes;
 	}
 
+	public String getPredictionAnalysis(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
+		HashBag<Integer> votes = getVotesBag(kNN, k, unknown, Y);
+		if ( kNN.length>0 ) {
+			System.out.print(CollectFeatures.featureNameHeader(FEATURES));
+			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
+			System.out.println(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
+			StringBuilder buf = new StringBuilder();
+			for (int i = 0; i<kNN.length; i++) {
+				Neighbor n = kNN[i];
+				buf.append(n.toString(FEATURES, Y));
+				buf.append("\n");
+			}
+			return buf.toString();
+		}
+		return null;
+	}
+
 	/** Same as getVotesBag except sum the distances for each category rather than just count the instances */
 	// TODO: not using just yet. I think we need to specialize features per classification
 	public Map<Integer, MutableDouble> getCategoryDistanceMap(Neighbor[] kNN, int k, int[] unknown, List<Integer> Y) {

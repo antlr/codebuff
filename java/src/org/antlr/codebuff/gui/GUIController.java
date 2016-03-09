@@ -1,6 +1,7 @@
 package org.antlr.codebuff.gui;
 
 import org.antlr.codebuff.InputDocument;
+import org.antlr.codebuff.TokenPositionAnalysis;
 import org.antlr.codebuff.Tool;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -12,19 +13,26 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
 import java.awt.*;
+import java.util.List;
 
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import static javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 
 public class GUIController {
 	public BuffScope scope;
+	public List<TokenPositionAnalysis> analysisPerToken;
 	public InputDocument testDoc;
 	public String formattedText;
 	public Class<? extends Lexer> lexerClass;
 	public CommonTokenStream original_tokens;
 	public CommonTokenStream formatted_tokens;
 
-	public GUIController(InputDocument testDoc, String formattedText, Class<? extends Lexer> lexerClass) {
+	public GUIController(List<TokenPositionAnalysis> analysisPerToken,
+	                     InputDocument testDoc,
+	                     String formattedText,
+	                     Class<? extends Lexer> lexerClass)
+	{
+		this.analysisPerToken = analysisPerToken;
 		this.formattedText = formattedText;
 		this.lexerClass = lexerClass;
 		this.testDoc = testDoc;
@@ -41,7 +49,7 @@ public class GUIController {
 		originalText = originalText.replace(' ','\u00B7');
 		formattedText = formattedText.replace(' ','\u00B7');
 
-		// set text
+		// set text and font
 		Font docFont = new Font("Monaco", Font.PLAIN, 14);
 		scope.getOrigTextPane().putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		scope.getOrigTextPane().setFont(docFont);
@@ -49,6 +57,15 @@ public class GUIController {
 		scope.getFormattedTextPane().setFont(docFont);
 		scope.getOrigTextPane().setText(originalText);
 		scope.getFormattedTextPane().setText(formattedText);
+
+		scope.injectNLConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+		scope.injectNLConsole.setFont(docFont);
+		scope.alignConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+		scope.alignConsole.setFont(docFont);
+		scope.indentConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+		scope.indentConsole.setFont(docFont);
+		scope.injectWSConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+		scope.injectWSConsole.setFont(docFont);
 
 		JFrame frame = new JFrame("CodeBuff Scope");
 		frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -82,6 +99,21 @@ public class GUIController {
 				highlighter.removeAllHighlights();
 				if ( t!=null ) {
 					highlighter.addHighlight(t.getStartIndex(), t.getStopIndex()+1, painter);
+					TokenPositionAnalysis analysis = analysisPerToken.get(t.getTokenIndex());
+					switch ( scope.analysisTabbedPane.getSelectedIndex() ) {
+						case 0:
+							scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
+							break;
+						case 1:
+							scope.alignConsole.setText(analysis!=null ? analysis.align : "");
+							break;
+						case 2:
+							scope.indentConsole.setText(analysis!=null ? analysis.indent : "");
+							break;
+						case 3:
+							scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
+							break;
+					}
 				}
 			}
 			catch (Exception ex) {

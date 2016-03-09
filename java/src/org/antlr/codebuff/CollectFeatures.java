@@ -318,6 +318,9 @@ public class CollectFeatures {
 	{
 		CommonTokenStream tokens = doc.tokens;
 		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+		if ( node==null ) {
+			System.err.println("### No node associated with token "+tokens.get(i));
+		}
 		Token curToken = node.getSymbol();
 
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);

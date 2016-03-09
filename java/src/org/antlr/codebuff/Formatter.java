@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 public class Formatter {
 	protected final Corpus corpus;
@@ -18,6 +19,8 @@ public class Formatter {
 	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
+
+	protected Vector<TokenPositionAnalysis> analysis = new Vector<>();
 
 //	protected CodekNNClassifier classifier;
 	protected CodekNNClassifier newlineClassifier;
@@ -55,10 +58,20 @@ public class Formatter {
 		return output.toString();
 	}
 
+	public List<TokenPositionAnalysis> getAnalysisPerToken() {
+		return analysis;
+	}
+
+
 	public String format() {
 		if ( tokenToNodeMap == null ) {
 			tokenToNodeMap = CollectFeatures.indexTree(root);
 		}
+
+		// first two tokens have no analysis
+		analysis.setSize(2);
+		analysis.set(0, new TokenPositionAnalysis());
+		analysis.set(1, new TokenPositionAnalysis());
 
 		List<Token> realTokens = CollectFeatures.getRealTokens(tokens);
 		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
@@ -90,36 +103,24 @@ public class Formatter {
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 
-		if ( debug_NL && prevToken.getType()==JavaLexer.WS ) {
-			int actualNL = Tool.count(prevToken.getText(), '\n');
-			if ( injectNewline!=actualNL ) {
-				misclassified_NL++;
-				doc.misclassifiedNewLineCount++;
-				if (doc.dumpVotes) {
-					System.out.println();
-					System.out.printf("### line %d: predicted %d \\n actual %d:\n",
-						originalCurToken.getLine(), injectNewline, actualNL);
-					Tool.printOriginalFilePiece(doc, originalCurToken);
-					newlineClassifier.dumpVotes = true;
-					newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-					newlineClassifier.dumpVotes = false;
-				}
-			}
-			int actualWS = Tool.count(prevToken.getText(), ' ');
-			if ( injectNewline==0 && ws!=actualWS ) {
-				misclassified_WS++;
-				doc.misclassifiedWSCount++;
-				if (doc.dumpVotes) {
-					System.out.println();
-					System.out.printf("### line %d: predicted %d ' ' actual %d:\n",
-						originalCurToken.getLine(), ws, actualWS);
-					Tool.printOriginalFilePiece(doc, originalCurToken);
-					wsClassifier.dumpVotes = true;
-					wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-					wsClassifier.dumpVotes = false;
-				}
-			}
-		}
+		String newlineAnalysis =
+			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
+			                                        CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String indentAnalysis =
+			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
+			                                       CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String wsAnalysis =
+			wsClassifier.getPredictionAnalysis(k, features, corpus.injectWS,
+			                                   CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String alignAnalysis =
+			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
+			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		TokenPositionAnalysis a = new TokenPositionAnalysis(newlineAnalysis,
+		                                              alignAnalysis,
+		                                              indentAnalysis,
+		                                              wsAnalysis);
+		analysis.setSize(i+1);
+		analysis.set(i, a);
 
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
