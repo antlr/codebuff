@@ -7,12 +7,20 @@ public class BuffScope {
 	private JSplitPane codeAndResultsSplitPane;
 	private JSplitPane origVsBuffedSplitPane;
 	protected JPanel overallPanel;
-	protected JTextArea analysisConsole;
+	protected JTextArea injectNLConsole;
 	protected JTextPane origTextPane;
 	protected JTextPane formattedTextPane;
+	public JTextArea alignConsole;
+	public JTabbedPane analysisTabbedPane;
+	public JPanel injectNLTab;
+	public JPanel alignTab;
+	public JTextArea indentConsole;
+	public JTextPane injectWSConsole;
+	public JPanel indentTab;
+	public JPanel injectWSTab;
 
-	public JTextArea getAnalysisConsole() {
-		return analysisConsole;
+	public JTextArea getInjectNLConsole() {
+		return injectNLConsole;
 	}
 
 	public JTextPane getFormattedTextPane() {
@@ -52,22 +60,57 @@ public class BuffScope {
 		overallPanel.add(codeAndResultsSplitPane, BorderLayout.CENTER);
 		origVsBuffedSplitPane = new JSplitPane();
 		origVsBuffedSplitPane.setContinuousLayout(true);
-		origVsBuffedSplitPane.setDividerLocation(252);
+		origVsBuffedSplitPane.setDividerLocation(400);
+		origVsBuffedSplitPane.setResizeWeight(0.0);
 		codeAndResultsSplitPane.setLeftComponent(origVsBuffedSplitPane);
-		formattedTextPane = new JTextPane();
-		formattedTextPane.setEditable(false);
-		formattedTextPane.setMinimumSize(new Dimension(200, 100));
-		formattedTextPane.setText("original");
-		origVsBuffedSplitPane.setRightComponent(formattedTextPane);
+		final JPanel panel1 = new JPanel();
+		panel1.setLayout(new BorderLayout(0, 0));
+		origVsBuffedSplitPane.setLeftComponent(panel1);
+		final JLabel label1 = new JLabel();
+		label1.setHorizontalAlignment(0);
+		label1.setText("Original source");
+		panel1.add(label1, BorderLayout.NORTH);
 		origTextPane = new JTextPane();
 		origTextPane.setEditable(false);
 		origTextPane.setMinimumSize(new Dimension(200, 100));
 		origTextPane.setText("Buffed text");
-		origVsBuffedSplitPane.setLeftComponent(origTextPane);
-		analysisConsole = new JTextArea();
-		analysisConsole.setEditable(false);
-		analysisConsole.setPreferredSize(new Dimension(800, 200));
-		codeAndResultsSplitPane.setRightComponent(analysisConsole);
+		panel1.add(origTextPane, BorderLayout.CENTER);
+		final JPanel panel2 = new JPanel();
+		panel2.setLayout(new BorderLayout(0, 0));
+		origVsBuffedSplitPane.setRightComponent(panel2);
+		final JLabel label2 = new JLabel();
+		label2.setHorizontalAlignment(0);
+		label2.setText("Formatted output");
+		panel2.add(label2, BorderLayout.NORTH);
+		formattedTextPane = new JTextPane();
+		formattedTextPane.setEditable(false);
+		formattedTextPane.setMinimumSize(new Dimension(200, 100));
+		formattedTextPane.setText("original");
+		panel2.add(formattedTextPane, BorderLayout.CENTER);
+		analysisTabbedPane = new JTabbedPane();
+		codeAndResultsSplitPane.setRightComponent(analysisTabbedPane);
+		injectNLTab = new JPanel();
+		injectNLTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+		analysisTabbedPane.addTab("Inject \\n", injectNLTab);
+		injectNLConsole = new JTextArea();
+		injectNLConsole.setEditable(false);
+		injectNLConsole.setPreferredSize(new Dimension(800, 200));
+		injectNLTab.add(injectNLConsole, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK|com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 1, false));
+		alignTab = new JPanel();
+		alignTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+		analysisTabbedPane.addTab("Alignment", alignTab);
+		alignConsole = new JTextArea();
+		alignTab.add(alignConsole, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 1, false));
+		indentTab = new JPanel();
+		indentTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+		analysisTabbedPane.addTab("Indentation", indentTab);
+		indentConsole = new JTextArea();
+		indentTab.add(indentConsole, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 1, false));
+		injectWSTab = new JPanel();
+		injectWSTab.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+		analysisTabbedPane.addTab("Inject whitespace", injectWSTab);
+		injectWSConsole = new JTextPane();
+		injectWSTab.add(injectWSConsole, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 1, false));
 	}
 
 	/**

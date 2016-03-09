@@ -24,41 +24,143 @@
             </constraints>
             <properties>
               <continuousLayout value="true"/>
-              <dividerLocation value="252"/>
+              <dividerLocation value="400"/>
+              <resizeWeight value="0.0"/>
             </properties>
             <border type="none"/>
             <children>
-              <component id="ac97c" class="javax.swing.JTextPane" binding="formattedTextPane">
-                <constraints>
-                  <splitpane position="right"/>
-                </constraints>
-                <properties>
-                  <editable value="false"/>
-                  <minimumSize width="200" height="100"/>
-                  <text value="original"/>
-                </properties>
-              </component>
-              <component id="a4510" class="javax.swing.JTextPane" binding="origTextPane">
+              <grid id="c7566" layout-manager="BorderLayout" hgap="0" vgap="0">
                 <constraints>
                   <splitpane position="left"/>
                 </constraints>
-                <properties>
-                  <editable value="false"/>
-                  <minimumSize width="200" height="100"/>
-                  <text value="Buffed text"/>
-                </properties>
-              </component>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="1210e" class="javax.swing.JLabel">
+                    <constraints border-constraint="North"/>
+                    <properties>
+                      <horizontalAlignment value="0"/>
+                      <text value="Original source"/>
+                    </properties>
+                  </component>
+                  <component id="a4510" class="javax.swing.JTextPane" binding="origTextPane">
+                    <constraints border-constraint="Center"/>
+                    <properties>
+                      <editable value="false"/>
+                      <minimumSize width="200" height="100"/>
+                      <text value="Buffed text"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="51ae4" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints>
+                  <splitpane position="right"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="3d526" class="javax.swing.JLabel">
+                    <constraints border-constraint="North"/>
+                    <properties>
+                      <horizontalAlignment value="0"/>
+                      <text value="Formatted output"/>
+                    </properties>
+                  </component>
+                  <component id="ac97c" class="javax.swing.JTextPane" binding="formattedTextPane">
+                    <constraints border-constraint="Center"/>
+                    <properties>
+                      <editable value="false"/>
+                      <minimumSize width="200" height="100"/>
+                      <text value="original"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
             </children>
           </splitpane>
-          <component id="5fd8b" class="javax.swing.JTextArea" binding="analysisConsole">
+          <tabbedpane id="dea3d" binding="analysisTabbedPane">
             <constraints>
               <splitpane position="right"/>
             </constraints>
-            <properties>
-              <editable value="false"/>
-              <preferredSize width="800" height="200"/>
-            </properties>
-          </component>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <grid id="f2215" binding="injectNLTab" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <tabbedpane title="Inject \n"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="5fd8b" class="javax.swing.JTextArea" binding="injectNLConsole">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="1" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <editable value="false"/>
+                      <preferredSize width="800" height="200"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="3052" binding="alignTab" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <tabbedpane title="Alignment"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="4a130" class="javax.swing.JTextArea" binding="alignConsole">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="1" use-parent-layout="false">
+                        <preferred-size width="150" height="50"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+              <grid id="feb7c" binding="indentTab" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <tabbedpane title="Indentation"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="72048" class="javax.swing.JTextArea" binding="indentConsole">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="1" use-parent-layout="false">
+                        <preferred-size width="150" height="50"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+              <grid id="883ac" binding="injectWSTab" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <tabbedpane title="Inject whitespace"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="2b351" class="javax.swing.JTextPane" binding="injectWSConsole">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="1" use-parent-layout="false">
+                        <preferred-size width="150" height="50"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </tabbedpane>
         </children>
       </splitpane>
     </children>
