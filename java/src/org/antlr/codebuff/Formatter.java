@@ -68,11 +68,6 @@ public class Formatter {
 			tokenToNodeMap = CollectFeatures.indexTree(root);
 		}
 
-		// first two tokens have no analysis
-		analysis.setSize(2);
-		analysis.set(0, new TokenPositionAnalysis());
-		analysis.set(1, new TokenPositionAnalysis());
-
 		List<Token> realTokens = CollectFeatures.getRealTokens(tokens);
 		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
@@ -81,11 +76,8 @@ public class Formatter {
 		return output.toString();
 	}
 
-	public void processToken(int i) {
+	public void processToken(int i) { // i is token index into stream
 		CommonToken curToken = (CommonToken)tokens.get(i);
-
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-
 		String tokText = curToken.getText();
 
 		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, doc, i, line, tabSize);
