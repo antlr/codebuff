@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.gui.GUIController;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonToken;
@@ -44,25 +45,30 @@ public class Tool {
 		String testFilename = args[1];
 		Corpus corpus = train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
 		InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
-		String output = format(corpus, testDoc, tabSize);
+		Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
+		String output = results.a;
+		List<TokenPositionAnalysis> analysisPerToken = results.b;
 		System.out.println(output);
+		GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+		controller.show();
 	}
 
 	/** Given a corpus, format the document by tokenizing and using the
 	 *  corpus to locate newline and whitespace injection points.
 	 */
-	public static String format(Corpus corpus, InputDocument testDoc, int tabSize)
+	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, int tabSize)
 		throws Exception
 	{
 		return format(corpus, testDoc, tabSize, true);
 	}
 
-	public static String format(Corpus corpus, InputDocument testDoc, int tabSize, boolean showFormattedResult)
+	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, int tabSize, boolean showFormattedResult)
 		throws Exception
 	{
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
+		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
@@ -73,7 +79,7 @@ public class Tool {
 		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
 		if (showFormattedResult) System.out.println("Diff is "+d);
 
-		return prefix+formattedOutput;
+		return new Pair<>(prefix+formattedOutput, analysisPerToken);
 	}
 
 	public static Corpus train(String rootDir,
@@ -100,13 +106,15 @@ public class Tool {
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
 
-		for (String ruleName : ruleToPairsBag.keySet()) {
-			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
-			System.out.print(ruleName+": ");
-			for (Pair<Integer,Integer> p : pairs) {
-				System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+		if ( false ) {
+			for (String ruleName : ruleToPairsBag.keySet()) {
+				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+				System.out.print(ruleName+": ");
+				for (Pair<Integer, Integer> p : pairs) {
+					System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 
 		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
@@ -141,7 +149,7 @@ public class Tool {
 		List<Integer> injectNewlines = new ArrayList<>();
 		List<Integer> injectWS = new ArrayList<>();
 		List<Integer> indent = new ArrayList<>();
-		List<Integer> levelsToCommonAncestor = new ArrayList<>();
+		List<Integer> alignWithPrevious = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			process(doc, tabSize, ruleToPairsBag);
@@ -152,12 +160,12 @@ public class Tool {
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
 				indent.add(doc.indent.get(i));
-				levelsToCommonAncestor.add(doc.levelsToCommonAncestor.get(i));
+				alignWithPrevious.add(doc.alignWithPrevious.get(i));
 				featureVectors.add(featureVec);
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(documents, featureVectors, injectNewlines, injectWS, indent, levelsToCommonAncestor);
+		return new Corpus(documents, featureVectors, injectNewlines, injectWS, indent, alignWithPrevious);
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
@@ -171,7 +179,7 @@ public class Tool {
 		doc.injectNewlines = collector.getInjectNewlines();
 		doc.injectWS = collector.getInjectWS();
 		doc.indent = collector.getIndent();
-		doc.levelsToCommonAncestor = collector.getLevelsToCommonAncestor();
+		doc.alignWithPrevious = collector.getAlignWithPrevious();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
@@ -778,7 +786,8 @@ public class Tool {
 		ArrayList<Double> differenceRatios = new ArrayList<>();
 
 		for (InputDocument testDoc: testDocs) {
-			String formattedDoc = format(corpus, testDoc, tabSize, false);
+			Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize, false);
+			String formattedDoc = results.a;
 			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
 			testDoc.dumpIncorrectWS = false;
 			double differenceRatio = compare(testDoc, formattedDoc, JavaLexer.class);

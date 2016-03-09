@@ -1,19 +1,32 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.HashBag;
+import org.antlr.codebuff.misc.MutableDouble;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
-	protected Corpus corpus;
+	protected final Corpus corpus;
+	protected final FeatureMetaData[] FEATURES;
+	protected final int maxDistanceCount;
+
 	public boolean dumpVotes = false;
 
-	public kNNClassifier(Corpus corpus) {
+	public kNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES) {
 		this.corpus = corpus;
+		this.FEATURES = FEATURES;
+		assert FEATURES.length <= CollectFeatures.NUM_FEATURES;
+		int n = 0;
+		for (int i=0; i<FEATURES.length; i++) {
+			n += FEATURES[i].mismatchCost;
+		}
+		maxDistanceCount = n;
 	}
 
 	/** Classify unknown for all Y at once */
@@ -30,8 +43,8 @@ public abstract class kNNClassifier {
 		votesBag = getVotesBag(kNN, k, unknown, corpus.indent);
 		categories[Corpus.INDEX_FEATURE_INDENT] = getCategoryWithMostVotes(votesBag);
 
-		votesBag = getVotesBag(kNN, k, unknown, corpus.levelsToCommonAncestor);
-		categories[Corpus.INDEX_FEATURE_LEVELS_TO_ANCESTOR] = getCategoryWithMostVotes(votesBag);
+		votesBag = getVotesBag(kNN, k, unknown, corpus.alignWithPrevious);
+		categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS] = getCategoryWithMostVotes(votesBag);
 
 		return categories;
 	}
@@ -70,19 +83,56 @@ public abstract class kNNClassifier {
 			votes.add(Y.get(kNN[i].corpusVectorIndex));
 		}
 		if ( dumpVotes && kNN.length>0 ) {
-			System.out.print(CollectFeatures.featureNameHeader());
+			System.out.print(CollectFeatures.featureNameHeader(FEATURES));
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
-			System.out.println(CollectFeatures._toString(firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
-			kNN = Arrays.copyOfRange(kNN, 0, Math.min(25, kNN.length));
+			System.out.println(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
 			StringBuilder buf = new StringBuilder();
 			for (int i = 0; i<kNN.length; i++) {
 				Neighbor n = kNN[i];
-				buf.append(n.toString(Y));
+				buf.append(n.toString(FEATURES, Y));
 				buf.append("\n");
 			}
 			System.out.println(buf);
 		}
 		return votes;
+	}
+
+	public String getPredictionAnalysis(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
+		HashBag<Integer> votes = getVotesBag(kNN, k, unknown, Y);
+		if ( kNN.length>0 ) {
+			StringBuilder buf = new StringBuilder();
+			buf.append(CollectFeatures.featureNameHeader(FEATURES));
+			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
+			buf.append(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(),
+			                                     firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+			buf.append("\n");
+			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
+			for (int i = 0; i<kNN.length; i++) {
+				Neighbor n = kNN[i];
+				buf.append(n.toString(FEATURES, Y));
+				buf.append("\n");
+			}
+			return buf.toString();
+		}
+		return null;
+	}
+
+	/** Same as getVotesBag except sum the distances for each category rather than just count the instances */
+	// TODO: not using just yet. I think we need to specialize features per classification
+	public Map<Integer, MutableDouble> getCategoryDistanceMap(Neighbor[] kNN, int k, int[] unknown, List<Integer> Y) {
+		Map<Integer, MutableDouble> catToDist = new HashMap<>();
+		for (int i = 0; i<k && i<kNN.length; i++) {
+			Integer category = Y.get(kNN[i].corpusVectorIndex);
+			MutableDouble sum = catToDist.get(category);
+			if ( sum==null ) {
+				sum = new MutableDouble(0.0);
+				catToDist.put(category, sum);
+			}
+			sum.add(kNN[i].distance);
+		}
+		return catToDist;
 	}
 
 	public Neighbor[] kNN(int[] unknown, int k, double distanceThreshold) {

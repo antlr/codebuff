@@ -1,7 +1,6 @@
 package org.antlr.codebuff;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by morganzhang on 3/4/16.
@@ -27,7 +26,7 @@ public class Tester {
 	}
 
 	public static double test(double[] parameters) {
-		for (int i=0; i<parameters.length; i++) CollectFeatures.FEATURES[i].mismatchCost = parameters[i];
+		for (int i=0; i<parameters.length; i++) CollectFeatures.FEATURES_ALL[i].mismatchCost = parameters[i]; // should this ref originalFeatures
 		double validateResult = 0;
 		try {
 			validateResult = Tool.validate(corpus, testDocs, tabSize);

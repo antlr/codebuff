@@ -120,7 +120,7 @@ public class Optimizer {
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
 
 		double[] originalParameters = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-		Tester t = new Tester(CollectFeatures.FEATURES, corpus, documents, tabSize);
+		Tester t = new Tester(CollectFeatures.FEATURES_ALL, corpus, documents, tabSize);
 		minimize2(Tester::test, originalParameters, LEARNING_RATE, h, PRECISION);
 	}
 }

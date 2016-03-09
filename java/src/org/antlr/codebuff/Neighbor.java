@@ -13,10 +13,10 @@ public class Neighbor {
 		this.corpusVectorIndex = corpusVectorIndex;
 	}
 
-	public String toString(List<Integer> Y) {
+	public String toString(FeatureMetaData[] FEATURES, List<Integer> Y) {
 		int[] X = corpus.X.get(corpusVectorIndex);
 		InputDocument doc = corpus.documents.get(corpusVectorIndex);
-		String features = CollectFeatures._toString(doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
+		String features = CollectFeatures._toString(FEATURES, doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
 		int line = CollectFeatures.getInfoLine(X);
 		return String.format("%s (cat=%d,d=%1.3f): %s", features, Y.get(corpusVectorIndex), distance, doc.getLine(line));
 	}
