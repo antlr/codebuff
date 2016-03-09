@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.gui.GUIController;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonToken;
@@ -44,25 +45,30 @@ public class Tool {
 		String testFilename = args[1];
 		Corpus corpus = train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
 		InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
-		String output = format(corpus, testDoc, tabSize);
+		Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
+		String output = results.a;
+		List<TokenPositionAnalysis> analysisPerToken = results.b;
 		System.out.println(output);
+		GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+		controller.show();
 	}
 
 	/** Given a corpus, format the document by tokenizing and using the
 	 *  corpus to locate newline and whitespace injection points.
 	 */
-	public static String format(Corpus corpus, InputDocument testDoc, int tabSize)
+	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, int tabSize)
 		throws Exception
 	{
 		return format(corpus, testDoc, tabSize, true);
 	}
 
-	public static String format(Corpus corpus, InputDocument testDoc, int tabSize, boolean showFormattedResult)
+	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, int tabSize, boolean showFormattedResult)
 		throws Exception
 	{
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
+		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
 		testDoc.tokens.seek(0);
 		Token secondToken = testDoc.tokens.LT(2);
 		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
@@ -73,7 +79,7 @@ public class Tool {
 		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
 		if (showFormattedResult) System.out.println("Diff is "+d);
 
-		return prefix+formattedOutput;
+		return new Pair<>(prefix+formattedOutput, analysisPerToken);
 	}
 
 	public static Corpus train(String rootDir,
@@ -780,7 +786,8 @@ public class Tool {
 		ArrayList<Double> differenceRatios = new ArrayList<>();
 
 		for (InputDocument testDoc: testDocs) {
-			String formattedDoc = format(corpus, testDoc, tabSize, false);
+			Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize, false);
+			String formattedDoc = results.a;
 			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
 			testDoc.dumpIncorrectWS = false;
 			double differenceRatio = compare(testDoc, formattedDoc, JavaLexer.class);
