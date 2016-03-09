@@ -81,7 +81,6 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-//		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
@@ -89,25 +88,36 @@ public class Formatter {
 
 		// Try to weight NL probability according to line length.
 		HashBag<Integer> votes = newlineClassifier.votes(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		if ( votes.size()>1 ) {
+		if ( votes.size()>0 ) {
 			int totalVotes =votes.totalCount();
 			int endcol = features[CollectFeatures.INDEX_PREV_END_COLUMN];
-			System.out.println("newline votes: "+votes+", col="+endcol);
+			System.out.printf("%-18s newline votes: %-20s", curToken.getText(), votes.toString());
 			Integer no_NL_votes = votes.get(0);
 			if ( no_NL_votes!=null ) {
 				votes.remove(0);
-				int votesWithoutZero = votes.totalCount();
-				double pNL = Tool.sigmoid(endcol, 70);
-				System.out.printf("p(no NL): %1.2f, p(NL): %1.2f; sigmoid p(NL|endcol=%d)=%1.2f",
-				                  no_NL_votes/(float) totalVotes, votesWithoutZero/(float) totalVotes,
+				int votesForAtLeastOneNL = votes.totalCount();
+				double pNL = Tool.sigmoid(endcol, 60);
+				float pCtxGivenNo_NL = no_NL_votes/(float) totalVotes;
+				float pCtxGivenNL = votesForAtLeastOneNL/(float) totalVotes;
+				double bayes_No_NL = pCtxGivenNo_NL * (1-pNL);
+				double bayes_NL = pCtxGivenNL * pNL;
+				System.out.printf("p(ctx|no NL)=%1.2f p(ctx|NL)=%1.2f sigmoid p(NL|endcol=%d)=%1.2f p(no NL|ctx,endcol)=%1.2f p(NL|ctx,endcol)=%1.2f",
+				                  pCtxGivenNo_NL,
+				                  pCtxGivenNL,
 				                  endcol,
-				                  pNL);
-				double adjusted_NL = pNL*(votesWithoutZero/(float) totalVotes);
+				                  pNL,
+				                  bayes_No_NL,
+				                  bayes_NL);
+				double adjusted_NL = pNL*pCtxGivenNL;
 				double adjusted_noNL = (1.0-pNL)*no_NL_votes/(float) totalVotes;
-				System.out.printf(", adjusted no NL: %1.2f, NL: %1.2f\n", adjusted_noNL, adjusted_NL);
+//				System.out.printf(", adjusted no NL: %1.2f, NL: %1.2f\n", adjusted_noNL, adjusted_NL);
 				if ( adjusted_NL > adjusted_noNL ) {
 					injectNewline = 1;
 				}
+				System.out.println();
+			}
+			else {
+				System.out.println();
 			}
 		}
 
