@@ -598,6 +598,16 @@ public class CollectFeatures {
 				buf.append("| "); // separate prev from current tokens
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
+			buf.append(StringUtils.center("("+((int)FEATURES[i].mismatchCost)+")", displayWidth));
+		}
+		buf.append("\n");
+		for (int i=0; i<FEATURES.length; i++) {
+			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
+			if ( i>0 ) buf.append(" ");
+			if ( i==INDEX_TYPE ) {
+				buf.append("| "); // separate prev from current tokens
+			}
+			int displayWidth = FEATURES[i].type.displayWidth;
 			buf.append(Tool.sequence(displayWidth,"="));
 		}
 		buf.append("\n");
