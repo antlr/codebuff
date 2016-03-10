@@ -51,7 +51,8 @@ public class Formatter {
 		wsClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_WS);
 		indentClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INDENT);
 		alignClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_ALIGN);
-		k = (int)Math.sqrt(corpus.X.size());
+//		k = (int)Math.sqrt(corpus.X.size());
+		k = 3;
 		this.tabSize = tabSize;
 	}
 
