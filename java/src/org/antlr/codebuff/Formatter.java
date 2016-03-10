@@ -187,15 +187,15 @@ public class Formatter {
 		String newlineAnalysis = newlinePredictionString+"\n"+
 			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
 			                                        CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String alignAnalysis =alignPredictionString+"\n"+
+			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
+			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		String indentAnalysis =indentPredictionString+"\n"+
 			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
 			                                       CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		String wsAnalysis =wsPredictionString+"\n"+
 			wsClassifier.getPredictionAnalysis(k, features, corpus.injectWS,
 			                                   CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		String alignAnalysis =alignPredictionString+"\n"+
-			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
-			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
 	}
 
