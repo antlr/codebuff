@@ -24,7 +24,6 @@ public class Formatter {
 
 	protected Vector<TokenPositionAnalysis> analysis = new Vector<>();
 
-//	protected CodekNNClassifier classifier;
 	protected CodekNNClassifier newlineClassifier;
 	protected CodekNNClassifier wsClassifier;
 	protected CodekNNClassifier indentClassifier;
@@ -92,56 +91,13 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-//		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
-		// compare prediction of newline against original, alert about any diffs
-		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
-		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
-
-		boolean failsafeTriggered = false;
-		if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
-			ws = 1;
-			failsafeTriggered = true;
-		}
-
-		boolean prevIsWS = prevToken.getType()==JavaLexer.WS;
-		int actualNL = Tool.count(prevToken.getText(), '\n');
-		int actualWS = Tool.count(prevToken.getText(), ' ');
-		int actualIndent = originalCurToken.getCharPositionInLine()-currentIndent;
-		boolean actualAlign = CollectFeatures.isAlignedWithFirstSibling(tokenToNodeMap, tokens, curToken);
-		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",
-		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
-		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
-		                                             originalCurToken.getLine(),
-		                                             alignWithPrevious==1?"align":"unaligned",
-		                                             actualAlign?"align":"unaligned");
-		String indentPredictionString = String.format("### line %d: predicted indent %d actual %s",
-		                                              originalCurToken.getLine(), indent, actualIndent);
-		String wsPredictionString = String.format("### line %d: predicted %d ' ' actual %s",
-		                                          originalCurToken.getLine(), ws, prevIsWS ? actualWS : "none");
-		if ( failsafeTriggered ) {
-			wsPredictionString += " (failsafe triggered)";
-		}
-
-
-		String newlineAnalysis = newlinePredictionString+"\n"+
-			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
-			                                        CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		String indentAnalysis =indentPredictionString+"\n"+
-			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
-			                                       CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		String wsAnalysis =wsPredictionString+"\n"+
-			wsClassifier.getPredictionAnalysis(k, features, corpus.injectWS,
-			                                   CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		String alignAnalysis =alignPredictionString+"\n"+
-			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
-			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		TokenPositionAnalysis tokenPositionAnalysis =
-			new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
+			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNewline, alignWithPrevious, indent, ws);
 		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -189,6 +145,58 @@ public class Formatter {
 		tokenPositionAnalysis.charIndexStop = tokenPositionAnalysis.charIndexStart + n - 1;
 		output.append(tokText);
 		charPosInLine += n;
+	}
+
+	public TokenPositionAnalysis getTokenAnalysis(int[] features, int indexIntoRealTokens, int tokenIndexInStream,
+	                                              int injectNewline,
+	                                              int alignWithPrevious,
+	                                              int indent,
+	                                              int ws)
+	{
+		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
+		// compare prediction of newline against original, alert about any diffs
+		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
+		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
+
+		boolean failsafeTriggered = false;
+		if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
+			ws = 1;
+			failsafeTriggered = true;
+		}
+
+		boolean prevIsWS = prevToken.getType()==JavaLexer.WS;
+		int actualNL = Tool.count(prevToken.getText(), '\n');
+		int actualWS = Tool.count(prevToken.getText(), ' ');
+		int actualIndent = originalCurToken.getCharPositionInLine()-currentIndent;
+		boolean actualAlign = CollectFeatures.isAlignedWithFirstSibling(tokenToNodeMap, tokens, curToken);
+		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",
+		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
+		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
+		                                             originalCurToken.getLine(),
+		                                             alignWithPrevious==1?"align":"unaligned",
+		                                             actualAlign?"align":"unaligned");
+		String indentPredictionString = String.format("### line %d: predicted indent %d actual %s",
+		                                              originalCurToken.getLine(), indent, actualIndent);
+		String wsPredictionString = String.format("### line %d: predicted %d ' ' actual %s",
+		                                          originalCurToken.getLine(), ws, prevIsWS ? actualWS : "none");
+		if ( failsafeTriggered ) {
+			wsPredictionString += " (failsafe triggered)";
+		}
+
+
+		String newlineAnalysis = newlinePredictionString+"\n"+
+			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
+			                                        CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String indentAnalysis =indentPredictionString+"\n"+
+			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
+			                                       CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String wsAnalysis =wsPredictionString+"\n"+
+			wsClassifier.getPredictionAnalysis(k, features, corpus.injectWS,
+			                                   CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String alignAnalysis =alignPredictionString+"\n"+
+			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
+			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
 	}
 
 	/** Do not join two words like "finaldouble" or numbers like "3double",

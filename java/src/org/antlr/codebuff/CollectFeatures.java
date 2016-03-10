@@ -177,37 +177,18 @@ public class CollectFeatures {
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
 
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
-//		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
-//			precedingNL = getPrecedingNL(i);
-////			System.out.println("^^^"+(prevToken.getCharPositionInLine()+prevToken.getText().length()));
-//		}
 
 		this.injectNewlines.add(precedingNL);
 
 		TerminalNode node = tokenToNodeMap.get(curToken);
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
-		int aligned = 0;
 
 		// at a newline, are we aligned with a prior sibling (in a list)?
-		int columnDelta = 0;
-		if ( precedingNL>0 && earliestAncestor!=null ) {
-			ParserRuleContext commonAncestor = earliestAncestor.getParent();
-			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-			if ( siblings.size()>1 ) {
-				ParserRuleContext firstSibling = siblings.get(0);
-				Token firstSiblingStartToken = firstSibling.getStart();
-				if ( firstSiblingStartToken!=curToken && // can't align with yourself
-					firstSiblingStartToken.getCharPositionInLine() == curToken.getCharPositionInLine() )
-				{
-					aligned = 1;
-//					System.out.println("aligned "+
-//						                   doc.parser.getRuleNames()[commonAncestor.getRuleIndex()]+
-//						                   " has "+siblings.size()+" "+doc.parser.getRuleNames()[earliestAncestor.getRuleIndex()]+" siblings");
-				}
-			}
-		}
+		boolean actualAlign = CollectFeatures.isAlignedWithFirstSibling(tokenToNodeMap, tokens, curToken);
+		int aligned = actualAlign ? 1 : 0;
 
+		int columnDelta = 0;
 		if ( precedingNL>0 && aligned!=1 ) {
 			columnDelta = curToken.getCharPositionInLine() - currentIndent;
 			currentIndent = curToken.getCharPositionInLine();
