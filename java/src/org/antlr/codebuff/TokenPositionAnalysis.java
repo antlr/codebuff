@@ -1,6 +1,8 @@
 package org.antlr.codebuff;
 
 public class TokenPositionAnalysis {
+	public int charIndexStart; // where in output buffer the associated token starts; used to respond to clicks in formatted text
+	public int charIndexStop; // stop index (inclusive)
 	public String newline = "n/a";
 	public String ws = "n/a";
 	public String indent = "n/a";

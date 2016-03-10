@@ -1,5 +1,6 @@
 package org.antlr.codebuff.gui;
 
+import org.antlr.codebuff.CollectFeatures;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.TokenPositionAnalysis;
 import org.antlr.codebuff.Tool;
@@ -27,6 +28,8 @@ public class GUIController {
 	public CommonTokenStream original_tokens;
 	public CommonTokenStream formatted_tokens;
 
+	public List<Token> realFormattedTokens;
+
 	public GUIController(List<TokenPositionAnalysis> analysisPerToken,
 	                     InputDocument testDoc,
 	                     String formattedText,
@@ -44,6 +47,8 @@ public class GUIController {
 		String originalText = testDoc.content;
 		original_tokens = Tool.tokenize(originalText, lexerClass);
 		formatted_tokens = Tool.tokenize(formattedText, lexerClass);
+
+		realFormattedTokens = CollectFeatures.getRealTokens(formatted_tokens);
 
 		// show spaces as dots
 		originalText = originalText.replace(' ','\u00B7');
@@ -77,11 +82,20 @@ public class GUIController {
 		frame.setVisible(true);
 	}
 
-	public static Token getTokenAtCharIndex(CommonTokenStream tokens, int index) {
-		for (int i=0; i<tokens.size(); i++) {
-			Token t = tokens.get(i);
-			if ( index>=t.getStartIndex() && index<=t.getStopIndex() ) {
-				return t;
+//	public static Token getTokenAtCharIndex(List<Token> tokens, int index) {
+//		for (int i=0; i<tokens.size(); i++) {
+//			Token t = tokens.get(i);
+//			if ( index>=t.getStartIndex() && index<=t.getStopIndex() ) {
+//				return t;
+//			}
+//		}
+//		return null;
+//	}
+
+	public TokenPositionAnalysis getAnalysisForCharIndex(int charIndex) {
+		for (TokenPositionAnalysis ta : analysisPerToken) {
+			if ( ta!=null && charIndex>=ta.charIndexStart && charIndex<=ta.charIndexStop ) {
+				return ta;
 			}
 		}
 		return null;
@@ -92,23 +106,22 @@ public class GUIController {
 		public void caretUpdate(CaretEvent e) {
 			int cursor = e.getDot();
 			JTextPane textPane = (JTextPane)e.getSource();
-			Token t = getTokenAtCharIndex(formatted_tokens, cursor);
+			TokenPositionAnalysis analysis = getAnalysisForCharIndex(cursor);
 			Highlighter highlighter = textPane.getHighlighter();
 			HighlightPainter painter = new DefaultHighlightPainter(Color.orange);
 			try {
 				highlighter.removeAllHighlights();
-				if ( t!=null ) {
-					highlighter.addHighlight(t.getStartIndex(), t.getStopIndex()+1, painter);
-					TokenPositionAnalysis analysis = analysisPerToken.get(t.getTokenIndex());
-					scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
-					scope.alignConsole.setText(analysis!=null ? analysis.align : "");
-					scope.indentConsole.setText(analysis!=null ? analysis.indent : "");
-					scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
-					scope.injectNLConsole.setCaretPosition(0);
-					scope.alignConsole.setCaretPosition(0);
-					scope.indentConsole.setCaretPosition(0);
-					scope.injectWSConsole.setCaretPosition(0);
+				if ( analysis!=null ) {
+					highlighter.addHighlight(analysis.charIndexStart, analysis.charIndexStop+1, painter);
 				}
+				scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
+				scope.alignConsole.setText(analysis!=null ? analysis.align : "");
+				scope.indentConsole.setText(analysis!=null ? analysis.indent : "");
+				scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
+				scope.injectNLConsole.setCaretPosition(0);
+				scope.alignConsole.setCaretPosition(0);
+				scope.indentConsole.setCaretPosition(0);
+				scope.injectWSConsole.setCaretPosition(0);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace(System.err);

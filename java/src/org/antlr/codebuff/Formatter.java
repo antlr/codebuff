@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;
@@ -17,12 +18,12 @@ public class Formatter {
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
+	protected List<Token> realTokens;           // just the real tokens from tokens
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	protected Vector<TokenPositionAnalysis> analysis = new Vector<>();
 
-//	protected CodekNNClassifier classifier;
 	protected CodekNNClassifier newlineClassifier;
 	protected CodekNNClassifier wsClassifier;
 	protected CodekNNClassifier indentClassifier;
@@ -68,62 +69,42 @@ public class Formatter {
 			tokenToNodeMap = CollectFeatures.indexTree(root);
 		}
 
-		// first two tokens have no analysis
-		analysis.setSize(2);
-		analysis.set(0, new TokenPositionAnalysis());
-		analysis.set(1, new TokenPositionAnalysis());
+		tokens.seek(0);
+		Token secondToken = tokens.LT(2);
+		String prefix = tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
+		output.append(prefix);
 
-		List<Token> realTokens = CollectFeatures.getRealTokens(tokens);
+		realTokens = CollectFeatures.getRealTokens(tokens);
 		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
-			processToken(tokenIndexInStream);
+			processToken(i, tokenIndexInStream);
 		}
 		return output.toString();
 	}
 
-	public void processToken(int i) {
-		CommonToken curToken = (CommonToken)tokens.get(i);
-
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-
+	public void processToken(int indexIntoRealTokens, int tokenIndexInStream) {
+		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
 		String tokText = curToken.getText();
 
-		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, doc, i, line, tabSize);
+		int[] features = CollectFeatures.getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
 		features[CollectFeatures.INDEX_PREV_END_COLUMN] = charPosInLine;
 
-//		int[] categories = classifier.classify(k, features, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
-		// compare prediction of newline against original, alert about any diffs
-		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
-		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
-
-		String newlineAnalysis =
-			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
-			                                        CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		String indentAnalysis =
-			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
-			                                       CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		String wsAnalysis =
-			wsClassifier.getPredictionAnalysis(k, features, corpus.injectWS,
-			                                   CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		String alignAnalysis =
-			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
-			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
-		TokenPositionAnalysis a =
-			new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
-		analysis.setSize(i+1);
-		analysis.set(i, a);
+		TokenPositionAnalysis tokenPositionAnalysis =
+			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNewline, alignWithPrevious, indent, ws);
+		analysis.setSize(tokenIndexInStream+1);
+		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
 		if ( injectNewline>0 ) {
 			output.append(Tool.newlines(injectNewline));
 			line++;
-			TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+			TerminalNode node = tokenToNodeMap.get(tokens.get(tokenIndexInStream));
 			ParserRuleContext parent = (ParserRuleContext)node.getParent();
 			int myIndex = 0;
 			ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingAtToken(parent, curToken);
@@ -159,7 +140,73 @@ public class Formatter {
 		curToken.setCharPositionInLine(charPosInLine);
 
 		// emit
+		int n = tokText.length();
+		tokenPositionAnalysis.charIndexStart = output.length();
+		tokenPositionAnalysis.charIndexStop = tokenPositionAnalysis.charIndexStart + n - 1;
 		output.append(tokText);
-		charPosInLine += tokText.length();
+		charPosInLine += n;
+	}
+
+	public TokenPositionAnalysis getTokenAnalysis(int[] features, int indexIntoRealTokens, int tokenIndexInStream,
+	                                              int injectNewline,
+	                                              int alignWithPrevious,
+	                                              int indent,
+	                                              int ws)
+	{
+		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
+		// compare prediction of newline against original, alert about any diffs
+		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
+		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
+
+		boolean failsafeTriggered = false;
+		if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
+			ws = 1;
+			failsafeTriggered = true;
+		}
+
+		boolean prevIsWS = prevToken.getType()==JavaLexer.WS;
+		int actualNL = Tool.count(prevToken.getText(), '\n');
+		int actualWS = Tool.count(prevToken.getText(), ' ');
+		int actualIndent = originalCurToken.getCharPositionInLine()-currentIndent;
+		boolean actualAlign = CollectFeatures.isAlignedWithFirstSibling(tokenToNodeMap, tokens, curToken);
+		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",
+		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
+		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
+		                                             originalCurToken.getLine(),
+		                                             alignWithPrevious==1?"align":"unaligned",
+		                                             actualAlign?"align":"unaligned");
+		String indentPredictionString = String.format("### line %d: predicted indent %d actual %s",
+		                                              originalCurToken.getLine(), indent, actualIndent);
+		String wsPredictionString = String.format("### line %d: predicted %d ' ' actual %s",
+		                                          originalCurToken.getLine(), ws, prevIsWS ? actualWS : "none");
+		if ( failsafeTriggered ) {
+			wsPredictionString += " (failsafe triggered)";
+		}
+
+
+		String newlineAnalysis = newlinePredictionString+"\n"+
+			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
+			                                        CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String indentAnalysis =indentPredictionString+"\n"+
+			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
+			                                       CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String wsAnalysis =wsPredictionString+"\n"+
+			wsClassifier.getPredictionAnalysis(k, features, corpus.injectWS,
+			                                   CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		String alignAnalysis =alignPredictionString+"\n"+
+			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
+			                                      CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
+	}
+
+	/** Do not join two words like "finaldouble" or numbers like "3double",
+	 *  "double3", "34", (3 and 4 are different tokens) etc...
+	 */
+	public static boolean cannotJoin(Token prevToken, Token curToken) {
+		String prevTokenText = prevToken.getText();
+		char prevLastChar = prevTokenText.charAt(prevTokenText.length()-1);
+		String curTokenText = curToken.getText();
+		char curFirstChar = curTokenText.charAt(0);
+		return Character.isLetterOrDigit(prevLastChar) && Character.isLetterOrDigit(curFirstChar);
 	}
 }

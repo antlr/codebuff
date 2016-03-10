@@ -176,41 +176,19 @@ public class CollectFeatures {
 
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
 
-		int precedingNL = 0; // how many lines to inject
-		if ( curToken.getLine() > prevToken.getLine() ) { // a newline must be injected
-			List<Token> wsTokensBeforeCurrentToken = tokens.getHiddenTokensToLeft(i);
-			for (Token t : wsTokensBeforeCurrentToken) {
-				precedingNL += Tool.count(t.getText(), '\n');
-			}
-//			System.out.println("^^^"+(prevToken.getCharPositionInLine()+prevToken.getText().length()));
-		}
+		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
 
 		this.injectNewlines.add(precedingNL);
 
-		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+		TerminalNode node = tokenToNodeMap.get(curToken);
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
-		int aligned = 0;
 
 		// at a newline, are we aligned with a prior sibling (in a list)?
-		int columnDelta = 0;
-		if ( precedingNL>0 && earliestAncestor!=null ) {
-			ParserRuleContext commonAncestor = earliestAncestor.getParent();
-			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-			if ( siblings.size()>1 ) {
-				ParserRuleContext firstSibling = siblings.get(0);
-				Token firstSiblingStartToken = firstSibling.getStart();
-				if ( firstSiblingStartToken!=curToken && // can't align with yourself
-					firstSiblingStartToken.getCharPositionInLine() == curToken.getCharPositionInLine() )
-				{
-					aligned = 1;
-//					System.out.println("aligned "+
-//						                   doc.parser.getRuleNames()[commonAncestor.getRuleIndex()]+
-//						                   " has "+siblings.size()+" "+doc.parser.getRuleNames()[earliestAncestor.getRuleIndex()]+" siblings");
-				}
-			}
-		}
+		boolean actualAlign = CollectFeatures.isAlignedWithFirstSibling(tokenToNodeMap, tokens, curToken);
+		int aligned = actualAlign ? 1 : 0;
 
+		int columnDelta = 0;
 		if ( precedingNL>0 && aligned!=1 ) {
 			columnDelta = curToken.getCharPositionInLine() - currentIndent;
 			currentIndent = curToken.getCharPositionInLine();
@@ -230,6 +208,42 @@ public class CollectFeatures {
 		this.alignWithPrevious.add(aligned);
 
 		this.features.add(features);
+	}
+
+	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
+		int precedingNL = 0;
+		List<Token> wsTokensBeforeCurrentToken = tokens.getHiddenTokensToLeft(i);
+		if ( wsTokensBeforeCurrentToken==null ) return 0;
+		for (Token t : wsTokensBeforeCurrentToken) {
+			precedingNL += Tool.count(t.getText(), '\n');
+		}
+		return precedingNL;
+	}
+
+	public static boolean isAlignedWithFirstSibling(Map<Token, TerminalNode> tokenToNodeMap,
+	                                                CommonTokenStream tokens,
+	                                                Token curToken)
+	{
+		TerminalNode node = tokenToNodeMap.get(curToken);
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
+		boolean aligned = false;
+
+		// at a newline, are we aligned with a prior sibling (in a list)?
+		int precedingNL = getPrecedingNL(tokens, curToken.getTokenIndex());
+		if ( precedingNL>0 && earliestAncestor!=null ) {
+			ParserRuleContext commonAncestor = earliestAncestor.getParent();
+			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+			if ( siblings.size()>1 ) {
+				ParserRuleContext firstSibling = siblings.get(0);
+				Token firstSiblingStartToken = firstSibling.getStart();
+				if ( firstSiblingStartToken!=curToken && // can't align with yourself
+					firstSiblingStartToken.getCharPositionInLine()==curToken.getCharPositionInLine() ) {
+					aligned = true;
+				}
+			}
+		}
+		return aligned;
 	}
 
 	/** Return number of steps to common ancestor whose first token is alignment anchor.
@@ -589,6 +603,16 @@ public class CollectFeatures {
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
 			buf.append(StringUtils.center(FEATURES[i].abbrevHeaderRows[1], displayWidth));
+		}
+		buf.append("\n");
+		for (int i=0; i<FEATURES.length; i++) {
+			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
+			if ( i>0 ) buf.append(" ");
+			if ( i==INDEX_TYPE ) {
+				buf.append("| "); // separate prev from current tokens
+			}
+			int displayWidth = FEATURES[i].type.displayWidth;
+			buf.append(StringUtils.center("("+((int)FEATURES[i].mismatchCost)+")", displayWidth));
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {

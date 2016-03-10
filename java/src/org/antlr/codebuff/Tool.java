@@ -11,7 +11,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.Vocabulary;
-import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -69,17 +68,14 @@ public class Tool {
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
 		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
-		testDoc.tokens.seek(0);
-		Token secondToken = testDoc.tokens.LT(2);
-		String prefix = testDoc.tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
 		testDoc.dumpIncorrectWS = false;
-		Tool.compare(testDoc, prefix+formattedOutput, JavaLexer.class);
+		Tool.compare(testDoc, formattedOutput, JavaLexer.class);
 		if (showFormattedResult) System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100*testDoc.getIncorrectWSRate());
 		if (showFormattedResult) System.out.println("misclassified: "+formatter.misclassified_NL);
 		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
 		if (showFormattedResult) System.out.println("Diff is "+d);
 
-		return new Pair<>(prefix+formattedOutput, analysisPerToken);
+		return new Pair<>(formattedOutput, analysisPerToken);
 	}
 
 	public static Corpus train(String rootDir,
