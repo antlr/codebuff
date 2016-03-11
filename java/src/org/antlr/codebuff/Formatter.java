@@ -52,7 +52,7 @@ public class Formatter {
 		indentClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INDENT);
 		alignClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
-		k = 3;
+		k = 1;
 		this.tabSize = tabSize;
 	}
 
@@ -96,6 +96,8 @@ public class Formatter {
 		int alignWithPrevious = alignClassifier.classify(k, features, corpus.alignWithPrevious, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+
+		alignWithPrevious = 0; // turn off alignment for now
 
 		TokenPositionAnalysis tokenPositionAnalysis =
 			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNewline, alignWithPrevious, indent, ws);

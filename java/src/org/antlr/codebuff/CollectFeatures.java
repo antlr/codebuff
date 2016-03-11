@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = .20; // 0.15;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = .50; // 0.15;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -189,10 +189,16 @@ public class CollectFeatures {
 		int aligned = actualAlign ? 1 : 0;
 
 		int columnDelta = 0;
-		if ( precedingNL>0 && aligned!=1 ) {
-			columnDelta = curToken.getCharPositionInLine() - currentIndent;
-			currentIndent = curToken.getCharPositionInLine();
-//			System.out.println("set current indent at "+curToken+" to "+currentIndent);
+		if ( precedingNL>0 ) {
+			if ( firstTokenOnLine!=null ) {
+				columnDelta = curToken.getCharPositionInLine() - firstTokenOnLine.getCharPositionInLine();
+			}
+			firstTokenOnLine = curToken;
+//			columnDelta = curToken.getCharPositionInLine() - currentIndent;
+			if ( aligned!=1 ) {
+				currentIndent = curToken.getCharPositionInLine();
+//			    System.out.println("set current indent at "+curToken+" to "+currentIndent);
+			}
 		}
 
 		int ws = 0;
