@@ -197,5 +197,8 @@ Just as we record token dependencies, we should introduce the notion of indent b
 
 | Features      | Prediction |
 | ------------- |:-------------:|
-|(statement,)| |
+|(root statement, sibling parExpression, siblin statement)| indent |
+
+For `if ( x ) x=y;` on one line, we'd train `same line`.
+
 ## Whitespace between tokens
