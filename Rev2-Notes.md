@@ -20,7 +20,7 @@ void f(int i, int j) {
 | Features      | Prediction |
 | ------------- |:-------------:|
 |(methodDeclaration, void, ID) | none (same line)|
-|(methodDeclaration, void, }) | align|
+|(methodDeclaration, void, }) | align tokens|
 |(methodDeclaration, ID, }) | none (diff line)|
 
 We could start with that modest goal. It would work for ANTLR too.
@@ -37,7 +37,7 @@ a : x
 | ------------- |:-------------:|
 |(parserRuleSpec, ID, :) | none (same line)|
 |(parserRuleSpec, ID, ;) | none (diff line)|
-|(parserRuleSpec, :, ;) | align|
+|(parserRuleSpec, :, ;) | align tokens|
 
 If everything were on one line, then there would be no alignment trained (or predicted, hopefully):
 
@@ -57,9 +57,9 @@ FROM
 
 | Features      | Prediction |
 | ------------- |:-------------:|
-|(selectStmt, SELECT, FROM) | align|
-|(selectStmt, SELECT, ;) | align|
-|(selectStmt, FROM, ;) | align|
+|(selectStmt, SELECT, FROM) | align tokens|
+|(selectStmt, SELECT, ;) | align tokens|
+|(selectStmt, FROM, ;) | align tokens|
 
 ## Lists of elements
 
@@ -91,7 +91,7 @@ We get:
 | ------------- |:-------------:|
 | (block,blockStatement) | aligned, \n before first el, indent first el, no sep |
 | | |
-| (block,{,}) | align |
+| (block,{,}) | align tokens |
 
 For the antlr example again, we have a problem:
 
@@ -179,7 +179,23 @@ switch ( x ) {
 | (statement,switchBlockStatementGroup/switchLabel) | aligned, \n before first el, no separator, indented |
 | | |
 | (statement,switch,{) | none (same line) |
-| (statement,switch,}) | align |
+| (statement,switch,}) | align tokens |
 | (statement,{,}) | none (diff line)|
 
+How do we know to indent `break;` in the switch? It's a special case of a list, that has one element.  Because we are analyzing the entire tree, we will no doubt recognize that `switchBlockStatementGroup` has a list of `blockStatement` but that requires that the corpus be much more exhaustive. Probably better to handle two children that are offset from each other. 
+
+It's the same problem as an IF with one statement:
+
+```java
+if ( x )
+	x=y;
+```
+
+<img src="images/if.png" width=300>
+
+Just as we record token dependencies, we should introduce the notion of indent between any two siblings.
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+|(statement,)| |
 ## Whitespace between tokens
