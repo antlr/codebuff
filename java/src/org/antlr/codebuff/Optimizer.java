@@ -10,6 +10,7 @@ public class Optimizer {
 	public static final long LEARNING_RATE = 10;
 	public static final double h = 0.1;
 	public static final double PRECISION = 0.0000001; // can't be too small as f(x)-f(xprev) prec is low
+	public static double globalMin = Double.MAX_VALUE;
 
 	/** Use a simple gradient descent approach to find weights */
 	/*
@@ -56,16 +57,48 @@ public class Optimizer {
 			double delta = newResult - oldResult;
 
 			System.out.printf("New Result: " + newResult + " New Parameter: ");
-			for (int i=0; i<x.length; i++) System.out.printf(x[i] + ", ");
-			System.out.println();
+			for (int i=0; i<x.length; i++) {
+				System.out.printf("%1.3f", x[i]);
+				if (i < x.length-1) System.out.printf(", ");
+				else System.out.println();
+			}
 
 			if ( delta >= 0 && Math.abs(delta) < precision ) {
-				System.out.println("Old Result: " + oldResult);
+				System.out.println("This round min result: " + oldResult);
 				break;
 			}
 			oldResult = newResult;
 		}
+		if (oldResult < globalMin) {
+			System.out.println("\n>>>> New global min result: " + oldResult);
+			globalMin = oldResult;
+			for (int i=0; i<x.length; i++) {
+				System.out.printf(String.valueOf(x[i]));
+				if (i < x.length-1) System.out.printf(", ");
+				else System.out.println();
+			}
+		}
 		return x;
+	}
+
+	public static void multiRoundMinimize(Function<double[], Double> f, double eta, double h, double precision, FeatureMetaData[] features, int maxRound) {
+		int n = features.length;
+		for (int i=0; i<features.length; i++) if (features[i] == FeatureMetaData.UNUSED) n--;
+
+		double[] startCombination = new double[n];
+
+		for (int i=0; i<maxRound; i++) {
+			for (int j=0; j<n; j++) startCombination[j] = Math.random();
+			System.out.println("\n\n>> Round " + (i+1) + " of " + maxRound);
+			System.out.printf("Start combination: ");
+			for (int j=0; j<startCombination.length; j++) {
+				System.out.printf("%1.3f", startCombination[j]);
+				if (j < startCombination.length-1) System.out.printf(", ");
+				else System.out.println();
+			}
+			minimize2(f, startCombination, eta, h, precision);
+		}
+		System.out.println("All finished");
 	}
 
 	// calculate finite difference for each parameter independently
@@ -73,13 +106,19 @@ public class Optimizer {
 		double[] x = Arrays.copyOf(x0, x0.length);
 		double oldValue = f.apply(x);
 		double[] finiteDifferences = new double[x.length];
+		System.out.printf("changed parameter: ");
+		boolean changed = false;
 		for (int i=0; i<x.length; i++) {
 			double[] newX = Arrays.copyOf(x, x.length);
 			newX[i] += h;
 			double newValue = f.apply(newX);
-			System.out.printf(i + ": " + (newValue - oldValue) + " | ");
+			if (newValue != oldValue) {
+				System.out.printf("%d : %1.3f | ",i, (newValue - oldValue));
+				changed = true;
+			}
 			finiteDifferences[i] = newValue - oldValue;
 		}
+		if (!changed) System.out.printf(" N/A ");
 		return finiteDifferences;
 	}
 
@@ -111,16 +150,15 @@ public class Optimizer {
 			testFileDir = args[1];
 		}
 		else {
-			corpusDir = "../samples/stringtemplate4/org/stringtemplate/v4/compiler/";
-			testFileDir = "../samples/stringtemplate4/org/stringtemplate/v4/compiler/";
+			corpusDir = "../samples/stringtemplate4/org/stringtemplate/v4/debug/";
+			testFileDir = "../samples/stringtemplate4/org/stringtemplate/v4/debug/";
 		}
 		Corpus corpus = Tool.train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
 
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
 
-		double[] originalParameters = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-		Tester t = new Tester(CollectFeatures.FEATURES_ALL, corpus, documents, tabSize);
-		minimize2(Tester::test, originalParameters, LEARNING_RATE, h, PRECISION);
+		Tester t = new Tester(CollectFeatures.FEATURES_INJECT_NL, corpus, documents, tabSize);
+		multiRoundMinimize(Tester::test, LEARNING_RATE, h, PRECISION, CollectFeatures.FEATURES_INJECT_NL, 5);
 	}
 }

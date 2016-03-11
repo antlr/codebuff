@@ -9,11 +9,13 @@ public class Tester {
 	private static Corpus corpus;
 	private static ArrayList<InputDocument> testDocs;
 	private static int tabSize;
+	private static FeatureMetaData[] originalFeatures;
 
-	public Tester(FeatureMetaData[] originalFeatures, Corpus c, ArrayList<InputDocument> docs, int tSize) {
+	public Tester(FeatureMetaData[] features, Corpus c, ArrayList<InputDocument> docs, int tSize) {
 		corpus = c;
 		testDocs = docs;
 		tabSize = tSize;
+		originalFeatures = features;
 
 //		System.out.println("\n=== Brute Force Parameters ===");
 //		System.out.printf("Each parameter try from %f to %f, step %f \n", minValueForParameter, maxValueForParameter, step);
@@ -26,7 +28,12 @@ public class Tester {
 	}
 
 	public static double test(double[] parameters) {
-		for (int i=0; i<parameters.length; i++) CollectFeatures.FEATURES_ALL[i].mismatchCost = parameters[i]; // should this ref originalFeatures
+		int j=0;
+		for (int i=0; i<parameters.length; i++) {
+			while (originalFeatures[j] == FeatureMetaData.UNUSED) j++;
+			originalFeatures[j].mismatchCost = parameters[i]; // should this ref originalFeatures
+			j++;
+		}
 		double validateResult = 0;
 		try {
 			validateResult = Tool.validate(corpus, testDocs, tabSize);
