@@ -15,7 +15,7 @@ void f(int i, int j) {
 }
 ```
 
-<img src="images/method-def.png" width=700>
+<img src="images/method-def.png" width=400>
 
 | Features      | Prediction |
 | ------------- |:-------------:|
@@ -39,7 +39,11 @@ a : x
 |(parserRuleSpec, ID, ;) | none|
 |(parserRuleSpec, :, ;) | align|
 
-If everything were on one line, then there would be no alignment trained (or predicted, hopefully).
+If everything were on one line, then there would be no alignment trained (or predicted, hopefully):
+
+```
+a : x | y ;
+```
 
 There could be multiple alignments. For example, with SQL, we might see three tokens aligned:
 
@@ -61,6 +65,27 @@ But, we would only detect the middle one if both `SELECT` and `FROM` were direct
 
 ### Lists of elements
 
+We not only have to line up certain tokens, but lists of elements are often aligned. There are three key elements:
+
+* Are the elements aligned or not
+* If aligned, are they aligned at the start of the elements or on a separator
+* Is the first element on a line by itself and indented or aligned with first token of subtree
+
+For the antlr example again:
+
+```
+a : x
+  | y
+  ;
+```
+
+we get
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+|(ruleAltList, labeledAlt) | aligned not indented|
+ 
+For Java, such as:
 
 ```java
 {
@@ -69,7 +94,15 @@ But, we would only detect the middle one if both `SELECT` and `FROM` were direct
 }
 ```
 
-<img src="images/method-body.png" width=700>
+<img src="images/method-body.png" width=400>
+
+We get:
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+| (block,blockStatement) | aligned, first indented |
+| | |
+| (block,{,}) | align |
 
 ### Indent
 
