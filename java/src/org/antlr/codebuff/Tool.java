@@ -646,6 +646,81 @@ public class Tool {
 		return ((double)doc.incorrectWhiteSpaceCount) / doc.allWhiteSpaceCount;
 	}
 
+
+	// it's a compare function but only focus on NL
+	// basically this function is copy and paste from compare function on above
+	public static double compareNL(InputDocument doc,
+								 String formatted,
+								 Class<? extends Lexer> lexerClass)
+		throws Exception
+	{
+		doc.allWhiteSpaceCount = 0;
+		doc.incorrectWhiteSpaceCount = 0;
+
+		String original = doc.content;
+
+		// Grammar must strip all but real tokens and whitespace (and put that on hidden channel)
+		CommonTokenStream original_tokens = tokenize(original, lexerClass);
+		CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+
+		// walk token streams and examine whitespace in between tokens
+		int i = 1;
+
+		while ( true ) {
+			Token ot = original_tokens.LT(i);
+			if ( ot==null || ot.getType()==Token.EOF ) break;
+			List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
+			String original_ws = tokenText(ows);
+
+			Token ft = formatted_tokens.LT(i);
+			if ( ft==null || ft.getType()==Token.EOF ) break;
+			List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
+			String formatted_ws = tokenText(fws);
+
+			if (original_ws.length() == 0) {
+				if (formatted_ws.length() != 0) {
+					if (count(formatted_ws, '\n') > 0) {
+						doc.incorrectWhiteSpaceCount++;
+
+						if (doc.dumpIncorrectWS) {
+							System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
+							Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+							System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
+						}
+					}
+				}
+			}
+			else {
+				if (count(original_ws, '\n') > 0) {
+					doc.allWhiteSpaceCount++;
+
+					if (formatted_ws.length() == 0) {
+						doc.incorrectWhiteSpaceCount++;
+
+						if (doc.dumpIncorrectWS) {
+							System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
+							Tool.printOriginalFilePiece(doc, (CommonToken) ot);
+							System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
+						}
+					}
+					else if (count(original_ws, '\n') != count(formatted_ws, '\n')) {
+						doc.incorrectWhiteSpaceCount++;
+
+						if (doc.dumpIncorrectWS) {
+							System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
+							Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+							System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
+							System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
+						}
+					}
+				}
+			}
+
+			i++;
+		}
+		return ((double)doc.incorrectWhiteSpaceCount) / doc.allWhiteSpaceCount;
+	}
+
 	public static String tokenText(List<Token> tokens) {
 		if ( tokens==null ) return "";
 		StringBuilder buf = new StringBuilder();
@@ -773,6 +848,7 @@ public class Tool {
 		System.out.println("^");
 	}
 
+
 	/** Given a corpus, format the given input documents and compute their document
 	 *  similarities with {@link #compare}.
 	 */
@@ -786,7 +862,7 @@ public class Tool {
 			String formattedDoc = results.a;
 			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
 			testDoc.dumpIncorrectWS = false;
-			double differenceRatio = compare(testDoc, formattedDoc, JavaLexer.class);
+			double differenceRatio = compareNL(testDoc, formattedDoc, JavaLexer.class);
 			testDoc.dumpIncorrectWS = dumpIncorrectWSOldValue;
 			differenceRatios.add(differenceRatio);
 		}
