@@ -1,12 +1,12 @@
 # CodeBuff Second implementation
 
-The first version looked at a window of tokens and rule context information to predict: injecting newlines, injecting whitespace, alignment, and indentation. It works surprisingly well but it makes no guarantees that things will line up properly. For example we had to add a new feature so that {...} had both curlies on the same line if the statements in the block were on the same line.
+*Document in progress*
 
-## Subtree patterns
+The first version looked at a window of tokens and rule context information to predict: injecting newlines, injecting whitespace, alignment, and indentation. It works surprisingly well but it makes no guarantees that things will line up properly. For example we had to add a new feature so that {...} had both curlies on the same line if the statements in the block were on the same line.
 
 The new approach is to look at subtree structures and identify the most common patterns.
 
-### Token dependencies
+## Token dependencies
 
 Here is an example where we want the `}` to line up with the `void`, but those tokens are in a subtree. On the other hand, we can always ask whether or not the last token for a subtree, `}` here, aligns with another token.
 
@@ -63,7 +63,7 @@ But, we would only detect the middle one if both `SELECT` and `FROM` were direct
 |(selectStmt, SELECT, ;) | align|
 |(selectStmt, FROM, ;) | align|
 
-### Lists of elements
+## Lists of elements
 
 We not only have to line up certain tokens, but lists of elements are often aligned. Lists can be defined in two ways:
 
@@ -75,40 +75,6 @@ Formatting lists has a few key patterns:
 * Are the elements aligned or not (first token of each element)
 * If aligned, are the elements first on line or is the separator first? This dictates whether or not the newline gets injected before or after the separator.
 * Is the first element on a line by itself? If so, indented?
-
-For the antlr example again:
-
-```
-a : x
-  | y		// the '|' is indented let's say not aligned
-  ;
-```
-
-we get
-
-| Features      | Prediction |
-| ------------- |:-------------:|
-|(ruleAltList, labeledAlt) | aligned, no \n before first el, sep first, indented|
-
-Here, `indented` means that each element is indented, except for perhaps the first one if it has no newline before it.
-
-I've seen people make rules like the following:
-
-```
-biggy :
-	x |
-	y |
-	z
-	;
-```
-
-we get
-
-| Features      | Prediction |
-| ------------- |:-------------:|
-|(ruleAltList, labeledAlt) | aligned, \n before first el, sep after, indented|
-
-*If things are not aligned then we assume they all go on the same line.*
 
 For Java, such as:
 
@@ -125,13 +91,76 @@ We get:
 
 | Features      | Prediction |
 | ------------- |:-------------:|
-| (block,blockStatement) | aligned, \n before first el, sep after, indented |
+| (block,blockStatement) | aligned, \n before first el, indent first el, no sep |
 | | |
 | (block,{,}) | align |
 
-### Indent
+For the antlr example again, we have a problem:
 
-Instead of keeping a current indent level and then having to worry about how much to dedent at the end of a list, it's probably better to think about this in a functional way. We inject newlines and indentation but that is all relative to the ancestors of the current tree. It could be that the current code block subtree is nested deeply within some function. All we care about is whether or not we indent the current block's first element.  We don't have to undo some `currentIndet` state variable to the indent level of the immediate ancestor.
+```
+a : x
+  | y		// the '|' is indented let's say; not aligned
+  ;
+```
+
+Let's assume we can only align the elements, not the separators, and can only align on first tokens of a line. If not aligned, we can still indent. So, we get
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+|(ruleAltList, labeledAlt) | unaligned, no \n before first el, \n before sep, indent following|
+
+Here, `indent following` means that each element is indented, except for perhaps the first one if it has no newline before it.
+
+I've seen people make rules like the following:
+
+```
+biggy :
+	x |
+	y |
+	z
+	;
+```
+
+we get
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+|(ruleAltList, labeledAlt) | aligned, \n before first el, indent first el, \n after sep|
+
+Looking at the formal method arg list above but with new formatting:
+
+```java
+void f(int i,
+       int j) 
+{
+}
+```
+
+we get
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+|(formalParameterList,formalParameter) | aligned, no \n before first el, \n after sep|
+
+```java
+void f(
+	int i,
+	int j) 
+{
+}
+```
+
+we get
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+|(formalParameterList,formalParameter) | aligned, \n before first el, indent first el, \n after sep|
+
+*If things are not aligned then we assume they all go on the same line.*
+
+## Indent
+
+Instead of keeping a current indent level and then having to worry about how much to dedent at the end of a list, it's probably better to think about this in a functional way. We inject newlines and indentation but that is all relative to the ancestors of the current tree. It could be that the current code block subtree is nested deeply within some function. All we care about is whether or not we indent the current block's first element.  We don't have to undo some `currentIndent` state variable to the indent level of the immediate ancestor.
 
 For example, in a Java switch statement, the dedent is like 3x on a `default` clause without statements:
  
@@ -154,3 +183,5 @@ switch ( x ) {
 | (statement,switch,{) | none (same line) |
 | (statement,switch,}) | align |
 | (statement,{,}) | none (diff line)|
+
+## Whitespace between tokens
