@@ -55,8 +55,6 @@ FROM
 ;
 ```
 
-But, we would only detect the middle one if both `SELECT` and `FROM` were direct siblings.
-
 | Features      | Prediction |
 | ------------- |:-------------:|
 |(selectStmt, SELECT, FROM) | align|
