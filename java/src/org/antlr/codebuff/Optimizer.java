@@ -11,6 +11,7 @@ public class Optimizer {
 	public static final double h = 0.1;
 	public static final double PRECISION = 0.0000001; // can't be too small as f(x)-f(xprev) prec is low
 	public static double globalMin = Double.MAX_VALUE;
+	public static double[] globalBestCombination;
 
 	/** Use a simple gradient descent approach to find weights */
 	/*
@@ -72,6 +73,7 @@ public class Optimizer {
 		if (oldResult < globalMin) {
 			System.out.println("\n>>>> New global min result: " + oldResult);
 			globalMin = oldResult;
+			globalBestCombination = Arrays.copyOf(x, x.length);
 			for (int i=0; i<x.length; i++) {
 				System.out.printf(String.valueOf(x[i]));
 				if (i < x.length-1) System.out.printf(", ");
@@ -98,7 +100,14 @@ public class Optimizer {
 			}
 			minimize2(f, startCombination, eta, h, precision);
 		}
-		System.out.println("All finished");
+		System.out.println("\n\n>>>>>> All finished");
+		System.out.println("Final result: " + globalMin);
+		System.out.printf("Best combination: ");
+		for (int i=0; i<globalBestCombination.length; i++) {
+			System.out.printf(String.valueOf(globalBestCombination[i]));
+			if (i < globalBestCombination.length-1) System.out.printf(", ");
+			else System.out.println();
+		}
 	}
 
 	// calculate finite difference for each parameter independently
