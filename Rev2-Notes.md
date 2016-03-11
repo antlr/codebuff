@@ -19,9 +19,9 @@ void f(int i, int j) {
 
 | Features      | Prediction |
 | ------------- |:-------------:|
-|(methodDeclaration, void, ID) | none|
+|(methodDeclaration, void, ID) | none (same line)|
 |(methodDeclaration, void, }) | align|
-|(methodDeclaration, ID, }) | none|
+|(methodDeclaration, ID, }) | none (diff line)|
 
 We could start with that modest goal. It would work for ANTLR too.
 
@@ -35,8 +35,8 @@ a : x
 
 | Features      | Prediction |
 | ------------- |:-------------:|
-|(parserRuleSpec, ID, :) | none|
-|(parserRuleSpec, ID, ;) | none|
+|(parserRuleSpec, ID, :) | none (same line)|
+|(parserRuleSpec, ID, ;) | none (diff line)|
 |(parserRuleSpec, :, ;) | align|
 
 If everything were on one line, then there would be no alignment trained (or predicted, hopefully):
@@ -65,17 +65,22 @@ But, we would only detect the middle one if both `SELECT` and `FROM` were direct
 
 ### Lists of elements
 
-We not only have to line up certain tokens, but lists of elements are often aligned. There are three key elements:
+We not only have to line up certain tokens, but lists of elements are often aligned. Lists can be defined in two ways:
 
-* Are the elements aligned or not
-* If aligned, are they aligned at the start of the elements or on a separator
-* Is the first element on a line by itself and indented or aligned with first token of subtree
+* Direct siblings with the same rule name
+* First token of direct siblings are aligned (`switch` subtrees are `statement`s with `switchBlockStatementGroup` for cases and `switchLabel` for `default` so they have different names but first tokens are aligned)
+
+Formatting lists has a few key patterns:
+
+* Are the elements aligned or not (first token of each element)
+* If aligned, are the elements first on line or is the separator first? This dictates whether or not the newline gets injected before or after the separator.
+* Is the first element on a line by itself? If so, indented?
 
 For the antlr example again:
 
 ```
 a : x
-  | y
+  | y		// the '|' is indented let's say not aligned
   ;
 ```
 
@@ -83,8 +88,28 @@ we get
 
 | Features      | Prediction |
 | ------------- |:-------------:|
-|(ruleAltList, labeledAlt) | aligned not indented|
- 
+|(ruleAltList, labeledAlt) | aligned, no \n before first el, sep first, indented|
+
+Here, `indented` means that each element is indented, except for perhaps the first one if it has no newline before it.
+
+I've seen people make rules like the following:
+
+```
+biggy :
+	x |
+	y |
+	z
+	;
+```
+
+we get
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+|(ruleAltList, labeledAlt) | aligned, \n before first el, sep after, indented|
+
+*If things are not aligned then we assume they all go on the same line.*
+
 For Java, such as:
 
 ```java
@@ -100,12 +125,16 @@ We get:
 
 | Features      | Prediction |
 | ------------- |:-------------:|
-| (block,blockStatement) | aligned, first indented |
+| (block,blockStatement) | aligned, \n before first el, sep after, indented |
 | | |
 | (block,{,}) | align |
 
 ### Indent
 
+Instead of keeping a current indent level and then having to worry about how much to dedent at the end of a list, it's probably better to think about this in a functional way. We inject newlines and indentation but that is all relative to the ancestors of the current tree. It could be that the current code block subtree is nested deeply within some function. All we care about is whether or not we indent the current block's first element.  We don't have to undo some `currentIndet` state variable to the indent level of the immediate ancestor.
+
+For example, in a Java switch statement, the dedent is like 3x on a `default` clause without statements:
+ 
 ```java
 switch ( x ) {
 	case 0 :
@@ -118,3 +147,10 @@ switch ( x ) {
 
 <img src="images/switch.png" width=800>
 
+| Features      | Prediction |
+| ------------- |:-------------:|
+| (statement,switchBlockStatementGroup/switchLabel) | aligned, \n before first el, no separator, indented |
+| | |
+| (statement,switch,{) | none (same line) |
+| (statement,switch,}) | align |
+| (statement,{,}) | none (diff line)|
