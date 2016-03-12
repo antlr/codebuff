@@ -96,6 +96,10 @@ public class Formatter {
 		int indent = indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 
+		if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
+			ws = 1;
+		}
+
 		TokenPositionAnalysis tokenPositionAnalysis =
 			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNewline, alignWithPrevious, indent, ws);
 		analysis.setSize(tokenIndexInStream+1);
