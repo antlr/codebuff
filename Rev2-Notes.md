@@ -4,18 +4,59 @@
 
 The first version looked at a window of tokens and rule context information to predict: injecting newlines, injecting whitespace, alignment, and indentation. It works surprisingly well but it makes no guarantees that things will line up properly. For example we had to add a new feature so that {...} had both curlies on the same line if the statements in the block were on the same line.
 
-The new approach is to look at subtree structures and identify the most common patterns.
+The new approach is to look at subtree structures and identify the most common patterns. The idea is to figure out what whitespace, if any, to inject in between siblings of a parse subtree. As we walk down the tree, we have `currentColumn` information. We process each subtree after processing all of its children, so that we have information about whether lists got broken across lines etc.
 
 ## Token dependencies
 
-Here is an example where we want the `}` to line up with the `void`, but those tokens are in a subtree. On the other hand, we can always ask whether or not the last token for a subtree, `}` here, aligns with another token.
+Here is a simple java method definition:
 
 ```java
 void f(int i, int j) {
 }
 ```
 
-<img src="images/method-def.png" width=400>
+and associated parse tree:
+ 
+<img src="images/method-def.png" width=500>
+
+The parentheses around the parameter list are codependent and the decisions to inject white space after the `(` and before the `)` often depend on whether the `formalParameterList` child gets split across multiple lines. In this case, the parameters are all on a single line so we might train:
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+| (root=formalParameters,`(`, formalParameterList, formalParameterList-same-line) | none |
+| (root=formalParameters, formalParameterList, formalParameterList-same-line, `)`) | none |
+
+If we decide to split the parameters across lines, it would not force white space before and after the parentheses; e.g.,
+
+```java
+void f(int i,
+       int j) {
+}
+```
+
+But, we might see examples like this:
+
+```java
+void f(
+	int i,
+	int j
+) {
+}
+```
+
+| Features      | Prediction |
+| ------------- |:-------------:|
+| (root=formalParameters,`(`, formalParameterList, formalParameterList-split-lines) | inject \n, indent |
+| (root=formalParameters, formalParameterList, formalParameterList-split-lines, `)`) | inject \n, no indent |
+
+When processing the `formalParameterList` child, we only decided to align but did not make the decision to indent. That is the decision for `formalParameters`.  We treat the output of `formalParameterList` almost like a big character.
+
+This implies that `formalParameterList` does not know a precise starting column. We would feed it the column of the `(` for it to make a decision, but then we might indent it. That implies that we don't get a string back but rather an `V` (BOX terminology for vertical alignment) operator on that child.
+
+old stuff:
+
+Here is an example where we want the `}` to line up with the `void`, but those tokens are in a subtree. On the other hand, we can always ask whether or not the last token for a subtree, `}` here, aligns with another token.
+
 
 | Features      | Prediction |
 | ------------- |:-------------:|
@@ -83,7 +124,7 @@ For Java, such as:
 }
 ```
 
-<img src="images/method-body.png" width=400>
+<img src="images/method-body.png" width=500>
 
 We get:
 
