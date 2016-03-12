@@ -175,7 +175,7 @@ public class Tool {
 		doc.injectNewlines = collector.getInjectNewlines();
 		doc.injectWS = collector.getInjectWS();
 		doc.indent = collector.getIndent();
-		doc.alignWithPrevious = collector.getAlignWithPrevious();
+		doc.alignWithPrevious = collector.getAlign();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
@@ -373,14 +373,14 @@ public class Tool {
 					count += featureTypes[i].mismatchCost;
 				}
 			}
-			else if ( featureTypes[i].type==FeatureType.COL ) {
-				double Asigmoid = sigmoid(A[i], 80);
-				double Bsigmoid = sigmoid(B[i], 80);
-//				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
-//					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
-//				}
-				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
-			}
+//			else if ( featureTypes[i].type==FeatureType.COL ) {
+//				double Asigmoid = sigmoid(A[i], 80);
+//				double Bsigmoid = sigmoid(B[i], 80);
+////				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
+////					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
+////				}
+//				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
+//			}
 		}
 		return count;
 	}

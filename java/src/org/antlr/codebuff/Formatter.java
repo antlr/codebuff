@@ -51,7 +51,8 @@ public class Formatter {
 		wsClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INJECT_WS);
 		indentClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_INDENT);
 		alignClassifier = new CodekNNClassifier(corpus, CollectFeatures.FEATURES_ALIGN);
-		k = (int)Math.sqrt(corpus.X.size());
+//		k = (int)Math.sqrt(corpus.X.size());
+		k = 5;
 		this.tabSize = tabSize;
 	}
 
@@ -111,13 +112,13 @@ public class Formatter {
 			TerminalNode node = tokenToNodeMap.get(tokens.get(tokenIndexInStream));
 			ParserRuleContext parent = (ParserRuleContext)node.getParent();
 			int myIndex = 0;
-			ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingAtToken(parent, curToken);
+			ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingWithToken(parent, curToken);
 			if ( earliestAncestor!=null ) {
 				ParserRuleContext commonAncestor = earliestAncestor.getParent();
 				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
 				myIndex = siblings.indexOf(earliestAncestor);
 			}
-			if ( myIndex>0 && alignWithPrevious>0 ) { // align with first sibling's start token
+			if ( false ) { //if ( myIndex>0 && alignWithPrevious>0 ) { // align with first sibling's start token
 				ParserRuleContext commonAncestor = earliestAncestor.getParent();
 				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
 				ParserRuleContext firstSibling = siblings.get(0);
@@ -172,7 +173,7 @@ public class Formatter {
 		int actualNL = Tool.count(prevToken.getText(), '\n');
 		int actualWS = Tool.count(prevToken.getText(), ' ');
 		int actualIndent = originalCurToken.getCharPositionInLine()-currentIndent;
-		boolean actualAlign = CollectFeatures.isAlignedWithFirstSibling(tokenToNodeMap, tokens, curToken);
+		boolean actualAlign = CollectFeatures.isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken);
 		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",
 		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
 		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
