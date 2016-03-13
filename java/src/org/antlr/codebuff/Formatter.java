@@ -74,7 +74,7 @@ public class Formatter {
 		indentClassifier = new CodekNNClassifier(corpus, FEATURES_INDENT);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
-		k = 7;
+		k = 11;
 		this.tabSize = tabSize;
 	}
 
