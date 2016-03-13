@@ -19,7 +19,6 @@ import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_PAIR;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
 import static org.antlr.codebuff.CollectFeatures.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
-import static org.antlr.codebuff.CollectFeatures.FEATURES_INDENT;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_NL;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
@@ -49,7 +48,6 @@ public class Formatter {
 
 	protected CodekNNClassifier newlineClassifier;
 	protected CodekNNClassifier wsClassifier;
-	protected CodekNNClassifier indentClassifier;
 	protected CodekNNClassifier alignClassifier;
 	protected int k;
 
@@ -71,7 +69,6 @@ public class Formatter {
 		Tool.wipeLineAndPositionInfo(tokens);
 		newlineClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_NL);
 		wsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
-		indentClassifier = new CodekNNClassifier(corpus, FEATURES_INDENT);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
 		k = 11;
@@ -300,13 +297,10 @@ public class Formatter {
 		String alignAnalysis =alignPredictionString+"\n"+
 			alignClassifier.getPredictionAnalysis(doc, k, features, corpus.align,
 			                                      MAX_CONTEXT_DIFF_THRESHOLD);
-		String indentAnalysis =indentPredictionString+"\n"+
-			indentClassifier.getPredictionAnalysis(doc, k, features, corpus.indent,
-			                                       MAX_CONTEXT_DIFF_THRESHOLD);
 		String wsAnalysis =wsPredictionString+"\n"+
 			wsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWS,
 			                                   MAX_CONTEXT_DIFF_THRESHOLD);
-		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
+		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, wsAnalysis);
 	}
 
 	/** Do not join two words like "finaldouble" or numbers like "3double",

@@ -5,15 +5,13 @@ public class TokenPositionAnalysis {
 	public int charIndexStop; // stop index (inclusive)
 	public String newline = "n/a";
 	public String ws = "n/a";
-	public String indent = "n/a";
 	public String align = "n/a";
 
 	public TokenPositionAnalysis() {
 	}
 
-	public TokenPositionAnalysis(String newline, String align, String indent, String ws) {
+	public TokenPositionAnalysis(String newline, String align, String ws) {
 		this.align = align;
-		this.indent = indent;
 		this.newline = newline;
 		this.ws = ws;
 	}

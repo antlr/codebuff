@@ -103,7 +103,6 @@ public abstract class kNNClassifier {
 		HashBag<Integer> votes = getVotesBag(kNN, k, unknown, Y);
 
 		StringBuilder buf = new StringBuilder();
-		InputDocument firstDoc = corpus.documents.get(0); // pick any doc to get parser
 		buf.append(CollectFeatures.featureNameHeader(FEATURES));
 		buf.append(CollectFeatures._toString(FEATURES, doc, unknown)+"->"+votes);
 		buf.append("\n");
