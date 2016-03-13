@@ -16,7 +16,7 @@ public class Neighbor {
 	public String toString(FeatureMetaData[] FEATURES, List<Integer> Y) {
 		int[] X = corpus.X.get(corpusVectorIndex);
 		InputDocument doc = corpus.documents.get(corpusVectorIndex);
-		String features = CollectFeatures._toString(FEATURES, doc.parser.getVocabulary(), doc.parser.getRuleNames(), X);
+		String features = CollectFeatures._toString(FEATURES, doc, X);
 		int line = CollectFeatures.getInfoLine(X);
 		String lineText = doc.getLine(line);
 		int col = X[CollectFeatures.INDEX_INFO_CHARPOS];

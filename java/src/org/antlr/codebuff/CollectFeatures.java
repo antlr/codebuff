@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +37,7 @@ public class CollectFeatures {
 	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 4;
 	public static final int CAT_ALIGN_WITH_PAIR = 5;
 
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.35;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.6;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -46,15 +47,16 @@ public class CollectFeatures {
 	public static final int INDEX_TYPE              = 5;
 	public static final int INDEX_FIRST_EL_OF_LIST  = 6;
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 7;
-	public static final int INDEX_RULE              = 8; // what rule are we in?
-	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 9;
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 10;
-	public static final int INDEX_NEXT_TYPE         = 11;
-	public static final int INDEX_INFO_FILE         = 12;
-	public static final int INDEX_INFO_LINE         = 13;
-	public static final int INDEX_INFO_CHARPOS      = 14;
+	public static final int INDEX_FIRST_ON_LINE		= 8; // a \n right before this token?
+	public static final int INDEX_RULE              = 9; // what rule are we in?
+	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 10;
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 11;
+	public static final int INDEX_NEXT_TYPE         = 12;
+	public static final int INDEX_INFO_FILE         = 13;
+	public static final int INDEX_INFO_LINE         = 14;
+	public static final int INDEX_INFO_CHARPOS      = 15;
 
-	public static final int NUM_FEATURES            = 14;
+	public static final int NUM_FEATURES            = 15;
 
 	public static FeatureMetaData[] FEATURES_INJECT_NL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -65,6 +67,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
@@ -81,8 +84,10 @@ public class CollectFeatures {
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
+//		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
 		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
@@ -101,6 +106,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
 		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
@@ -120,6 +126,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 3),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
@@ -138,6 +145,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
@@ -484,6 +492,7 @@ public class CollectFeatures {
 
 		boolean startOfList = isFirstSiblingOfList(tokenToNodeMap, curToken);
 
+		boolean curTokenStartsNewLine = window.get(2).getLine()>window.get(1).getLine();
 		int[] features = {
 			window.get(0).getType(),
 
@@ -495,6 +504,7 @@ public class CollectFeatures {
 			window.get(2).getType(), // LT(1)
 			startOfList ? 1 : 0,
 			matchingSymbolOnDiffLine,
+			curTokenStartsNewLine ? 1 : 0,
 			curTokensParentRuleIndex,
 			earliestRightAncestorRuleIndex,
 			earliestLeftAncestorRuleIndex,
@@ -640,7 +650,9 @@ public class CollectFeatures {
 		return indent;
 	}
 
-	public static String _toString(FeatureMetaData[] FEATURES, Vocabulary v, String[] ruleNames, int[] features) {
+	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {
+		Vocabulary v = doc.parser.getVocabulary();
+		String[] ruleNames = doc.parser.getRuleNames();
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
@@ -678,11 +690,13 @@ public class CollectFeatures {
 					}
 					break;
 				case INFO_FILE:
-					buf.append(Tool.sequence(displayWidth, " "));
+					String fname = new File(doc.fileName).getName();
+					fname = StringUtils.abbreviate(fname, displayWidth);
+					buf.append(String.format("%"+displayWidth+"s", fname));
 					break;
 				case BOOL :
 					if ( features[i]!=-1 ) {
-						buf.append(features[i] == 1 ? "true" : "false");
+						buf.append(features[i] == 1 ? "true " : "false");
 					}
 					else {
 						buf.append(Tool.sequence(displayWidth, " "));

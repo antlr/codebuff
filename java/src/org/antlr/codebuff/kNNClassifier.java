@@ -43,7 +43,7 @@ public abstract class kNNClassifier {
 		votesBag = getVotesBag(kNN, k, unknown, corpus.indent);
 		categories[Corpus.INDEX_FEATURE_INDENT] = getCategoryWithMostVotes(votesBag);
 
-		votesBag = getVotesBag(kNN, k, unknown, corpus.alignWithPrevious);
+		votesBag = getVotesBag(kNN, k, unknown, corpus.align);
 		categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS] = getCategoryWithMostVotes(votesBag);
 
 		return categories;
@@ -85,7 +85,7 @@ public abstract class kNNClassifier {
 		if ( dumpVotes && kNN.length>0 ) {
 			System.out.print(CollectFeatures.featureNameHeader(FEATURES));
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
-			System.out.println(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(), firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+			System.out.println(CollectFeatures._toString(FEATURES, firstDoc, unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
 			StringBuilder buf = new StringBuilder();
 			for (int i = 0; i<kNN.length; i++) {
@@ -105,8 +105,7 @@ public abstract class kNNClassifier {
 		StringBuilder buf = new StringBuilder();
 		InputDocument firstDoc = corpus.documents.get(0); // pick any doc to get parser
 		buf.append(CollectFeatures.featureNameHeader(FEATURES));
-		buf.append(CollectFeatures._toString(FEATURES, firstDoc.parser.getVocabulary(),
-		                                     firstDoc.parser.getRuleNames(), unknown)+"->"+votes);
+		buf.append(CollectFeatures._toString(FEATURES, firstDoc, unknown)+"->"+votes);
 		buf.append("\n");
 		if ( kNN.length>0 ) {
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));

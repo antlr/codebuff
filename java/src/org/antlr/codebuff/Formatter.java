@@ -22,6 +22,7 @@ import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INDENT;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_NL;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
+import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_END_COLUMN;
 import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorEndingWithToken;
@@ -122,7 +123,11 @@ public class Formatter {
 		features[INDEX_PREV_END_COLUMN] = charPosInLine;
 
 		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, MAX_CONTEXT_DIFF_THRESHOLD);
-		int align = alignClassifier.classify(k, features, corpus.alignWithPrevious, MAX_CONTEXT_DIFF_THRESHOLD);
+
+		// getNodeFeatures() also doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
+		features[INDEX_FIRST_ON_LINE] = injectNewline; // use \n prediction to match exemplars for alignment
+
+		int align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
 		int indent = 0;
 		//indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, MAX_CONTEXT_DIFF_THRESHOLD);
@@ -293,7 +298,7 @@ public class Formatter {
 			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
 			                                        MAX_CONTEXT_DIFF_THRESHOLD);
 		String alignAnalysis =alignPredictionString+"\n"+
-			alignClassifier.getPredictionAnalysis(k, features, corpus.alignWithPrevious,
+			alignClassifier.getPredictionAnalysis(k, features, corpus.align,
 			                                      MAX_CONTEXT_DIFF_THRESHOLD);
 		String indentAnalysis =indentPredictionString+"\n"+
 			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
