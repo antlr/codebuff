@@ -98,14 +98,14 @@ public abstract class kNNClassifier {
 		return votes;
 	}
 
-	public String getPredictionAnalysis(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+	public String getPredictionAnalysis(InputDocument doc, int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
 		HashBag<Integer> votes = getVotesBag(kNN, k, unknown, Y);
 
 		StringBuilder buf = new StringBuilder();
 		InputDocument firstDoc = corpus.documents.get(0); // pick any doc to get parser
 		buf.append(CollectFeatures.featureNameHeader(FEATURES));
-		buf.append(CollectFeatures._toString(FEATURES, firstDoc, unknown)+"->"+votes);
+		buf.append(CollectFeatures._toString(FEATURES, doc, unknown)+"->"+votes);
 		buf.append("\n");
 		if ( kNN.length>0 ) {
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));

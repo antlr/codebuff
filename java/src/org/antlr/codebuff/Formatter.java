@@ -295,16 +295,16 @@ public class Formatter {
 
 
 		String newlineAnalysis = newlinePredictionString+"\n"+
-			newlineClassifier.getPredictionAnalysis(k, features, corpus.injectNewlines,
+			newlineClassifier.getPredictionAnalysis(doc, k, features, corpus.injectNewlines,
 			                                        MAX_CONTEXT_DIFF_THRESHOLD);
 		String alignAnalysis =alignPredictionString+"\n"+
-			alignClassifier.getPredictionAnalysis(k, features, corpus.align,
+			alignClassifier.getPredictionAnalysis(doc, k, features, corpus.align,
 			                                      MAX_CONTEXT_DIFF_THRESHOLD);
 		String indentAnalysis =indentPredictionString+"\n"+
-			indentClassifier.getPredictionAnalysis(k, features, corpus.indent,
+			indentClassifier.getPredictionAnalysis(doc, k, features, corpus.indent,
 			                                       MAX_CONTEXT_DIFF_THRESHOLD);
 		String wsAnalysis =wsPredictionString+"\n"+
-			wsClassifier.getPredictionAnalysis(k, features, corpus.injectWS,
+			wsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWS,
 			                                   MAX_CONTEXT_DIFF_THRESHOLD);
 		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, indentAnalysis, wsAnalysis);
 	}

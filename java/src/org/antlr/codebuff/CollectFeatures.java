@@ -511,7 +511,7 @@ public class CollectFeatures {
 			window.get(3).getType(),
 
 			// info
-			0, // file
+			0, // dummy; we don't store file index into feature vector
 			curToken.getLine(),
 			curToken.getCharPositionInLine()
 		};
