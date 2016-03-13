@@ -1016,9 +1016,9 @@ WS  :  [ \t\r\n\u000C]+ -> channel(HIDDEN) // CodeBuff needs to see all whitespa
     ;
 
 COMMENT
-    :   '/*' .*? '*/' -> skip
+    :   '/*' .*? '*/' -> channel(HIDDEN)
     ;
 
 LINE_COMMENT
-    :   '//' ~[\r\n]* -> skip
+    :   '//' ~[\r\n]* -> channel(HIDDEN)
     ;

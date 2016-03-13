@@ -116,7 +116,7 @@ public class GUIController {
 				}
 				scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
 				scope.alignConsole.setText(analysis!=null ? analysis.align : "");
-				scope.indentConsole.setText(analysis!=null ? analysis.indent : "");
+				scope.indentConsole.setText("not used");
 				scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
 				scope.injectNLConsole.setCaretPosition(0);
 				scope.alignConsole.setCaretPosition(0);

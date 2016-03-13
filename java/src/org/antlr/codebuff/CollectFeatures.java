@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +24,20 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.15;
+	// Feature values for pair on diff lines feature
+	public static final int NOT_PAIR = -1;
+	public static final int PAIR_ON_SAME_LINE = 0;
+	public static final int PAIR_ON_DIFF_LINE = 1;
+
+	// Categories for alignment/indentation
+	public static final int CAT_NO_ALIGNMENT = 0;
+	public static final int CAT_INDENT = 1;
+	public static final int CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN = 2;
+	public static final int CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN = 3;
+	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 4;
+	public static final int CAT_ALIGN_WITH_PAIR = 5;
+
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.6;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -31,15 +45,18 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_END_COLUMN   = 3;
 	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 4;
 	public static final int INDEX_TYPE              = 5;
-	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 6;
-	public static final int INDEX_RULE              = 7; // what rule are we in?
-	public static final int INDEX_EARLIEST_ANCESTOR = 8;
-	public static final int INDEX_NEXT_TYPE         = 9;
-	public static final int INDEX_INFO_FILE         = 10;
-	public static final int INDEX_INFO_LINE         = 11;
-	public static final int INDEX_INFO_CHARPOS      = 12;
+	public static final int INDEX_FIRST_EL_OF_LIST  = 6;
+	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 7;
+	public static final int INDEX_FIRST_ON_LINE		= 8; // a \n right before this token?
+	public static final int INDEX_RULE              = 9; // what rule are we in?
+	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 10;
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 11;
+	public static final int INDEX_NEXT_TYPE         = 12;
+	public static final int INDEX_INFO_FILE         = 13;
+	public static final int INDEX_INFO_LINE         = 14;
+	public static final int INDEX_INFO_CHARPOS      = 15;
 
-	public static final int NUM_FEATURES            = 12;
+	public static final int NUM_FEATURES            = 15;
 
 	public static FeatureMetaData[] FEATURES_INJECT_NL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -48,10 +65,53 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+	};
+
+	public static FeatureMetaData[] FEATURES_ALIGN = {
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+//		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
+		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+	};
+
+	public static FeatureMetaData[] FEATURES_INDENT = {
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
+		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+//		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -65,39 +125,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 3),
 		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
-		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
-		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
-		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
-	};
-
-	public static FeatureMetaData[] FEATURES_INDENT = {
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
-		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
-		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
-		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
-		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
-	};
-
-	public static FeatureMetaData[] FEATURES_ALIGN = {
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
-		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
@@ -112,8 +143,11 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"LT(-1)", "end col"}, 0),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
@@ -132,9 +166,7 @@ public class CollectFeatures {
 	protected List<Integer> injectNewlines = new ArrayList<>();
 	protected List<Integer> injectWS = new ArrayList<>();
 	protected List<Integer> indent = new ArrayList<>();
-	/** steps to common ancestor whose first token is alignment anchor */
-//	protected List<Integer> levelsToCommonAncestor = new ArrayList<>();
-	protected List<Integer> alignWithPrevious = new ArrayList<>();
+	protected List<Integer> align = new ArrayList<>();
 
 	protected Token firstTokenOnLine = null;
 
@@ -173,6 +205,7 @@ public class CollectFeatures {
 
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 		Token prevToken = tokens.LT(-1);
+		TerminalNode node = tokenToNodeMap.get(curToken);
 
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
 
@@ -180,19 +213,54 @@ public class CollectFeatures {
 
 		this.injectNewlines.add(precedingNL);
 
-		TerminalNode node = tokenToNodeMap.get(curToken);
-		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
-
-		// at a newline, are we aligned with a prior sibling (in a list)?
-		boolean actualAlign = CollectFeatures.isAlignedWithFirstSibling(tokenToNodeMap, tokens, curToken);
-		int aligned = actualAlign ? 1 : 0;
-
 		int columnDelta = 0;
-		if ( precedingNL>0 && aligned!=1 ) {
+		if ( precedingNL>0 ) { // && aligned!=1 ) {
 			columnDelta = curToken.getCharPositionInLine() - currentIndent;
 			currentIndent = curToken.getCharPositionInLine();
-//			System.out.println("set current indent at "+curToken+" to "+currentIndent);
+		}
+
+		int aligned = CAT_NO_ALIGNMENT ;
+		if ( precedingNL>0 ) {
+			// at a newline, are we aligned with a prior sibling (in a list) etc...
+			if ( CollectFeatures.isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ) {
+				aligned = CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
+			}
+			else {
+				TerminalNode matchingLeftSymbol = getMatchingLeftSymbol(doc, node);
+				if ( matchingLeftSymbol!=null &&
+					matchingLeftSymbol.getSymbol().getCharPositionInLine()==curToken.getCharPositionInLine() ) {
+					aligned = CAT_ALIGN_WITH_PAIR;
+				}
+				else {
+					ParserRuleContext parent = (ParserRuleContext)node.getParent();
+					ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
+					Token earliestAncestorRightStart = null;
+					if ( earliestRightAncestor!=null ) {
+						earliestAncestorRightStart = earliestRightAncestor.getStart();
+					}
+					if ( earliestAncestorRightStart!=null &&
+						 earliestAncestorRightStart!=curToken &&
+						 earliestAncestorRightStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+					{
+						aligned = CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN;
+					}
+					else {
+						Token earliestAncestorsParentStart = null;
+						if ( earliestRightAncestor!=null && earliestRightAncestor.getParent()!=null ) {
+							earliestAncestorsParentStart = earliestRightAncestor.getParent().getStart();
+						}
+						if ( earliestAncestorsParentStart!=null &&
+							 earliestAncestorsParentStart!=curToken &&
+							 earliestAncestorsParentStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+						{
+							aligned = CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
+						}
+						else if ( columnDelta>0 ) {
+							aligned = CAT_INDENT; // indent standard amount
+						}
+					}
+				}
+			}
 		}
 
 		int ws = 0;
@@ -205,7 +273,7 @@ public class CollectFeatures {
 
 		this.injectWS.add(ws); // likely negative if precedingNL
 
-		this.alignWithPrevious.add(aligned);
+		this.align.add(aligned);
 
 		this.features.add(features);
 	}
@@ -220,13 +288,13 @@ public class CollectFeatures {
 		return precedingNL;
 	}
 
-	public static boolean isAlignedWithFirstSibling(Map<Token, TerminalNode> tokenToNodeMap,
-	                                                CommonTokenStream tokens,
-	                                                Token curToken)
+	public static boolean isAlignedWithFirstSiblingOfList(Map<Token, TerminalNode> tokenToNodeMap,
+														  CommonTokenStream tokens,
+														  Token curToken)
 	{
 		TerminalNode node = tokenToNodeMap.get(curToken);
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-		ParserRuleContext earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
+		ParserRuleContext earliestAncestor = earliestAncestorStartingWithToken(parent, curToken);
 		boolean aligned = false;
 
 		// at a newline, are we aligned with a prior sibling (in a list)?
@@ -246,6 +314,47 @@ public class CollectFeatures {
 		return aligned;
 	}
 
+	/** Return list of sibling if curToken's ancestor is in a list.
+	 *  Return null if curToken has not ancestor starting with curToken or
+	 *  if the ancestor has no siblings (same node type like StatementContext).
+	 */
+	public static List<ParserRuleContext> getListSiblings(Map<Token, TerminalNode> tokenToNodeMap,
+														  Token curToken)
+	{
+		TerminalNode node = tokenToNodeMap.get(curToken);
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		ParserRuleContext earliestAncestor = earliestAncestorStartingWithToken(parent, curToken);
+
+		if ( earliestAncestor!=null ) {
+			ParserRuleContext commonAncestor = earliestAncestor.getParent();
+			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+			if ( siblings.size()>1 ) {
+				return siblings;
+			}
+		}
+		return null;
+	}
+
+	/** Is curToken the first statement of an slist, first arg of arglist, etc... */
+	public static boolean isFirstSiblingOfList(Map<Token, TerminalNode> tokenToNodeMap,
+											   Token curToken)
+	{
+		TerminalNode node = tokenToNodeMap.get(curToken);
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		ParserRuleContext earliestAncestor = earliestAncestorStartingWithToken(parent, curToken);
+
+		if ( earliestAncestor!=null ) {
+			ParserRuleContext commonAncestor = earliestAncestor.getParent();
+			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+			if ( siblings.size()>1 ) {
+				ParserRuleContext firstSibling = siblings.get(0);
+				Token firstSiblingStartToken = firstSibling.getStart();
+				return firstSiblingStartToken==curToken;
+			}
+		}
+		return false;
+	}
+
 	/** Return number of steps to common ancestor whose first token is alignment anchor.
 	 *  Return null if no such common ancestor.
 	 */
@@ -255,7 +364,7 @@ public class CollectFeatures {
 		int tokIndex,
 		int tabSize)
 	{
-		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokIndex);
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokIndex, tokens.get(tokIndex).getLine());
 		// look for alignment
 		if ( tokensOnPreviousLine.size()>0 ) {
 			Token curToken = tokens.get(tokIndex);
@@ -287,7 +396,7 @@ public class CollectFeatures {
 	/** Walk upwards from node while p.start == token; return null if there is
 	 *  no ancestor starting at token.
 	 */
-	public static ParserRuleContext earliestAncestorStartingAtToken(ParserRuleContext node, Token token) {
+	public static ParserRuleContext earliestAncestorStartingWithToken(ParserRuleContext node, Token token) {
 		ParserRuleContext p = node;
 		ParserRuleContext prev = null;
 		while (p!=null && p.getStart()==token) {
@@ -300,7 +409,7 @@ public class CollectFeatures {
 	/** Walk upwards from node while p.stop == token; return null if there is
 	 *  no ancestor stopping at token.
 	 */
-	public static ParserRuleContext earliestAncestorStoppingAtToken(ParserRuleContext node, Token token) {
+	public static ParserRuleContext earliestAncestorEndingWithToken(ParserRuleContext node, Token token) {
 		ParserRuleContext p = node;
 		ParserRuleContext prev = null;
 		while (p!=null && p.getStop()==token) {
@@ -348,36 +457,42 @@ public class CollectFeatures {
 		TerminalNode prevTerminalNode = tokenToNodeMap.get(prevToken);
 		ParserRuleContext parent = (ParserRuleContext)prevTerminalNode.getParent();
 		int prevTokenRuleIndex = parent.getRuleIndex();
-		ParserRuleContext earliestAncestor = earliestAncestorStoppingAtToken(parent, prevToken);
+		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(parent, prevToken);
 		int prevEarliestAncestorRuleIndex = -1;
 		int prevEarliestAncestorWidth = -1;
-		if ( earliestAncestor!=null ) {
-			prevEarliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
-			prevEarliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
+		if ( prevEarliestRightAncestor!=null ) {
+			prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
+			prevEarliestAncestorWidth = prevEarliestRightAncestor.stop.getStopIndex()-prevEarliestRightAncestor.start.getStartIndex()+1;
 		}
 
 		// Get context information for current token
 		parent = (ParserRuleContext)node.getParent();
 		int curTokensParentRuleIndex = parent.getRuleIndex();
-		earliestAncestor = earliestAncestorStartingAtToken(parent, curToken);
-		int earliestAncestorRuleIndex = -1;
+		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
 		int earliestAncestorWidth = -1;
-		if ( earliestAncestor!=null ) {
-			earliestAncestorRuleIndex = earliestAncestor.getRuleIndex();
-			earliestAncestorWidth = earliestAncestor.stop.getStopIndex()-earliestAncestor.start.getStartIndex()+1;
+		int earliestLeftAncestorRuleIndex = -1;
+		if ( earliestLeftAncestor!=null ) {
+			earliestLeftAncestorRuleIndex = earliestLeftAncestor.getRuleIndex();
+			earliestAncestorWidth = earliestLeftAncestor.stop.getStopIndex()-earliestLeftAncestor.start.getStartIndex()+1;
+		}
+
+		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
+		int earliestRightAncestorRuleIndex = -1;
+		if ( earliestRightAncestor!=null ) {
+			earliestRightAncestorRuleIndex = earliestRightAncestor.getRuleIndex();
 		}
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
-		// matchingSymbolOnDiffLine
-		// -1 means no pair exist
-		// 0  means they are on the same line
-		// 1  means they are on different lines
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
 		int sumEndColAndAncestorWidth = -1;
 		if ( earliestAncestorWidth>=0 ) {
 			sumEndColAndAncestorWidth = prevTokenEndCharPos+earliestAncestorWidth;
 		}
+
+		boolean startOfList = isFirstSiblingOfList(tokenToNodeMap, curToken);
+
+		boolean curTokenStartsNewLine = window.get(2).getLine()>window.get(1).getLine();
 		int[] features = {
 			window.get(0).getType(),
 
@@ -387,13 +502,16 @@ public class CollectFeatures {
 			prevEarliestAncestorRuleIndex,
 
 			window.get(2).getType(), // LT(1)
+			startOfList ? 1 : 0,
 			matchingSymbolOnDiffLine,
+			curTokenStartsNewLine ? 1 : 0,
 			curTokensParentRuleIndex,
-			earliestAncestorRuleIndex,
+			earliestRightAncestorRuleIndex,
+			earliestLeftAncestorRuleIndex,
 			window.get(3).getType(),
 
 			// info
-			0, // file
+			0, // dummy; we don't store file index into feature vector
 			curToken.getLine(),
 			curToken.getCharPositionInLine()
 		};
@@ -402,14 +520,24 @@ public class CollectFeatures {
 		return features;
 	}
 
-	private static int getMatchingSymbolOnDiffLine(InputDocument doc,
-	                                               TerminalNode node,
-	                                               int line)
+	public static int getMatchingSymbolOnDiffLine(InputDocument doc,
+												  TerminalNode node,
+												  int line)
+	{
+		TerminalNode matchingLeftNode = getMatchingLeftSymbol(doc, node);
+		if (matchingLeftNode != null) {
+			int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
+			return matchingLeftTokenLine != line ? PAIR_ON_DIFF_LINE : PAIR_ON_SAME_LINE;
+		}
+		return NOT_PAIR;
+	}
+
+	public static TerminalNode getMatchingLeftSymbol(InputDocument doc,
+													 TerminalNode node)
 	{
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		int curTokensParentRuleIndex = parent.getRuleIndex();
 		Token curToken = node.getSymbol();
-		int matchingSymbolOnDiffLine = -1;
 		if (ruleToPairsBag != null) {
 			String ruleName = JavaParser.ruleNames[curTokensParentRuleIndex];
 			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
@@ -427,18 +555,14 @@ public class CollectFeatures {
 					List<TerminalNode> nodesToLeftOfCurrentToken =
 						BuffUtils.filter(matchingLeftNodes, n -> n.getSymbol().getTokenIndex()<curToken.getTokenIndex());
 					TerminalNode matchingLeftNode = nodesToLeftOfCurrentToken.get(nodesToLeftOfCurrentToken.size()-1);
-
-					if (matchingLeftNode != null) {
-						int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
-						matchingSymbolOnDiffLine = matchingLeftTokenLine != line ? 1 : 0;
+					if (matchingLeftNode == null) {
+						System.err.println("can't find matching node for "+node.getSymbol());
 					}
-					else {
-						System.err.println("can't find matching node for "+curToken);
-					}
+					return matchingLeftNode;
 				}
 			}
 		}
-		return matchingSymbolOnDiffLine;
+		return null;
 	}
 
 	public static List<Integer> viableLeftTokenTypes(ParserRuleContext node,
@@ -468,12 +592,10 @@ public class CollectFeatures {
 	 *  return empty list if none found. First token in returned list is
 	 *  the first token on the line.
 	 */
-	public static List<Token> getTokensOnPreviousLine(CommonTokenStream tokens, int tokIndex) {
+	public static List<Token> getTokensOnPreviousLine(CommonTokenStream tokens, int tokIndex, int curLine) {
 		// first find previous line by looking for real token on line < tokens.get(i)
-		Token curToken = tokens.get(tokIndex);
-		int curLine = curToken.getLine();
 		int prevLine = 0;
-		for (int i=tokIndex-1; i>=0; i--) {
+		for (int i = tokIndex-1; i>=0; i--) {
 			Token t = tokens.get(i);
 			if ( t.getChannel()==Token.DEFAULT_CHANNEL && t.getLine()<curLine ) {
 				prevLine = t.getLine();
@@ -484,10 +606,10 @@ public class CollectFeatures {
 
 		// Now collect the on-channel real tokens for this line
 		List<Token> online = new ArrayList<>();
-		for (int i=tokIndex; i>=0; i--) {
+		for (int i = tokIndex; i>=0; i--) {
 			Token t = tokens.get(i);
-			if ( t.getLine()<prevLine ) break; // found last token on that previous line
-			if ( t.getChannel()==Token.DEFAULT_CHANNEL && t.getLine()==prevLine ) {
+			if ( t.getChannel()==Token.DEFAULT_CHANNEL ) {
+				if ( t.getLine()<prevLine )	break; // found last token on that previous line
 				online.add(t);
 			}
 		}
@@ -520,15 +642,17 @@ public class CollectFeatures {
 		return injectWS;
 	}
 
-	public List<Integer> getAlignWithPrevious() {
-		return alignWithPrevious;
+	public List<Integer> getAlign() {
+		return align;
 	}
 
 	public List<Integer> getIndent() {
 		return indent;
 	}
 
-	public static String _toString(FeatureMetaData[] FEATURES, Vocabulary v, String[] ruleNames, int[] features) {
+	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {
+		Vocabulary v = doc.parser.getVocabulary();
+		String[] ruleNames = doc.parser.getRuleNames();
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
@@ -566,11 +690,13 @@ public class CollectFeatures {
 					}
 					break;
 				case INFO_FILE:
-					buf.append(Tool.sequence(displayWidth, " "));
+					String fname = new File(doc.fileName).getName();
+					fname = StringUtils.abbreviate(fname, displayWidth);
+					buf.append(String.format("%"+displayWidth+"s", fname));
 					break;
 				case BOOL :
 					if ( features[i]!=-1 ) {
-						buf.append(features[i] == 1 ? "true" : "false");
+						buf.append(features[i] == 1 ? "true " : "false");
 					}
 					else {
 						buf.append(Tool.sequence(displayWidth, " "));

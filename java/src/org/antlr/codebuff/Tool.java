@@ -114,6 +114,7 @@ public class Tool {
 		}
 
 		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
+		corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
 	}
@@ -144,7 +145,6 @@ public class Tool {
 		List<int[]> featureVectors = new ArrayList<>();
 		List<Integer> injectNewlines = new ArrayList<>();
 		List<Integer> injectWS = new ArrayList<>();
-		List<Integer> indent = new ArrayList<>();
 		List<Integer> alignWithPrevious = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
@@ -155,13 +155,12 @@ public class Tool {
 				int[] featureVec = doc.featureVectors.get(i);
 				injectNewlines.add(doc.injectNewlines.get(i));
 				injectWS.add(doc.injectWS.get(i));
-				indent.add(doc.indent.get(i));
 				alignWithPrevious.add(doc.alignWithPrevious.get(i));
 				featureVectors.add(featureVec);
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(documents, featureVectors, injectNewlines, injectWS, indent, alignWithPrevious);
+		return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious, injectWS);
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
@@ -174,8 +173,7 @@ public class Tool {
 		doc.featureVectors = collector.getFeatures();
 		doc.injectNewlines = collector.getInjectNewlines();
 		doc.injectWS = collector.getInjectWS();
-		doc.indent = collector.getIndent();
-		doc.alignWithPrevious = collector.getAlignWithPrevious();
+		doc.alignWithPrevious = collector.getAlign();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
@@ -373,14 +371,14 @@ public class Tool {
 					count += featureTypes[i].mismatchCost;
 				}
 			}
-			else if ( featureTypes[i].type==FeatureType.COL ) {
-				double Asigmoid = sigmoid(A[i], 80);
-				double Bsigmoid = sigmoid(B[i], 80);
-//				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
-//					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
-//				}
-				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
-			}
+//			else if ( featureTypes[i].type==FeatureType.COL ) {
+//				double Asigmoid = sigmoid(A[i], 80);
+//				double Bsigmoid = sigmoid(B[i], 80);
+////				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
+////					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
+////				}
+//				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
+//			}
 		}
 		return count;
 	}

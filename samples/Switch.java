@@ -7,6 +7,7 @@ public class T {
 			case 1 :
 				break;
 			default :
+				break;
 		}
 		int y;
 	}
