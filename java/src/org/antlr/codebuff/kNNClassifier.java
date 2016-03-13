@@ -40,9 +40,6 @@ public abstract class kNNClassifier {
 		votesBag = getVotesBag(kNN, k, unknown, corpus.injectWS);
 		categories[Corpus.INDEX_FEATURE_WS] = getCategoryWithMostVotes(votesBag);
 
-		votesBag = getVotesBag(kNN, k, unknown, corpus.indent);
-		categories[Corpus.INDEX_FEATURE_INDENT] = getCategoryWithMostVotes(votesBag);
-
 		votesBag = getVotesBag(kNN, k, unknown, corpus.align);
 		categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS] = getCategoryWithMostVotes(votesBag);
 
