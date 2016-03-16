@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -32,10 +33,11 @@ public class CollectFeatures {
 	// Categories for alignment/indentation
 	public static final int CAT_NO_ALIGNMENT = 0;
 	public static final int CAT_INDENT = 1;
-	public static final int CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN = 2;
-	public static final int CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN = 3;
-	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 4;
-	public static final int CAT_ALIGN_WITH_PAIR = 5;
+	public static final int CAT_ALIGN_WITH_LEFT_ANCESTOR_FIRST_TOKEN = 2;
+	public static final int CAT_ALIGN_WITH_RIGHT_ANCESTOR_FIRST_TOKEN = 3;
+	public static final int CAT_ALIGN_WITH_RIGHT_ANCESTORS_PARENT_FIRST_TOKEN = 4;
+	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 5;
+	public static final int CAT_ALIGN_WITH_PAIR = 6;
 
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.6;
 
@@ -84,9 +86,8 @@ public class CollectFeatures {
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 2),
-//		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
-		FeatureMetaData.UNUSED,
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "list"}, 3),
+		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 3),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
@@ -201,46 +202,7 @@ public class CollectFeatures {
 
 		int aligned = CAT_NO_ALIGNMENT ;
 		if ( precedingNL>0 ) {
-			// at a newline, are we aligned with a prior sibling (in a list) etc...
-			if ( CollectFeatures.isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ) {
-				aligned = CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
-			}
-			else {
-				TerminalNode matchingLeftSymbol = getMatchingLeftSymbol(doc, node);
-				if ( matchingLeftSymbol!=null &&
-					matchingLeftSymbol.getSymbol().getCharPositionInLine()==curToken.getCharPositionInLine() ) {
-					aligned = CAT_ALIGN_WITH_PAIR;
-				}
-				else {
-					ParserRuleContext parent = (ParserRuleContext)node.getParent();
-					ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
-					Token earliestAncestorRightStart = null;
-					if ( earliestRightAncestor!=null ) {
-						earliestAncestorRightStart = earliestRightAncestor.getStart();
-					}
-					if ( earliestAncestorRightStart!=null &&
-						 earliestAncestorRightStart!=curToken &&
-						 earliestAncestorRightStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
-					{
-						aligned = CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN;
-					}
-					else {
-						Token earliestAncestorsParentStart = null;
-						if ( earliestRightAncestor!=null && earliestRightAncestor.getParent()!=null ) {
-							earliestAncestorsParentStart = earliestRightAncestor.getParent().getStart();
-						}
-						if ( earliestAncestorsParentStart!=null &&
-							 earliestAncestorsParentStart!=curToken &&
-							 earliestAncestorsParentStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
-						{
-							aligned = CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
-						}
-						else if ( columnDelta>0 ) {
-							aligned = CAT_INDENT; // indent standard amount
-						}
-					}
-				}
-			}
+			aligned = getAlignmentCategory(node, curToken, columnDelta);
 		}
 
 		int ws = 0;
@@ -256,6 +218,59 @@ public class CollectFeatures {
 		this.align.add(aligned);
 
 		this.features.add(features);
+	}
+
+	// at a newline, are we aligned with a prior sibling (in a list) etc...
+	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
+		int aligned = CAT_NO_ALIGNMENT;
+
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		TerminalNode matchingLeftSymbol = getMatchingLeftSymbol(doc, node);
+		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
+		Token earliestLeftAncestorStart = null;
+		Token earliestRightAncestorStart = null;
+		Token earliestRightAncestorsParentStart = null;
+		if ( earliestLeftAncestor!=null ) {
+			earliestLeftAncestorStart = earliestLeftAncestor.getStart();
+		}
+		if ( earliestRightAncestor!=null ) {
+			earliestRightAncestorStart = earliestRightAncestor.getStart();
+		}
+		if ( earliestRightAncestor!=null && earliestRightAncestor.getParent()!=null ) {
+			earliestRightAncestorsParentStart = earliestRightAncestor.getParent().getStart();
+		}
+
+		if ( CollectFeatures.isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ) {
+			aligned = CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
+		}
+		else if ( matchingLeftSymbol!=null &&
+				  matchingLeftSymbol.getSymbol().getCharPositionInLine()==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_ALIGN_WITH_PAIR;
+		}
+		else if ( earliestLeftAncestorStart!=null &&
+				  earliestLeftAncestorStart!=curToken &&
+				  earliestLeftAncestorStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_ALIGN_WITH_LEFT_ANCESTOR_FIRST_TOKEN;
+		}
+		else if ( earliestRightAncestorStart!=null &&
+				  earliestRightAncestorStart!=curToken &&
+				  earliestRightAncestorStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_ALIGN_WITH_RIGHT_ANCESTOR_FIRST_TOKEN;
+		}
+		else if ( earliestRightAncestorsParentStart!=null &&
+				  earliestRightAncestorsParentStart!=curToken &&
+				  earliestRightAncestorsParentStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_ALIGN_WITH_RIGHT_ANCESTORS_PARENT_FIRST_TOKEN;
+		}
+		else if ( columnDelta>0 ) {
+			aligned = CAT_INDENT; // indent standard amount
+		}
+		return aligned;
 	}
 
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
@@ -294,9 +309,19 @@ public class CollectFeatures {
 		return aligned;
 	}
 
-	/** Return list of sibling if curToken's ancestor is in a list.
-	 *  Return null if curToken has not ancestor starting with curToken or
-	 *  if the ancestor has no siblings (same node type like StatementContext).
+	/** Return list of sibling if curToken's ancestor is in a list or curToken is
+	 *  the start of a list (in that case ancestor is common ancestor of list elements).
+	 *  There are two kinds of lists detected:
+	 *
+	 *  	(formalParameter '(' (formalParameterList formalParameter ',' formalParameter) ')')
+	 *
+	 *  	(classBody       '{' classBodyDecl classBodyDecl                               '}')
+	 *
+	 *  For non-first elements, we can always look for common ancestor: earliestLeftAncestor's parent.
+	 *  For first elements, the earliestLeftAncestor could be the common ancestor.
+	 *
+	 *  Return null if curToken has no ancestor starting with curToken or
+	 *  if the ancestor has no siblings. A sibling has same node type like StatementContext.
 	 */
 	public static List<ParserRuleContext> getListSiblings(Map<Token, TerminalNode> tokenToNodeMap,
 														  Token curToken)
@@ -304,13 +329,28 @@ public class CollectFeatures {
 		TerminalNode node = tokenToNodeMap.get(curToken);
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		ParserRuleContext earliestAncestor = earliestAncestorStartingWithToken(parent, curToken);
+		if ( earliestAncestor==null ) {
+			return null;
+		}
 
-		if ( earliestAncestor!=null ) {
-			ParserRuleContext commonAncestor = earliestAncestor.getParent();
-			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+		// check for the case where we are first in list and earliestAncestor *is* the common ancestor
+		ParseTree firstChild = earliestAncestor.getChild(0);
+		if ( firstChild instanceof ParserRuleContext ) {
+			List<ParserRuleContext> siblings =
+				earliestAncestor.getRuleContexts(((ParserRuleContext) firstChild).getClass());
 			if ( siblings.size()>1 ) {
+				// earliestAncestor is in fact the commonAncestor and we are first element, return list
+				System.out.println(curToken+" is first of list: "+siblings);
 				return siblings;
 			}
+			// either we are not in a list or we need to look up another level
+		}
+
+		ParserRuleContext commonAncestor = earliestAncestor.getParent();
+		List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
+		if ( siblings.size()>1 ) {
+			System.out.println(curToken+" is part of list: "+siblings);
+			return siblings;
 		}
 		return null;
 	}
@@ -324,12 +364,17 @@ public class CollectFeatures {
 		ParserRuleContext earliestAncestor = earliestAncestorStartingWithToken(parent, curToken);
 
 		if ( earliestAncestor!=null ) {
-			ParserRuleContext commonAncestor = earliestAncestor.getParent();
-			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-			if ( siblings.size()>1 ) {
-				ParserRuleContext firstSibling = siblings.get(0);
-				Token firstSiblingStartToken = firstSibling.getStart();
-				return firstSiblingStartToken==curToken;
+			// if we are first in list, then our earliestAncestor will be root with repeated children
+			// get the type of first child, which will be like formalParameter child of formalParameterList
+			ParseTree firstChild = earliestAncestor.getChild(0);
+			if ( firstChild instanceof ParserRuleContext ) {
+				List<ParserRuleContext> siblings =
+					earliestAncestor.getRuleContexts(((ParserRuleContext)firstChild).getClass());
+				if (siblings.size() > 1) {
+					ParserRuleContext firstSibling = siblings.get(0);
+					Token firstSiblingStartToken = firstSibling.getStart();
+					return firstSiblingStartToken == curToken;
+				}
 			}
 		}
 		return false;
@@ -470,7 +515,8 @@ public class CollectFeatures {
 			sumEndColAndAncestorWidth = prevTokenEndCharPos+earliestAncestorWidth;
 		}
 
-		boolean startOfList = isFirstSiblingOfList(tokenToNodeMap, curToken);
+		List<ParserRuleContext> siblings = getListSiblings(tokenToNodeMap, curToken);
+		boolean startOfList = siblings!=null && siblings.get(0).getStart()==curToken;
 
 		boolean curTokenStartsNewLine = window.get(2).getLine()>window.get(1).getLine();
 		int[] features = {

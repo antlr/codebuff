@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
-import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN;
+import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_RIGHT_ANCESTORS_PARENT_FIRST_TOKEN;
+import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_RIGHT_ANCESTOR_FIRST_TOKEN;
 import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
 import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_PAIR;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
@@ -155,13 +155,13 @@ public class Formatter {
 
 			switch ( align ) {
 				case CAT_INDENT :
-					if ( firstTokenOnPrevLine!=null ) { // if not on first line, we can indent indent
+					if ( firstTokenOnPrevLine!=null ) { // if not on first line, we can't indent
 						int indentedCol = firstTokenOnPrevLine.getCharPositionInLine() + 4;
 						charPosInLine = indentedCol;
 						output.append(Tool.spaces(indentedCol));
 					}
 					break;
-				case CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN :
+				case CAT_ALIGN_WITH_RIGHT_ANCESTOR_FIRST_TOKEN:
 					if ( earliestRightAncestor!=null ) {
 						Token earliestRightAncestorStart = earliestRightAncestor.getStart();
 						int linedUpCol = earliestRightAncestorStart.getCharPositionInLine();
@@ -169,7 +169,7 @@ public class Formatter {
 						output.append(Tool.spaces(linedUpCol));
 					}
 					break;
-				case CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN :
+				case CAT_ALIGN_WITH_RIGHT_ANCESTORS_PARENT_FIRST_TOKEN:
 					if ( earliestRightAncestor!=null ) {
 						ParserRuleContext earliestAncestorParent = earliestRightAncestor.getParent();
 						if ( earliestAncestorParent!=null ) {

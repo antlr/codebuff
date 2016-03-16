@@ -61,7 +61,10 @@ public class Tool {
 		return format(corpus, testDoc, tabSize, true);
 	}
 
-	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, int tabSize, boolean showFormattedResult)
+	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus,
+																  InputDocument testDoc,
+																  int tabSize,
+																  boolean showFormattedResult)
 		throws Exception
 	{
 		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
@@ -102,7 +105,7 @@ public class Tool {
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
 
-		if ( false ) {
+		if ( true ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
 				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
 				System.out.print(ruleName+": ");
@@ -216,13 +219,19 @@ public class Tool {
 		doc.tree = tree;
 	}
 
-	public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+	public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens)
+		throws NoSuchMethodException, InstantiationException, IllegalAccessException,
+			   java.lang.reflect.InvocationTargetException
+	{
 		Constructor<? extends Parser> parserCtor =
 			parserClass.getConstructor(TokenStream.class);
 		return parserCtor.newInstance(tokens);
 	}
 
-	public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+	public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input)
+		throws NoSuchMethodException, InstantiationException, IllegalAccessException,
+			   java.lang.reflect.InvocationTargetException
+	{
 		Constructor<? extends Lexer> lexerCtor =
 			lexerClass.getConstructor(CharStream.class);
 		return lexerCtor.newInstance(input);
