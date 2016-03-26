@@ -201,46 +201,7 @@ public class CollectFeatures {
 
 		int aligned = CAT_NO_ALIGNMENT ;
 		if ( precedingNL>0 ) {
-			// at a newline, are we aligned with a prior sibling (in a list) etc...
-			if ( CollectFeatures.isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ) {
-				aligned = CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
-			}
-			else {
-				TerminalNode matchingLeftSymbol = getMatchingLeftSymbol(doc, node);
-				if ( matchingLeftSymbol!=null &&
-					matchingLeftSymbol.getSymbol().getCharPositionInLine()==curToken.getCharPositionInLine() ) {
-					aligned = CAT_ALIGN_WITH_PAIR;
-				}
-				else {
-					ParserRuleContext parent = (ParserRuleContext)node.getParent();
-					ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
-					Token earliestAncestorRightStart = null;
-					if ( earliestRightAncestor!=null ) {
-						earliestAncestorRightStart = earliestRightAncestor.getStart();
-					}
-					if ( earliestAncestorRightStart!=null &&
-						 earliestAncestorRightStart!=curToken &&
-						 earliestAncestorRightStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
-					{
-						aligned = CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN;
-					}
-					else {
-						Token earliestAncestorsParentStart = null;
-						if ( earliestRightAncestor!=null && earliestRightAncestor.getParent()!=null ) {
-							earliestAncestorsParentStart = earliestRightAncestor.getParent().getStart();
-						}
-						if ( earliestAncestorsParentStart!=null &&
-							 earliestAncestorsParentStart!=curToken &&
-							 earliestAncestorsParentStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
-						{
-							aligned = CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
-						}
-						else if ( columnDelta>0 ) {
-							aligned = CAT_INDENT; // indent standard amount
-						}
-					}
-				}
-			}
+			aligned = getAlignmentCategory(node, curToken, columnDelta);
 		}
 
 		int ws = 0;
@@ -256,6 +217,50 @@ public class CollectFeatures {
 		this.align.add(aligned);
 
 		this.features.add(features);
+	}
+
+	// at a newline, are we aligned with a prior sibling (in a list) etc...
+	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
+		int aligned = CAT_NO_ALIGNMENT;
+
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		TerminalNode matchingLeftSymbol = getMatchingLeftSymbol(doc, node);
+		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
+		Token earliestAncestorRightStart = null;
+		if ( earliestRightAncestor!=null ) {
+			earliestAncestorRightStart = earliestRightAncestor.getStart();
+		}
+		Token earliestAncestorsParentStart = null;
+		if ( earliestRightAncestor!=null && earliestRightAncestor.getParent()!=null ) {
+			earliestAncestorsParentStart = earliestRightAncestor.getParent().getStart();
+		}
+
+		// at a newline, are we aligned with a prior sibling (in a list) etc...
+		if ( CollectFeatures.isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ) {
+			aligned = CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
+		}
+		else if ( matchingLeftSymbol!=null &&
+			      matchingLeftSymbol.getSymbol().getCharPositionInLine()==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_ALIGN_WITH_PAIR;
+		}
+		else if ( earliestAncestorRightStart!=null &&
+			      earliestAncestorRightStart!=curToken &&
+			      earliestAncestorRightStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN;
+		}
+		else if ( earliestAncestorsParentStart!=null &&
+			      earliestAncestorsParentStart!=curToken &&
+			      earliestAncestorsParentStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
+		}
+		else if ( columnDelta>0 ) {
+			aligned = CAT_INDENT; // indent standard amount
+		}
+
+		return aligned;
 	}
 
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
