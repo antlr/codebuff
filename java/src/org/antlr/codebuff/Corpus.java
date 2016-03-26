@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Random;
 
 public class Corpus {
+	public static final int FEATURE_VECTOR_RANDOM_SEED = 314159; // need randomness but use same seed to get reproducibility
+
 	public static final int NUM_DEPENDENT_VARS = 3;
 	public static final int INDEX_FEATURE_NEWLINES = 0;
 	public static final int INDEX_FEATURE_WS = 1;
@@ -51,6 +53,7 @@ public class Corpus {
 	 */
 	public void randomShuffleInPlace() {
 		Random r = new Random();
+		r.setSeed(FEATURE_VECTOR_RANDOM_SEED);
 		// for i from n−1 downto 1 do
 		int n = X.size();
 		for (int i=n-1; i>=1; i--) {
