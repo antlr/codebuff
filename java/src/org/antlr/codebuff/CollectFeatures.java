@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.6;
+
 	// Feature values for pair on diff lines feature
 	public static final int NOT_PAIR = -1;
 	public static final int PAIR_ON_SAME_LINE = 0;
@@ -31,13 +33,12 @@ public class CollectFeatures {
 
 	// Categories for alignment/indentation
 	public static final int CAT_NO_ALIGNMENT = 0;
-	public static final int CAT_INDENT = 1;
-	public static final int CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN = 2;
-	public static final int CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN = 3;
-	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 4;
-	public static final int CAT_ALIGN_WITH_PAIR = 5;
+	public static final int CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN = 1;
+	public static final int CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN = 2;
+	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 3;
+	public static final int CAT_ALIGN_WITH_PAIR = 4;
 
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.6;
+	public static final int CAT_INDENT = 100;
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -45,7 +46,7 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_END_COLUMN   = 3;
 	public static final int INDEX_PREV_EARLIEST_ANCESTOR = 4;
 	public static final int INDEX_TYPE              = 5;
-	public static final int INDEX_FIRST_EL_OF_LIST  = 6;
+	public static final int INDEX_FIRST_EL_OF_LIST  = 6; // TODO: I don't think we can detect first element of list
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 7;
 	public static final int INDEX_FIRST_ON_LINE		= 8; // a \n right before this token?
 	public static final int INDEX_RULE              = 9; // what rule are we in?
@@ -475,6 +476,7 @@ public class CollectFeatures {
 			sumEndColAndAncestorWidth = prevTokenEndCharPos+earliestAncestorWidth;
 		}
 
+		// TODO: I don't think we can detect first element of list
 		boolean startOfList = isFirstSiblingOfList(tokenToNodeMap, curToken);
 
 		boolean curTokenStartsNewLine = window.get(2).getLine()>window.get(1).getLine();
@@ -779,4 +781,18 @@ public class CollectFeatures {
 		}
 		return real;
 	}
+
+	/** Same as p.getParent() except we scan through chain rule nodes */
+	public static ParserRuleContext getParent(ParserRuleContext p) {
+		if ( p==null ) return null;
+		ParserRuleContext lastValidParent = p.getParent();
+		// now try to walk chain rules starting with the parent of the usual parent
+		ParserRuleContext q = lastValidParent.getParent();
+		while ( q!=null && q.getChildCount()==1 ) { // while is a chain rule
+			lastValidParent = q;
+			q = q.getParent();
+		}
+		return lastValidParent;
+	}
+
 }
