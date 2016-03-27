@@ -7,6 +7,12 @@ public class T {
 												  int indent,
 												  int ws)
 	{
+        CommonToken curToken = foo;
+        CommonToken prevToken = 1;
+        if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) {
+            ws = 1;
+            failsafeTriggered = true;
+        }
     }
     public static boolean cannotJoin(Token prevToken, Token curToken) {
         String prevTokenText = prevToken.getText();

@@ -24,20 +24,22 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.6;
+
 	// Feature values for pair on diff lines feature
 	public static final int NOT_PAIR = -1;
 	public static final int PAIR_ON_SAME_LINE = 0;
 	public static final int PAIR_ON_DIFF_LINE = 1;
 
 	// Categories for alignment/indentation
-	public static final int CAT_NO_ALIGNMENT = 0;
-	public static final int CAT_INDENT = 1;
-	public static final int CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN = 2;
-	public static final int CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN = 3;
-	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 4;
-	public static final int CAT_ALIGN_WITH_PAIR = 5;
+	public static final int CAT_NO_ALIGN_OR_INDENT = 0;
+	public static final int CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN = 1;
+	public static final int CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN = 2;
+	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 3;
+	public static final int CAT_ALIGN_WITH_PAIR = 4;
 
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.6;
+	public static final int CAT_INDENT_FROM_ANCESTORS_FIRST_TOKEN = 10;
+	public static final int CAT_INDENT = 50; // just indent from first token on last line (normal indent)
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -199,7 +201,7 @@ public class CollectFeatures {
 			currentIndent = curToken.getCharPositionInLine();
 		}
 
-		int aligned = CAT_NO_ALIGNMENT ;
+		int aligned = CAT_NO_ALIGN_OR_INDENT;
 		if ( precedingNL>0 ) {
 			aligned = getAlignmentCategory(node, curToken, columnDelta);
 		}
@@ -221,21 +223,27 @@ public class CollectFeatures {
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
 	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
-		int aligned = CAT_NO_ALIGNMENT;
+		int aligned = CAT_NO_ALIGN_OR_INDENT;
 
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		TerminalNode matchingLeftSymbol = getMatchingLeftSymbol(doc, node);
 		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
-		Token earliestAncestorRightStart = null;
+		Token earliestRightAncestorStart = null;
 		if ( earliestRightAncestor!=null ) {
-			earliestAncestorRightStart = earliestRightAncestor.getStart();
+			earliestRightAncestorStart = earliestRightAncestor.getStart();
 		}
-		Token earliestAncestorsParentStart = null;
+		Token earliestRightAncestorsParentStart = null;
 		if ( earliestRightAncestor!=null && earliestRightAncestor.getParent()!=null ) {
-			earliestAncestorsParentStart = earliestRightAncestor.getParent().getStart();
+			earliestRightAncestorsParentStart = earliestRightAncestor.getParent().getStart();
+		}
+		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+		ParserRuleContext earliestLeftAncestorsParentParent = getParent(getParent(earliestLeftAncestor));
+		Token earliestLeftAncestorsParentParentStart = null;
+		if ( earliestLeftAncestorsParentParent!=null ) {
+			earliestLeftAncestorsParentParentStart = earliestLeftAncestorsParentParent.getStart();
 		}
 
-		// at a newline, are we aligned with a prior sibling (in a list) etc...
+		// Are we aligned with a prior sibling (in a list) etc...
 		if ( CollectFeatures.isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ) {
 			aligned = CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
 		}
@@ -244,19 +252,40 @@ public class CollectFeatures {
 		{
 			aligned = CAT_ALIGN_WITH_PAIR;
 		}
-		else if ( earliestAncestorRightStart!=null &&
-			      earliestAncestorRightStart!=curToken &&
-			      earliestAncestorRightStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+		else if ( earliestRightAncestorStart!=null &&
+			      earliestRightAncestorStart!=curToken &&
+			      earliestRightAncestorStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
 		{
 			aligned = CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN;
 		}
-		else if ( earliestAncestorsParentStart!=null &&
-			      earliestAncestorsParentStart!=curToken &&
-			      earliestAncestorsParentStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
+		else if ( earliestRightAncestorsParentStart!=null &&
+			      earliestRightAncestorsParentStart!=curToken &&
+			      earliestRightAncestorsParentStart.getCharPositionInLine()==curToken.getCharPositionInLine() )
 		{
 			aligned = CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
 		}
-		else if ( columnDelta>0 ) {
+
+		// Give pref to alignment over indentation
+		if ( aligned!=CAT_NO_ALIGN_OR_INDENT || columnDelta==0 ) {
+			return aligned;
+		}
+
+		// Are we indented from prior sibling etc...?
+		if ( CollectFeatures.isIndentedFromFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ) {
+			aligned = CAT_INDENT_FROM_LIST_FIRST_ELEMENT;
+		}
+		else if ( matchingLeftSymbol!=null &&
+			      matchingLeftSymbol.getSymbol().getCharPositionInLine()+Formatter.INDENT_SIZE==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_INDENT_FROM_PAIR;
+		}
+		else if ( earliestLeftAncestorsParentParentStart!=null &&
+				  earliestLeftAncestorsParentParentStart!=curToken &&
+				  earliestLeftAncestorsParentParentStart.getCharPositionInLine()+Formatter.INDENT_SIZE==curToken.getCharPositionInLine() )
+		{
+			aligned = CAT_INDENT_FROM_ANCESTORS_PARENT_PARENT_FIRST_TOKEN;
+		}
+		else {
 			aligned = CAT_INDENT; // indent standard amount
 		}
 
@@ -273,33 +302,49 @@ public class CollectFeatures {
 		return precedingNL;
 	}
 
+	// at a newline, are we aligned with a prior sibling (in a list)?
 	public static boolean isAlignedWithFirstSiblingOfList(Map<Token, TerminalNode> tokenToNodeMap,
 														  CommonTokenStream tokens,
 														  Token curToken)
 	{
-		TerminalNode node = tokenToNodeMap.get(curToken);
-		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-		ParserRuleContext earliestAncestor = earliestAncestorStartingWithToken(parent, curToken);
-		boolean aligned = false;
+		return getAlignOrIndentWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ==
+			CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
+	}
 
-		// at a newline, are we aligned with a prior sibling (in a list)?
+	// at a newline, are we aligned with a prior sibling (in a list)?
+	public static boolean isIndentedFromFirstSiblingOfList(Map<Token, TerminalNode> tokenToNodeMap,
+	                                                       CommonTokenStream tokens,
+	                                                       Token curToken)
+	{
+		return getAlignOrIndentWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken) ==
+			CAT_INDENT_FROM_LIST_FIRST_ELEMENT;
+	}
+
+	// at a newline, are we aligned with a prior sibling (in a list)?
+	public static int getAlignOrIndentWithFirstSiblingOfList(Map<Token, TerminalNode> tokenToNodeMap,
+	                                                         CommonTokenStream tokens,
+	                                                         Token curToken)
+	{
+		List<ParserRuleContext> siblings = getListSiblings(tokenToNodeMap, curToken);
+
 		int precedingNL = getPrecedingNL(tokens, curToken.getTokenIndex());
-		if ( precedingNL>0 && earliestAncestor!=null ) {
-			ParserRuleContext commonAncestor = earliestAncestor.getParent();
-			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-			if ( siblings.size()>1 ) {
-				ParserRuleContext firstSibling = siblings.get(0);
-				Token firstSiblingStartToken = firstSibling.getStart();
-				if ( firstSiblingStartToken!=curToken && // can't align with yourself
-					firstSiblingStartToken.getCharPositionInLine()==curToken.getCharPositionInLine() ) {
-					aligned = true;
+		if ( siblings!=null && precedingNL>0) { // at a newline and we are a sibling
+			ParserRuleContext firstSibling = siblings.get(0);
+			Token firstSiblingStartToken = firstSibling.getStart();
+			if ( firstSiblingStartToken!=curToken ) { // can't align with yourself
+				if ( firstSiblingStartToken.getCharPositionInLine()==curToken.getCharPositionInLine() ) {
+					return CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
+				}
+				if ( curToken.getCharPositionInLine()==firstSiblingStartToken.getCharPositionInLine()+Formatter.INDENT_SIZE ) {
+					return CAT_INDENT_FROM_LIST_FIRST_ELEMENT;
 				}
 			}
 		}
-		return aligned;
+		return CAT_NO_ALIGN_OR_INDENT;
 	}
 
-	/** Return list of sibling if curToken's ancestor is in a list.
+	/** Return list of sibling if curToken's ancestor is in a list (doesn't
+	 *  work if curToken is the first sibling).
 	 *  Return null if curToken has not ancestor starting with curToken or
 	 *  if the ancestor has no siblings (same node type like StatementContext).
 	 */
@@ -444,10 +489,8 @@ public class CollectFeatures {
 		int prevTokenRuleIndex = parent.getRuleIndex();
 		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(parent, prevToken);
 		int prevEarliestAncestorRuleIndex = -1;
-		int prevEarliestAncestorWidth = -1;
 		if ( prevEarliestRightAncestor!=null ) {
 			prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
-			prevEarliestAncestorWidth = prevEarliestRightAncestor.stop.getStopIndex()-prevEarliestRightAncestor.start.getStartIndex()+1;
 		}
 
 		// Get context information for current token
@@ -475,6 +518,7 @@ public class CollectFeatures {
 			sumEndColAndAncestorWidth = prevTokenEndCharPos+earliestAncestorWidth;
 		}
 
+		// TODO: I don't think we can detect first element of list
 		boolean startOfList = isFirstSiblingOfList(tokenToNodeMap, curToken);
 
 		boolean curTokenStartsNewLine = window.get(2).getLine()>window.get(1).getLine();
@@ -487,7 +531,7 @@ public class CollectFeatures {
 			prevEarliestAncestorRuleIndex,
 
 			window.get(2).getType(), // LT(1)
-			startOfList ? 1 : 0,
+			startOfList ? 1 : 0, // TODO: probably wrong
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
 			curTokensParentRuleIndex,
@@ -778,5 +822,18 @@ public class CollectFeatures {
 			}
 		}
 		return real;
+	}
+
+	/** Same as p.getParent() except we scan through chain rule nodes */
+	public static ParserRuleContext getParent(ParserRuleContext p) {
+		if ( p==null ) return null;
+		ParserRuleContext lastValidParent = p.getParent();
+		// now try to walk chain rules starting with the parent of the usual parent
+		ParserRuleContext q = lastValidParent.getParent();
+		while ( q!=null && q.getChildCount()==1 ) { // while is a chain rule
+			lastValidParent = q;
+			q = q.getParent();
+		}
+		return lastValidParent;
 	}
 }
