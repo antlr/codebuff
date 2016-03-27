@@ -86,7 +86,7 @@ public class Corpus {
 		for (int i=0; i<X.size(); i++) {
 			int curTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_RULE];
 			int prevTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_PREV_RULE];
-			Pair<Integer, Integer> key = new Pair<>(curTokenRuleIndex, prevTokenRuleIndex);
+			Pair<Integer, Integer> key = new Pair<>(prevTokenRuleIndex, curTokenRuleIndex);
 			List<Integer> vectorIndexes = curAndPrevTokenRuleIndexToVectorsMap.get(key);
 			if ( vectorIndexes==null ) {
 				vectorIndexes = new ArrayList<>();

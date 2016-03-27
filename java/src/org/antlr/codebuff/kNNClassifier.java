@@ -140,7 +140,7 @@ public abstract class kNNClassifier {
 	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
 		int curTokenRuleIndex = unknown[CollectFeatures.INDEX_RULE];
 		int prevTokenRuleIndex = unknown[CollectFeatures.INDEX_PREV_RULE];
-		Pair<Integer, Integer> key = new Pair<>(curTokenRuleIndex, prevTokenRuleIndex);
+		Pair<Integer, Integer> key = new Pair<>(prevTokenRuleIndex, curTokenRuleIndex);
 		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
 		List<Neighbor> distances = new ArrayList<>();
 		if ( vectorIndexesMatchingTokenContext==null ) {
