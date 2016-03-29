@@ -480,14 +480,12 @@ public class CollectFeatures {
 	}
 
 	public static ParserRuleContext getAncestor(ParserRuleContext node, int delta) {
-		System.out.print(node.getText()+" "+JavaParser.ruleNames[node.getRuleIndex()]+"+"+delta);
 		int n = 0;
 		ParserRuleContext p = node;
 		while ( p!=null && n!=delta ) {
 			n++;
 			p = p.getParent();
 		}
-		System.out.println(" is "+JavaParser.ruleNames[p.getRuleIndex()]+":"+p.getAltNumber());
 		return p;
 	}
 
@@ -916,14 +914,6 @@ public class CollectFeatures {
 		if ( lastValidParent==null ) return null; // must have hit the root
 
 		return parentClosure(p.getParent());
-//
-//		// now try to walk chain rules starting with the parent of the usual parent
-//		ParserRuleContext q = lastValidParent.getParent();
-//		while ( q!=null && q.getChildCount()==1 ) { // while is a chain rule
-//			lastValidParent = q;
-//			q = q.getParent();
-//		}
-//		return lastValidParent;
 	}
 
 	// try to walk chain rules starting with the parent of the usual parent
