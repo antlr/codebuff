@@ -17,6 +17,7 @@ import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_FIRST_T
 import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
 import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_PAIR;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
+import static org.antlr.codebuff.CollectFeatures.CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN;
 import static org.antlr.codebuff.CollectFeatures.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_NL;
@@ -25,6 +26,7 @@ import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_END_COLUMN;
 import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorEndingWithToken;
+import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
 import static org.antlr.codebuff.CollectFeatures.getListSiblings;
 import static org.antlr.codebuff.CollectFeatures.getMatchingLeftSymbol;
 import static org.antlr.codebuff.CollectFeatures.getNodeFeatures;
@@ -34,6 +36,8 @@ import static org.antlr.codebuff.CollectFeatures.indexTree;
 import static org.antlr.codebuff.CollectFeatures.isAlignedWithFirstSiblingOfList;
 
 public class Formatter {
+	public static final int INDENT_LEVEL = 4;
+
 	protected final Corpus corpus;
 	protected StringBuilder output = new StringBuilder();
 	protected InputDocument doc;
@@ -125,12 +129,11 @@ public class Formatter {
 		features[INDEX_FIRST_ON_LINE] = injectNewline; // use \n prediction to match exemplars for alignment
 
 		int align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
-		int indent = 0;
 		//indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, MAX_CONTEXT_DIFF_THRESHOLD);
 
 		TokenPositionAnalysis tokenPositionAnalysis =
-			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNewline, align, indent, ws);
+			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNewline, align, ws);
 		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -156,7 +159,7 @@ public class Formatter {
 			switch ( align ) {
 				case CAT_INDENT :
 					if ( firstTokenOnPrevLine!=null ) { // if not on first line, we can indent indent
-						int indentedCol = firstTokenOnPrevLine.getCharPositionInLine() + 4;
+						int indentedCol = firstTokenOnPrevLine.getCharPositionInLine() + INDENT_LEVEL;
 						charPosInLine = indentedCol;
 						output.append(Tool.spaces(indentedCol));
 					}
@@ -197,10 +200,18 @@ public class Formatter {
 					break;
 				case CAT_NO_ALIGNMENT :
 					break;
+
+				default :
+					if ( align>=CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
+						int deltaFromAncestor = align - CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN;
+						ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+						ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+						Token start = ancestor.getStart();
+						int indentCol = start.getCharPositionInLine() + INDENT_LEVEL;
+						charPosInLine = indentCol;
+						output.append(Tool.spaces(indentCol));
+					}
 			}
-//			if ( currentIndent<0 ) currentIndent = 0; // don't allow bad indents to accumulate
-//			charPosInLine = currentIndent;
-//			output.append(Tool.spaces(currentIndent));
 		}
 		else {
 			// inject whitespace instead of \n?
@@ -208,39 +219,6 @@ public class Formatter {
 			charPosInLine += ws;
 		}
 
-//		if ( injectNewline>0 ) {
-//			output.append(Tool.newlines(injectNewline));
-//			line++;
-//			TerminalNode node = tokenToNodeMap.get(tokens.get(tokenIndexInStream));
-//			ParserRuleContext parent = (ParserRuleContext)node.getParent();
-//			int myIndex = 0;
-//			ParserRuleContext earliestAncestor = CollectFeatures.earliestAncestorStartingWithToken(parent, curToken);
-//			if ( earliestAncestor!=null ) {
-//				ParserRuleContext commonAncestor = earliestAncestor.getParent();
-//				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-//				myIndex = siblings.indexOf(earliestAncestor);
-//			}
-//			if ( false ) { //if ( myIndex>0 && align>0 ) { // align with first sibling's start token
-//				ParserRuleContext commonAncestor = earliestAncestor.getParent();
-//				List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-//				ParserRuleContext firstSibling = siblings.get(0);
-//				Token firstSiblingStartToken = firstSibling.getStart();
-//				// align but don't update currentIndent
-//				charPosInLine = firstSiblingStartToken.getCharPositionInLine();
-//				output.append(Tool.spaces(charPosInLine));
-//			}
-//			else {
-//				currentIndent += indent;
-//				if ( currentIndent<0 ) currentIndent = 0; // don't allow bad indents to accumulate
-//				charPosInLine = currentIndent;
-//				output.append(Tool.spaces(currentIndent));
-//			}
-//		}
-//		else {
-//			// inject whitespace instead of \n?
-//			output.append(Tool.spaces(ws));
-//			charPosInLine += ws;
-//		}
 		// update Token object with position information now that we are about
 		// to emit it.
 		curToken.setLine(line);
@@ -257,7 +235,6 @@ public class Formatter {
 	public TokenPositionAnalysis getTokenAnalysis(int[] features, int indexIntoRealTokens, int tokenIndexInStream,
 	                                              int injectNewline,
 	                                              int alignWithPrevious,
-	                                              int indent,
 	                                              int ws)
 	{
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
@@ -274,7 +251,6 @@ public class Formatter {
 		boolean prevIsWS = prevToken.getType()==JavaLexer.WS;
 		int actualNL = Tool.count(prevToken.getText(), '\n');
 		int actualWS = Tool.count(prevToken.getText(), ' ');
-		int actualIndent = originalCurToken.getCharPositionInLine()-0;// currentIndent;
 		boolean actualAlign = isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken);
 		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",
 		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
@@ -282,8 +258,6 @@ public class Formatter {
 		                                             originalCurToken.getLine(),
 		                                             alignWithPrevious==1?"align":"unaligned",
 		                                             actualAlign?"align":"unaligned");
-		String indentPredictionString = String.format("### line %d: predicted indent %d actual %s",
-		                                              originalCurToken.getLine(), indent, actualIndent);
 		String wsPredictionString = String.format("### line %d: predicted %d ' ' actual %s",
 		                                          originalCurToken.getLine(), ws, prevIsWS ? actualWS : "none");
 		if ( failsafeTriggered ) {

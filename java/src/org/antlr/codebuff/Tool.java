@@ -297,7 +297,7 @@ public class Tool {
 
 		// otherwise, if this is an input file, load it!
 		else if ( inputFilePattern==null || f.getName().matches(inputFilePattern) ) {
-			files.add(f.getAbsolutePath());
+		  	files.add(f.getAbsolutePath());
 		}
 	}
 
