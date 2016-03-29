@@ -61,7 +61,7 @@
 						<configuration>
 							<sourceDirectory>grammars</sourceDirectory>
 							<options>
-								<contextSuperClass>org.antlr.codebuff.misc.RuleNodeWithAlt</contextSuperClass>
+								<contextSuperClass>org.antlr.v4.runtime.RuleContextWithAltNum</contextSuperClass>
 							</options>
 						</configuration>
 						<id>antlr</id>
