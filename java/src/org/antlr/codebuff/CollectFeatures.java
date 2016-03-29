@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
+import org.antlr.v4.runtime.atn.ATN;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -38,7 +39,21 @@ public class CollectFeatures {
 	public static final int CAT_ALIGN_WITH_LIST_FIRST_ELEMENT = 3;
 	public static final int CAT_ALIGN_WITH_PAIR = 4;
 
-	public static final int CAT_INDENT = 100;
+	/* We want to identify indentation from a parent's start token but that
+	   parent could be a number of levels up the tree. The next category
+	   values indicate indentation from the current token's left ancestor's
+	   parent then it's parent and so on. For category value:
+
+	    CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN + i
+
+	   current token is indented from start token of node i levels up
+	   from ancestor.
+	 */
+	public static final int CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN = 100; // left ancestor's first token is really current token
+
+	public static final int CAT_INDENT = 200;
+
+	// indexes into feature vector
 
 	public static final int INDEX_PREV2_TYPE        = 0;
 	public static final int INDEX_PREV_TYPE         = 1;
@@ -52,12 +67,16 @@ public class CollectFeatures {
 	public static final int INDEX_RULE              = 9; // what rule are we in?
 	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 10;
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 11;
-	public static final int INDEX_NEXT_TYPE         = 12;
-	public static final int INDEX_INFO_FILE         = 13;
-	public static final int INDEX_INFO_LINE         = 14;
-	public static final int INDEX_INFO_CHARPOS      = 15;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE = 12;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE = 13;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE = 14;
+	public static final int INDEX_ANCESTORS_PARENT_RULE  = 15;
+	public static final int INDEX_NEXT_TYPE         = 16;
+	public static final int INDEX_INFO_FILE         = 17;
+	public static final int INDEX_INFO_LINE         = 18;
+	public static final int INDEX_INFO_CHARPOS      = 19;
 
-	public static final int NUM_FEATURES            = 15;
+	public static final int NUM_FEATURES            = 20;
 
 	public static FeatureMetaData[] FEATURES_INJECT_NL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
@@ -72,6 +91,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^4"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^3"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^2"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -92,6 +115,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^4"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^3"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^2"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -111,6 +138,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^4"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^3"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^2"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -130,6 +161,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^4"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^3"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^2"}, 1),
+		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -257,8 +292,19 @@ public class CollectFeatures {
 		{
 			aligned = CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
 		}
-		else if ( columnDelta>0 ) {
-			aligned = CAT_INDENT; // indent standard amount
+		else if ( columnDelta!=0 ) {
+			ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+			ParserRuleContext ancestorParent = getParent(earliestLeftAncestor);
+			int indentedFromPos = curToken.getCharPositionInLine()-Formatter.INDENT_LEVEL;
+			ParserRuleContext indentParent =
+				earliestAncestorStartingAtCharPos(ancestorParent, indentedFromPos);
+			if ( indentParent!=null ) {
+				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, indentParent);
+				aligned = CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN+deltaFromLeftAncestor;
+			}
+			else {
+				aligned = CAT_INDENT; // indent standard amount
+			}
 		}
 
 		return aligned;
@@ -405,6 +451,55 @@ public class CollectFeatures {
 		return prev;
 	}
 
+	/** Walk upwards from node until we find p.start at char position and p.start
+	 *  is first token on a line; return null if there is no such ancestor p.
+	 */
+	public ParserRuleContext earliestAncestorStartingAtCharPos(ParserRuleContext node, int charpos) {
+		ParserRuleContext p = node;
+		while ( p!=null ) {
+			if ( isFirstOnLine(p.getStart()) && p.getStart().getCharPositionInLine()==charpos ) {
+				return p;
+			}
+			p = p.getParent();
+		}
+		return null;
+	}
+
+	/** Return the number of hops to get to ancestor from node or -1 if we
+	 *  don't find ancestor on path to root.
+	 */
+	public static int getDeltaToAncestor(ParserRuleContext node, ParserRuleContext ancestor) {
+		int n = 0;
+		ParserRuleContext p = node;
+		while ( p!=null && p!=ancestor ) {
+			n++;
+			p = p.getParent();
+		}
+		if ( p==null ) return -1;
+		return n;
+	}
+
+	public static ParserRuleContext getAncestor(ParserRuleContext node, int delta) {
+		System.out.print(node.getText()+" "+JavaParser.ruleNames[node.getRuleIndex()]+"+"+delta);
+		int n = 0;
+		ParserRuleContext p = node;
+		while ( p!=null && n!=delta ) {
+			n++;
+			p = p.getParent();
+		}
+		System.out.println(" is "+JavaParser.ruleNames[p.getRuleIndex()]+":"+p.getAltNumber());
+		return p;
+	}
+
+	public boolean isFirstOnLine(Token t) {
+		tokens.seek(t.getTokenIndex()); // LT(1)
+		Token prevToken = tokens.LT(-1);
+		if ( prevToken==null ) {
+			return true; // if we are first token, must be first on line
+		}
+		return t.getLine()>prevToken.getLine();
+	}
+
 	public static ParserRuleContext deepestCommonAncestor(ParserRuleContext t1, ParserRuleContext t2) {
 		if ( t1==t2 ) return t1;
 		List<? extends Tree> t1_ancestors = Trees.getAncestors(t1);
@@ -443,29 +538,37 @@ public class CollectFeatures {
 		TerminalNode prevTerminalNode = tokenToNodeMap.get(prevToken);
 		ParserRuleContext parent = (ParserRuleContext)prevTerminalNode.getParent();
 		int prevTokenRuleIndex = parent.getRuleIndex();
+		int prevTokenRuleAltNum = parent.getAltNumber();
 		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(parent, prevToken);
 		int prevEarliestAncestorRuleIndex = -1;
+		int prevEarliestAncestorRuleAltNum = 0;
 		int prevEarliestAncestorWidth = -1;
 		if ( prevEarliestRightAncestor!=null ) {
 			prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
+			prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
 			prevEarliestAncestorWidth = prevEarliestRightAncestor.stop.getStopIndex()-prevEarliestRightAncestor.start.getStartIndex()+1;
 		}
 
 		// Get context information for current token
 		parent = (ParserRuleContext)node.getParent();
 		int curTokensParentRuleIndex = parent.getRuleIndex();
+		int curTokensParentRuleAltNumber = parent.getAltNumber();
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
 		int earliestAncestorWidth = -1;
 		int earliestLeftAncestorRuleIndex = -1;
+		int earliestLeftAncestorRuleAlt = 0;
 		if ( earliestLeftAncestor!=null ) {
 			earliestLeftAncestorRuleIndex = earliestLeftAncestor.getRuleIndex();
+			earliestLeftAncestorRuleAlt = earliestLeftAncestor.getAltNumber();
 			earliestAncestorWidth = earliestLeftAncestor.stop.getStopIndex()-earliestLeftAncestor.start.getStartIndex()+1;
 		}
 
 		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
 		int earliestRightAncestorRuleIndex = -1;
+		int earliestRightAncestorRuleAlt = 0;
 		if ( earliestRightAncestor!=null ) {
 			earliestRightAncestorRuleIndex = earliestRightAncestor.getRuleIndex();
+			earliestRightAncestorRuleAlt = earliestRightAncestor.getAltNumber();
 		}
 		int prevTokenEndCharPos = window.get(1).getCharPositionInLine() + window.get(1).getText().length();
 
@@ -479,22 +582,40 @@ public class CollectFeatures {
 		// TODO: I don't think we can detect first element of list
 		boolean startOfList = isFirstSiblingOfList(tokenToNodeMap, curToken);
 
+		// Get some context from parse tree
+		ParserRuleContext ancestorParent = null;
+		ParserRuleContext ancestorParent2 = null;
+		if ( earliestLeftAncestor==null ) { // just use regular parent then
+			ancestorParent = getParent(node);
+			ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
+		}
+		else {
+			ancestorParent = getParent(earliestLeftAncestor);  // get parent but skip chain rules
+			ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
+		}
+		ParserRuleContext ancestorParent3 = ancestorParent2!=null ? ancestorParent2.getParent() : null;
+		ParserRuleContext ancestorParent4 = ancestorParent3!=null ? ancestorParent3.getParent() : null;
+
 		boolean curTokenStartsNewLine = window.get(2).getLine()>window.get(1).getLine();
 		int[] features = {
 			window.get(0).getType(),
-
 			window.get(1).getType(),
-			prevTokenRuleIndex,
+			rulealt(prevTokenRuleIndex,prevTokenRuleAltNum),
 			prevTokenEndCharPos,
-			prevEarliestAncestorRuleIndex,
+			rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum),
 
 			window.get(2).getType(), // LT(1)
 			startOfList ? 1 : 0,
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
-			curTokensParentRuleIndex,
-			earliestRightAncestorRuleIndex,
-			earliestLeftAncestorRuleIndex,
+			rulealt(curTokensParentRuleIndex,curTokensParentRuleAltNumber),
+			rulealt(earliestRightAncestorRuleIndex,earliestRightAncestorRuleAlt),
+			rulealt(earliestLeftAncestorRuleIndex,earliestLeftAncestorRuleAlt),
+			ancestorParent4!=null ? rulealt(ancestorParent4.getRuleIndex(),ancestorParent4.getAltNumber()) : -1,
+			ancestorParent3!=null ? rulealt(ancestorParent3.getRuleIndex(),ancestorParent3.getAltNumber()) : -1,
+			ancestorParent2!=null ? rulealt(ancestorParent2.getRuleIndex(),ancestorParent2.getAltNumber()) : -1,
+			rulealt(ancestorParent.getRuleIndex(),ancestorParent.getAltNumber()), // always at least token's parent exists
+
 			window.get(3).getType(),
 
 			// info
@@ -657,7 +778,9 @@ public class CollectFeatures {
 					break;
 				case RULE :
 					if ( features[i]>=0 ) {
-						String ruleName = ruleNames[features[i]];
+						String ruleName = ruleNames[unrulealt(features[i])[0]];
+						int ruleAltNum = unrulealt(features[i])[1];
+						ruleName += ":"+ruleAltNum;
 						abbrev = StringUtils.abbreviateMiddle(ruleName, "*", displayWidth);
 						buf.append(String.format("%"+displayWidth+"s", abbrev));
 					}
@@ -782,11 +905,30 @@ public class CollectFeatures {
 		return real;
 	}
 
+	public static ParserRuleContext getParent(TerminalNode p) {
+		return getParent((ParserRuleContext)p.getParent());
+	}
+
 	/** Same as p.getParent() except we scan through chain rule nodes */
 	public static ParserRuleContext getParent(ParserRuleContext p) {
 		if ( p==null ) return null;
 		ParserRuleContext lastValidParent = p.getParent();
-		// now try to walk chain rules starting with the parent of the usual parent
+		if ( lastValidParent==null ) return null; // must have hit the root
+
+		return parentClosure(p.getParent());
+//
+//		// now try to walk chain rules starting with the parent of the usual parent
+//		ParserRuleContext q = lastValidParent.getParent();
+//		while ( q!=null && q.getChildCount()==1 ) { // while is a chain rule
+//			lastValidParent = q;
+//			q = q.getParent();
+//		}
+//		return lastValidParent;
+	}
+
+	// try to walk chain rules starting with the parent of the usual parent
+	public static ParserRuleContext parentClosure(ParserRuleContext p) {
+		ParserRuleContext lastValidParent = p;
 		ParserRuleContext q = lastValidParent.getParent();
 		while ( q!=null && q.getChildCount()==1 ) { // while is a chain rule
 			lastValidParent = q;
@@ -795,4 +937,15 @@ public class CollectFeatures {
 		return lastValidParent;
 	}
 
+	/** Pack a rule index and an alternative number into the same 32-bit integer. */
+	public static int rulealt(int rule, int alt) {
+		if ( rule==-1 ) return -1;
+		return rule<<16 | alt;
+	}
+
+	/** Return {rule index, rule alt number} */
+	public static int[] unrulealt(int ra) {
+		if ( ra==-1 ) return new int[] {-1, ATN.INVALID_ALT_NUMBER};
+		return new int[] {(ra>>16)&0xFFFF,ra&0xFFFF};
+	}
 }
