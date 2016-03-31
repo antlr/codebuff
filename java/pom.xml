@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4-runtime</artifactId>
-			<version>4.5.3-SNAPSHOT</version>
+			<version>4.5.3</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -55,7 +55,7 @@
 			<plugin>
 				<groupId>org.antlr</groupId>
 				<artifactId>antlr4-maven-plugin</artifactId>
-				<version>4.5.3-SNAPSHOT</version>
+				<version>4.5.3</version>
 				<executions>
 					<execution>
 						<configuration>
