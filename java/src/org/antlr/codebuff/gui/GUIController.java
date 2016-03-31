@@ -67,8 +67,6 @@ public class GUIController {
 		scope.injectNLConsole.setFont(docFont);
 		scope.alignConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		scope.alignConsole.setFont(docFont);
-		scope.indentConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-		scope.indentConsole.setFont(docFont);
 		scope.injectWSConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		scope.injectWSConsole.setFont(docFont);
 
@@ -116,11 +114,9 @@ public class GUIController {
 				}
 				scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
 				scope.alignConsole.setText(analysis!=null ? analysis.align : "");
-				scope.indentConsole.setText("not used");
 				scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
 				scope.injectNLConsole.setCaretPosition(0);
 				scope.alignConsole.setCaretPosition(0);
-				scope.indentConsole.setCaretPosition(0);
 				scope.injectWSConsole.setCaretPosition(0);
 			}
 			catch (Exception ex) {
