@@ -42,7 +42,7 @@ public class Tool {
 		String testFilename = args[2];
 		String output;
 		if ( language.equals("-java") ) {
-			Corpus corpus = train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
+			Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 			InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
 			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
 			output = results.a;
@@ -51,7 +51,7 @@ public class Tool {
 			controller.show();
 		}
 		else {
-			Corpus corpus = train(corpusDir, ANTLRv4Lexer.class, ANTLRv4Parser.class, tabSize);
+			Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
 			InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
 			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
 			output = results.a;
@@ -89,18 +89,20 @@ public class Tool {
 	}
 
 	public static Corpus train(String rootDir,
+	                           String fileRegex,
 							   Class<? extends Lexer> lexerClass,
 							   Class<? extends Parser> parserClass,
+							   String startRuleName,
 							   int tabSize)
 		throws Exception
 	{
-		List<String> allFiles = getFilenames(new File(rootDir), ".*\\.java");
+		List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
 		List<InputDocument> documents = load(allFiles, lexerClass, tabSize);
 
 		// Parse all documents into parse trees before training begins
 		for (InputDocument doc : documents) {
 			if ( showFileNames ) System.out.println(doc);
-			parse(doc, lexerClass, parserClass, "compilationUnit"); // TODO: make ruleName generic
+			parse(doc, lexerClass, parserClass, startRuleName);
 		}
 
 		// Walk all documents to compute matching token dependencies (we need this for feature computation)

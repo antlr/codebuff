@@ -32,7 +32,7 @@ public class TestJavaStability {
 
 	@Test
 	public void testStability() throws Exception {
-		Corpus corpus = Tool.train(fileName, JavaLexer.class, JavaParser.class, 4);
+		Corpus corpus = Tool.train(fileName, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 		InputDocument testDoc = Tool.load(fileName, JavaLexer.class, 4);
 		Pair<String,List<TokenPositionAnalysis>> results = Tool.format(corpus, testDoc, 4);
 		String output = results.a;

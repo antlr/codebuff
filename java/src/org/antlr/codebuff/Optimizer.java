@@ -162,7 +162,7 @@ public class Optimizer {
 			corpusDir = "../samples/stringtemplate4/org/stringtemplate/v4/debug/";
 			testFileDir = "../samples/stringtemplate4/org/stringtemplate/v4/debug/";
 		}
-		Corpus corpus = Tool.train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
+		Corpus corpus = Tool.train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
