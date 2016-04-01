@@ -168,6 +168,7 @@ public class Optimizer {
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
 
 		Tester t = new Tester(CollectFeatures.FEATURES_INJECT_NL, corpus, documents, tabSize);
-		multiRoundMinimize(Tester::test, LEARNING_RATE, h, PRECISION, CollectFeatures.FEATURES_INJECT_NL, 5);
+		// sorry, had to comment this out
+//		multiRoundMinimize(Tester::test, LEARNING_RATE, h, PRECISION, CollectFeatures.FEATURES_INJECT_NL, 5);
 	}
 }

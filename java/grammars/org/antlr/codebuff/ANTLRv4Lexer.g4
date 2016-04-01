@@ -75,17 +75,8 @@ tokens {
 
 	@Override
 	public Token emit() {
-		if (_type == /*ID*/ 999999) { // ################### just testing
-			String firstChar = _input.getText(Interval.of(_tokenStartCharIndex, _tokenStartCharIndex));
-			if (Character.isUpperCase(firstChar.charAt(0))) {
-				_type = TOKEN_REF;
-			} else {
-				_type = RULE_REF;
-			}
-
-			if (_currentRuleType == Token.INVALID_TYPE) { // if outside of rule def
-				_currentRuleType = _type;                 // set to inside lexer or parser rule
-			}
+		if (_type == TOKEN_REF || _type == RULE_REF ) {
+            _currentRuleType = _type;
 		}
 		else if (_type == SEMI) {                  // exit rule def
 			_currentRuleType = Token.INVALID_TYPE;

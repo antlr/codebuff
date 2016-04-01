@@ -1,5 +1,8 @@
 package org.antlr.codebuff;
 
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
+
 import java.util.ArrayList;
 
 /**
@@ -27,7 +30,11 @@ public class Tester {
 //		System.out.println();
 	}
 
-	public static double test(double[] parameters) {
+	public static double test(double[] parameters,
+	                          Class<? extends Lexer> lexerClass,
+	                          Class<? extends Parser> parserClass,
+	                          String startRuleName)
+	{
 		int j=0;
 		for (int i=0; i<parameters.length; i++) {
 			while (originalFeatures[j] == FeatureMetaData.UNUSED) j++;
@@ -36,7 +43,7 @@ public class Tester {
 		}
 		double validateResult = 0;
 		try {
-			validateResult = Tool.validate(corpus, testDocs, tabSize);
+			validateResult = Tool.validate(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -1,5 +1,8 @@
 package org.antlr.codebuff;
 
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,10 +30,25 @@ public class FeatureMetaDataTweaker {
 	private static double step = 0.2;
 	private static int showResultMaxAmount = 10;  // top n results we want to see
 
-	public FeatureMetaDataTweaker(FeatureMetaData[] originalFeatures, Corpus c, ArrayList<InputDocument> docs, int tSize) {
+	Class<? extends Lexer> lexerClass;
+	Class<? extends Parser> parserClass;
+	String startRuleName;
+
+	public FeatureMetaDataTweaker(FeatureMetaData[] originalFeatures,
+	                              Corpus c,
+	                              ArrayList<InputDocument> docs,
+	                              Class<? extends Lexer> lexerClass,
+	                              Class<? extends Parser> parserClass,
+	                              String startRuleName,
+	                              int tSize)
+	{
 		ORIGINAL_FEATURES = originalFeatures;
 		resultMap = new HashMap<>();
 		allIndexOfFeatureNeedToTweak = new ArrayList<>();
+
+		this.lexerClass = lexerClass;
+		this.parserClass = parserClass;
+		this.startRuleName = startRuleName;
 
 		corpus = c;
 		testDocs = docs;
@@ -57,14 +75,14 @@ public class FeatureMetaDataTweaker {
 		System.out.println();
 	}
 
-	public static void tweakParameterAndTest() throws Exception {
+	public void tweakParameterAndTest() throws Exception {
 		ArrayList<ArrayList<Double>> testParametersArray = bruteForceParameterGenerator();
 		for (ArrayList<Double> parameters: testParametersArray) {
 			HashMap<Integer, Double> testParameters = new HashMap<>();
 			for (int i=0; i<parameters.size(); i++) {
 				testParameters.put(allIndexOfFeatureNeedToTweak.get(i), parameters.get(i));
 			}
-			test(testParameters);
+			test(testParameters, lexerClass, parserClass, startRuleName);
 		}
 		System.out.println("=== Brute Force End ===");
 		System.out.println("=== Best Parameter Combination Found ===");
@@ -111,16 +129,27 @@ public class FeatureMetaDataTweaker {
 		return testParametersArray;
 	}
 
-	public static void test(HashMap<Integer, Double> testParameters) throws Exception {
+	public static void test(HashMap<Integer, Double> testParameters,
+	                        Class<? extends Lexer> lexerClass,
+	                        Class<? extends Parser> parserClass,
+	                        String startRuleName)
+		throws Exception
+	{
 		FeatureMetaData[] currentTestParameters = ORIGINAL_FEATURES;
 		testParameters.forEach((k, v) -> currentTestParameters[k].mismatchCost = v);
-		test(currentTestParameters, testParameters);
+		test(currentTestParameters, testParameters, lexerClass, parserClass, startRuleName);
 	}
 
-	public static void test(FeatureMetaData[] testFeatures, HashMap<Integer, Double> testParametersMap) throws Exception {
+	public static void test(FeatureMetaData[] testFeatures,
+	                        HashMap<Integer, Double> testParametersMap,
+	                        Class<? extends Lexer> lexerClass,
+	                        Class<? extends Parser> parserClass,
+	                        String startRuleName)
+		throws Exception
+	{
 		CollectFeatures.FEATURES_ALL = testFeatures;
 
-		double validateResult = Tool.validate(corpus, testDocs, tabSize);
+		double validateResult = Tool.validate(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
 
 		ArrayList<HashMap<Integer, Double>> newValue;
 		if (resultMap.containsKey(validateResult)) {
@@ -159,7 +188,7 @@ public class FeatureMetaDataTweaker {
 
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
-		FeatureMetaDataTweaker f = new FeatureMetaDataTweaker(CollectFeatures.FEATURES_ALL, corpus, documents, tabSize);
-		FeatureMetaDataTweaker.tweakParameterAndTest();
+		FeatureMetaDataTweaker f = new FeatureMetaDataTweaker(CollectFeatures.FEATURES_ALL, corpus, documents, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+		f.tweakParameterAndTest();
 	}
 }

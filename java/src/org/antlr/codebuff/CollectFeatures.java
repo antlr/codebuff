@@ -479,7 +479,7 @@ public class CollectFeatures {
 		ParserRuleContext ancestorParent = null;
 		ParserRuleContext ancestorParent2 = null;
 		if ( earliestLeftAncestor==null ) { // just use regular parent then
-			ancestorParent = getParent(node);
+			ancestorParent = (ParserRuleContext)node.getParent();
 			ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
 		}
 		else {
@@ -544,7 +544,7 @@ public class CollectFeatures {
 		int curTokensParentRuleIndex = parent.getRuleIndex();
 		Token curToken = node.getSymbol();
 		if (ruleToPairsBag != null) {
-			String ruleName = JavaParser.ruleNames[curTokensParentRuleIndex];
+			String ruleName = doc.parser.getRuleNames()[curTokensParentRuleIndex];
 			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
 			if ( pairs!=null ) {
 				// Find appropriate pair given current token

@@ -241,7 +241,7 @@ public class Formatter {
 			failsafeTriggered = true;
 		}
 
-		boolean prevIsWS = prevToken.getType()==JavaLexer.WS;
+		boolean prevIsWS = prevToken.getChannel()==Token.HIDDEN_CHANNEL; // assume this means whitespace
 		int actualNL = Tool.count(prevToken.getText(), '\n');
 		int actualWS = Tool.count(prevToken.getText(), ' ');
 		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",

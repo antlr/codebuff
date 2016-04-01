@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.gui.GUIController;
+import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonToken;
@@ -44,7 +45,7 @@ public class Tool {
 		if ( language.equals("-java") ) {
 			Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 			InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
-			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
+			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 			output = results.a;
 			List<TokenPositionAnalysis> analysisPerToken = results.b;
 			GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
@@ -53,7 +54,7 @@ public class Tool {
 		else {
 			Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
 			InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
-			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
+			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
 			output = results.a;
 			List<TokenPositionAnalysis> analysisPerToken = results.b;
 			GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
@@ -65,24 +66,34 @@ public class Tool {
 	/** Given a corpus, format the document by tokenizing and using the
 	 *  corpus to locate newline and whitespace injection points.
 	 */
-	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, int tabSize)
+	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc,
+	                                                              Class<? extends Lexer> lexerClass,
+	                                                              Class<? extends Parser> parserClass,
+	                                                              String startRuleName,
+	                                                              int tabSize)
 		throws Exception
 	{
-		return format(corpus, testDoc, tabSize, true);
+		return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true);
 	}
 
-	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, int tabSize, boolean showFormattedResult)
+	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus,
+	                                                              InputDocument testDoc,
+	                                                              Class<? extends Lexer> lexerClass,
+	                                                              Class<? extends Parser> parserClass,
+	                                                              String startRuleName,
+	                                                              int tabSize,
+	                                                              boolean showFormattedResult)
 		throws Exception
 	{
-		parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
+		parse(testDoc, lexerClass, parserClass, startRuleName);
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
 		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
 		testDoc.dumpIncorrectWS = false;
-		Tool.compare(testDoc, formattedOutput, JavaLexer.class);
+		Tool.compare(testDoc, formattedOutput, lexerClass);
 		if (showFormattedResult) System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100*testDoc.getIncorrectWSRate());
 		if (showFormattedResult) System.out.println("misclassified: "+formatter.misclassified_NL);
-		double d = Tool.docDiff(testDoc.content, formattedOutput, JavaLexer.class);
+		double d = Tool.docDiff(testDoc.content, formattedOutput, lexerClass);
 		if (showFormattedResult) System.out.println("Diff is "+d);
 
 		return new Pair<>(formattedOutput, analysisPerToken);
@@ -119,7 +130,7 @@ public class Tool {
 				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
 				System.out.print(ruleName+": ");
 				for (Pair<Integer, Integer> p : pairs) {
-					System.out.print(JavaParser.tokenNames[p.a]+","+JavaParser.tokenNames[p.b]+" ");
+					System.out.print(vocab.getDisplayName(p.a)+","+vocab.getDisplayName(p.b)+" ");
 				}
 				System.out.println();
 			}
@@ -845,17 +856,21 @@ public class Tool {
 	/** Given a corpus, format the given input documents and compute their document
 	 *  similarities with {@link #compare}.
 	 */
-	public static ArrayList<Double> validateResults(Corpus corpus, List<InputDocument> testDocs, int tabSize)
+	public static ArrayList<Double> validateResults(Corpus corpus, List<InputDocument> testDocs,
+	                                                Class<? extends Lexer> lexerClass,
+	                                                Class<? extends Parser> parserClass,
+	                                                String startRuleName,
+	                                                int tabSize)
 		throws Exception
 	{
 		ArrayList<Double> differenceRatios = new ArrayList<>();
 
 		for (InputDocument testDoc: testDocs) {
-			Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize, false);
+			Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, false);
 			String formattedDoc = results.a;
 			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
 			testDoc.dumpIncorrectWS = false;
-			double differenceRatio = compareNL(testDoc, formattedDoc, JavaLexer.class);
+			double differenceRatio = compareNL(testDoc, formattedDoc, lexerClass);
 			testDoc.dumpIncorrectWS = dumpIncorrectWSOldValue;
 			differenceRatios.add(differenceRatio);
 		}
@@ -863,10 +878,14 @@ public class Tool {
 	}
 
 	// return the median value of validate results array
-	public static double validate(Corpus corpus, List<InputDocument> testDocs, int tabSize)
+	public static double validate(Corpus corpus, List<InputDocument> testDocs,
+	                              Class<? extends Lexer> lexerClass,
+	                              Class<? extends Parser> parserClass,
+	                              String startRuleName,
+	                              int tabSize)
 		throws Exception
 	{
-		ArrayList<Double> differenceRatios = validateResults(corpus, testDocs, tabSize);
+		ArrayList<Double> differenceRatios = validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
 		Collections.sort(differenceRatios);
 		if (differenceRatios.size() % 2 == 1) return differenceRatios.get(differenceRatios.size() / 2);
 		else if (differenceRatios.size() == 0) {
@@ -877,14 +896,13 @@ public class Tool {
 	}
 
 
-//	public static class Foo {
-//		public static void main(String[] args) {
-//			String s =
-//			"                            noSuchAttributeReported = true;\n"+
-//			"                            errMgr.runTimeError(this, scope,\n"+
-//			"                                                ErrorType.NO_SUCH_ATTRIBUTE,\n"+
-//			"                                                argument.getKey());\n";
-//			System.out.println(expandTabs(s, 4));
-//		}
-//	}
+	public static class Foo {
+		public static void main(String[] args) throws Exception {
+			ANTLRv4Lexer lexer = new ANTLRv4Lexer(new ANTLRFileStream("grammars/org/antlr/codebuff/ANTLRv4Lexer.g4"));
+			CommonTokenStream tokens = new CommonTokenStream(lexer);
+			ANTLRv4Parser parser = new ANTLRv4Parser(tokens);
+			ANTLRv4Parser.GrammarSpecContext tree = parser.grammarSpec();
+			System.out.println(tree.toStringTree(parser));
+		}
+	}
 }
