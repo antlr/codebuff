@@ -14,10 +14,7 @@ import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
@@ -119,21 +116,6 @@ public class Tool {
 		return corpus;
 	}
 
-	public void saveCSV(List<InputDocument> documents, String dir) throws IOException {
-		FileWriter fw = new FileWriter(dir+"/style.csv");
-		BufferedWriter bw = new BufferedWriter(fw);
-//		bw.write(Utils.join(CollectFeatures.FEATURE_NAMES, ", "));
-		bw.write("\n");
-		for (InputDocument doc : documents) {
-			for (int[] record : doc.featureVectors) {
-				String r = join(record, ", ");
-				bw.write(r);
-				bw.write('\n');
-			}
-		}
-		bw.close();
-	}
-
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   Class<? extends Lexer> lexerClass,
 										   Class<? extends Parser> parserClass,
@@ -164,9 +146,7 @@ public class Tool {
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
-		throws Exception
-	{
+	public static void process(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag) {
 		CollectFeatures collector = new CollectFeatures(doc, tabSize, ruleToPairsBag);
 		collector.computeFeatureVectors();
 
@@ -234,7 +214,7 @@ public class Tool {
 										   int tabSize)
 		throws Exception
 	{
-		List<InputDocument> input = new ArrayList<InputDocument>(fileNames.size());
+		List<InputDocument> input = new ArrayList<>(fileNames.size());
 		int i = 0;
 		for (String f : fileNames) {
 			InputDocument doc = load(f, lexerClass, tabSize);
@@ -281,17 +261,17 @@ public class Tool {
 	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
-		List<String> files = new ArrayList<String>();
+		List<String> files = new ArrayList<>();
 		getFilenames_(f, inputFilePattern, files);
 		return files;
 	}
 
-	public static void getFilenames_(File f, String inputFilePattern, List<String> files) throws Exception {
+	public static void getFilenames_(File f, String inputFilePattern, List<String> files) {
 		// If this is a directory, walk each file/dir in that directory
 		if (f.isDirectory()) {
 			String flist[] = f.list();
-			for (int i=0; i < flist.length; i++) {
-				getFilenames_(new File(f, flist[i]), inputFilePattern, files);
+			for (String aFlist : flist) {
+				getFilenames_(new File(f, aFlist), inputFilePattern, files);
 			}
 		}
 
@@ -338,7 +318,6 @@ public class Tool {
 		List<CommonToken> copy = new ArrayList<>();
 		tokens.fill();
 		for (Token t : tokens.getTokens()) {
-			CommonToken ct = (CommonToken)t;
 			copy.add(new CommonToken(t));
 		}
 		return copy;
@@ -364,6 +343,7 @@ public class Tool {
 		for (int i=0; i<A.length; i++) {
 			if ( featureTypes[i].type==FeatureType.TOKEN ||
 				featureTypes[i].type==FeatureType.RULE  ||
+				featureTypes[i].type==FeatureType.INT  ||
 				featureTypes[i].type==FeatureType.BOOL
 				)
 			{

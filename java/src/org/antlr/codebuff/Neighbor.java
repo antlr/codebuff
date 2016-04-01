@@ -21,7 +21,12 @@ public class Neighbor {
 		String lineText = doc.getLine(line);
 		int col = X[CollectFeatures.INDEX_INFO_CHARPOS];
 		// insert a dot right before char position
-		lineText = lineText.substring(0,col) + '\u00B7' + lineText.substring(col,lineText.length());
-		return String.format("%s (cat=%d,d=%1.3f): %s", features, Y.get(corpusVectorIndex), distance, lineText);
+		if ( lineText!=null ) {
+			lineText = lineText.substring(0, col)+'\u00B7'+lineText.substring(col, lineText.length());
+		}
+		int cat = Y.get(corpusVectorIndex);
+		int[] elements = CollectFeatures.unaligncat(cat);
+		String display = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
+		return String.format("%s (cat=%s,d=%1.3f): %s", features, display, distance, lineText);
 	}
 }

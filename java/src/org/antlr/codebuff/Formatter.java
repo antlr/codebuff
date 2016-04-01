@@ -6,16 +6,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.WritableToken;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN;
-import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN;
-import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_LIST_FIRST_ELEMENT;
-import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_PAIR;
+import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN;
 import static org.antlr.codebuff.CollectFeatures.CAT_NO_ALIGNMENT;
@@ -25,15 +23,11 @@ import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_END_COLUMN;
 import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD;
-import static org.antlr.codebuff.CollectFeatures.earliestAncestorEndingWithToken;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
-import static org.antlr.codebuff.CollectFeatures.getListSiblings;
-import static org.antlr.codebuff.CollectFeatures.getMatchingLeftSymbol;
 import static org.antlr.codebuff.CollectFeatures.getNodeFeatures;
 import static org.antlr.codebuff.CollectFeatures.getRealTokens;
 import static org.antlr.codebuff.CollectFeatures.getTokensOnPreviousLine;
 import static org.antlr.codebuff.CollectFeatures.indexTree;
-import static org.antlr.codebuff.CollectFeatures.isAlignedWithFirstSiblingOfList;
 
 public class Formatter {
 	public static final int INDENT_LEVEL = 4;
@@ -75,6 +69,7 @@ public class Formatter {
 		wsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
+//		k = 7;
 		k = 11;
 		this.tabSize = tabSize;
 	}
@@ -154,7 +149,6 @@ public class Formatter {
 
 			TerminalNode node = tokenToNodeMap.get(curToken);
 			ParserRuleContext parent = (ParserRuleContext)node.getParent();
-			ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(parent, curToken);
 
 			switch ( align ) {
 				case CAT_INDENT :
@@ -164,47 +158,43 @@ public class Formatter {
 						output.append(Tool.spaces(indentedCol));
 					}
 					break;
-				case CAT_ALIGN_WITH_ANCESTOR_FIRST_TOKEN :
-					if ( earliestRightAncestor!=null ) {
-						Token earliestRightAncestorStart = earliestRightAncestor.getStart();
-						int linedUpCol = earliestRightAncestorStart.getCharPositionInLine();
-						charPosInLine = linedUpCol;
-						output.append(Tool.spaces(linedUpCol));
-					}
-					break;
-				case CAT_ALIGN_WITH_ANCESTORS_PARENT_FIRST_TOKEN :
-					if ( earliestRightAncestor!=null ) {
-						ParserRuleContext earliestAncestorParent = earliestRightAncestor.getParent();
-						if ( earliestAncestorParent!=null ) {
-							Token earliestAncestorParentStart = earliestAncestorParent.getStart();
-							int linedUpCol = earliestAncestorParentStart.getCharPositionInLine();
-							charPosInLine = linedUpCol;
-							output.append(Tool.spaces(linedUpCol));
-						}
-					}
-					break;
-				case CAT_ALIGN_WITH_LIST_FIRST_ELEMENT :
-					List<ParserRuleContext> listSiblings = getListSiblings(tokenToNodeMap, curToken);
-					if ( listSiblings!=null ) {
-						ParserRuleContext firstSibling = listSiblings.get(0);
-						int linedUpCol = firstSibling.getStart().getCharPositionInLine();
-						charPosInLine = linedUpCol;
-						output.append(Tool.spaces(linedUpCol));
-					}
-					break;
-				case CAT_ALIGN_WITH_PAIR :
-					TerminalNode matchingLeftSymbol = getMatchingLeftSymbol(doc, node);
-					int linedUpCol = matchingLeftSymbol.getSymbol().getCharPositionInLine();
-					charPosInLine = linedUpCol;
-					output.append(Tool.spaces(linedUpCol));
-					break;
 				case CAT_NO_ALIGNMENT :
 					break;
 
 				default :
-					if ( align>=CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
-						int deltaFromAncestor = align - CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN;
+					if ( (align&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
+						int[] deltaChild = CollectFeatures.unaligncat(align);
+						int deltaFromAncestor = deltaChild[0];
+						int childIndex = deltaChild[1];
 						ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+						if ( earliestLeftAncestor==null ) {
+							earliestLeftAncestor = parent;
+						}
+						ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+						ParseTree child = ancestor.getChild(childIndex);
+						Token start = null;
+						if ( child instanceof ParserRuleContext ) {
+							start = ((ParserRuleContext) child).getStart();
+						}
+						else if ( child instanceof TerminalNode ){
+							start = ((TerminalNode)child).getSymbol();
+						}
+						else {
+							// uh oh.
+							System.err.println("Whoops. Tried access invalid child");
+						}
+						if ( start!=null ) {
+							int indentCol = start.getCharPositionInLine();
+							charPosInLine = indentCol;
+							output.append(Tool.spaces(indentCol));
+						}
+					}
+					else if ( (align&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
+						int deltaFromAncestor = CollectFeatures.unindentcat(align);
+						ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+						if ( earliestLeftAncestor==null ) {
+							earliestLeftAncestor = parent;
+						}
 						ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 						Token start = ancestor.getStart();
 						int indentCol = start.getCharPositionInLine() + INDENT_LEVEL;
@@ -251,13 +241,12 @@ public class Formatter {
 		boolean prevIsWS = prevToken.getType()==JavaLexer.WS;
 		int actualNL = Tool.count(prevToken.getText(), '\n');
 		int actualWS = Tool.count(prevToken.getText(), ' ');
-		boolean actualAlign = isAlignedWithFirstSiblingOfList(tokenToNodeMap, tokens, curToken);
 		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",
 		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
 		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
 		                                             originalCurToken.getLine(),
 		                                             alignWithPrevious==1?"align":"unaligned",
-		                                             actualAlign?"align":"unaligned");
+		                                             "?");
 		String wsPredictionString = String.format("### line %d: predicted %d ' ' actual %s",
 		                                          originalCurToken.getLine(), ws, prevIsWS ? actualWS : "none");
 		if ( failsafeTriggered ) {

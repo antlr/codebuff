@@ -7,9 +7,6 @@ public class TokenPositionAnalysis {
 	public String ws = "n/a";
 	public String align = "n/a";
 
-	public TokenPositionAnalysis() {
-	}
-
 	public TokenPositionAnalysis(String newline, String align, String ws) {
 		this.align = align;
 		this.newline = newline;
