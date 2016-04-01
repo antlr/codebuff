@@ -41,7 +41,10 @@ public class InputDocument {
 		if ( lines==null ) {
 			lines = Arrays.asList(content.split("\n"));
 		}
-		return lines.get(line-1);
+		if ( line>0 ) {
+			return lines.get(line-1);
+		}
+		return null;
 	}
 
 	public double getIncorrectWSRate() {

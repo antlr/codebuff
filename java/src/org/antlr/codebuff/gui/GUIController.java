@@ -16,7 +16,6 @@ import javax.swing.text.Highlighter.HighlightPainter;
 import java.awt.*;
 import java.util.List;
 
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import static javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 
 public class GUIController {
@@ -71,7 +70,7 @@ public class GUIController {
 		scope.injectWSConsole.setFont(docFont);
 
 		JFrame frame = new JFrame("CodeBuff Scope");
-		frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.getContentPane().add(scope.$$$getRootComponent$$$(), BorderLayout.CENTER);
 
 		scope.getFormattedTextPane().addCaretListener(new HighlightTokenListener());
