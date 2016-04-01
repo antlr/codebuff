@@ -34,19 +34,32 @@ public class Tool {
 		throws Exception
 	{
 		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures root-dir-of-samples test-file");
+			System.err.println("ExtractFeatures [-java|-antlr] root-dir-of-samples test-file");
 		}
 		int tabSize = 4; // TODO: MAKE AN ARGUMENT
-		String corpusDir = args[0];
-		String testFilename = args[1];
-		Corpus corpus = train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
-		InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
-		Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
-		String output = results.a;
-		List<TokenPositionAnalysis> analysisPerToken = results.b;
+		String language = args[0];
+		String corpusDir = args[1];
+		String testFilename = args[2];
+		String output;
+		if ( language.equals("-java") ) {
+			Corpus corpus = train(corpusDir, JavaLexer.class, JavaParser.class, tabSize);
+			InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
+			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
+			output = results.a;
+			List<TokenPositionAnalysis> analysisPerToken = results.b;
+			GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+			controller.show();
+		}
+		else {
+			Corpus corpus = train(corpusDir, ANTLRv4Lexer.class, ANTLRv4Parser.class, tabSize);
+			InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
+			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, tabSize);
+			output = results.a;
+			List<TokenPositionAnalysis> analysisPerToken = results.b;
+			GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+			controller.show();
+		}
 		System.out.println(output);
-		GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
-		controller.show();
 	}
 
 	/** Given a corpus, format the document by tokenizing and using the

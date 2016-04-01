@@ -25,6 +25,7 @@ import java.util.Map;
 
 public class CollectFeatures {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.20;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	// Feature values for pair on diff lines feature
 	public static final int NOT_PAIR = -1;
@@ -314,32 +315,6 @@ public class CollectFeatures {
 			precedingNL += Tool.count(t.getText(), '\n');
 		}
 		return precedingNL;
-	}
-
-	public static boolean isAlignedWithFirstSiblingOfList(Map<Token, TerminalNode> tokenToNodeMap,
-														  CommonTokenStream tokens,
-														  Token curToken)
-	{
-		TerminalNode node = tokenToNodeMap.get(curToken);
-		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-		ParserRuleContext earliestAncestor = earliestAncestorStartingWithToken(parent, curToken);
-		boolean aligned = false;
-
-		// at a newline, are we aligned with a prior sibling (in a list)?
-		int precedingNL = getPrecedingNL(tokens, curToken.getTokenIndex());
-		if ( precedingNL>0 && earliestAncestor!=null ) {
-			ParserRuleContext commonAncestor = earliestAncestor.getParent();
-			List<ParserRuleContext> siblings = commonAncestor.getRuleContexts(earliestAncestor.getClass());
-			if ( siblings.size()>1 ) {
-				ParserRuleContext firstSibling = siblings.get(0);
-				Token firstSiblingStartToken = firstSibling.getStart();
-				if ( firstSiblingStartToken!=curToken && // can't align with yourself
-					firstSiblingStartToken.getCharPositionInLine()==curToken.getCharPositionInLine() ) {
-					aligned = true;
-				}
-			}
-		}
-		return aligned;
 	}
 
 	/** Walk upwards from node while p.start == token; return null if there is

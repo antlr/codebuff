@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -23,6 +24,7 @@ import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_END_COLUMN;
 import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD;
+import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD2;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
 import static org.antlr.codebuff.CollectFeatures.getNodeFeatures;
 import static org.antlr.codebuff.CollectFeatures.getRealTokens;
@@ -124,7 +126,14 @@ public class Formatter {
 		features[INDEX_FIRST_ON_LINE] = injectNewline; // use \n prediction to match exemplars for alignment
 
 		int align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
-		//indentClassifier.classify(k, features, corpus.indent, CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD);
+		if ( align==CAT_NO_ALIGNMENT ) {
+			HashBag<Integer> votes = alignClassifier.votes(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
+			if ( votes.size()==0 ) {
+				// try with less strict match threshold to get some indication of alignment
+				align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD2);
+			}
+		}
+
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, MAX_CONTEXT_DIFF_THRESHOLD);
 
 		TokenPositionAnalysis tokenPositionAnalysis =
@@ -150,57 +159,51 @@ public class Formatter {
 			TerminalNode node = tokenToNodeMap.get(curToken);
 			ParserRuleContext parent = (ParserRuleContext)node.getParent();
 
-			switch ( align ) {
-				case CAT_INDENT :
-					if ( firstTokenOnPrevLine!=null ) { // if not on first line, we can indent indent
-						int indentedCol = firstTokenOnPrevLine.getCharPositionInLine() + INDENT_LEVEL;
-						charPosInLine = indentedCol;
-						output.append(Tool.spaces(indentedCol));
-					}
-					break;
-				case CAT_NO_ALIGNMENT :
-					break;
-
-				default :
-					if ( (align&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
-						int[] deltaChild = CollectFeatures.unaligncat(align);
-						int deltaFromAncestor = deltaChild[0];
-						int childIndex = deltaChild[1];
-						ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
-						if ( earliestLeftAncestor==null ) {
-							earliestLeftAncestor = parent;
-						}
-						ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
-						ParseTree child = ancestor.getChild(childIndex);
-						Token start = null;
-						if ( child instanceof ParserRuleContext ) {
-							start = ((ParserRuleContext) child).getStart();
-						}
-						else if ( child instanceof TerminalNode ){
-							start = ((TerminalNode)child).getSymbol();
-						}
-						else {
-							// uh oh.
-							System.err.println("Whoops. Tried access invalid child");
-						}
-						if ( start!=null ) {
-							int indentCol = start.getCharPositionInLine();
-							charPosInLine = indentCol;
-							output.append(Tool.spaces(indentCol));
-						}
-					}
-					else if ( (align&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
-						int deltaFromAncestor = CollectFeatures.unindentcat(align);
-						ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
-						if ( earliestLeftAncestor==null ) {
-							earliestLeftAncestor = parent;
-						}
-						ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
-						Token start = ancestor.getStart();
-						int indentCol = start.getCharPositionInLine() + INDENT_LEVEL;
-						charPosInLine = indentCol;
-						output.append(Tool.spaces(indentCol));
-					}
+			if ( align==CAT_INDENT ) {
+				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we can indent indent
+					int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
+					charPosInLine = indentedCol;
+					output.append(Tool.spaces(indentedCol));
+				}
+			}
+			else if ( (align&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
+				int[] deltaChild = CollectFeatures.unaligncat(align);
+				int deltaFromAncestor = deltaChild[0];
+				int childIndex = deltaChild[1];
+				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+				if ( earliestLeftAncestor==null ) {
+					earliestLeftAncestor = parent;
+				}
+				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+				ParseTree child = ancestor.getChild(childIndex);
+				Token start = null;
+				if ( child instanceof ParserRuleContext ) {
+					start = ((ParserRuleContext) child).getStart();
+				}
+				else if ( child instanceof TerminalNode ){
+					start = ((TerminalNode)child).getSymbol();
+				}
+				else {
+					// uh oh.
+					System.err.println("Whoops. Tried access invalid child");
+				}
+				if ( start!=null ) {
+					int indentCol = start.getCharPositionInLine();
+					charPosInLine = indentCol;
+					output.append(Tool.spaces(indentCol));
+				}
+			}
+			else if ( (align&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
+				int deltaFromAncestor = CollectFeatures.unindentcat(align);
+				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
+				if ( earliestLeftAncestor==null ) {
+					earliestLeftAncestor = parent;
+				}
+				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+				Token start = ancestor.getStart();
+				int indentCol = start.getCharPositionInLine() + INDENT_LEVEL;
+				charPosInLine = indentCol;
+				output.append(Tool.spaces(indentCol));
 			}
 		}
 		else {
