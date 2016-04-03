@@ -30,7 +30,8 @@ import java.util.Map;
  *
  * Testing:
  *
- * Tool  -antlr     ../grammars         /Users/parrt/antlr/code/grammars-v4/clojure/Clojure.g4
+ * Tool  -antlr     ../grammars                    /Users/parrt/antlr/code/grammars-v4/clojure/Clojure.g4
+ * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
  */
 public class Tool {
 	public static boolean showFileNames = false;

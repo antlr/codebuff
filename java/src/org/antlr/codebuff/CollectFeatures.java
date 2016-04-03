@@ -288,8 +288,11 @@ public class CollectFeatures {
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 			aligned = aligncat(deltaFromLeftAncestor, pair.b);
-//			System.out.printf("ALIGN %s %d %x\n", JavaParser.ruleNames[pair.a.getRuleIndex()], pair.b, aligned);
-		}
+//			System.out.printf("ALIGN %s %s %d %x %s\n",
+//			                  curToken,
+//			                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
+//			                  pair.b, aligned, doc.fileName);
+ 		}
 		else if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-Formatter.INDENT_LEVEL;
 			ParserRuleContext indentParent =
@@ -368,18 +371,16 @@ public class CollectFeatures {
 			// check all children of p to see if one of them starts at charpos
 			for (int i = 0; i<p.getChildCount(); i++) {
 				ParseTree child = p.getChild(i);
+				Token start;
 				if ( child instanceof ParserRuleContext ) {
-					ParserRuleContext c = (ParserRuleContext)child;
-					if ( c.getStart().getTokenIndex()<t.getTokenIndex() && isFirstOnLine(c.getStart()) && c.getStart().getCharPositionInLine()==charpos ) {
-						return new Pair<>(p,i);
-					}
+					start = ((ParserRuleContext) child).getStart();
 				}
 				else { // must be token
-					TerminalNode c = (TerminalNode)child;
-					// check that we aren't aligned with self or element *after* us
-					if ( c.getSymbol().getTokenIndex()<t.getTokenIndex() && isFirstOnLine(c.getSymbol()) && c.getSymbol().getCharPositionInLine()==charpos ) {
-						return new Pair<>(p,i);
-					}
+					start = ((TerminalNode)child).getSymbol();
+				}
+				// check that we aren't aligned with self or element *after* us
+				if ( start.getTokenIndex()<t.getTokenIndex() && start.getCharPositionInLine()==charpos ) {
+					return new Pair<>(p,i);
 				}
 			}
 			p = p.getParent();
