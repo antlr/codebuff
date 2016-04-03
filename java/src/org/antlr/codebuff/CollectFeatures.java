@@ -481,11 +481,15 @@ public class CollectFeatures {
 		ParserRuleContext ancestorParent2 = null;
 		if ( earliestLeftAncestor==null ) { // just use regular parent then
 			ancestorParent = getParent(node);
-			ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
+			if ( ancestorParent!=null ) {
+				ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
+			}
 		}
 		else {
 			ancestorParent = getParent(earliestLeftAncestor);  // get parent but skip chain rules
-			ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
+			if ( ancestorParent!=null ) {
+				ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
+			}
 		}
 		ParserRuleContext ancestorParent3 = ancestorParent2!=null ? ancestorParent2.getParent() : null;
 		ParserRuleContext ancestorParent4 = ancestorParent3!=null ? ancestorParent3.getParent() : null;
@@ -787,7 +791,7 @@ public class CollectFeatures {
 	}
 
 	public static ParserRuleContext getParent(TerminalNode p) {
-		return getParent((ParserRuleContext)p.getParent());
+		return parentClosure((ParserRuleContext)p.getParent());
 	}
 
 	/** Same as p.getParent() except we scan through chain rule nodes */
