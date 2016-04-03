@@ -57,7 +57,7 @@ public class Tool {
 			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
 			output = results.a;
 			List<TokenPositionAnalysis> analysisPerToken = results.b;
-			GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+			GUIController controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
 			controller.show();
 		}
 		System.out.println(output);

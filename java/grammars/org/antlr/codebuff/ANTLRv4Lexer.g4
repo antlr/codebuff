@@ -75,8 +75,17 @@ tokens {
 
 	@Override
 	public Token emit() {
-		if (_type == TOKEN_REF || _type == RULE_REF ) {
-            _currentRuleType = _type;
+		if (_type == ID) {
+			String firstChar = _input.getText(Interval.of(_tokenStartCharIndex, _tokenStartCharIndex));
+			if (Character.isUpperCase(firstChar.charAt(0))) {
+				_type = TOKEN_REF;
+			} else {
+				_type = RULE_REF;
+			}
+
+			if (_currentRuleType == Token.INVALID_TYPE) { // if outside of rule def
+				_currentRuleType = _type;                 // set to inside lexer or parser rule
+			}
 		}
 		else if (_type == SEMI) {                  // exit rule def
 			_currentRuleType = Token.INVALID_TYPE;
@@ -156,11 +165,7 @@ NOT          : '~'                    ;
 RBRACE       : '}'                    ;
 
 /** Allow unicode rule/token names */
-//ID	:	NameStartChar NameChar*;
-
-// ##################### to allow testing ANTLR grammars in intellij preview
-RULE_REF  : [a-z][a-zA-Z_0-9]* ;
-TOKEN_REF : [A-Z][a-zA-Z_0-9]* ;
+ID	:	NameStartChar NameChar*;
 
 fragment
 NameChar
@@ -327,4 +332,3 @@ mode LexerCharSet;
 	UNTERMINATED_CHAR_SET
 		:	EOF							-> popMode
 		;
-
