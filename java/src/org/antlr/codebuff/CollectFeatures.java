@@ -479,7 +479,7 @@ public class CollectFeatures {
 		ParserRuleContext ancestorParent = null;
 		ParserRuleContext ancestorParent2 = null;
 		if ( earliestLeftAncestor==null ) { // just use regular parent then
-			ancestorParent = (ParserRuleContext)node.getParent();
+			ancestorParent = getParent(node);
 			ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
 		}
 		else {
