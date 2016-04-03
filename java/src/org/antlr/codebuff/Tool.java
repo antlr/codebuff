@@ -26,7 +26,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/** Ok, changed requirements. Grammar must have WS on hidden channel and comments skipped or on non-HIDDEN channel */
+/** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
+ *
+ * Testing:
+ *
+ * Tool  -antlr     ../grammars         /Users/parrt/antlr/code/grammars-v4/clojure/Clojure.g4
+ */
 public class Tool {
 	public static boolean showFileNames = false;
 	public static boolean showTokens = false;
