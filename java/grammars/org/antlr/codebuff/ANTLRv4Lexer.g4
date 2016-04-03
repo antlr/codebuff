@@ -165,7 +165,11 @@ NOT          : '~'                    ;
 RBRACE       : '}'                    ;
 
 /** Allow unicode rule/token names */
-ID	:	NameStartChar NameChar*;
+//ID	:	NameStartChar NameChar*;
+// ##################### to allow testing ANTLR grammars in intellij preview
+RULE_REF  : [a-z][a-zA-Z_0-9]* ;
+TOKEN_REF : [A-Z][a-zA-Z_0-9]* ;
+
 
 fragment
 NameChar
