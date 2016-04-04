@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD2;
+
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
 	protected final Corpus corpus;
@@ -50,6 +52,10 @@ public abstract class kNNClassifier {
 	 */
 	public int classify(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		HashBag<Integer> votes = votes(k, unknown, Y, distanceThreshold);
+		if ( votes.size()==0 ) {
+			// try with less strict match threshold to get some indication of alignment
+			votes = votes(k, unknown, Y, MAX_CONTEXT_DIFF_THRESHOLD2);
+		}
 		return getCategoryWithMostVotes(votes);
 	}
 
@@ -94,6 +100,11 @@ public abstract class kNNClassifier {
 	public String getPredictionAnalysis(InputDocument doc, int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
 		HashBag<Integer> votes = getVotesBag(kNN, k, unknown, Y);
+		if ( votes.size()==0 ) {
+			// try with less strict match threshold to get some indication of alignment
+			kNN = kNN(unknown, k, MAX_CONTEXT_DIFF_THRESHOLD2);
+			votes = getVotesBag(kNN, k, unknown, Y);
+		}
 
 		StringBuilder buf = new StringBuilder();
 		buf.append(CollectFeatures.featureNameHeader(FEATURES));

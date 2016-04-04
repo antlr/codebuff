@@ -1,6 +1,5 @@
 package org.antlr.codebuff;
 
-import org.antlr.codebuff.misc.HashBag;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -17,14 +16,12 @@ import java.util.Vector;
 import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN;
-import static org.antlr.codebuff.CollectFeatures.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_NL;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_END_COLUMN;
 import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD;
-import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD2;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
 import static org.antlr.codebuff.CollectFeatures.getNodeFeatures;
 import static org.antlr.codebuff.CollectFeatures.getRealTokens;
@@ -126,13 +123,6 @@ public class Formatter {
 		features[INDEX_FIRST_ON_LINE] = injectNewline; // use \n prediction to match exemplars for alignment
 
 		int align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
-		if ( align==CAT_NO_ALIGNMENT ) {
-			HashBag<Integer> votes = alignClassifier.votes(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
-			if ( votes.size()==0 ) {
-				// try with less strict match threshold to get some indication of alignment
-				align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD2);
-			}
-		}
 
 		int ws = wsClassifier.classify(k, features, corpus.injectWS, MAX_CONTEXT_DIFF_THRESHOLD);
 
