@@ -17,8 +17,9 @@ import java.util.Vector;
 import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN;
+import static org.antlr.codebuff.CollectFeatures.CAT_INJECT_NL;
+import static org.antlr.codebuff.CollectFeatures.CAT_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
-import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_NL;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_END_COLUMN;
@@ -44,7 +45,7 @@ public class Formatter {
 
 	protected Vector<TokenPositionAnalysis> analysis = new Vector<>();
 
-	protected CodekNNClassifier newlineClassifier;
+	protected CodekNNClassifier nlwsClassifier;
 	protected CodekNNClassifier wsClassifier;
 	protected CodekNNClassifier alignClassifier;
 	protected int k;
@@ -65,8 +66,7 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens);
-		newlineClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_NL);
-		wsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
+		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
 //		k = 7;
@@ -120,17 +120,23 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 		features[INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		int injectNewline = newlineClassifier.classify(k, features, corpus.injectNewlines, MAX_CONTEXT_DIFF_THRESHOLD);
+		int injectNL_WS = nlwsClassifier.classify(k, features, corpus.injectWhitespace, MAX_CONTEXT_DIFF_THRESHOLD);
+		int newlines = 0;
+		int ws = 0;
+		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
+			newlines = CollectFeatures.unnlcat(injectNL_WS);
+		}
+		else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
+			ws = CollectFeatures.unwscat(injectNL_WS);
+		}
 
 		// getNodeFeatures() also doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
-		features[INDEX_FIRST_ON_LINE] = injectNewline; // use \n prediction to match exemplars for alignment
+		features[INDEX_FIRST_ON_LINE] = newlines; // use \n prediction to match exemplars for alignment
 
 		int align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
 
-		int ws = wsClassifier.classify(k, features, corpus.injectWS, MAX_CONTEXT_DIFF_THRESHOLD);
-
 		TokenPositionAnalysis tokenPositionAnalysis =
-			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNewline, align, ws);
+			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, newlines, align, ws);
 		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -138,8 +144,8 @@ public class Formatter {
 			ws = 1;
 		}
 
-		if ( injectNewline>0 ) {
-			output.append(Tool.newlines(injectNewline));
+		if ( newlines>0 ) {
+			output.append(Tool.newlines(newlines));
 			line++;
 			charPosInLine = 0;
 
@@ -153,7 +159,7 @@ public class Formatter {
 			ParserRuleContext parent = (ParserRuleContext)node.getParent();
 
 			if ( align==CAT_INDENT ) {
-				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we can indent indent
+				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
 					int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
 					charPosInLine = indentedCol;
 					output.append(Tool.spaces(indentedCol));
@@ -287,23 +293,14 @@ public class Formatter {
 		                                             originalCurToken.getLine(),
 		                                             alignWithPrevious==1?"align":"unaligned",
 		                                             "?");
-		String wsPredictionString = String.format("### line %d: predicted %d ' ' actual %s",
-		                                          originalCurToken.getLine(), ws, prevIsWS ? actualWS : "none");
-		if ( failsafeTriggered ) {
-			wsPredictionString += " (failsafe triggered)";
-		}
-
 
 		String newlineAnalysis = newlinePredictionString+"\n"+
-			newlineClassifier.getPredictionAnalysis(doc, k, features, corpus.injectNewlines,
-			                                        MAX_CONTEXT_DIFF_THRESHOLD);
+			nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
+			                                     MAX_CONTEXT_DIFF_THRESHOLD);
 		String alignAnalysis =alignPredictionString+"\n"+
 			alignClassifier.getPredictionAnalysis(doc, k, features, corpus.align,
 			                                      MAX_CONTEXT_DIFF_THRESHOLD);
-		String wsAnalysis =wsPredictionString+"\n"+
-			wsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWS,
-			                                   MAX_CONTEXT_DIFF_THRESHOLD);
-		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, wsAnalysis);
+		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, "n/a");
 	}
 
 	/** Do not join two words like "finaldouble" or numbers like "3double",

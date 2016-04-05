@@ -66,8 +66,6 @@ public class GUIController {
 		scope.injectNLConsole.setFont(docFont);
 		scope.alignConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 		scope.alignConsole.setFont(docFont);
-		scope.injectWSConsole.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-		scope.injectWSConsole.setFont(docFont);
 
 		JFrame frame = new JFrame("CodeBuff Scope");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -113,10 +111,8 @@ public class GUIController {
 				}
 				scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
 				scope.alignConsole.setText(analysis!=null ? analysis.align : "");
-				scope.injectWSConsole.setText(analysis!=null ? analysis.ws : "");
 				scope.injectNLConsole.setCaretPosition(0);
 				scope.alignConsole.setCaretPosition(0);
-				scope.injectWSConsole.setCaretPosition(0);
 			}
 			catch (Exception ex) {
 				ex.printStackTrace(System.err);

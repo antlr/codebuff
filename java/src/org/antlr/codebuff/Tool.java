@@ -158,7 +158,6 @@ public class Tool {
 		List<InputDocument> documents = new ArrayList<>();
 		List<int[]> featureVectors = new ArrayList<>();
 		List<Integer> injectNewlines = new ArrayList<>();
-		List<Integer> injectWS = new ArrayList<>();
 		List<Integer> alignWithPrevious = new ArrayList<>();
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
@@ -167,14 +166,13 @@ public class Tool {
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
 				int[] featureVec = doc.featureVectors.get(i);
-				injectNewlines.add(doc.injectNewlines.get(i));
-				injectWS.add(doc.injectWS.get(i));
-				alignWithPrevious.add(doc.alignWithPrevious.get(i));
+				injectNewlines.add(doc.injectWhitespace.get(i));
+				alignWithPrevious.add(doc.align.get(i));
 				featureVectors.add(featureVec);
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious, injectWS);
+		return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
@@ -183,9 +181,8 @@ public class Tool {
 		collector.computeFeatureVectors();
 
 		doc.featureVectors = collector.getFeatures();
-		doc.injectNewlines = collector.getInjectNewlines();
-		doc.injectWS = collector.getInjectWS();
-		doc.alignWithPrevious = collector.getAlign();
+		doc.injectWhitespace = collector.getInjectWhitespace();
+		doc.align = collector.getAlign();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)

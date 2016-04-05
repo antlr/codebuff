@@ -144,28 +144,6 @@
                   </scrollpane>
                 </children>
               </grid>
-              <grid id="883ac" binding="injectWSTab" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints>
-                  <tabbedpane title="Inject whitespace"/>
-                </constraints>
-                <properties/>
-                <border type="none"/>
-                <children>
-                  <scrollpane id="fb4f9">
-                    <constraints border-constraint="Center"/>
-                    <properties/>
-                    <border type="none"/>
-                    <children>
-                      <component id="93e0e" class="javax.swing.JTextArea" binding="injectWSConsole">
-                        <constraints/>
-                        <properties>
-                          <editable value="false"/>
-                        </properties>
-                      </component>
-                    </children>
-                  </scrollpane>
-                </children>
-              </grid>
             </children>
           </tabbedpane>
         </children>

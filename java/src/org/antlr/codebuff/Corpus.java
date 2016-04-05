@@ -18,9 +18,8 @@ public class Corpus {
 
 	List<InputDocument> documents; // an entry for each X
 	List<int[]> X;
-	List<Integer> injectNewlines;
+	List<Integer> injectWhitespace;
 	List<Integer> align; // steps to common ancestor whose first token is alignment anchor
-	List<Integer> injectWS;
 
 	/** an index to narrow down the number of vectors we compute distance() on each classification.
 	 *  The key is (previous token's rule index, current token's rule index). It yields
@@ -30,14 +29,12 @@ public class Corpus {
 
 	public Corpus(List<InputDocument> documents,
 				  List<int[]> X,
-				  List<Integer> injectNewlines,
-				  List<Integer> align,
-				  List<Integer> injectWS)
+				  List<Integer> injectWhitespace,
+				  List<Integer> align)
 	{
 		this.documents = documents;
 		this.X = X;
-		this.injectNewlines = injectNewlines;
-		this.injectWS = injectWS;
+		this.injectWhitespace = injectWhitespace;
 		this.align = align;
 	}
 
@@ -65,15 +62,12 @@ public class Corpus {
 			X.set(i, X.get(j));
 			X.set(j, tmp);
 			// And now swap all prediction lists
-			Integer tmpI = injectNewlines.get(i);
-			injectNewlines.set(i, injectNewlines.get(j));
-			injectNewlines.set(j, tmpI);
+			Integer tmpI = injectWhitespace.get(i);
+			injectWhitespace.set(i, injectWhitespace.get(j));
+			injectWhitespace.set(j, tmpI);
 			tmpI = align.get(i);
 			align.set(i, align.get(j));
 			align.set(j, tmpI);
-			tmpI = injectWS.get(i);
-			injectWS.set(i, injectWS.get(j));
-			injectWS.set(j, tmpI);
 			// Finally, swap documents
 			InputDocument tmpD = documents.get(i);
 			documents.set(i, documents.get(j));
