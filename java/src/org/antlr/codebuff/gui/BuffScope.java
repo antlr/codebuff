@@ -14,8 +14,6 @@ public class BuffScope {
 	public JTabbedPane analysisTabbedPane;
 	public JPanel injectNLTab;
 	public JPanel alignTab;
-	public JTextArea injectWSConsole;
-	public JPanel injectWSTab;
 
 	public JTextArea getInjectNLConsole() {
 		return injectNLConsole;
@@ -107,14 +105,6 @@ public class BuffScope {
 		alignTab.add(scrollPane4, BorderLayout.CENTER);
 		alignConsole = new JTextArea();
 		scrollPane4.setViewportView(alignConsole);
-		injectWSTab = new JPanel();
-		injectWSTab.setLayout(new BorderLayout(0, 0));
-		analysisTabbedPane.addTab("Inject whitespace", injectWSTab);
-		final JScrollPane scrollPane5 = new JScrollPane();
-		injectWSTab.add(scrollPane5, BorderLayout.CENTER);
-		injectWSConsole = new JTextArea();
-		injectWSConsole.setEditable(false);
-		scrollPane5.setViewportView(injectWSConsole);
 	}
 
 	/**

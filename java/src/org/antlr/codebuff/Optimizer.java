@@ -167,7 +167,7 @@ public class Optimizer {
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
 		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
 
-		Tester t = new Tester(CollectFeatures.FEATURES_INJECT_NL, corpus, documents, tabSize);
+		Tester t = new Tester(CollectFeatures.FEATURES_INJECT_WS, corpus, documents, tabSize);
 		// sorry, had to comment this out
 //		multiRoundMinimize(Tester::test, LEARNING_RATE, h, PRECISION, CollectFeatures.FEATURES_INJECT_NL, 5);
 	}

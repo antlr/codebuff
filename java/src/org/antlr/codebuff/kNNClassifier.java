@@ -33,11 +33,8 @@ public abstract class kNNClassifier {
 		int[] categories = new int[Corpus.NUM_DEPENDENT_VARS];
 
 		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
-		HashBag<Integer> votesBag = getVotesBag(kNN, k, unknown, corpus.injectNewlines);
+		HashBag<Integer> votesBag = getVotesBag(kNN, k, unknown, corpus.injectWhitespace);
 		categories[Corpus.INDEX_FEATURE_NEWLINES] = getCategoryWithMostVotes(votesBag);
-
-		votesBag = getVotesBag(kNN, k, unknown, corpus.injectWS);
-		categories[Corpus.INDEX_FEATURE_WS] = getCategoryWithMostVotes(votesBag);
 
 		votesBag = getVotesBag(kNN, k, unknown, corpus.align);
 		categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS] = getCategoryWithMostVotes(votesBag);

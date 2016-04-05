@@ -32,6 +32,11 @@ public class CollectFeatures {
 	public static final int PAIR_ON_SAME_LINE = 0;
 	public static final int PAIR_ON_DIFF_LINE = 1;
 
+	// Categories for newline, whitespace. CAT_INJECT_NL+n<<8 or CAT_INJECT_WS+n<<8
+	public static final int CAT_NO_WS = 0;
+	public static final int CAT_INJECT_NL = 100;
+	public static final int CAT_INJECT_WS = 200;
+
 	// Categories for alignment/indentation
 	public static final int CAT_NO_ALIGNMENT = 0;
 
@@ -89,7 +94,7 @@ public class CollectFeatures {
 
 	public static final int NUM_FEATURES            = 23;
 
-	public static FeatureMetaData[] FEATURES_INJECT_NL = {
+	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
@@ -141,32 +146,6 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
-	public static FeatureMetaData[] FEATURES_INJECT_WS = {
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "rule"}, 2),
-		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 3),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 3),
-		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 3),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "rule"}, 2),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "right ancestor"}, 3),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 3),
-		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^5"}, 1),
-		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^4"}, 1),
-		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^3"}, 1),
-		new FeatureMetaData(FeatureType.INT, new String[] {"ancestor's", "parent^3 wid"}, 1),
-		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent^2"}, 1),
-		new FeatureMetaData(FeatureType.INT, new String[] {"ancestor's", "parent^2 wid"}, 1),
-		new FeatureMetaData(FeatureType.RULE, new String[] {"ancestor's", "parent"}, 1),
-		new FeatureMetaData(FeatureType.INT, new String[] {"ancestor's", "parent wid"}, 1),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(2)"}, 1),
-		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
-		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
-		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
-	};
-
 	public static FeatureMetaData[] FEATURES_ALL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-2)"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 2),
@@ -201,9 +180,7 @@ public class CollectFeatures {
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<int[]> features = new ArrayList<>();
-	protected List<Integer> injectNewlines = new ArrayList<>();
-	protected List<Integer> injectWS = new ArrayList<>();
-	protected List<Integer> indent = new ArrayList<>();
+	protected List<Integer> injectWhitespace = new ArrayList<>();
 	protected List<Integer> align = new ArrayList<>();
 
 	protected int currentIndent = 0;
@@ -246,7 +223,20 @@ public class CollectFeatures {
 
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
 
-		this.injectNewlines.add(precedingNL);
+		int ws = 0;
+		if ( precedingNL==0 ) {
+			ws = curToken.getCharPositionInLine() -
+				(prevToken.getCharPositionInLine()+prevToken.getText().length());
+		}
+
+		int injectNL_WS = CAT_NO_WS;
+		if ( precedingNL>0 ) {
+			injectNL_WS = nlcat(precedingNL);
+		}
+		else if ( ws>0 ) {
+			injectNL_WS = wscat(ws);
+		}
+		this.injectWhitespace.add(injectNL_WS);
 
 		int columnDelta = 0;
 		if ( precedingNL>0 ) { // && aligned!=1 ) {
@@ -258,14 +248,6 @@ public class CollectFeatures {
 		if ( precedingNL>0 ) {
 			aligned = getAlignmentCategory(node, curToken, columnDelta);
 		}
-
-		int ws = 0;
-		if ( precedingNL==0 ) {
-			ws = curToken.getCharPositionInLine() -
-				(prevToken.getCharPositionInLine()+prevToken.getText().length());
-		}
-
-		this.injectWS.add(ws); // likely negative if precedingNL
 
 		this.align.add(aligned);
 
@@ -631,12 +613,8 @@ public class CollectFeatures {
 		return features;
 	}
 
-	public List<Integer> getInjectNewlines() {
-		return injectNewlines;
-	}
-
-	public List<Integer> getInjectWS() {
-		return injectWS;
+	public List<Integer> getInjectWhitespace() {
+		return injectWhitespace;
 	}
 
 	public List<Integer> getAlign() {
@@ -842,5 +820,21 @@ public class CollectFeatures {
 		int deltaFromLeftAncestor = (v>>8)&0xFF;
 		int child = (v>>16)&0xFFFF;
 		return new int[] { deltaFromLeftAncestor, child };
+	}
+
+	public static int wscat(int n) {
+		return CAT_INJECT_WS | (n<<8);
+	}
+
+	public static int nlcat(int n) {
+		return CAT_INJECT_NL | (n<<8);
+	}
+
+	public static int unwscat(int v) {
+		return v >> 8 & 0xFFFF;
+	}
+
+	public static int unnlcat(int v) {
+		return v >> 8 & 0xFFFF;
 	}
 }

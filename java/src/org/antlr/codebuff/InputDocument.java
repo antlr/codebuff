@@ -16,9 +16,8 @@ public class InputDocument {
 	public Parser parser;
 	public CommonTokenStream tokens;
 	public List<int[]> featureVectors;
-	public List<Integer> injectNewlines;
-	public List<Integer> injectWS;
-	public List<Integer> alignWithPrevious;
+	public List<Integer> injectWhitespace;
+	public List<Integer> align;
 	public int allWhiteSpaceCount = 0;
 	public int incorrectWhiteSpaceCount = 0;
 	public int misclassifiedNewLineCount = 0;
