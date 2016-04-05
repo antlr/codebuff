@@ -19,7 +19,7 @@ public class Corpus {
 	List<InputDocument> documents; // an entry for each X
 	List<int[]> X;
 	List<Integer> injectWhitespace;
-	List<Integer> align; // steps to common ancestor whose first token is alignment anchor
+	List<Integer> align;
 
 	/** an index to narrow down the number of vectors we compute distance() on each classification.
 	 *  The key is (previous token's rule index, current token's rule index). It yields
