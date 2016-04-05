@@ -11,10 +11,9 @@ import java.util.Random;
 public class Corpus {
 	public static final int FEATURE_VECTOR_RANDOM_SEED = 314159; // need randomness but use same seed to get reproducibility
 
-	public static final int NUM_DEPENDENT_VARS = 3;
+	public static final int NUM_DEPENDENT_VARS = 2;
 	public static final int INDEX_FEATURE_NEWLINES = 0;
-	public static final int INDEX_FEATURE_WS = 1;
-	public static final int INDEX_FEATURE_ALIGN_WITH_PREVIOUS = 2;
+	public static final int INDEX_FEATURE_ALIGN_WITH_PREVIOUS = 1;
 
 	List<InputDocument> documents; // an entry for each X
 	List<int[]> X;
