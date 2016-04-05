@@ -1,0 +1,605 @@
+package org.antlr.codebuff;
+
+import org.antlr.codebuff.gui.GUIController;
+import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.Vocabulary;
+import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+public class Tool {
+    public static boolean showFileNames = false;
+    public static boolean showTokens = false;
+    public static void main(String[] args) throws Exception {
+        if ( args.length< 2 ) {
+            System.err.println("ExtractFeatures [-java|-antlr] root-dir-of-samples test-file");
+        }
+
+        int tabSize = 4;
+        String language = args[0];
+        String corpusDir = args[1];
+        String testFilename = args[2];
+        String output;
+        if ( language.equals("-java") ) {
+            Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+            InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
+            Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+            output = results.a;
+            List<TokenPositionAnalysis> analysisPerToken = results.b;
+            GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+            controller.show();
+        }
+        else {
+            Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
+            InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
+            Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
+            output = results.a;
+            List<TokenPositionAnalysis> analysisPerToken = results.b;
+            GUIController controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
+            controller.show();
+        }
+        System.out.println(output);
+    }
+
+    public static Pair<String, List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception { return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true); }
+
+    public static Pair<String, List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize, boolean showFormattedResult) throws Exception {
+        parse(testDoc, lexerClass, parserClass, startRuleName);
+        Formatter formatter = new Formatter(corpus, testDoc, tabSize);
+        String formattedOutput = formatter.format();
+        List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
+        testDoc.dumpIncorrectWS = false;
+        Tool.compare(testDoc, formattedOutput, lexerClass);
+        if ( showFormattedResult ) System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100* testDoc.getIncorrectWSRate());
+        if ( showFormattedResult ) System.out.println("misclassified: "+formatter.misclassified_NL);
+        double d = Tool.docDiff(testDoc.content, formattedOutput, lexerClass);
+        if ( showFormattedResult ) System.out.println("Diff is "+d);
+        return new Pair<>(formattedOutput, analysisPerToken);
+    }
+
+    public static Corpus train(String rootDir, String fileRegex, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception {
+        List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
+        List<InputDocument> documents = load(allFiles, lexerClass, tabSize);
+        for (InputDocument doc : documents) {
+            if ( showFileNames ) System.out.println(doc);
+            parse(doc, lexerClass, parserClass, startRuleName);
+        }
+        Vocabulary vocab = getLexer(lexerClass, null).getVocabulary();
+        String[] ruleNames = getParser(parserClass, null).getRuleNames();
+        CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ruleNames);
+        for (InputDocument doc : documents) {
+            ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
+        }
+
+        Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
+        if ( false ) {
+            for (String ruleName : ruleToPairsBag.keySet()) {
+                List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+                System.out.print(ruleName+": ");
+                for (Pair<Integer, Integer> p : pairs) {
+                    System.out.print(vocab.getDisplayName(p.a)+","+vocab.getDisplayName(p.b)+" ");
+                }
+                System.out.println();
+            }
+        }
+        Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
+        corpus.randomShuffleInPlace();
+        corpus.buildTokenContextIndex();
+        return corpus;
+    }
+
+    public static Corpus processSampleDocs(List<InputDocument> docs, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, int tabSize, Map<String,List<Pair<Integer, Integer>>> ruleToPairsBag) throws Exception {
+        List<InputDocument> documents = new ArrayList<>();
+        List<int[]> featureVectors = new ArrayList<>();
+        List<Integer> injectNewlines = new ArrayList<>();
+        List<Integer> injectWS = new ArrayList<>();
+        List<Integer> alignWithPrevious = new ArrayList<>();
+        for (InputDocument doc : docs) {
+            if ( showFileNames ) System.out.println(doc);
+            process(doc, tabSize, ruleToPairsBag);
+            for (int i =0; i < doc.featureVectors.size(); i++) {
+                documents.add(doc);
+                int[] featureVec = doc.featureVectors.get(i);
+                injectNewlines.add(doc.injectNewlines.get(i) );
+                injectWS.add(doc.injectWS.get(i) );
+                alignWithPrevious.add(doc.alignWithPrevious.get(i) );
+                featureVectors.add(featureVec);
+            }
+        }
+        System.out.printf("%d feature vectors\n", featureVectors.size());
+        return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious, injectWS);
+    }
+
+    public static void process(InputDocument doc, int tabSize, Map<String,List<Pair<Integer, Integer>>> ruleToPairsBag) {
+        CollectFeatures collector = new CollectFeatures(doc, tabSize, ruleToPairsBag);
+        collector.computeFeatureVectors();
+        doc.featureVectors = collector.getFeatures();
+        doc.injectNewlines = collector.getInjectNewlines();
+        doc.injectWS = collector.getInjectWS();
+        doc.alignWithPrevious = collector.getAlign();
+    }
+
+    public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass) throws Exception {
+        ANTLRInputStream input = new ANTLRInputStream(doc);
+        Lexer lexer = getLexer(lexerClass, input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        tokens.fill();
+        return tokens;
+    }
+
+    public static void parse(InputDocument doc, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName) throws Exception {
+        ANTLRInputStream input = new ANTLRInputStream(doc.content);
+        Lexer lexer = getLexer(lexerClass, input);
+        input.name = doc.fileName;
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        if ( showTokens ) {
+            tokens.fill();
+            for (Object tok : tokens.getTokens()) {
+                System.out.println(tok);
+            }
+        }
+        doc.parser = getParser(parserClass, tokens);
+        doc.parser.setBuildParseTree(true);
+        Method startRule = parserClass.getMethod(startRuleName);
+        ParserRuleContext tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[])null);
+        doc.tokens = tokens;
+        doc.tree = tree;
+    }
+
+    public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException,InstantiationException,IllegalAccessException, java.lang.reflect.InvocationTargetException {
+        Constructor<? extends Parser> parserCtor = parserClass.getConstructor(TokenStream.class);
+        return parserCtor.newInstance(tokens);
+    }
+
+    public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input) throws NoSuchMethodException,InstantiationException,IllegalAccessException, java.lang.reflect.InvocationTargetException {
+        Constructor<? extends Lexer> lexerCtor = lexerClass.getConstructor(CharStream.class);
+        return lexerCtor.newInstance(input);
+    }
+
+    public static List<InputDocument> load(List<String> fileNames, Class<? extends Lexer> lexerClass, int tabSize) throws Exception {
+        List<InputDocument> input = new ArrayList<>(fileNames.size());
+        int i = 0;
+        for (String f : fileNames) {
+            InputDocument doc = load(f, lexerClass, tabSize);
+            doc.index = i++;
+            input.add(doc);
+        }
+        System.out.println(input.size()+" files");
+        return input;
+    }
+
+    public static InputDocument load(String fileName, Class<? extends Lexer> lexerClass, int tabSize) throws Exception {
+        Path path = FileSystems.getDefault().getPath(fileName);
+        byte[] filearray = Files.readAllBytes(path);
+        String content = new String(filearray);
+        String notabs = expandTabs(content, tabSize);
+        CommonTokenStream tokens = tokenize(notabs, lexerClass);
+        StringBuilder buf = new StringBuilder();
+        int i = 0;
+        while ( i <tokens.size()-1 ) {
+            Token t = tokens.get(i);
+            buf.append(t.getText());
+            if ( t.getText().matches("\n+ +") ) {
+                Token next = tokens.get(i+1);
+                if ( next.getText().matches("\n +") ) {
+                    i++;
+                }
+            }
+            i++;
+        }
+        return new InputDocument(fileName, buf.toString());
+    }
+
+    public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
+        List<String> files = new ArrayList<>();
+        getFilenames_(f, inputFilePattern, files);
+        return files;
+    }
+
+    public static void getFilenames_(File f, String inputFilePattern, List<String> files) {
+        if ( f.isDirectory() ) {
+            String flist[] = f.list();
+            for (String aFlist : flist) {
+                getFilenames_(new File(f, aFlist), inputFilePattern, files);
+            }
+        }
+        else if ( inputFilePattern==null || f.getName().matches(inputFilePattern) ) {
+            files.add(f.getAbsolutePath());
+        }
+    }
+
+    public static String join(int[] array, String separator) {
+        StringBuilder builder = new StringBuilder();
+        for (int i =0; i < array.length; i++) {
+            builder.append(array[i]);
+            if ( i <array.length-1 ) {
+                builder.append(separator);
+            }
+        }
+        return builder.toString();
+    }
+
+    public static String join(String[] array, String separator) {
+        StringBuilder builder = new StringBuilder();
+        for (int i =0; i < array.length; i++) {
+            builder.append(array[i]);
+            if ( i <array.length-1 ) {
+                builder.append(separator);
+            }
+        }
+        return builder.toString();
+    }
+
+    public static void wipeLineAndPositionInfo(CommonTokenStream tokens) {
+        tokens.fill();
+        for (Token t : tokens.getTokens()) {
+            CommonToken ct = (CommonToken)t;
+            ct.setLine(0);
+            ct.setCharPositionInLine(-1);
+        }
+    }
+
+    public static List<CommonToken> copy(CommonTokenStream tokens) {
+        List<CommonToken> copy = new ArrayList<>();
+        tokens.fill();
+        for (Token t : tokens.getTokens()) {
+            copy.add(new CommonToken(t));
+        }
+        return copy;
+    }
+
+    public static int L0_Distance(boolean[] categorical, int[] A, int[] B) {
+        int count = 0;
+        for (int i =0; i < A.length; i++) {
+            if ( categorical[i] ) {
+                if ( A[i] != B[i] ) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public static double weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
+        double count = 0;
+        for (int i =0; i < A.length; i++) {
+            if ( featureTypes[i].type==FeatureType.TOKEN|| featureTypes[i].type==FeatureType.RULE|| featureTypes[i].type==FeatureType.INT || featureTypes[i].type==FeatureType.BOOL ) {
+                if ( A[i] != B[i] ) {
+                    count += featureTypes[i].mismatchCost;
+                }
+            }
+        }
+        return count;
+    }
+
+    public static double sigmoid(int x, float center) { return 1.0/(1.0+Math.exp(-0.2*(x-center))); }
+
+    public static int max(List<Integer> Y) {
+        int max = 0;
+        for (int y : Y) max = Math.max(max, y);
+        return max;
+    }
+
+    public static int sum(int[] a) {
+        int s = 0;
+        for (int x : a) s += x;
+        return s;
+    }
+
+    public static int levenshteinDistance(String s, String t) {
+        if ( s.equals(t) ) return 0;
+        if ( s.length()==0 ) return t.length();
+        if ( t.length()==0 ) return s.length();
+        int[] v0 = new int[t.length()+1];
+        int[] v1 = new int[t.length()+1];
+        for (int i =0; i < v0.length; i++) {
+            v0[i] = i;
+        }
+        for (int i =0; i < s.length(); i++) {
+            v1[0] = i+ 1;
+            for (int j =0; j < t.length(); j++) {
+                int cost = s.charAt(i)==t.charAt(j)? 0 :1;
+                v1[j+1] = Math.min(Math.min(v1[j]+1, v0[j+1]+1), v0[j]+cost);
+            }
+            System.arraycopy(v1, 0, v0, 0, v0.length);
+        }
+        return v1[t.length()];
+    }
+
+    public static int whitespaceEditDistance(String s, String t) {
+        int s_spaces = count(s, ' ');
+        int s_nls = count(s, '\n');
+        int t_spaces = count(t, ' ');
+        int t_nls = count(t, '\n');
+        return Math.abs(s_spaces-t_spaces) +Math.abs(s_nls-t_nls);
+    }
+
+    public static double docDiff(String original, String formatted, Class<? extends Lexer> lexerClass) throws Exception {
+        CommonTokenStream original_tokens = tokenize(original, lexerClass);
+        CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+        int i = 1;
+        int ws_distance = 0;
+        int original_ws = 0;
+        int formatted_ws = 0;
+        while ( true ) {
+            Token ot = original_tokens.LT(i);
+            if ( ot==null || ot.getType()== Token.EOF ) break;
+            List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
+            original_ws += tokenText(ows).length();
+                       Token ft = formatted_tokens.LT(i);
+            if ( ft==null || ft.getType()== Token.EOF ) break;
+            List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
+            formatted_ws += tokenText(fws).length();
+            ws_distance += whitespaceEditDistance(tokenText(ows), tokenText(fws));
+            i++;
+        }
+
+        int max_ws = Math.max(original_ws, formatted_ws);
+        double normalized_ws_distance = ((float)ws_distance)/max_ws;
+        return normalized_ws_distance;
+    }
+
+    public static double compare(InputDocument doc, String formatted, Class<? extends Lexer> lexerClass) throws Exception {
+        doc.allWhiteSpaceCount = 0;
+        doc.incorrectWhiteSpaceCount = 0;
+        String original = doc.content;
+        CommonTokenStream original_tokens = tokenize(original, lexerClass);
+        CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+        int i = 1;
+        while ( true ) {
+            Token ot = original_tokens.LT(i);
+            if ( ot==null || ot.getType()== Token.EOF ) break;
+            List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
+            String original_ws = tokenText(ows);
+            Token ft = formatted_tokens.LT(i);
+            if ( ft==null || ft.getType()== Token.EOF ) break;
+            List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
+            String formatted_ws = tokenText(fws);
+            if ( original_ws.length()==0 ) {
+                if ( formatted_ws.length()!=0) {
+                    doc.incorrectWhiteSpaceCount++;
+                    if ( doc.dumpIncorrectWS ) {
+                        System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
+                        Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+                        System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                    }
+                }
+            }
+            else {
+                doc.allWhiteSpaceCount++;
+                if ( formatted_ws.length()==0 ) {
+                    doc.incorrectWhiteSpaceCount++;
+                    if ( doc.dumpIncorrectWS ) {
+                        System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
+                        Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+                        System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
+                    }
+                }
+                else if ( !TwoWSEqual(original_ws, formatted_ws) ) {
+                    doc.incorrectWhiteSpaceCount++;
+                    if ( doc.dumpIncorrectWS ) {
+                        System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
+                        Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+                        System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
+                        System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                    }
+                }
+            }
+            i++;
+        }
+        return ((double)doc.incorrectWhiteSpaceCount)/ doc.allWhiteSpaceCount;
+    }
+
+    public static double compareNL(InputDocument doc, String formatted, Class<? extends Lexer> lexerClass) throws Exception {
+        doc.allWhiteSpaceCount = 0;
+        doc.incorrectWhiteSpaceCount = 0;
+        String original = doc.content;
+        CommonTokenStream original_tokens = tokenize(original, lexerClass);
+        CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+        int i = 1;
+        while ( true ) {
+            Token ot = original_tokens.LT(i);
+            if ( ot==null || ot.getType()== Token.EOF ) break;
+            List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
+            String original_ws = tokenText(ows);
+            Token ft = formatted_tokens.LT(i);
+            if ( ft==null || ft.getType()== Token.EOF ) break;
+            List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
+            String formatted_ws = tokenText(fws);
+            if ( original_ws.length()==0 ) {
+                if ( formatted_ws.length()!=0) {
+                    if ( count(formatted_ws, '\n')>0 ) {
+                        doc.incorrectWhiteSpaceCount++;
+                        if ( doc.dumpIncorrectWS ) {
+                            System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
+                            Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+                            System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                        }
+                    }
+                }
+            }
+            else {
+                if ( count(original_ws, '\n')>0 ) {
+                    doc.allWhiteSpaceCount++;
+                    if ( formatted_ws.length()==0 ) {
+                        doc.incorrectWhiteSpaceCount++;
+                        if ( doc.dumpIncorrectWS ) {
+                            System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
+                            Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+                            System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
+                        }
+                    }
+                    else if ( count(original_ws, '\n')!= count(formatted_ws, '\n') ) {
+                        doc.incorrectWhiteSpaceCount++;
+                        if ( doc.dumpIncorrectWS ) {
+                            System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
+                            Tool.printOriginalFilePiece(doc, (CommonToken)ot);
+                            System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
+                            System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                        }
+                    }
+                }
+            }
+            i++;
+        }
+        return ((double)doc.incorrectWhiteSpaceCount)/ doc.allWhiteSpaceCount;
+    }
+
+    public static String tokenText(List<Token> tokens) {
+        if ( tokens==null ) return "";
+        StringBuilder buf = new StringBuilder();
+        for (Token t : tokens) {
+            buf.append(t.getText());
+        }
+        return buf.toString();
+    }
+
+    public static int getNumberRealTokens(CommonTokenStream tokens, int from, int to) {
+        if ( tokens==null ) return 0;
+        int n = 0;
+        if ( from< 0 ) from = 0;
+        if ( to> tokens.size() ) to = tokens.size()- 1;
+        for (int i =from; i <= to; i++) {
+            Token t = tokens.get(i);
+            if ( t.getChannel()==Token.DEFAULT_CHANNEL ) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    public static String spaces(int n) { return sequence(n, " "); }
+
+    public static String newlines(int n) { return sequence(n, "\n"); }
+
+    public static String sequence(int n, String s) {
+        StringBuilder buf = new StringBuilder();
+        for (int sp =1; sp <= n; sp++) buf.append(s);
+        return buf.toString();
+    }
+
+    public static int count(String s, char x) {
+        int n = 0;
+        for (int i =0; i < s.length(); i++) {
+            if ( s.charAt(i)==x ) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    public static String expandTabs(String s, int tabSize) {
+        if ( s==null ) return null;
+        StringBuilder buf = new StringBuilder();
+        int col = 0;
+        for (int i =0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch ( c ) {
+            case '\n' : col = 0;
+                        buf.append(c);
+                        break;
+            case '\t' : buf.append(spaces(tabSize-col%tabSize));
+                        break;
+            default:
+                col++;
+                buf.append(c);
+                break;
+            }
+        }
+        return buf.toString();
+    }
+
+    public static String dumpWhiteSpace(String s) {
+        String[] whiteSpaces = new String[s.length()];
+        for (int i =0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch ( c ) {
+            case '\n' : whiteSpaces[i] = "\\n";
+                        break;
+            case '\t' : whiteSpaces[i] = "\\t";
+                        break;
+            case '\r' : whiteSpaces[i] = "\\r";
+                        break;
+            case '\u000C' : whiteSpaces[i] = "\\u000C";
+                            break;
+            case ' ' : whiteSpaces[i] = "ws";
+                       break;
+            default:
+                whiteSpaces[i] = String.valueOf(c);
+                break;
+            }
+        }
+        return join(whiteSpaces, " | ");
+    }
+
+    public static boolean TwoWSEqual(String a, String b) {
+        String newA = a;
+        String newB = b;
+        int aStartNLIndex = a.indexOf('\n');
+        int bStartNLIndex = b.indexOf('\n');
+        if ( aStartNLIndex>0 ) newA = a.substring(aStartNLIndex);
+        if ( bStartNLIndex>0 ) newB = b.substring(bStartNLIndex);
+        return newA.equals(newB);
+    }
+
+    public static void printOriginalFilePiece(InputDocument doc, CommonToken originalCurToken) {
+        System.out.println(doc.getLine(originalCurToken.getLine()-1));
+        System.out.println(doc.getLine(originalCurToken.getLine()));
+        System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
+        System.out.println("^");
+    }
+
+    public static ArrayList<Double> validateResults(Corpus corpus, List<InputDocument> testDocs, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception {
+        ArrayList<Double> differenceRatios = new ArrayList<>();
+        for (InputDocument testDoc : testDocs) {
+            Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, false);
+            String formattedDoc = results.a;
+            boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
+            testDoc.dumpIncorrectWS = false;
+            double differenceRatio = compareNL(testDoc, formattedDoc, lexerClass);
+            testDoc.dumpIncorrectWS = dumpIncorrectWSOldValue;
+            differenceRatios.add(differenceRatio);
+        }
+        return differenceRatios;
+    }
+
+    public static double validate(Corpus corpus, List<InputDocument> testDocs, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception {
+        ArrayList<Double> differenceRatios = validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
+        Collections.sort(differenceRatios);
+        if ( differenceRatios.size()%2 ==1 ) return differenceRatios.get(differenceRatios.size()/2);
+        else if ( differenceRatios.size() ==0 ) {
+            System.err.println("Don't have enough results to get median value from validate results array!");
+return -1;
+        }
+        else return (differenceRatios.get(differenceRatios.size()/2)+differenceRatios.get(differenceRatios.size()/2-1))/2;
+    }
+
+    public static class Foo {
+        public static void main(String[] args) throws Exception {
+            ANTLRv4Lexer lexer = new ANTLRv4Lexer(new ANTLRFileStream("grammars/org/antlr/codebuff/ANTLRv4Lexer.g4"));
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            ANTLRv4Parser parser = new ANTLRv4Parser(tokens);
+            ANTLRv4Parser.GrammarSpecContext tree = parser.grammarSpec();
+            System.out.println(tree.toStringTree(parser));
+        }
+    }
+
+}
