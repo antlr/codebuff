@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import com.google.common.base.CharMatcher;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -112,6 +113,8 @@ public class Formatter {
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
 		String tokText = curToken.getText();
 
+		emitCommentsToTheLeft(tokenIndexInStream);
+
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
@@ -213,6 +216,50 @@ public class Formatter {
 		tokenPositionAnalysis.charIndexStop = tokenPositionAnalysis.charIndexStart + n - 1;
 		output.append(tokText);
 		charPosInLine += n;
+	}
+
+	/** Look into the token stream to get the comments to the left of current
+	 *  token. Emit all whitespace and comments except for whitespace at the
+	 *  end as we'll inject that per newline prediction.
+	 */
+	public void emitCommentsToTheLeft(int tokenIndexInStream) {
+		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(tokenIndexInStream);
+		if ( hiddenTokensToLeft!=null ) {
+			// if at least one is not whitespace, assume it's a comment and print all hidden stuff including whitespace
+			boolean hasComment = false;
+			for (Token hidden : hiddenTokensToLeft) {
+				String hiddenText = hidden.getText();
+				if ( !hiddenText.matches("\\s+") ) {
+					hasComment = true;
+					break;
+				}
+			}
+			if ( hasComment ) {
+				// avoid whitespace at end of sequence as we'll inject that
+				int last = -1;
+				for (int i=hiddenTokensToLeft.size()-1; i>=0; i--) {
+					Token hidden = hiddenTokensToLeft.get(i);
+					String hiddenText = hidden.getText();
+					if ( !hiddenText.matches("\\s+") ) {
+						last = i;
+						break;
+					}
+				}
+				List<Token> stripped = hiddenTokensToLeft.subList(0, last+1);
+				for (Token hidden : stripped) {
+					String hiddenText = hidden.getText();
+					output.append(hiddenText);
+					if ( hiddenText.matches("\\n+") ) {
+						line += CharMatcher.is('\n').countIn(hiddenText);
+						charPosInLine = 0;
+					}
+					else {
+						// if a comment or plain ' ', must count char position
+						charPosInLine += hiddenText.length();
+					}
+				}
+			}
+		}
 	}
 
 	public TokenPositionAnalysis getTokenAnalysis(int[] features, int indexIntoRealTokens, int tokenIndexInStream,
