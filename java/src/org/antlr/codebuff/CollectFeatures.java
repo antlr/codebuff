@@ -70,9 +70,9 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_TYPE         = 0;
 	public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR = 1;
 	public static final int INDEX_CUR_TYPE = 2;
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 3;
-	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 4;
-	public static final int INDEX_FIRST_ON_LINE		= 5; // a \n right before this token?
+	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
+	public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 5;
 
 	public static final int INDEX_INFO_FILE         = 6;
 	public static final int INDEX_INFO_LINE         = 7;
@@ -97,9 +97,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		// these 6 features seem to predict newline really well. whitespace ok too
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -109,9 +110,9 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -121,9 +122,9 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -429,21 +430,21 @@ public class CollectFeatures {
 //		ParserRuleContext ancestorParent4 = ancestorParent3!=null ? ancestorParent3.getParent() : null;
 //		ParserRuleContext ancestorParent5 = ancestorParent4!=null ? ancestorParent4.getParent() : null;
 
-//		public static final int INDEX_PREV_TYPE         = 0;
-//		public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR = 1;
-//		public static final int INDEX_TYPE              = 2;
-//		public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 3;
-//		public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 4;
-//		public static final int INDEX_FIRST_ON_LINE		= 5; // a \n right before this token?
+//			public static final int INDEX_PREV_TYPE         = 0;
+//			public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR = 1;
+//			public static final int INDEX_CUR_TYPE = 2;
+//			public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
+//			public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
+//			public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 5;
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
 		int[] features = {
 			tokens.LT(-1).getType(),
 			rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum),
 			tokens.LT(1).getType(),
-			rulealt(earliestLeftAncestorRuleIndex,earliestLeftAncestorRuleAlt),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
+			rulealt(earliestLeftAncestorRuleIndex,earliestLeftAncestorRuleAlt),
 
 			// info
 			0, // dummy; we don't store file index into feature vector
