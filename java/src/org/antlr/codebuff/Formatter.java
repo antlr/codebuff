@@ -22,7 +22,6 @@ import static org.antlr.codebuff.CollectFeatures.CAT_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
-import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_END_COLUMN;
 import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
 import static org.antlr.codebuff.CollectFeatures.getNodeFeatures;
@@ -118,7 +117,7 @@ public class Formatter {
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
 		// must set "prev end column" value as token stream doesn't have it;
 		// we're tracking it as we emit tokens
-		features[INDEX_PREV_END_COLUMN] = charPosInLine;
+//		features[INDEX_PREV_END_COLUMN] = charPosInLine;
 
 		int injectNL_WS = nlwsClassifier.classify(k, features, corpus.injectWhitespace, MAX_CONTEXT_DIFF_THRESHOLD);
 		int newlines = 0;
@@ -131,7 +130,7 @@ public class Formatter {
 		}
 
 		// getNodeFeatures() also doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
-		features[INDEX_FIRST_ON_LINE] = newlines; // use \n prediction to match exemplars for alignment
+		features[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
 
 		int align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
 
@@ -169,10 +168,7 @@ public class Formatter {
 				int[] deltaChild = CollectFeatures.unaligncat(align);
 				int deltaFromAncestor = deltaChild[0];
 				int childIndex = deltaChild[1];
-				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
-				if ( earliestLeftAncestor==null ) {
-					earliestLeftAncestor = parent;
-				}
+				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 				ParseTree child = ancestor.getChild(childIndex);
 				Token start = null;
@@ -194,10 +190,7 @@ public class Formatter {
 			}
 			else if ( (align&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
 				int deltaFromAncestor = CollectFeatures.unindentcat(align);
-				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(parent, curToken);
-				if ( earliestLeftAncestor==null ) {
-					earliestLeftAncestor = parent;
-				}
+				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 				Token start = ancestor.getStart();
 				int indentCol = start.getCharPositionInLine() + INDENT_LEVEL;

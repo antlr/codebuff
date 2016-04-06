@@ -125,8 +125,8 @@ public abstract class kNNClassifier {
 	}
 
 	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
-		int curTokenRuleIndex = unknown[CollectFeatures.INDEX_RULE];
-		int prevTokenRuleIndex = unknown[CollectFeatures.INDEX_PREV_RULE];
+		int curTokenRuleIndex = unknown[CollectFeatures.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
+		int prevTokenRuleIndex = unknown[CollectFeatures.INDEX_EARLIEST_LEFT_ANCESTOR];
 		int pr = CollectFeatures.unrulealt(prevTokenRuleIndex)[0];
 		int cr = CollectFeatures.unrulealt(curTokenRuleIndex)[0];
 		Pair<Integer, Integer> key =  new Pair<>(pr, cr);

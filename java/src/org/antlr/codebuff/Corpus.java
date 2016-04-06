@@ -77,8 +77,8 @@ public class Corpus {
 	public void buildTokenContextIndex() {
 		curAndPrevTokenRuleIndexToVectorsMap = new HashMap<>();
 		for (int i=0; i<X.size(); i++) {
-			int curTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_RULE];
-			int prevTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_PREV_RULE];
+			int curTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
+			int prevTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_EARLIEST_LEFT_ANCESTOR];
 			int pr = CollectFeatures.unrulealt(prevTokenRuleIndex)[0];
 			int cr = CollectFeatures.unrulealt(curTokenRuleIndex)[0];
 			Pair<Integer, Integer> key = new Pair<>(pr, cr);
