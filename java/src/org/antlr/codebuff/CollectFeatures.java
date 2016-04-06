@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.20;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.13;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	// Feature values for pair on diff lines feature
@@ -77,12 +77,16 @@ public class CollectFeatures {
 	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 7;
 	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 8;
 	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 9;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 10;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 11;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 12;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 13;
 
-	public static final int INDEX_INFO_FILE         = 10;
-	public static final int INDEX_INFO_LINE         = 11;
-	public static final int INDEX_INFO_CHARPOS      = 12;
+	public static final int INDEX_INFO_FILE         = 14;
+	public static final int INDEX_INFO_LINE         = 15;
+	public static final int INDEX_INFO_CHARPOS      = 16;
 
-	public static final int NUM_FEATURES            = 13;
+	public static final int NUM_FEATURES            = 17;
 
 //	public static final int INDEX_RULE              = 8; // what rule are we in?
 //	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 9;
@@ -104,11 +108,15 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		// these previous 5 features seem to predict newline really well. whitespace ok too
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		// these 6 features seem to predict newline really well. whitespace ok too
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -125,6 +133,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^3"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "child index"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -141,6 +153,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^3"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "child index"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -423,6 +439,8 @@ public class CollectFeatures {
 		ParserRuleContext earliestLeftAncestorParent = earliestLeftAncestor.getParent();
 
 		ParserRuleContext earliestLeftAncestorParent2 = earliestLeftAncestorParent!=null ? earliestLeftAncestorParent.getParent() : null;
+		ParserRuleContext earliestLeftAncestorParent3 = earliestLeftAncestorParent2!=null ? earliestLeftAncestorParent2.getParent() : null;
+		ParserRuleContext earliestLeftAncestorParent4 = earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3.getParent() : null;
 
 		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(node, curToken);
 		int earliestRightAncestorRuleIndex = earliestRightAncestor.getRuleIndex();
@@ -468,6 +486,10 @@ public class CollectFeatures {
 			getChildIndex(earliestLeftAncestor),
 			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2.getRuleIndex(), earliestLeftAncestorParent2.getAltNumber()) : 0,
 			getChildIndex(earliestLeftAncestorParent),
+			earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3.getRuleIndex(), earliestLeftAncestorParent3.getAltNumber()) : 0,
+			getChildIndex(earliestLeftAncestorParent2),
+			earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4.getRuleIndex(), earliestLeftAncestorParent4.getAltNumber()) : 0,
+			getChildIndex(earliestLeftAncestorParent3),
 
 			// info
 			0, // dummy; we don't store file index into feature vector
