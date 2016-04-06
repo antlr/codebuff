@@ -73,12 +73,16 @@ public class CollectFeatures {
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
 	public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 5;
+	public static final int INDEX_ANCESTORS_PARENT_RULE  = 6;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 7;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 8;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 9;
 
-	public static final int INDEX_INFO_FILE         = 6;
-	public static final int INDEX_INFO_LINE         = 7;
-	public static final int INDEX_INFO_CHARPOS      = 8;
+	public static final int INDEX_INFO_FILE         = 10;
+	public static final int INDEX_INFO_LINE         = 11;
+	public static final int INDEX_INFO_CHARPOS      = 12;
 
-	public static final int NUM_FEATURES            = 9;
+	public static final int NUM_FEATURES            = 13;
 
 //	public static final int INDEX_RULE              = 8; // what rule are we in?
 //	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 9;
@@ -98,8 +102,12 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
 		// these 6 features seem to predict newline really well. whitespace ok too
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -110,9 +118,13 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -122,9 +134,13 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
@@ -404,6 +420,9 @@ public class CollectFeatures {
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 		int earliestLeftAncestorRuleIndex = earliestLeftAncestor.getRuleIndex();
 		int earliestLeftAncestorRuleAlt = earliestLeftAncestor.getAltNumber();
+		ParserRuleContext earliestLeftAncestorParent = earliestLeftAncestor.getParent();
+
+		ParserRuleContext earliestLeftAncestorParent2 = earliestLeftAncestorParent!=null ? earliestLeftAncestorParent.getParent() : null;
 
 		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(node, curToken);
 		int earliestRightAncestorRuleIndex = earliestRightAncestor.getRuleIndex();
@@ -412,8 +431,6 @@ public class CollectFeatures {
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
 		// Get some context from parse tree
-		ParserRuleContext ancestorParent = null;
-		ParserRuleContext ancestorParent2 = null;
 //		if ( earliestLeftAncestor==null ) { // just use regular parent then
 //			ancestorParent = getParent(node);
 //			if ( ancestorParent!=null ) {
@@ -436,6 +453,8 @@ public class CollectFeatures {
 //			public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
 //			public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
 //			public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 5;
+//		new FeatureMetaData(FeatureType.RULE,  new String[] {"left ancestor", "parent"}, 1),
+//		new FeatureMetaData(FeatureType.INT,   new String[] {"left ancestor", "child index"}, 1),
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
 		int[] features = {
@@ -444,7 +463,11 @@ public class CollectFeatures {
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
-			rulealt(earliestLeftAncestorRuleIndex,earliestLeftAncestorRuleAlt),
+			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
+			rulealt(earliestLeftAncestorParent.getRuleIndex(), earliestLeftAncestorParent.getAltNumber()),
+			getChildIndex(earliestLeftAncestor),
+			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2.getRuleIndex(), earliestLeftAncestorParent2.getAltNumber()) : 0,
+			getChildIndex(earliestLeftAncestorParent),
 
 			// info
 			0, // dummy; we don't store file index into feature vector
@@ -600,7 +623,7 @@ public class CollectFeatures {
 				case INFO_LINE:
 				case INFO_CHARPOS:
 					if ( features[i]>=0 ) {
-						buf.append(String.format("%"+displayWidth+"s", String.valueOf(features[i])));
+						buf.append(String.format("%"+displayWidth+"s", StringUtils.center(String.valueOf(features[i]),displayWidth)));
 					}
 					else {
 						buf.append(Tool.sequence(displayWidth, " "));
@@ -714,6 +737,20 @@ public class CollectFeatures {
 
 	public static ParserRuleContext getParent(TerminalNode p) {
 		return parentClosure((ParserRuleContext)p.getParent());
+	}
+
+	public static int getChildIndex(ParseTree t) {
+		if ( t==null ) return -1;
+		ParseTree parent = t.getParent();
+		if ( parent==null ) {
+			return -1;
+		}
+		for (int i = 0; i<parent.getChildCount(); i++) {
+			if ( parent.getChild(i)==t ) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/** Same as p.getParent() except we scan through chain rule nodes */
