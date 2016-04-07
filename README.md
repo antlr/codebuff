@@ -28,13 +28,37 @@ To make this approach work, we need a model that maps context information about 
 
 1. A grammar for *L*
 2. A set of input files written in *L*
-3. A file written in *L* but not in the corpus that you would like to format
+
+It can then format a previously-unseen file written in *L* that you would like to format.
 
 `CodeBuff` trains a *k-Nearest-Neighbor* (*kNN*) machine learning model based upon the corpus. The *kNN* model is particularly attractive because it is very powerful yet simple and mirrors how programmers format code. Programmers scan their memory for similar context situations and apply the same rule or the rule they do most often.
 
+The model is limited according to the amount of context provided by the features (independent variables). It is also limited to alignments or indentation that are relative to a previous token in the token stream.
+
 ## Mechanism
 
+The prediction categories and features used by the kNN model are critical to the success of `CodeBuff`.
+
+### Prediction categories
+
+For a given token and parse tree context (relative to current token), we predict one of:
+
+1. inject *n>=0* newlines
+2. inject *n>=0* spaces
+3. align with child at *index>=0* of ancestor *delta>=0* steps up parse-tree parent chain
+4. indent from first token of ancestor *delta>=0* steps up parse-tree parent chain (the number of spaces per indent is a parameter to the formatter)
+5. indent from start of previous line
+
+For efficiency, we use just two classifiers, one for predicting injection of newlines/spaces and one for predicting alignment/indentation. The result of prediction is a tuple:
+
+**predict<sub>ws</sub>**(*context*) &isin; {(newline, *n*), (whitespace, *n*), none}
+
+**predict<sub>align</sub>**(*context*) = &isin; {(align, *delta*, *index*), (indent, *delta*), indent, none}
+
 ### Features
+
+matching symbols and list elements
+
 
 1. INDEX_PREV_TYPE      
 1. INDEX_PREV_EARLIEST_RIGHT_ANCESTOR
