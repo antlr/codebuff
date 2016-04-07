@@ -17,7 +17,7 @@ public class Neighbor {
 		int[] X = corpus.X.get(corpusVectorIndex);
 		InputDocument doc = corpus.documents.get(corpusVectorIndex);
 		String features = CollectFeatures._toString(FEATURES, doc, X);
-		int line = CollectFeatures.getInfoLine(X);
+		int line = X[CollectFeatures.INDEX_INFO_LINE];
 		String lineText = doc.getLine(line);
 		int col = X[CollectFeatures.INDEX_INFO_CHARPOS];
 		// insert a dot right before char position
