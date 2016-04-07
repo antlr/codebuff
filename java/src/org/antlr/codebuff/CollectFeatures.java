@@ -26,6 +26,14 @@ public class CollectFeatures {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.13;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
+	/** When computing child indexes, we use this value for any child list
+	 *  element other than the first one.  If a parent has just one X child,
+	 *  we use the actual child index. If parent has two or more X children,
+	 *  and we are not the first X, use CHILD_INDEX_LIST_ELEMENT. If first
+	 *  of two or more X children, use actual child index.
+	 */
+	public static final int CHILD_INDEX_LIST_ELEMENT = 1_111_111_111;
+
 	// Feature values for pair on diff lines feature
 	public static final int NOT_PAIR = -1;
 	public static final int PAIR_ON_SAME_LINE = 0;
@@ -253,7 +261,7 @@ public class CollectFeatures {
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 		Pair<ParserRuleContext, Integer> pair =
-			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor.getParent(), curToken);
+			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken);
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 			aligned = aligncat(deltaFromLeftAncestor, pair.b);
@@ -482,13 +490,13 @@ public class CollectFeatures {
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
 			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
-			rulealt(earliestLeftAncestorParent.getRuleIndex(), earliestLeftAncestorParent.getAltNumber()),
+			earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent.getRuleIndex(), earliestLeftAncestorParent.getAltNumber()) : -1,
 			getChildIndex(earliestLeftAncestor),
-			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2.getRuleIndex(), earliestLeftAncestorParent2.getAltNumber()) : 0,
+			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2.getRuleIndex(), earliestLeftAncestorParent2.getAltNumber()) : -1,
 			getChildIndex(earliestLeftAncestorParent),
-			earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3.getRuleIndex(), earliestLeftAncestorParent3.getAltNumber()) : 0,
+			earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3.getRuleIndex(), earliestLeftAncestorParent3.getAltNumber()) : -1,
 			getChildIndex(earliestLeftAncestorParent2),
-			earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4.getRuleIndex(), earliestLeftAncestorParent4.getAltNumber()) : 0,
+			earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4.getRuleIndex(), earliestLeftAncestorParent4.getAltNumber()) : -1,
 			getChildIndex(earliestLeftAncestorParent3),
 
 			// info
@@ -507,6 +515,7 @@ public class CollectFeatures {
 	{
 		TerminalNode matchingLeftNode = getMatchingLeftSymbol(doc, node);
 		if (matchingLeftNode != null) {
+//			System.out.println(node.getPayload()+" matches with "+matchingLeftNode.getSymbol());
 			int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
 			return matchingLeftTokenLine != line ? PAIR_ON_DIFF_LINE : PAIR_ON_SAME_LINE;
 		}
@@ -557,15 +566,6 @@ public class CollectFeatures {
 			}
 		}
 		return newPairs;
-	}
-
-	public static Token findAlignedToken(List<Token> tokens, Token leftEdgeToken) {
-		for (Token t : tokens) {
-			if ( t.getCharPositionInLine() == leftEdgeToken.getCharPositionInLine() ) {
-				return t;
-			}
-		}
-		return null;
 	}
 
 	/** Search backwards from tokIndex into 'tokens' stream and get all on-channel
@@ -761,12 +761,20 @@ public class CollectFeatures {
 		return parentClosure((ParserRuleContext)p.getParent());
 	}
 
-	public static int getChildIndex(ParseTree t) {
+	public static int getChildIndex(ParserRuleContext t) {
 		if ( t==null ) return -1;
-		ParseTree parent = t.getParent();
+		ParserRuleContext parent = t.getParent();
 		if ( parent==null ) {
 			return -1;
 		}
+		// we know we have a parent now
+		// check to see if we are 2nd or beyond element in a sibling list
+		List<ParserRuleContext> siblings = parent.getRuleContexts(t.getClass());
+		if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
+			return CHILD_INDEX_LIST_ELEMENT;
+		}
+		// Either first of sibling list or not in a list.
+		// Figure out which child index t is of parent
 		for (int i = 0; i<parent.getChildCount(); i++) {
 			if ( parent.getChild(i)==t ) {
 				return i;
