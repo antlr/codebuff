@@ -722,7 +722,16 @@ public class CollectFeatures {
 		// we know we have a parent now
 		// check to see if we are 2nd or beyond element in a sibling list
 		if ( t instanceof ParserRuleContext ) {
-			List<ParserRuleContext> siblings = ((ParserRuleContext)parent).getRuleContexts(((ParserRuleContext)t).getClass());
+			List<ParserRuleContext> siblings =
+				((ParserRuleContext)parent).getRuleContexts(((ParserRuleContext)t).getClass());
+			if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
+				return CHILD_INDEX_LIST_ELEMENT;
+			}
+		}
+		else {
+			TerminalNode node = (TerminalNode)t;
+			List<TerminalNode> siblings =
+				((ParserRuleContext)parent).getTokens(node.getSymbol().getType());
 			if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
 				return CHILD_INDEX_LIST_ELEMENT;
 			}
