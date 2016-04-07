@@ -81,20 +81,21 @@ public class CollectFeatures {
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
 	public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 5;
-	public static final int INDEX_ANCESTORS_PARENT_RULE  = 6;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 7;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 8;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 9;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 10;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 11;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 12;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 13;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX  = 6;
+	public static final int INDEX_ANCESTORS_PARENT_RULE  = 7;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 8;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 9;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 10;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 11;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 12;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 13;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 14;
 
-	public static final int INDEX_INFO_FILE         = 14;
-	public static final int INDEX_INFO_LINE         = 15;
-	public static final int INDEX_INFO_CHARPOS      = 16;
+	public static final int INDEX_INFO_FILE         = 15;
+	public static final int INDEX_INFO_LINE         = 16;
+	public static final int INDEX_INFO_CHARPOS      = 17;
 
-	public static final int NUM_FEATURES            = 17;
+	public static final int NUM_FEATURES            = 18;
 
 //	public static final int INDEX_RULE              = 8; // what rule are we in?
 //	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 9;
@@ -117,6 +118,7 @@ public class CollectFeatures {
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		// these previous 5 features seem to predict newline really well. whitespace ok too
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -137,6 +139,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
@@ -157,6 +160,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
@@ -490,6 +494,7 @@ public class CollectFeatures {
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
 			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
+			getChildIndex(node),
 			earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent.getRuleIndex(), earliestLeftAncestorParent.getAltNumber()) : -1,
 			getChildIndex(earliestLeftAncestor),
 			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2.getRuleIndex(), earliestLeftAncestorParent2.getAltNumber()) : -1,
@@ -761,17 +766,19 @@ public class CollectFeatures {
 		return parentClosure((ParserRuleContext)p.getParent());
 	}
 
-	public static int getChildIndex(ParserRuleContext t) {
+	public static int getChildIndex(ParseTree t) {
 		if ( t==null ) return -1;
-		ParserRuleContext parent = t.getParent();
+		ParseTree parent = t.getParent();
 		if ( parent==null ) {
 			return -1;
 		}
 		// we know we have a parent now
 		// check to see if we are 2nd or beyond element in a sibling list
-		List<ParserRuleContext> siblings = parent.getRuleContexts(t.getClass());
-		if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
-			return CHILD_INDEX_LIST_ELEMENT;
+		if ( t instanceof ParserRuleContext ) {
+			List<ParserRuleContext> siblings = ((ParserRuleContext)parent).getRuleContexts(((ParserRuleContext)t).getClass());
+			if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
+				return CHILD_INDEX_LIST_ELEMENT;
+			}
 		}
 		// Either first of sibling list or not in a list.
 		// Figure out which child index t is of parent
