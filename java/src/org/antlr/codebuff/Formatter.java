@@ -48,7 +48,6 @@ public class Formatter {
 	protected Vector<TokenPositionAnalysis> analysis = new Vector<>();
 
 	protected CodekNNClassifier nlwsClassifier;
-	protected CodekNNClassifier wsClassifier;
 	protected CodekNNClassifier alignClassifier;
 	protected int k;
 
@@ -227,6 +226,10 @@ public class Formatter {
 	/** Look into the token stream to get the comments to the left of current
 	 *  token. Emit all whitespace and comments except for whitespace at the
 	 *  end as we'll inject that per newline prediction.
+	 *
+	 *  This assumes we are grooming not totally reformatting.
+	 *  We able to see original input stream for comment purposes. With all
+	 *  whitespace removed, we can't emit this stuff properly at moment.
 	 */
 	public void emitCommentsToTheLeft(int tokenIndexInStream) {
 		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(tokenIndexInStream);
@@ -270,7 +273,7 @@ public class Formatter {
 
 	public TokenPositionAnalysis getTokenAnalysis(int[] features, int indexIntoRealTokens, int tokenIndexInStream,
 	                                              int injectNewline,
-	                                              int alignWithPrevious,
+	                                              int align,
 	                                              int ws)
 	{
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
@@ -286,12 +289,11 @@ public class Formatter {
 
 		boolean prevIsWS = prevToken.getChannel()==Token.HIDDEN_CHANNEL; // assume this means whitespace
 		int actualNL = Tool.count(prevToken.getText(), '\n');
-		int actualWS = Tool.count(prevToken.getText(), ' ');
-		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual %s",
+		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual ?",
 		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
-		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
+		String alignPredictionString = String.format("### line %d: predicted %d actual %s",
 		                                             originalCurToken.getLine(),
-		                                             alignWithPrevious==1?"align":"unaligned",
+		                                             align,
 		                                             "?");
 
 		String newlineAnalysis = newlinePredictionString+"\n"+

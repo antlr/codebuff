@@ -97,19 +97,6 @@ public class CollectFeatures {
 
 	public static final int NUM_FEATURES            = 18;
 
-//	public static final int INDEX_RULE              = 8; // what rule are we in?
-//	public static final int INDEX_EARLIEST_RIGHT_ANCESTOR = 9;
-//	public static final int INDEX_ANCESTORS_PARENT5_RULE = 11;
-//	public static final int INDEX_ANCESTORS_PARENT4_RULE = 12;
-//	public static final int INDEX_ANCESTORS_PARENT3_RULE = 13;
-//	public static final int INDEX_ANCESTORS_PARENT3_WID = 14;
-//	public static final int INDEX_ANCESTORS_PARENT2_RULE = 15;
-//	public static final int INDEX_ANCESTORS_PARENT2_WID = 16;
-//	public static final int INDEX_ANCESTORS_PARENT_RULE  = 17;
-//	public static final int INDEX_ANCESTORS_PARENT_WID  = 18;
-//	public static final int INDEX_NEXT_TYPE         = 19;
-
-
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
@@ -117,8 +104,8 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
-		// these previous 5 features seem to predict newline really well. whitespace ok too
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
+		// these previous 6 features seem to predict newline really well. whitespace ok too
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -173,10 +160,6 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
-
-	public static int getCurrentTokenType(int[] features) { return features[INDEX_CUR_TYPE]; }
-	public static int getInfoLine(int[] features) { return features[INDEX_INFO_LINE]; }
-	public static int getInfoCharPos(int[] features) { return features[INDEX_INFO_CHARPOS]; }
 
 	protected InputDocument doc;
 	protected ParserRuleContext root;
@@ -444,10 +427,7 @@ public class CollectFeatures {
 
 		// Get context information for current token
 		parent = (ParserRuleContext)node.getParent();
-		int curTokensParentRuleIndex = parent.getRuleIndex();
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
-		int earliestLeftAncestorRuleIndex = earliestLeftAncestor.getRuleIndex();
-		int earliestLeftAncestorRuleAlt = earliestLeftAncestor.getAltNumber();
 		ParserRuleContext earliestLeftAncestorParent = earliestLeftAncestor.getParent();
 
 		ParserRuleContext earliestLeftAncestorParent2 = earliestLeftAncestorParent!=null ? earliestLeftAncestorParent.getParent() : null;
@@ -455,36 +435,8 @@ public class CollectFeatures {
 		ParserRuleContext earliestLeftAncestorParent4 = earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3.getParent() : null;
 
 		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(node, curToken);
-		int earliestRightAncestorRuleIndex = earliestRightAncestor.getRuleIndex();
-		int earliestRightAncestorRuleAlt = earliestRightAncestor.getAltNumber();
 
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
-
-		// Get some context from parse tree
-//		if ( earliestLeftAncestor==null ) { // just use regular parent then
-//			ancestorParent = getParent(node);
-//			if ( ancestorParent!=null ) {
-//				ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
-//			}
-//		}
-//		else {
-//			ancestorParent = getParent(earliestLeftAncestor);  // get parent but skip chain rules
-//			if ( ancestorParent!=null ) {
-//				ancestorParent2 = ancestorParent.getParent(); // get immediate parent for context
-//			}
-//		}
-//		ParserRuleContext ancestorParent3 = ancestorParent2!=null ? ancestorParent2.getParent() : null;
-//		ParserRuleContext ancestorParent4 = ancestorParent3!=null ? ancestorParent3.getParent() : null;
-//		ParserRuleContext ancestorParent5 = ancestorParent4!=null ? ancestorParent4.getParent() : null;
-
-//			public static final int INDEX_PREV_TYPE         = 0;
-//			public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR = 1;
-//			public static final int INDEX_CUR_TYPE = 2;
-//			public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
-//			public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
-//			public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 5;
-//		new FeatureMetaData(FeatureType.RULE,  new String[] {"left ancestor", "parent"}, 1),
-//		new FeatureMetaData(FeatureType.INT,   new String[] {"left ancestor", "child index"}, 1),
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
 		int[] features = {
@@ -510,7 +462,6 @@ public class CollectFeatures {
 			curToken.getCharPositionInLine()
 		};
 		assert features.length == NUM_FEATURES;
-//		System.out.print(curToken+": "+CodekNNClassifier._toString(features));
 		return features;
 	}
 
@@ -762,10 +713,6 @@ public class CollectFeatures {
 		return real;
 	}
 
-	public static ParserRuleContext getParent(TerminalNode p) {
-		return parentClosure((ParserRuleContext)p.getParent());
-	}
-
 	public static int getChildIndex(ParseTree t) {
 		if ( t==null ) return -1;
 		ParseTree parent = t.getParent();
@@ -788,26 +735,6 @@ public class CollectFeatures {
 			}
 		}
 		return -1;
-	}
-
-	/** Same as p.getParent() except we scan through chain rule nodes */
-	public static ParserRuleContext getParent(ParserRuleContext p) {
-		if ( p==null ) return null;
-		ParserRuleContext lastValidParent = p.getParent();
-		if ( lastValidParent==null ) return null; // must have hit the root
-
-		return parentClosure(p.getParent());
-	}
-
-	// try to walk chain rules starting with the parent of the usual parent
-	public static ParserRuleContext parentClosure(ParserRuleContext p) {
-		ParserRuleContext lastValidParent = p;
-		ParserRuleContext q = lastValidParent.getParent();
-		while ( q!=null && q.getChildCount()==1 ) { // while is a chain rule
-			lastValidParent = q;
-			q = q.getParent();
-		}
-		return lastValidParent;
 	}
 
 	/** Pack a rule index and an alternative number into the same 32-bit integer. */
