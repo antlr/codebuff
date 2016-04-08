@@ -16,15 +16,15 @@ This repository is a step towards what we hope will be a universal code formatte
 When looking at code, programmers can easily pick out formatting patterns for various constructs such as how `if` statements and array initializers are laid out.  Rule-based formatting systems allow us to specify these input to output patterns.  The key idea with our approach is to mimic what programmers do during the act of entering code or formatting.   No matter how complicated the formatting structure is for a particular input phrase, formatting always boils down to the following four canonical operations:
 
 1. *nl*: Inject newline
-2. *ws*: Inject whitespace
+2. *sp*: Inject space character
 3. *align*: Align current token with some previous token
 4. *indent*: Indent current token from some previous token
 
 The first operation predicates the other three operations in that injecting a newline triggers an alignment or indentation. Not injecting a newline triggers injection of 0 or more spaces.
 
-The basic formatting engine works as follows. At each token in an input sentence, decide which of the canonical operations to perform then emit the current token.  Repeat until all tokens have been emitted.
+The basic formatting engine works as follows. At each token in an input sentence, decide which of the canonical operations to perform then emit the current token.  Repeat until all tokens have been emitted. It's important to note that predictions for previous tokens affect predictions for the current token.  For example, inserting a newline after a `{` might force a newline later right before the matching `}`.
 
-To make this approach work, we need a model that maps context information about the current token to one or more canonical operations in {*nl*, *ws*, *align*, *indent*}. To create a formatter for a given language *L*, `CodeBuff` takes as input:
+To make this approach work, we need a model that maps context information about the current token to one or more canonical operations in {*nl*, *sp*, *align*, *indent*}. To create a formatter for a given language *L*, `CodeBuff` takes as input:
 
 1. A grammar for *L*
 2. A set of input files written in *L*
@@ -51,11 +51,14 @@ For a given token and parse tree context (relative to current token), we predict
 
 For efficiency, we use just two classifiers, one for predicting injection of newlines/spaces and one for predicting alignment/indentation. The result of prediction is a tuple:
 
-**predict<sub>ws</sub>**(*context*) &isin; {(newline, *n*), (whitespace, *n*), none}
+*ws* = **predict<sub>ws</sub>**(*context*) &isin; {(newline, *n*), (whitespace, *n*), none}
 
-**predict<sub>align</sub>**(*context*) = &isin; {(align, *delta*, *index*), (indent, *delta*), indent, none}
+*alignment* = **predict<sub>align</sub>**(*context*) = &isin; {(align, *delta*, *index*), (indent, *delta*), indent, none}
+
+like auto-regression on a signal, prediction feeds off of prior decisionmaking about newlines and alignment. We even must base 2nd decision, alignment, upon results of first prediction like in a decision tree.  So before predicting alignment, we have to compute "is first token on line" based upon *ws>0* result. Also must compute whether "matching symbol exists and is on different line".
 
 ### Features
+
 
 matching symbols and list elements
 
