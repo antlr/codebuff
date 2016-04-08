@@ -145,3 +145,5 @@ http://www.dcc.uchile.cl/~gnavarro/ps/spire98.2.pdf
 
  could this help us build an index for improving performance of kNN?
 
+also
+https://www.researchgate.net/publication/222436980_Vidal_Ruiz_E_An_algorithm_for_finding_nearest_neighbours_in_approximately_constant_average_time_Pattern_Recognition_Letters_4_145-157
