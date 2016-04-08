@@ -96,6 +96,7 @@ public class CollectFeatures {
 	public static final int INDEX_INFO_CHARPOS      = 17;
 
 	public static final int NUM_FEATURES            = 18;
+	public static final int ANALYSIS_START_TOKEN_INDEX = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
@@ -186,7 +187,7 @@ public class CollectFeatures {
 
 	public void computeFeatureVectors() {
 		List<Token> realTokens = getRealTokens(tokens);
-		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
+		for (int i = ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			computeFeatureVectorForToken(tokenIndexInStream);
 		}
@@ -243,8 +244,6 @@ public class CollectFeatures {
 	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
 		int aligned = CAT_NO_ALIGNMENT;
 
-		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 		Pair<ParserRuleContext, Integer> pair =
@@ -276,12 +275,44 @@ public class CollectFeatures {
 
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
 		int precedingNL = 0;
-		List<Token> wsTokensBeforeCurrentToken = tokens.getHiddenTokensToLeft(i);
-		if ( wsTokensBeforeCurrentToken==null ) return 0;
-		for (Token t : wsTokensBeforeCurrentToken) {
-			precedingNL += Tool.count(t.getText(), '\n');
+		List<Token> previousWS = getPreviousWS(tokens, i);
+		if ( previousWS!=null ) {
+			for (Token ws : previousWS) {
+				precedingNL += Tool.count(ws.getText(), '\n');
+			}
 		}
 		return precedingNL;
+	}
+
+	// if we have non-ws tokens like comments, we only count ws after last comment
+	public static List<Token> getPreviousWS(CommonTokenStream tokens, int i) {
+		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(i);
+		if ( hiddenTokensToLeft==null ) return null;
+		if ( hasCommentToken(hiddenTokensToLeft) ) {
+			for (int j = hiddenTokensToLeft.size()-1; j>=0; j--) {
+				Token hidden = hiddenTokensToLeft.get(j);
+				String hiddenText = hidden.getText();
+				if ( !hiddenText.matches("\\s+") ) {
+					return hiddenTokensToLeft.subList(j+1, hiddenTokensToLeft.size());
+				}
+			}
+			return null;
+		}
+		else {
+			return hiddenTokensToLeft;
+		}
+	}
+
+	public static boolean hasCommentToken(List<Token> hiddenTokensToLeft) {
+		boolean hasComment = false;
+		for (Token hidden : hiddenTokensToLeft) {
+			String hiddenText = hidden.getText();
+			if ( !hiddenText.matches("\\s+") ) {
+				hasComment = true;
+				break;
+			}
+		}
+		return hasComment;
 	}
 
 	/** Walk upwards from node while p.start == token; return null if there is

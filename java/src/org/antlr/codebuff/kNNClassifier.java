@@ -28,20 +28,6 @@ public abstract class kNNClassifier {
 		maxDistanceCount = n;
 	}
 
-	/** Classify unknown for all Y at once */
-	public int[] classify(int k, int[] unknown, double distanceThreshold) {
-		int[] categories = new int[Corpus.NUM_DEPENDENT_VARS];
-
-		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
-		HashBag<Integer> votesBag = getVotesBag(kNN, k, unknown, corpus.injectWhitespace);
-		categories[Corpus.INDEX_FEATURE_NEWLINES] = getCategoryWithMostVotes(votesBag);
-
-		votesBag = getVotesBag(kNN, k, unknown, corpus.align);
-		categories[Corpus.INDEX_FEATURE_ALIGN_WITH_PREVIOUS] = getCategoryWithMostVotes(votesBag);
-
-		return categories;
-	}
-
 	/**
 	 * Walk all training samples and compute distance(). Return indexes of k
 	 * smallest distance values.  Categories can be any negative or positive

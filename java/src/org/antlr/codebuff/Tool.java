@@ -32,6 +32,7 @@ import java.util.Map;
  *
  * Tool  -antlr     grammars                       /Users/parrt/antlr/code/grammars-v4/clojure/Clojure.g4
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -java      ../samples/stringtemplate4     ../samples/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
 	public static boolean showFileNames = false;
@@ -49,7 +50,7 @@ public class Tool {
 		String testFilename = args[2];
 		String output;
 		if ( language.equals("-java") ) {
-			Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+			Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
 			InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
 			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 			output = results.a;
@@ -58,7 +59,7 @@ public class Tool {
 			controller.show();
 		}
 		else {
-			Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
+			Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
 			InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
 			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
 			output = results.a;
@@ -110,7 +111,8 @@ public class Tool {
 							   Class<? extends Lexer> lexerClass,
 							   Class<? extends Parser> parserClass,
 							   String startRuleName,
-							   int tabSize)
+							   int tabSize,
+	                           boolean shuffleFeatureVectors)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
@@ -143,7 +145,7 @@ public class Tool {
 		}
 
 		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
-		corpus.randomShuffleInPlace();
+		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
 	}

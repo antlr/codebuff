@@ -1,6 +1,5 @@
 package org.antlr.codebuff;
 
-import com.google.common.base.CharMatcher;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -103,7 +102,7 @@ public class Formatter {
 
 
 		realTokens = getRealTokens(tokens);
-		for (int i = 2; i<realTokens.size(); i++) { // can't process first 2 tokens
+		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 2 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(i, tokenIndexInStream);
 		}
@@ -130,13 +129,12 @@ public class Formatter {
 		}
 		else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
 			ws = CollectFeatures.unwscat(injectNL_WS);
+			if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
+				ws = 1;
+			}
 		}
 
-		if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
-			ws = 1;
-		}
-
-		int align = CAT_NO_ALIGNMENT;
+		int alignOrIndent = CAT_NO_ALIGNMENT;
 
 		if ( newlines>0 ) {
 			output.append(Tool.newlines(newlines));
@@ -156,17 +154,17 @@ public class Formatter {
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 			features[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
 
-			align = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
 
-			if ( align==CAT_INDENT ) {
+			if ( alignOrIndent==CAT_INDENT ) {
 				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
 					int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
 					charPosInLine = indentedCol;
 					output.append(Tool.spaces(indentedCol));
 				}
 			}
-			else if ( (align&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
-				int[] deltaChild = CollectFeatures.unaligncat(align);
+			else if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
+				int[] deltaChild = CollectFeatures.unaligncat(alignOrIndent);
 				int deltaFromAncestor = deltaChild[0];
 				int childIndex = deltaChild[1];
 				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
@@ -181,7 +179,7 @@ public class Formatter {
 				}
 				else {
 					// uh oh.
-					System.err.println("Whoops. Tried access invalid child");
+					System.err.println("Whoops. Tried to access invalid child");
 				}
 				if ( start!=null ) {
 					int indentCol = start.getCharPositionInLine();
@@ -189,8 +187,8 @@ public class Formatter {
 					output.append(Tool.spaces(indentCol));
 				}
 			}
-			else if ( (align&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
-				int deltaFromAncestor = CollectFeatures.unindentcat(align);
+			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
+				int deltaFromAncestor = CollectFeatures.unindentcat(alignOrIndent);
 				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 				Token start = ancestor.getStart();
@@ -206,7 +204,7 @@ public class Formatter {
 		}
 
 		TokenPositionAnalysis tokenPositionAnalysis =
-			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, newlines, align, ws);
+			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
 		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -235,14 +233,7 @@ public class Formatter {
 		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(tokenIndexInStream);
 		if ( hiddenTokensToLeft!=null ) {
 			// if at least one is not whitespace, assume it's a comment and print all hidden stuff including whitespace
-			boolean hasComment = false;
-			for (Token hidden : hiddenTokensToLeft) {
-				String hiddenText = hidden.getText();
-				if ( !hiddenText.matches("\\s+") ) {
-					hasComment = true;
-					break;
-				}
-			}
+			boolean hasComment = CollectFeatures.hasCommentToken(hiddenTokensToLeft);
 			if ( hasComment ) {
 				// avoid whitespace at end of sequence as we'll inject that
 				int last = -1;
@@ -259,7 +250,7 @@ public class Formatter {
 					String hiddenText = hidden.getText();
 					output.append(hiddenText);
 					if ( hiddenText.matches("\\n+") ) {
-						line += CharMatcher.is('\n').countIn(hiddenText);
+						line += Tool.count(hiddenText, '\n');
 						charPosInLine = 0;
 					}
 					else {
@@ -272,28 +263,20 @@ public class Formatter {
 	}
 
 	public TokenPositionAnalysis getTokenAnalysis(int[] features, int indexIntoRealTokens, int tokenIndexInStream,
-	                                              int injectNewline,
-	                                              int align,
-	                                              int ws)
+	                                              int injectNL_WS, int alignOrIndent)
 	{
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
 		// compare prediction of newline against original, alert about any diffs
 		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
 		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
 
-		boolean failsafeTriggered = false;
-		if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
-			ws = 1;
-			failsafeTriggered = true;
-		}
-
 		boolean prevIsWS = prevToken.getChannel()==Token.HIDDEN_CHANNEL; // assume this means whitespace
 		int actualNL = Tool.count(prevToken.getText(), '\n');
 		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual ?",
-		                                               originalCurToken.getLine(), injectNewline, prevIsWS ? actualNL : "none");
+		                                               originalCurToken.getLine(), injectNL_WS, prevIsWS ? actualNL : "none");
 		String alignPredictionString = String.format("### line %d: predicted %d actual %s",
 		                                             originalCurToken.getLine(),
-		                                             align,
+		                                             alignOrIndent,
 		                                             "?");
 
 		String newlineAnalysis = newlinePredictionString+"\n"+
@@ -302,7 +285,7 @@ public class Formatter {
 		String alignAnalysis =alignPredictionString+"\n"+
 			alignClassifier.getPredictionAnalysis(doc, k, features, corpus.align,
 			                                      MAX_CONTEXT_DIFF_THRESHOLD);
-		return new TokenPositionAnalysis(newlineAnalysis, alignAnalysis, "n/a");
+		return new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
 	}
 
 	/** Do not join two words like "finaldouble" or numbers like "3double",

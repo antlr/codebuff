@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
+import static org.antlr.codebuff.CollectFeatures.getRealTokens;
 import static org.junit.Assert.assertTrue;
 
 /*
@@ -32,15 +35,43 @@ public class TestJavaStability {
 
 	@Test
 	public void testStability() throws Exception {
-		Corpus corpus = Tool.train(fileName, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+		boolean shuffleFeatureVectors = false;
+		Corpus corpus = Tool.train(fileName, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4, shuffleFeatureVectors);
 		InputDocument testDoc = Tool.load(fileName, JavaLexer.class, 4);
 		Pair<String,List<TokenPositionAnalysis>> results = Tool.format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 		String output = results.a;
 		List<TokenPositionAnalysis> analysisPerToken = results.b;
-		double d = Tool.docDiff(testDoc.content, output, JavaLexer.class);
-		System.out.println("Diff is "+d);
-		System.out.println(output);
-		assertTrue(d<0.05);
+
+		int misclassified_ws = 0;
+		int misclassified_alignment = 0;
+
+		List<Token> realTokens = getRealTokens(corpus.documents.get(0).tokens);
+		int n = realTokens.size();
+		for (int i = ANALYSIS_START_TOKEN_INDEX; i<n; i++) { // can't process first 2 tokens
+			int ws = corpus.injectWhitespace.get(i-ANALYSIS_START_TOKEN_INDEX);
+			int align = corpus.align.get(i-ANALYSIS_START_TOKEN_INDEX);
+
+			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
+			TokenPositionAnalysis tokenPositionAnalysis = analysisPerToken.get(tokenIndexInStream);
+
+			if ( ws!=tokenPositionAnalysis.ws ) {
+//				System.out.printf("%s ws=%d vs %d\n", realTokens.get(i).toString(), ws, tokenPositionAnalysis.ws);
+				misclassified_ws++;
+			}
+
+			if ( align!=tokenPositionAnalysis.align ) {
+//				System.out.printf("%s align=%d vs %d\n", realTokens.get(i).toString(), align, tokenPositionAnalysis.align);
+				misclassified_alignment++;
+			}
+		}
+		double ws_miss_rate = (misclassified_ws*100.0)/n;
+		double alignment_miss_rate = (misclassified_alignment*100.0)/n;
+		System.out.printf("misclassified ws=%d (%f%%) alignment=%d (%f%%)\n",
+		                  misclassified_ws, ws_miss_rate,
+		                  misclassified_alignment, alignment_miss_rate);
+//		System.out.println(output);
+		assertTrue("Inject whitespace miss rate too high "+ws_miss_rate+"%", ws_miss_rate<5);
+		assertTrue("Alignment miss rate too high "+alignment_miss_rate+"%", alignment_miss_rate<5);
 	}
 
 	@Parameterized.Parameters(name="{0}")

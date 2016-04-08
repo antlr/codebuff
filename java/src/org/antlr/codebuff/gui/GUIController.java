@@ -109,9 +109,9 @@ public class GUIController {
 				if ( analysis!=null ) {
 					highlighter.addHighlight(analysis.charIndexStart, analysis.charIndexStop+1, painter);
 				}
-				scope.injectNLConsole.setText(analysis!=null ? analysis.newline : "");
-				scope.alignConsole.setText(analysis!=null ? analysis.align : "");
+				scope.injectNLConsole.setText(analysis!=null ? analysis.wsAnalysis : "");
 				scope.injectNLConsole.setCaretPosition(0);
+				scope.alignConsole.setText(analysis!=null ? analysis.alignAnalysis : "");
 				scope.alignConsole.setCaretPosition(0);
 			}
 			catch (Exception ex) {

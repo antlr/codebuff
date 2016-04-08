@@ -1,15 +1,21 @@
 package org.antlr.codebuff;
 
-public class TokenPositionAnalysis {
-	public int charIndexStart; // where in output buffer the associated token starts; used to respond to clicks in formatted text
-	public int charIndexStop; // stop index (inclusive)
-	public String newline = "n/a";
-	public String ws = "n/a";
-	public String align = "n/a";
+import org.antlr.v4.runtime.Token;
 
-	public TokenPositionAnalysis(String newline, String align, String ws) {
-		this.align = align;
-		this.newline = newline;
+public class TokenPositionAnalysis {
+	public Token t;            // token from the input stream; it's position will usually differ from charIndexStart etc...
+	public int charIndexStart; // where in *output* buffer the associated token starts; used to respond to clicks in formatted text
+	public int charIndexStop;  // stop index (inclusive)
+	public int ws;
+	public int align;
+	public String wsAnalysis = "n/a";
+	public String alignAnalysis = "n/a";
+
+	public TokenPositionAnalysis(Token t, int ws, String wsAnalysis, int align, String alignAnalysis) {
+		this.t = t;
 		this.ws = ws;
+		this.wsAnalysis = wsAnalysis;
+		this.align = align;
+		this.alignAnalysis = alignAnalysis;
 	}
 }
