@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * Testing:
  *
- * Tool  -antlr     grammars                       /Users/parrt/antlr/code/grammars-v4/clojure/Clojure.g4
+ * Tool  -antlr     ../corpus/antlr4/samples       ../corpus/antlr4/test/Clojure.g4
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -java      ../samples/stringtemplate4     ../samples/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */

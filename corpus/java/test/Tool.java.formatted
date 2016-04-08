@@ -1,5 +1,4 @@
-package org.antlr.codebuff;
-
+package org org.antlr.codebuff;
 import org.antlr.codebuff.gui.GUIController;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -31,13 +30,13 @@ import java.util.Map;
  *
  * Tool  -antlr     grammars                       /Users/parrt/antlr/code/grammars-v4/clojure/Clojure.g4
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -java      ../samples/stringtemplate4     ../samples/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
-
 public class Tool {
     public static boolean showFileNames = false;
     public static boolean showTokens = false;
     public static void main(String[] args) throws Exception {
-        if ( args.length< 2 ) {
+        if ( args.length <2 ) {
             System.err.println("ExtractFeatures [-java|-antlr] root-dir-of-samples test-file");
         }
 
@@ -47,7 +46,7 @@ public class Tool {
         String testFilename = args[2];
         String output;
         if ( language.equals("-java") ) {
-            Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+            Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
             InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
             Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
             output = results.a;
@@ -56,7 +55,7 @@ public class Tool {
             controller.show();
         }
         else {
-            Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
+            Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
             InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
             Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
             output = results.a;
@@ -71,7 +70,9 @@ public class Tool {
      *  corpus to locate newline and whitespace injection points.
      */
 
-    public static Pair<String, List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception { return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true); }
+    public static Pair<String, List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception {
+        return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true);
+    }
 
     public static Pair<String, List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize, boolean showFormattedResult) throws Exception {
         parse(testDoc, lexerClass, parserClass, startRuleName);
@@ -87,7 +88,7 @@ public class Tool {
         return new Pair<>(formattedOutput, analysisPerToken);
     }
 
-    public static Corpus train(String rootDir, String fileRegex, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception {
+    public static Corpus train(String rootDir, String fileRegex, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize, boolean shuffleFeatureVectors) throws Exception {
         List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
         List<InputDocument> documents = load(allFiles, lexerClass, tabSize);
 
@@ -104,7 +105,6 @@ public class Tool {
         for (InputDocument doc : documents) {
             ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
         }
-
         Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
         if ( false ) {
             for (String ruleName : ruleToPairsBag.keySet()) {
@@ -117,42 +117,39 @@ public class Tool {
             }
         }
         Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
-        corpus.randomShuffleInPlace();
+        if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
         corpus.buildTokenContextIndex();
         return corpus;
     }
 
-    public static Corpus processSampleDocs(List<InputDocument> docs, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, int tabSize, Map<String,List<Pair<Integer, Integer>>> ruleToPairsBag) throws Exception {
+    public static Corpus processSampleDocs(List<InputDocument> docs, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag) throws Exception {
         List<InputDocument> documents = new ArrayList<>();
         List<int[]> featureVectors = new ArrayList<>();
         List<Integer> injectNewlines = new ArrayList<>();
-        List<Integer> injectWS = new ArrayList<>();
         List<Integer> alignWithPrevious = new ArrayList<>();
         for (InputDocument doc : docs) {
             if ( showFileNames ) System.out.println(doc);
             process(doc, tabSize, ruleToPairsBag);
-            for (int i =0; i < doc.featureVectors.size(); i++) {
+            for (int i = 0; i <doc.featureVectors.size(); i++) {
                 documents.add(doc);
                 int[] featureVec = doc.featureVectors.get(i);
-                injectNewlines.add(doc.injectNewlines.get(i) );
-                injectWS.add(doc.injectWS.get(i) );
-                alignWithPrevious.add(doc.alignWithPrevious.get(i) );
+                injectNewlines.add(doc.injectWhitespace.get(i));
+                alignWithPrevious.add(doc.align.get(i));
                 featureVectors.add(featureVec);
             }
         }
         System.out.printf("%d feature vectors\n", featureVectors.size());
-        return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious, injectWS);
+        return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
     }
 
     /** Parse document, save feature vectors to the doc but return it also */
 
-    public static void process(InputDocument doc, int tabSize, Map<String,List<Pair<Integer, Integer>>> ruleToPairsBag) {
+    public static void process(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag) {
         CollectFeatures collector = new CollectFeatures(doc, tabSize, ruleToPairsBag);
         collector.computeFeatureVectors();
         doc.featureVectors = collector.getFeatures();
-        doc.injectNewlines = collector.getInjectNewlines();
-        doc.injectWS = collector.getInjectWS();
-        doc.alignWithPrevious = collector.getAlign();
+        doc.injectWhitespace = collector.getInjectWhitespace();
+        doc.align = collector.getAlign();
     }
 
     public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass) throws Exception {
@@ -179,17 +176,17 @@ public class Tool {
         doc.parser = getParser(parserClass, tokens);
         doc.parser.setBuildParseTree(true);
         Method startRule = parserClass.getMethod(startRuleName);
-        ParserRuleContext tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[])null);
+        ParserRuleContext tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[]) null);
         doc.tokens = tokens;
         doc.tree = tree;
     }
 
-    public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException,InstantiationException,IllegalAccessException, java.lang.reflect.InvocationTargetException {
+    public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
         Constructor<? extends Parser> parserCtor = parserClass.getConstructor(TokenStream.class);
         return parserCtor.newInstance(tokens);
     }
 
-    public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input) throws NoSuchMethodException,InstantiationException,IllegalAccessException, java.lang.reflect.InvocationTargetException {
+    public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
         Constructor<? extends Lexer> lexerCtor = lexerClass.getConstructor(CharStream.class);
         return lexerCtor.newInstance(input);
     }
@@ -247,7 +244,7 @@ public class Tool {
     public static void getFilenames_(File f, String inputFilePattern, List<String> files) {
         // If this is a directory, walk each file/dir in that directory
         if ( f.isDirectory() ) {
-            String flist[] = f.list();
+            String flist [ ] = f.list();
             for (String aFlist : flist) {
                 getFilenames_(new File(f, aFlist), inputFilePattern, files);
             }
@@ -261,7 +258,7 @@ public class Tool {
 
     public static String join(int[] array, String separator) {
         StringBuilder builder = new StringBuilder();
-        for (int i =0; i < array.length; i++) {
+        for (int i = 0; i <array.length; i++) {
             builder.append(array[i]);
             if ( i <array.length-1 ) {
                 builder.append(separator);
@@ -272,7 +269,7 @@ public class Tool {
 
     public static String join(String[] array, String separator) {
         StringBuilder builder = new StringBuilder();
-        for (int i =0; i < array.length; i++) {
+        for (int i = 0; i <array.length; i++) {
             builder.append(array[i]);
             if ( i <array.length-1 ) {
                 builder.append(separator);
@@ -301,9 +298,9 @@ public class Tool {
 
     public static int L0_Distance(boolean[] categorical, int[] A, int[] B) {
         int count = 0; // count how many mismatched categories there are
-        for (int i =0; i < A.length; i++) {
+        for (int i = 0; i <A.length; i++) {
             if ( categorical[i] ) {
-                if ( A[i] != B[i] ) {
+                if ( A[i]!=B[i] ) {
                     count++;
                 }
             }
@@ -317,9 +314,9 @@ public class Tool {
 
     public static double weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
         double count = 0; // count how many mismatched categories there are
-        for (int i =0; i < A.length; i++) {
-            if ( featureTypes[i].type==FeatureType.TOKEN|| featureTypes[i].type==FeatureType.RULE|| featureTypes[i].type==FeatureType.INT || featureTypes[i].type==FeatureType.BOOL ) {
-                if ( A[i] != B[i] ) {
+        for (int i = 0; i <A.length; i++) {
+            if ( featureTypes[i].type==FeatureType.TOKEN || featureTypes[i].type==FeatureType.RULE || featureTypes[i].type==FeatureType.INT || featureTypes[i].type==FeatureType.BOOL ) {
+                if ( A[i]!=B[i] ) {
                     count += featureTypes[i].mismatchCost;
                 }
             }
@@ -335,7 +332,9 @@ public class Tool {
         return count;
     }
 
-    public static double sigmoid(int x, float center) { return 1.0/(1.0+Math.exp(-0.2*(x-center))); }
+    public static double sigmoid(int x, float center) {
+        return 1.0/( 1.0+Math.exp(-0.2*( x-center)));
+    }
 
     public static int max(List<Integer> Y) {
         int max = 0;
@@ -392,20 +391,20 @@ public class Tool {
         // initialize v0 (the previous row of distances)
         // this row is A[0][i]: edit distance for an empty s
         // the distance is just the number of characters to delete from t
-        for (int i =0; i < v0.length; i++) {
+        for (int i = 0; i <v0.length; i++) {
             v0[i] = i;
         }
-        for (int i =0; i < s.length(); i++) {
+        for (int i = 0; i <s.length(); i++) {
             // calculate v1 (current row distances) from the previous row v0
 
             // first element of v1 is A[i+1][0]
             //   edit distance is delete (i+1) chars from s to match empty t
-            v1[0] = i+ 1;
+            v1[0] = i+1;
 
             // use formula to fill in the rest of the row
-            for (int j =0; j < t.length(); j++) {
-                int cost = s.charAt(i)==t.charAt(j)? 0 :1;
-                v1[j+1] = Math.min(Math.min(v1[j]+1, v0[j+1]+1), v0[j]+cost);
+            for (int j = 0; j <t.length(); j++) {
+                int cost = s.charAt(i)==t.charAt(j) ? 0: 1;
+                v1[j+1] = Math.min(Math.min(v1[j] +1, v0[j+1] +1), v0[j] +cost);
             }
 
             // copy v1 (current row) to v0 (previous row) for next iteration
@@ -454,7 +453,7 @@ public class Tool {
         int s_nls = count(s, '\n');
         int t_spaces = count(t, ' ');
         int t_nls = count(t, '\n');
-        return Math.abs(s_spaces-t_spaces) +Math.abs(s_nls-t_nls);
+        return Math.abs(s_spaces-t_spaces)+Math.abs(s_nls-t_nls);
     }
 
     /** Compute a document difference metric 0-1.0 between two documents that
@@ -486,11 +485,11 @@ public class Tool {
         int formatted_ws = 0;
         while ( true ) {
             Token ot = original_tokens.LT(i);
-            if ( ot==null || ot.getType()== Token.EOF ) break;
+            if ( ot==null || ot.getType()==Token.EOF ) break;
             List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
             original_ws += tokenText(ows).length();
-                       Token ft = formatted_tokens.LT(i);
-            if ( ft==null || ft.getType()== Token.EOF ) break;
+            Token ft = formatted_tokens.LT(i);
+            if ( ft==null || ft.getType()==Token.EOF ) break;
             List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
             formatted_ws += tokenText(fws).length();
             ws_distance += whitespaceEditDistance(tokenText(ows), tokenText(fws));
@@ -510,7 +509,7 @@ public class Tool {
 //    int ws_distance = Tool.levenshteinDistance(original_text_with_ws, formatted);
 
         int max_ws = Math.max(original_ws, formatted_ws);
-        double normalized_ws_distance = ((float)ws_distance)/max_ws;
+        double normalized_ws_distance = ((float)ws_distance)/ max_ws;
         return normalized_ws_distance;
     }
 
@@ -533,20 +532,20 @@ public class Tool {
         int i = 1;
         while ( true ) {
             Token ot = original_tokens.LT(i);
-            if ( ot==null || ot.getType()== Token.EOF ) break;
+            if ( ot==null || ot.getType()==Token.EOF ) break;
             List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
             String original_ws = tokenText(ows);
             Token ft = formatted_tokens.LT(i);
-            if ( ft==null || ft.getType()== Token.EOF ) break;
+            if ( ft==null || ft.getType()==Token.EOF ) break;
             List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
             String formatted_ws = tokenText(fws);
             if ( original_ws.length()==0 ) {
-                if ( formatted_ws.length()!=0) {
+                if ( formatted_ws.length()!= 0 ) {
                     doc.incorrectWhiteSpaceCount++;
                     if ( doc.dumpIncorrectWS ) {
                         System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
                         Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-                        System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                        System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws));
                     }
                 }
             }
@@ -557,7 +556,7 @@ public class Tool {
                     if ( doc.dumpIncorrectWS ) {
                         System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
                         Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-                        System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
+                        System.out.println("should: "+Tool.dumpWhiteSpace(original_ws));
                     }
                 }
                 else if ( !TwoWSEqual(original_ws, formatted_ws) ) {
@@ -565,8 +564,8 @@ public class Tool {
                     if ( doc.dumpIncorrectWS ) {
                         System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
                         Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-                        System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
-                        System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                        System.out.println("should: "+Tool.dumpWhiteSpace(original_ws));
+                        System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws));
                     }
                 }
             }
@@ -592,21 +591,21 @@ public class Tool {
         int i = 1;
         while ( true ) {
             Token ot = original_tokens.LT(i);
-            if ( ot==null || ot.getType()== Token.EOF ) break;
+            if ( ot==null || ot.getType()==Token.EOF ) break;
             List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
             String original_ws = tokenText(ows);
             Token ft = formatted_tokens.LT(i);
-            if ( ft==null || ft.getType()== Token.EOF ) break;
+            if ( ft==null || ft.getType()==Token.EOF ) break;
             List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
             String formatted_ws = tokenText(fws);
             if ( original_ws.length()==0 ) {
-                if ( formatted_ws.length()!=0) {
+                if ( formatted_ws.length()!= 0 ) {
                     if ( count(formatted_ws, '\n')>0 ) {
                         doc.incorrectWhiteSpaceCount++;
                         if ( doc.dumpIncorrectWS ) {
                             System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
                             Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-                            System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                            System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws));
                         }
                     }
                 }
@@ -619,16 +618,16 @@ public class Tool {
                         if ( doc.dumpIncorrectWS ) {
                             System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
                             Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-                            System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
+                            System.out.println("should: "+Tool.dumpWhiteSpace(original_ws));
                         }
                     }
-                    else if ( count(original_ws, '\n')!= count(formatted_ws, '\n') ) {
+                    else if ( count(original_ws, '\n')!=count(formatted_ws, '\n') ) {
                         doc.incorrectWhiteSpaceCount++;
                         if ( doc.dumpIncorrectWS ) {
                             System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
                             Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-                            System.out.println("should: "+Tool.dumpWhiteSpace(original_ws) );
-                            System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws) );
+                            System.out.println("should: "+Tool.dumpWhiteSpace(original_ws));
+                            System.out.println("actual: "+Tool.dumpWhiteSpace(formatted_ws));
                         }
                     }
                 }
@@ -650,9 +649,9 @@ public class Tool {
     public static int getNumberRealTokens(CommonTokenStream tokens, int from, int to) {
         if ( tokens==null ) return 0;
         int n = 0;
-        if ( from< 0 ) from = 0;
-        if ( to> tokens.size() ) to = tokens.size()- 1;
-        for (int i =from; i <= to; i++) {
+        if ( from <0 ) from = 0;
+        if ( to> tokens.size() ) to = tokens.size()-1;
+        for (int i = from; i<= to; i++) {
             Token t = tokens.get(i);
             if ( t.getChannel()==Token.DEFAULT_CHANNEL ) {
                 n++;
@@ -661,13 +660,15 @@ public class Tool {
         return n;
     }
 
-    public static String spaces(int n) { return sequence(n, " ");
+    public static String spaces(int n) {
+        return sequence(n, " ");
 //    StringBuilder buf = new StringBuilder();
 //    for (int sp=1; sp<=n; sp++) buf.append(" ");
 //    return buf.toString();
     }
 
-    public static String newlines(int n) { return sequence(n, "\n");
+    public static String newlines(int n) {
+        return sequence(n, "\n");
 //    StringBuilder buf = new StringBuilder();
 //    for (int sp=1; sp<=n; sp++) buf.append("\n");
 //    return buf.toString();
@@ -675,13 +676,13 @@ public class Tool {
 
     public static String sequence(int n, String s) {
         StringBuilder buf = new StringBuilder();
-        for (int sp =1; sp <= n; sp++) buf.append(s);
+        for (int sp = 1; sp<= n; sp++) buf.append(s);
         return buf.toString();
     }
 
     public static int count(String s, char x) {
         int n = 0;
-        for (int i =0; i < s.length(); i++) {
+        for (int i = 0; i <s.length(); i++) {
             if ( s.charAt(i)==x ) {
                 n++;
             }
@@ -693,18 +694,20 @@ public class Tool {
         if ( s==null ) return null;
         StringBuilder buf = new StringBuilder();
         int col = 0;
-        for (int i =0; i < s.length(); i++) {
+        for (int i = 0; i <s.length(); i++) {
             char c = s.charAt(i);
             switch ( c ) {
-            case '\n' : col = 0;
-                        buf.append(c);
-                        break;
-            case '\t' : buf.append(spaces(tabSize-col%tabSize));
-                        break;
-            default:
-                col++;
-                buf.append(c);
-                break;
+                case '\n' :
+                    col = 0;
+                    buf.append(c);
+                    break;
+                case '\t' :
+                    buf.append(spaces(tabSize-col % tabSize));
+                    break;
+                default:
+                    col++;
+                    buf.append(c);
+                    break;
             }
         }
         return buf.toString();
@@ -712,22 +715,27 @@ public class Tool {
 
     public static String dumpWhiteSpace(String s) {
         String[] whiteSpaces = new String[s.length()];
-        for (int i =0; i < s.length(); i++) {
+        for (int i = 0; i <s.length(); i++) {
             char c = s.charAt(i);
             switch ( c ) {
-            case '\n' : whiteSpaces[i] = "\\n";
-                        break;
-            case '\t' : whiteSpaces[i] = "\\t";
-                        break;
-            case '\r' : whiteSpaces[i] = "\\r";
-                        break;
-            case '\u000C' : whiteSpaces[i] = "\\u000C";
-                            break;
-            case ' ' : whiteSpaces[i] = "ws";
-                       break;
-            default:
-                whiteSpaces[i] = String.valueOf(c);
-                break;
+                case '\n' :
+                    whiteSpaces[i] = "\\n";
+                    break;
+                case '\t' :
+                    whiteSpaces[i] = "\\t";
+                    break;
+                case '\r' :
+                    whiteSpaces[i] = "\\r";
+                    break;
+                case '\u000C' :
+                    whiteSpaces[i] = "\\u000C";
+                    break;
+                case ' ' :
+                    whiteSpaces[i] = "ws";
+                    break;
+                default:
+                    whiteSpaces[i] = String.valueOf(c);
+                    break;
             }
         }
         return join(whiteSpaces, " | ");
@@ -778,12 +786,12 @@ public class Tool {
     public static double validate(Corpus corpus, List<InputDocument> testDocs, Class<? extends Lexer> lexerClass, Class<? extends Parser> parserClass, String startRuleName, int tabSize) throws Exception {
         ArrayList<Double> differenceRatios = validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
         Collections.sort(differenceRatios);
-        if ( differenceRatios.size()%2 ==1 ) return differenceRatios.get(differenceRatios.size()/2);
-        else if ( differenceRatios.size() ==0 ) {
+        if ( differenceRatios.size()% 2==1 ) return differenceRatios.get(differenceRatios.size()/ 2);
+        else if ( differenceRatios.size()==0 ) {
             System.err.println("Don't have enough results to get median value from validate results array!");
-return -1;
+            return -1;
         }
-        else return (differenceRatios.get(differenceRatios.size()/2)+differenceRatios.get(differenceRatios.size()/2-1))/2;
+        else return ( differenceRatios.get(differenceRatios.size()/ 2)+differenceRatios.get(differenceRatios.size()/ 2-1))/ 2;
     }
 
     public static class Foo {
@@ -795,5 +803,4 @@ return -1;
             System.out.println(tree.toStringTree(parser));
         }
     }
-
 }
