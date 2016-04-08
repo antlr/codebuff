@@ -137,3 +137,11 @@ number new vars 264
 8. feature                    prev column (0.034795)
 9. feature                  prev^2 column (0.019110)
 10. feature                    type=IMPORT (0.019083)
+
+
+=--------------
+ great paper that talks about vocabulary as a metric space:
+http://www.dcc.uchile.cl/~gnavarro/ps/spire98.2.pdf
+
+ could this help us build an index for improving performance of kNN?
+
