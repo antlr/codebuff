@@ -186,10 +186,21 @@ public class CollectFeatures {
 	}
 
 	public void computeFeatureVectors() {
+		findLists(doc);
 		List<Token> realTokens = getRealTokens(tokens);
 		for (int i = ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			computeFeatureVectorForToken(tokenIndexInStream);
+		}
+	}
+
+	public static void findLists(InputDocument doc) {
+		System.out.println();
+		System.out.println(doc.fileName);
+		OversizeListFinder oversizeListFinder = new OversizeListFinder();
+		ParseTreeWalker.DEFAULT.walk(oversizeListFinder, doc.tree);
+		for (String parent : oversizeListFinder.lists.keySet()) {
+			System.out.println(parent+"->"+oversizeListFinder.lists.get(parent));
 		}
 	}
 
