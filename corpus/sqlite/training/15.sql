@@ -1,0 +1,4 @@
+SELECT a
+  FROM t1
+ WHERE d>e
+ ORDER BY 1
