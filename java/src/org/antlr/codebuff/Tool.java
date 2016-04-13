@@ -30,8 +30,10 @@ import java.util.Map;
  *
  * Testing:
  *
- * Tool  -antlr     ../corpus/antlr4/training       ../corpus/antlr4/testing/Clojure.g4
- * Tool  -sqlite    ../corpus/sqlite/training       ../corpus/sqlite/testing/t1.sql
+ * Tool  -antlr     ../corpus/antlr4/training      ../corpus/antlr4/testing/Clojure.g4
+ * Tool  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
+ * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/t1.sql
+ * Tool  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -java      ../samples/stringtemplate4     ../samples/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
@@ -43,7 +45,7 @@ public class Tool {
 		throws Exception
 	{
 		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures [-java|-antlr|-sqlite] root-dir-of-samples test-file");
+			System.err.println("ExtractFeatures [-java|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
 		}
 		int tabSize = 4; // TODO: MAKE AN ARGUMENT
 		String language = args[0];
@@ -90,6 +92,15 @@ public class Tool {
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, tsqlLexer.class);
+				controller.show();
+				break;
+			case "-plsql":
+				corpus = train(corpusDir, ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, true);
+				testDoc = load(testFilename, plsqlLexer.class, tabSize);
+				results = format(corpus, testDoc, plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, plsqlLexer.class);
 				controller.show();
 				break;
 		}
