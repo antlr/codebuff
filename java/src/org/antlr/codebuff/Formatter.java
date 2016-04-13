@@ -5,7 +5,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.WritableToken;
-import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -82,7 +81,6 @@ public class Formatter {
 		return analysis;
 	}
 
-
 	public String format() {
 		if ( tokenToNodeMap == null ) {
 			tokenToNodeMap = indexTree(root);
@@ -90,16 +88,11 @@ public class Formatter {
 
 		tokens.seek(0);
 		WritableToken firstToken = (WritableToken)tokens.LT(1);
-		WritableToken secondToken = (WritableToken)tokens.LT(2);
-		// all tokens are wiped of line/col info so set them for first 2
+		// all tokens are wiped of line/col info so set them for first 1 token and emit
 		firstToken.setLine(1);
 		firstToken.setCharPositionInLine(0);
-		secondToken.setLine(1);
-		secondToken.setCharPositionInLine(firstToken.getText().length());
-
-		String prefix = tokens.getText(Interval.of(0, secondToken.getTokenIndex()));
-		output.append(prefix);
-
+		charPosInLine = firstToken.getText().length();
+		output.append(firstToken.getText());
 
 		realTokens = getRealTokens(tokens);
 		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 2 tokens

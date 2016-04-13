@@ -30,7 +30,8 @@ import java.util.Map;
  *
  * Testing:
  *
- * Tool  -antlr     ../corpus/antlr4/samples       ../corpus/antlr4/test/Clojure.g4
+ * Tool  -antlr     ../corpus/antlr4/training       ../corpus/antlr4/testing/Clojure.g4
+ * Tool  -sqlite    ../corpus/sqlite/training       ../corpus/sqlite/testing/t1.sql
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -java      ../samples/stringtemplate4     ../samples/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
@@ -42,30 +43,46 @@ public class Tool {
 		throws Exception
 	{
 		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures [-java|-antlr] root-dir-of-samples test-file");
+			System.err.println("ExtractFeatures [-java|-antlr|-sqlite] root-dir-of-samples test-file");
 		}
 		int tabSize = 4; // TODO: MAKE AN ARGUMENT
 		String language = args[0];
 		String corpusDir = args[1];
 		String testFilename = args[2];
-		String output;
-		if ( language.equals("-java") ) {
-			Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
-			InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
-			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
-			output = results.a;
-			List<TokenPositionAnalysis> analysisPerToken = results.b;
-			GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
-			controller.show();
-		}
-		else {
-			Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
-			InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
-			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
-			output = results.a;
-			List<TokenPositionAnalysis> analysisPerToken = results.b;
-			GUIController controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
-			controller.show();
+		String output = "???";
+		Corpus corpus;
+		InputDocument testDoc;
+		GUIController controller;
+		List<TokenPositionAnalysis> analysisPerToken;
+		Pair<String, List<TokenPositionAnalysis>> results;
+		switch ( language ) {
+			case "-java":
+				corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
+				testDoc = load(testFilename, JavaLexer.class, tabSize);
+				results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+				controller.show();
+				break;
+			case "-antlr":
+				corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
+				testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
+				results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
+				controller.show();
+				break;
+			case "-sqlite":
+				corpus = train(corpusDir, ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, true);
+				testDoc = load(testFilename, SQLiteLexer.class, tabSize);
+				results = format(corpus, testDoc, SQLiteLexer.class, SQLiteParser.class, "parse", tabSize);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, SQLiteLexer.class);
+				controller.show();
+				break;
 		}
 		System.out.println(output);
 	}
