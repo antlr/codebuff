@@ -83,6 +83,15 @@ public class Tool {
 				controller = new GUIController(analysisPerToken, testDoc, output, SQLiteLexer.class);
 				controller.show();
 				break;
+			case "-tsql":
+				corpus = train(corpusDir, ".*\\.tsql", tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, true);
+				testDoc = load(testFilename, tsqlLexer.class, tabSize);
+				results = format(corpus, testDoc, tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, tsqlLexer.class);
+				controller.show();
+				break;
 		}
 		System.out.println(output);
 	}
