@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.WritableToken;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -91,8 +92,9 @@ public class Formatter {
 		// all tokens are wiped of line/col info so set them for first 1 token and emit
 		firstToken.setLine(1);
 		firstToken.setCharPositionInLine(0);
-		charPosInLine = firstToken.getText().length();
-		output.append(firstToken.getText());
+		String prefix = tokens.getText(Interval.of(0, firstToken.getTokenIndex()));
+		charPosInLine = firstToken.getStopIndex()+1;
+		output.append(prefix);
 
 		realTokens = getRealTokens(tokens);
 		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 2 tokens
