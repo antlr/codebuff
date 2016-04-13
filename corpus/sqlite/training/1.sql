@@ -4,8 +4,8 @@ SELECT d-e,
         WHEN a<b+3 THEN 333 ELSE 444 END,
        e,
        (SELECT count(*) FROM t1 AS x WHERE x.b<t1.b)
-  FROM t1
- WHERE c BETWEEN b-2 AND d+2
-   AND (e>a AND e<b)
-   AND b>c
- ORDER BY 1,2
+FROM t1
+WHERE c BETWEEN b-2 AND d+2
+    AND (e>a AND e<b)
+    AND b>c
+ORDER BY 1,2
