@@ -67,35 +67,6 @@ FROM HumanResources.Employee
 ORDER BY JobTitle;
 GO
 
---+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--- Creating tables with SELECT INTO
-
-USE tempdb;
-GO
-IF OBJECT_ID (N'#Bicycles',N'U') IS NOT NULL
-DROP TABLE #Bicycles;
-GO
-SELECT * 
-INTO #Bicycles
-FROM AdventureWorks2012.Production.Product
-WHERE ProductNumber LIKE 'BK%';
-GO
-
-USE AdventureWorks2012;
-GO
-IF OBJECT_ID('dbo.NewProducts', 'U') IS NOT NULL
-    DROP TABLE dbo.NewProducts;
-GO
-ALTER DATABASE AdventureWorks2012 SET RECOVERY BULK_LOGGED;
-GO
-
-SELECT * INTO dbo.NewProducts
-FROM Production.Product
-WHERE ListPrice > $25 
-AND ListPrice < $100;
-GO
-ALTER DATABASE AdventureWorks2012 SET RECOVERY FULL;
-GO
 
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- Using correlated subqueries
@@ -387,33 +358,6 @@ GO
 
 SELECT ProductModelID, Name 
 FROM dbo.ProductResults;
-
---+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
--- Using UNION of two SELECT statements with ORDER BY
-
-USE AdventureWorks2012;
-GO
-IF OBJECT_ID ('dbo.Gloves', 'U') IS NOT NULL
-DROP TABLE dbo.Gloves;
-GO
--- Create Gloves table.
-SELECT ProductModelID, Name
-INTO dbo.Gloves
-FROM Production.ProductModel
-WHERE ProductModelID IN (3, 4);
-GO
-
-/* CORRECT */
-USE AdventureWorks2012;
-GO
-SELECT ProductModelID, Name
-FROM Production.ProductModel
-WHERE ProductModelID NOT IN (3, 4)
-UNION
-SELECT ProductModelID, Name
-FROM dbo.Gloves
-ORDER BY Name;
-GO
 
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- Using UNION of three SELECT statements to show the effects of ALL and parentheses

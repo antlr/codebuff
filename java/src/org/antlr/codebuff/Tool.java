@@ -32,7 +32,7 @@ import java.util.Map;
  *
  * Tool  -antlr     ../corpus/antlr4/training      ../corpus/antlr4/testing/Clojure.g4
  * Tool  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
- * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/t1.sql
+ * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.tsql
  * Tool  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -java      ../samples/stringtemplate4     ../samples/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java

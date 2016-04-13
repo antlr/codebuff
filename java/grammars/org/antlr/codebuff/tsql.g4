@@ -723,7 +723,7 @@ column_alias
 table_value_constructor
     : VALUES '(' expression_list ')' (',' '(' expression_list ')')*
     ;
-    
+
 expression_list
     : expression (',' expression)*
     ;
@@ -1342,7 +1342,7 @@ XMLNAMESPACES:                   X M L N A M E S P A C E S;
 
 DOLLAR_ACTION:                   '$' A C T I O N;
 
-SPACE:              [ \t\r\n]+    -> skip;
+SPACE:              [ \t\r\n]+    -> channel(HIDDEN);
 COMMENT:            '/*' .*? '*/' -> channel(HIDDEN);
 LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
 
