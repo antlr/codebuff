@@ -32,7 +32,7 @@ import java.util.Map;
  *
  * Tool  -antlr     ../corpus/antlr4/training      ../corpus/antlr4/testing/Clojure.g4
  * Tool  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
- * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.tsql
+ * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -java      ../samples/stringtemplate4     ../samples/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
@@ -86,7 +86,7 @@ public class Tool {
 				controller.show();
 				break;
 			case "-tsql":
-				corpus = train(corpusDir, ".*\\.tsql", tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, true);
+				corpus = train(corpusDir, ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, true);
 				testDoc = load(testFilename, tsqlLexer.class, tabSize);
 				results = format(corpus, testDoc, tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize);
 				output = results.a;
