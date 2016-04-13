@@ -124,9 +124,10 @@ public class Formatter {
 		}
 		else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
 			ws = CollectFeatures.unwscat(injectNL_WS);
-			if ( ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
-				ws = 1;
-			}
+		}
+
+		if ( newlines==0 && ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
+			ws = 1;
 		}
 
 		int alignOrIndent = CAT_NO_ALIGNMENT;
