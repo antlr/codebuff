@@ -32,7 +32,7 @@ import java.util.Set;
  *
  * Testing:
  *
- * Tool  -antlr     ../corpus/antlr4/training      ../corpus/antlr4/testing/Clojure.g4
+ * Tool  -antlr     ../corpus/antlr4/training      ../corpus/antlr4/testing/Java.g4
  * Tool  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
  * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql

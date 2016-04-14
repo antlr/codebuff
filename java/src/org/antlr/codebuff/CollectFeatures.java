@@ -84,23 +84,24 @@ public class CollectFeatures {
 	public static final int INDEX_CUR_TYPE = 2;
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
 	public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
-	public static final int INDEX_MEMBER_OVERSIZE_LIST = 5;
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 6;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX  = 7;
-	public static final int INDEX_ANCESTORS_PARENT_RULE  = 8;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 9;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 10;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 11;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 12;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 13;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 14;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 15;
+	public static final int INDEX_MEMBER_OF_LIST = 5;
+	public static final int INDEX_MEMBER_OVERSIZE_LIST = 6;
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 7;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX  = 8;
+	public static final int INDEX_ANCESTORS_PARENT_RULE  = 9;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 10;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 11;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 12;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 13;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 14;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 15;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 16;
 
-	public static final int INDEX_INFO_FILE         = 16;
-	public static final int INDEX_INFO_LINE         = 17;
-	public static final int INDEX_INFO_CHARPOS      = 18;
+	public static final int INDEX_INFO_FILE         = 17;
+	public static final int INDEX_INFO_LINE         = 18;
+	public static final int INDEX_INFO_CHARPOS      = 19;
 
-	public static final int NUM_FEATURES            = 19;
+	public static final int NUM_FEATURES            = 20;
 	public static final int ANALYSIS_START_TOKEN_INDEX = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
@@ -109,10 +110,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"List", "membr"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
-		// these previous 6 features seem to predict newline really well. whitespace ok too
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -132,6 +133,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"List", "membr"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
@@ -154,6 +156,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"List", "membr"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
@@ -474,11 +477,9 @@ public class CollectFeatures {
 		ParserRuleContext childOfSiblingList =
 			isMemberOfSiblingList(doc.corpus.rootAndChildListPairs, node, earliestLeftAncestor);
 
-		boolean isMemberOversizeList = false;
+		boolean isMemberOversizeList = false; // doesn't care if |list| == 1
+		boolean isMemberOfNonSingletonList = false; // true if |list|>1
 		if ( childOfSiblingList!=null ) {
-			String[] ruleNames = doc.parser.getRuleNames();
-			String child = ruleNames[childOfSiblingList.getRuleIndex()];
-			child = child.replace("Context", "");
 			ParserRuleContext siblingListParent = childOfSiblingList.getParent();
 			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
 			ParserRuleContext firstSibling = siblings.get(0);
@@ -493,12 +494,16 @@ public class CollectFeatures {
 				endcol = prevToken.getCharPositionInLine() + prevToken.getText().length();
 			}
 
+//			String[] ruleNames = doc.parser.getRuleNames();
 //			String sibParent = ruleNames[siblingListParent.getRuleIndex()];
+//			child = child.replace("Context", "");
+//			String child = ruleNames[childOfSiblingList.getRuleIndex()];
 //			sibParent = sibParent.replace("Context", "");
 //			System.out.print(sibParent+":"+siblingListParent.getAltNumber()+"->"+child+":"+childOfSiblingList.getAltNumber());
 //			System.out.println(" len="+len+", endcol="+endcol);
 
 			isMemberOversizeList = endcol + len > RIGHT_MARGIN_ALARM;
+			isMemberOfNonSingletonList = siblings.size()>1;
 		}
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
@@ -508,6 +513,7 @@ public class CollectFeatures {
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
+			isMemberOfNonSingletonList ? 1 : 0,
 			isMemberOversizeList ? 1 : 0,
 			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
 			getChildIndex(node),
