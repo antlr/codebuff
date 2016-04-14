@@ -66,7 +66,7 @@ public class Formatter {
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
-		Tool.wipeLineAndPositionInfo(tokens);
+		Tool.wipeLineAndPositionInfo(tokens); // all except for first token
 		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
@@ -90,11 +90,8 @@ public class Formatter {
 
 		tokens.seek(0);
 		WritableToken firstToken = (WritableToken)tokens.LT(1);
-		// all tokens are wiped of line/col info so set them for first 1 token and emit
-		firstToken.setLine(1);
-		firstToken.setCharPositionInLine(0);
-		String prefix = tokens.getText(Interval.of(0, firstToken.getTokenIndex()));
-		charPosInLine = firstToken.getStopIndex()+1;
+		String prefix = tokens.getText(Interval.of(0, firstToken.getTokenIndex())); // gets any comments in front + first real token
+		charPosInLine = firstToken.getStopIndex()+1; // start where first token left off
 		output.append(prefix);
 
 		realTokens = getRealTokens(tokens);

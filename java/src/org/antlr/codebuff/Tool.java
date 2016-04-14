@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
+
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
  * Testing:
@@ -396,10 +398,10 @@ public class Tool {
 
 	public static void wipeLineAndPositionInfo(CommonTokenStream tokens) {
 		tokens.fill();
-		for (Token t : tokens.getTokens()) {
-			CommonToken ct = (CommonToken)t;
-			ct.setLine(0);
-			ct.setCharPositionInLine(-1);
+		for (int i = ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) { // can't process first 1 token so leave it alone
+			CommonToken t = (CommonToken)tokens.get(i);
+			t.setLine(0);
+			t.setCharPositionInLine(-1);
 		}
 	}
 
