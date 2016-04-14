@@ -167,11 +167,11 @@ public class Tool {
 		String[] ruleNames = getParser(parserClass, null).getRuleNames();
 		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ruleNames);
 
-		OversizeListFinder oversizeListFinder = new OversizeListFinder();
+		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 
 		for (InputDocument doc : documents) {
 			ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
-			ParseTreeWalker.DEFAULT.walk(oversizeListFinder, doc.tree);
+			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
 
@@ -187,11 +187,13 @@ public class Tool {
 		}
 
 		if ( true ) {
-			for (String parent : oversizeListFinder.ruleToChildListName.keySet()) {
-				String childListName = oversizeListFinder.ruleToChildListName.get(parent);
+			for (Pair<Integer,Integer> key : collectSiblingLists.ruleToChildListName.keySet()) {
+				Pair<Integer,Integer> siblingListElement = collectSiblingLists.ruleToChildListName.get(key);
+				String parent = ruleNames[key.a];
 				parent = parent.replace("Context","");
-				childListName = childListName.replace("Context","");
-				System.out.println(parent+"->"+childListName);
+				String siblingListName = ruleNames[siblingListElement.a];
+				siblingListName = siblingListName.replace("Context","");
+				System.out.println(parent+":"+key.b+"->"+siblingListName+":"+siblingListElement.b);
 			}
 		}
 

@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -9,8 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class OversizeListFinder implements ParseTreeListener {
-	public Map<String,String> ruleToChildListName = new HashMap<>();
+public class CollectSiblingLists implements ParseTreeListener {
+	public Map<Pair<Integer,Integer>,Pair<Integer,Integer>> ruleToChildListName = new HashMap<>();
 
 	@Override
 	public void enterEveryRule(ParserRuleContext ctx) {
@@ -20,7 +21,9 @@ public class OversizeListFinder implements ParseTreeListener {
 		if ( parent!=null ) {
 			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(myClass);
 			if ( siblings.size()>1 ) {
-				ruleToChildListName.put(parent.getClass().getSimpleName()+":"+parent.getAltNumber(), myClass.getSimpleName()+":"+ctx.getAltNumber());
+				Pair<Integer, Integer> key = new Pair<>(parent.getRuleIndex(), parent.getAltNumber());
+				Pair<Integer, Integer> value = new Pair<>(ctx.getRuleIndex(), ctx.getAltNumber());
+				ruleToChildListName.put(key, value);
 			}
 		}
 	}
