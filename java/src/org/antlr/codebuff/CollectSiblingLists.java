@@ -23,7 +23,7 @@ import java.util.Set;
  */
 public class CollectSiblingLists implements ParseTreeListener {
 	/** Track set of (parent:alt,child:alt) pairs */
-	public Set<int[]> ruleToChildListName = new HashSet<>();
+	public Set<int[]> rootAndChildListPairs = new HashSet<>();
 
 	@Override
 	public void enterEveryRule(ParserRuleContext ctx) {
@@ -33,14 +33,18 @@ public class CollectSiblingLists implements ParseTreeListener {
 		if ( parent!=null ) {
 			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(myClass);
 			if ( siblings.size()>1 ) {
-				ruleToChildListName.add(
+				rootAndChildListPairs.add(
 					new int[] {
 						parent.getRuleIndex(), parent.getAltNumber(),
 						ctx.getRuleIndex(), ctx.getAltNumber()
 					}
-				);
+				                         );
 			}
 		}
+	}
+
+	public Set<int[]> getRootAndChildListPairs() {
+		return rootAndChildListPairs;
 	}
 
 	@Override

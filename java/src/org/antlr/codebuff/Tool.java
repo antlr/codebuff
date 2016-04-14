@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
@@ -129,6 +130,7 @@ public class Tool {
 	                                                              boolean showFormattedResult)
 		throws Exception
 	{
+		testDoc.corpus = corpus;
 		parse(testDoc, lexerClass, parserClass, startRuleName);
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
 		String formattedOutput = formatter.format();
@@ -162,18 +164,17 @@ public class Tool {
 		}
 
 		// Walk all documents to compute matching token dependencies (we need this for feature computation)
-		// While we're at it, find oversize lists
+		// While we're at it, find sibling lists
 		Vocabulary vocab = getLexer(lexerClass, null).getVocabulary();
 		String[] ruleNames = getParser(parserClass, null).getRuleNames();
-		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ruleNames);
-
+		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
 		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
-
 		for (InputDocument doc : documents) {
-			ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
+			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
-		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
+		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
+		Set<int[]> rootAndChildListPairs = collectSiblingLists.getRootAndChildListPairs();
 
 		if ( false ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
@@ -187,7 +188,7 @@ public class Tool {
 		}
 
 		if ( true ) {
-			for (int[] siblingPairs : collectSiblingLists.ruleToChildListName) {
+			for (int[] siblingPairs : collectSiblingLists.rootAndChildListPairs) {
 				String parent = ruleNames[siblingPairs[0]];
 				parent = parent.replace("Context","");
 				String siblingListName = ruleNames[siblingPairs[2]];
@@ -196,7 +197,7 @@ public class Tool {
 			}
 		}
 
-		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag);
+		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag, rootAndChildListPairs);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
@@ -204,16 +205,19 @@ public class Tool {
 
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   int tabSize,
-										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
+										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
+										   Set<int[]> rootAndChildListPairs)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
 		List<int[]> featureVectors = new ArrayList<>();
 		List<Integer> injectNewlines = new ArrayList<>();
 		List<Integer> alignWithPrevious = new ArrayList<>();
+		Corpus corpus = new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc, tabSize, ruleToPairsBag);
+			doc.corpus = corpus; // we know the corpus object now
+			process(doc, tabSize, ruleToPairsBag, rootAndChildListPairs);
 
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
@@ -224,12 +228,17 @@ public class Tool {
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
+		corpus.ruleToPairsBag = ruleToPairsBag;
+		corpus.rootAndChildListPairs = rootAndChildListPairs;
+		return corpus;
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag) {
-		CollectFeatures collector = new CollectFeatures(doc, tabSize, ruleToPairsBag);
+	public static void process(InputDocument doc, int tabSize,
+	                           Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
+	                           Set<int[]> rootAndChildListPairs)
+	{
+		CollectFeatures collector = new CollectFeatures(doc, tabSize);
 		collector.computeFeatureVectors();
 
 		doc.featureVectors = collector.getFeatures();
@@ -338,7 +347,7 @@ public class Tool {
 			i++;
 		}
 
-		return new InputDocument(fileName, buf.toString());
+		return new InputDocument(null, fileName, buf.toString());
 	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
@@ -921,7 +930,8 @@ public class Tool {
 		ArrayList<Double> differenceRatios = new ArrayList<>();
 
 		for (InputDocument testDoc: testDocs) {
-			Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, false);
+			Pair<String, List<TokenPositionAnalysis>> results =
+				format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, false);
 			String formattedDoc = results.a;
 			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
 			testDoc.dumpIncorrectWS = false;
@@ -940,7 +950,8 @@ public class Tool {
 	                              int tabSize)
 		throws Exception
 	{
-		ArrayList<Double> differenceRatios = validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
+		ArrayList<Double> differenceRatios =
+			validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
 		Collections.sort(differenceRatios);
 		if (differenceRatios.size() % 2 == 1) return differenceRatios.get(differenceRatios.size() / 2);
 		else if (differenceRatios.size() == 0) {

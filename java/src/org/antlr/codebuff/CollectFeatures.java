@@ -162,6 +162,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
+	protected Corpus corpus;
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
@@ -175,14 +176,13 @@ public class CollectFeatures {
 
 	protected int tabSize;
 
-	protected static Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
-
-	public CollectFeatures(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairs) {
+	public CollectFeatures(InputDocument doc, int tabSize)
+	{
+		this.corpus = doc.corpus;
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
 		this.tabSize = tabSize;
-		ruleToPairsBag = ruleToPairs;
 	}
 
 	public void computeFeatureVectors() {
@@ -515,9 +515,9 @@ public class CollectFeatures {
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		int curTokensParentRuleIndex = parent.getRuleIndex();
 		Token curToken = node.getSymbol();
-		if (ruleToPairsBag != null) {
+		if (doc.corpus.ruleToPairsBag != null) {
 			String ruleName = doc.parser.getRuleNames()[curTokensParentRuleIndex];
-			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+			List<Pair<Integer, Integer>> pairs = doc.corpus.ruleToPairsBag.get(ruleName);
 			if ( pairs!=null ) {
 				// Find appropriate pair given current token
 				// If more than one pair (a,b) with b=current token pick first one
