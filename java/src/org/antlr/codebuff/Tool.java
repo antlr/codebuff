@@ -188,7 +188,7 @@ public class Tool {
 			}
 		}
 
-		if ( true ) {
+		if ( false ) {
 			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndChildListPairs) {
 				String parent = ruleNames[siblingPairs.a];
 				parent = parent.replace("Context","");
