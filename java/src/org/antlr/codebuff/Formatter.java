@@ -116,7 +116,7 @@ public class Formatter {
 		// we're tracking it as we emit tokens
 //		features[INDEX_PREV_END_COLUMN] = charPosInLine;
 
-		int injectNL_WS = nlwsClassifier.classify(k, features, corpus.injectWhitespace, MAX_CONTEXT_DIFF_THRESHOLD);
+		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_CONTEXT_DIFF_THRESHOLD);
 		int newlines = 0;
 		int ws = 0;
 		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
@@ -143,14 +143,12 @@ public class Formatter {
 				firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
 			}
 
-			ParserRuleContext parent = (ParserRuleContext)node.getParent();
-
 			// getNodeFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
 			features[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 			features[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
 
-			alignOrIndent = alignClassifier.classify(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = alignClassifier.classify2(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
 
 			if ( alignOrIndent==CAT_INDENT ) {
 				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent

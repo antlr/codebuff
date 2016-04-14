@@ -1,11 +1,14 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.HashBag;
+import org.antlr.codebuff.misc.MutableDouble;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD2;
 
@@ -40,6 +43,20 @@ public abstract class kNNClassifier {
 			votes = votes(k, unknown, Y, MAX_CONTEXT_DIFF_THRESHOLD2);
 		}
 		return getCategoryWithMostVotes(votes);
+	}
+
+	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
+		Map<Integer,MutableDouble> similarities = getCategoryToSimilarityMap(kNN, k, Y);
+		int cat = getCategoryWithMaxValue(similarities);
+
+		if ( cat==0 ) {
+			// try with less strict match threshold to get some indication of alignment
+			kNN = kNN(unknown, k, MAX_CONTEXT_DIFF_THRESHOLD2);
+			similarities = getCategoryToSimilarityMap(kNN, k, Y);
+			cat = getCategoryWithMaxValue(similarities);
+		}
+		return cat;
 	}
 
 	public int getCategoryWithMostVotes(HashBag<Integer> votes) {
@@ -80,18 +97,57 @@ public abstract class kNNClassifier {
 		return votes;
 	}
 
+	// get category similarity (1.0-distance) so we can weight votes. Just add up similarity.
+	// I.e., weight votes with similarity 1 (distances of 0) more than votes with lower similarity
+	// If we have 2 votes of distance 0.2 and 1 vote of distance 0, it means
+	// we have 2 votes of similarity .8 and 1 of similarity of 1, 1.6 vs 6.
+	// The votes still outweigh the similarity in this case. For a tie, however,
+	// the weights will matter.
+	public Map<Integer,MutableDouble> getCategoryToSimilarityMap(Neighbor[] kNN, int k, List<Integer> Y) {
+		Map<Integer,MutableDouble> catSimilarities = new HashMap<>();
+		for (int i = 0; i<k && i<kNN.length; i++) {
+			int y = Y.get(kNN[i].corpusVectorIndex);
+			MutableDouble d = catSimilarities.get(y);
+			if ( d==null ) {
+				d = new MutableDouble(0.0);
+				catSimilarities.put(y, d);
+			}
+			d.add(1.0 - kNN[i].distance);
+		}
+		return catSimilarities;
+	}
+
+	public int getCategoryWithMaxValue(Map<Integer,MutableDouble> catSimilarities) {
+		double max = Integer.MIN_VALUE;
+		int catWithMaxSimilarity = 0;
+		for (Integer category : catSimilarities.keySet()) {
+			MutableDouble mutableDouble = catSimilarities.get(category);
+			if ( mutableDouble.d>max ) {
+				max = mutableDouble.d;
+				catWithMaxSimilarity = category;
+			}
+		}
+
+		return catWithMaxSimilarity;
+	}
+
 	public String getPredictionAnalysis(InputDocument doc, int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
-		HashBag<Integer> votes = getVotesBag(kNN, k, unknown, Y);
-		if ( votes.size()==0 ) {
+		Map<Integer,MutableDouble> similarities = getCategoryToSimilarityMap(kNN, k, Y);
+		int cat = getCategoryWithMaxValue(similarities);
+
+		if ( cat==0 ) {
 			// try with less strict match threshold to get some indication of alignment
 			kNN = kNN(unknown, k, MAX_CONTEXT_DIFF_THRESHOLD2);
-			votes = getVotesBag(kNN, k, unknown, Y);
+			similarities = getCategoryToSimilarityMap(kNN, k, Y);
+			cat = getCategoryWithMaxValue(similarities);
 		}
+		int[] elements = CollectFeatures.unaligncat(cat);
+		String displayCat = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
 
 		StringBuilder buf = new StringBuilder();
 		buf.append(CollectFeatures.featureNameHeader(FEATURES));
-		buf.append(CollectFeatures._toString(FEATURES, doc, unknown)+"->"+votes);
+		buf.append(CollectFeatures._toString(FEATURES, doc, unknown)+"->"+similarities+" predicts "+displayCat);
 		buf.append("\n");
 		if ( kNN.length>0 ) {
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));

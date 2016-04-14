@@ -12,6 +12,11 @@ public class MutableDouble {
 		return d;
 	}
 
+	public double div(double value) {
+		d /= value;
+		return d;
+	}
+
 	@Override
 	public String toString() {
 		return Double.toString(d);
