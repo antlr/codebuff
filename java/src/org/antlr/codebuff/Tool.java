@@ -187,13 +187,12 @@ public class Tool {
 		}
 
 		if ( true ) {
-			for (Pair<Integer,Integer> key : collectSiblingLists.ruleToChildListName.keySet()) {
-				Pair<Integer,Integer> siblingListElement = collectSiblingLists.ruleToChildListName.get(key);
-				String parent = ruleNames[key.a];
+			for (int[] siblingPairs : collectSiblingLists.ruleToChildListName) {
+				String parent = ruleNames[siblingPairs[0]];
 				parent = parent.replace("Context","");
-				String siblingListName = ruleNames[siblingListElement.a];
+				String siblingListName = ruleNames[siblingPairs[2]];
 				siblingListName = siblingListName.replace("Context","");
-				System.out.println(parent+":"+key.b+"->"+siblingListName+":"+siblingListElement.b);
+				System.out.println(parent+":"+siblingPairs[1]+"->"+siblingListName+":"+siblingPairs[3]);
 			}
 		}
 

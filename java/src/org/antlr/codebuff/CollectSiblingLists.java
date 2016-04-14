@@ -1,17 +1,29 @@
 package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
+/** Find subtree roots with repeated child subtrees such as typeArguments
+ *  has more than 1 typeArgument child.  For an actual feature vector
+ *  computation, we analyze a specific node to see if it's a member of
+ *  a sibling list for its parent. This works even when that specific
+ *  exemplar has just 1 child such as tree (typeArguments typeArgument).
+ *  Long lists are sometimes treated differently than short lists, such as
+ *  formal arg lists in Java. Sometimes they are split across lines.
+ *
+ *  Currently, I'm not tracking any separator or terminators.
+ *
+ *  Warning: can only track ONE sibling list per root.
+ */
 public class CollectSiblingLists implements ParseTreeListener {
-	public Map<Pair<Integer,Integer>,Pair<Integer,Integer>> ruleToChildListName = new HashMap<>();
+	/** Track set of (parent:alt,child:alt) pairs */
+	public Set<int[]> ruleToChildListName = new HashSet<>();
 
 	@Override
 	public void enterEveryRule(ParserRuleContext ctx) {
@@ -21,9 +33,12 @@ public class CollectSiblingLists implements ParseTreeListener {
 		if ( parent!=null ) {
 			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(myClass);
 			if ( siblings.size()>1 ) {
-				Pair<Integer, Integer> key = new Pair<>(parent.getRuleIndex(), parent.getAltNumber());
-				Pair<Integer, Integer> value = new Pair<>(ctx.getRuleIndex(), ctx.getAltNumber());
-				ruleToChildListName.put(key, value);
+				ruleToChildListName.add(
+					new int[] {
+						parent.getRuleIndex(), parent.getAltNumber(),
+						ctx.getRuleIndex(), ctx.getAltNumber()
+					}
+				);
 			}
 		}
 	}
