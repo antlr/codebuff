@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.gui.GUIController;
+import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -174,7 +175,7 @@ public class Tool {
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
-		Set<int[]> rootAndChildListPairs = collectSiblingLists.getRootAndChildListPairs();
+		Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs = collectSiblingLists.getRootAndChildListPairs();
 
 		if ( false ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
@@ -188,12 +189,12 @@ public class Tool {
 		}
 
 		if ( true ) {
-			for (int[] siblingPairs : collectSiblingLists.rootAndChildListPairs) {
-				String parent = ruleNames[siblingPairs[0]];
+			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndChildListPairs) {
+				String parent = ruleNames[siblingPairs.a];
 				parent = parent.replace("Context","");
-				String siblingListName = ruleNames[siblingPairs[2]];
+				String siblingListName = ruleNames[siblingPairs.c];
 				siblingListName = siblingListName.replace("Context","");
-				System.out.println(parent+":"+siblingPairs[1]+"->"+siblingListName+":"+siblingPairs[3]);
+				System.out.println(parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d);
 			}
 		}
 
@@ -206,7 +207,7 @@ public class Tool {
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
-										   Set<int[]> rootAndChildListPairs)
+										   Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
@@ -214,10 +215,13 @@ public class Tool {
 		List<Integer> injectNewlines = new ArrayList<>();
 		List<Integer> alignWithPrevious = new ArrayList<>();
 		Corpus corpus = new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
+		corpus.ruleToPairsBag = ruleToPairsBag;
+		corpus.rootAndChildListPairs = rootAndChildListPairs;
+
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			doc.corpus = corpus; // we know the corpus object now
-			process(doc, tabSize, ruleToPairsBag, rootAndChildListPairs);
+			process(doc, tabSize);
 
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
@@ -228,16 +232,11 @@ public class Tool {
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		corpus.ruleToPairsBag = ruleToPairsBag;
-		corpus.rootAndChildListPairs = rootAndChildListPairs;
 		return corpus;
 	}
 
 	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc, int tabSize,
-	                           Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
-	                           Set<int[]> rootAndChildListPairs)
-	{
+	public static void process(InputDocument doc, int tabSize) {
 		CollectFeatures collector = new CollectFeatures(doc, tabSize);
 		collector.computeFeatureVectors();
 

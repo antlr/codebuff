@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -23,7 +24,7 @@ import java.util.Set;
  */
 public class CollectSiblingLists implements ParseTreeListener {
 	/** Track set of (parent:alt,child:alt) pairs */
-	public Set<int[]> rootAndChildListPairs = new HashSet<>();
+	public Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs = new HashSet<>();
 
 	@Override
 	public void enterEveryRule(ParserRuleContext ctx) {
@@ -33,17 +34,16 @@ public class CollectSiblingLists implements ParseTreeListener {
 		if ( parent!=null ) {
 			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(myClass);
 			if ( siblings.size()>1 ) {
-				rootAndChildListPairs.add(
-					new int[] {
-						parent.getRuleIndex(), parent.getAltNumber(),
-						ctx.getRuleIndex(), ctx.getAltNumber()
-					}
-				                         );
+				Quad<Integer, Integer, Integer, Integer> pair = new Quad<>(
+					parent.getRuleIndex(), parent.getAltNumber(),
+					ctx.getRuleIndex(), ctx.getAltNumber()
+				);
+				rootAndChildListPairs.add(pair);
 			}
 		}
 	}
 
-	public Set<int[]> getRootAndChildListPairs() {
+	public Set<Quad<Integer,Integer,Integer,Integer>> getRootAndChildListPairs() {
 		return rootAndChildListPairs;
 	}
 

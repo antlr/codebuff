@@ -33,6 +33,7 @@ import static org.antlr.codebuff.CollectFeatures.indexTree;
 
 public class Formatter {
 	public static final int INDENT_LEVEL = 4;
+	public static final int RIGHT_MARGIN_ALARM = 90;
 
 	protected final Corpus corpus;
 	protected StringBuilder output = new StringBuilder();

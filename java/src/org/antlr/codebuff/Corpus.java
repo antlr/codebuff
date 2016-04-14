@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class Corpus {
 	Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
 
 	Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
-	Set<int[]> rootAndChildListPairs;
+	Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs;
 
 	public Corpus(List<InputDocument> documents,
 				  List<int[]> X,
