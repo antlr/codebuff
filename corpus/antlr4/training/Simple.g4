@@ -1,7 +1,8 @@
+/** Javadoc */
 grammar Simple;
 
 /** Javadoc */
-noaltsRule : '(' b c ')' ;
+noaltsRule : '(' b c ')' ('x' 'y')? ;
 
 list_of_nontrivial_stuff
 	:	A B
@@ -22,6 +23,11 @@ subexpresssions
 		(	a
 		|	X
 		)+
+	|	(	a
+		|	X
+		|
+		)
+		start next line after list
 	;
 
 nested_nested

@@ -82,9 +82,9 @@ public class CollectFeatures {
 	public static final int INDEX_PREV_TYPE         = 0;
 	public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR = 1;
 	public static final int INDEX_CUR_TYPE = 2;
-	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
+	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3; // during ws prediction, indicates current line on same as matching symbol
 	public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
-	public static final int INDEX_MEMBER_OF_LIST = 5;
+	public static final int INDEX_INDEX_IN_LIST = 5;
 	public static final int INDEX_MEMBER_OVERSIZE_LIST = 6;
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 7;
 	public static final int INDEX_ANCESTORS_CHILD_INDEX  = 8;
@@ -108,9 +108,9 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"List", "membr"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
@@ -131,9 +131,9 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"List", "membr"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
@@ -154,9 +154,9 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"List", "membr"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
@@ -478,7 +478,7 @@ public class CollectFeatures {
 			isMemberOfSiblingList(doc.corpus.rootAndChildListPairs, node, earliestLeftAncestor);
 
 		boolean isMemberOversizeList = false; // doesn't care if |list| == 1
-		boolean isMemberOfNonSingletonList = false; // true if |list|>1
+		int memberIndexOfNonSingletonList = -1; // >=0 if |list|>1.  -1 implies not member of list or singleton list
 		if ( childOfSiblingList!=null ) {
 			ParserRuleContext siblingListParent = childOfSiblingList.getParent();
 			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
@@ -503,7 +503,9 @@ public class CollectFeatures {
 //			System.out.println(" len="+len+", endcol="+endcol);
 
 			isMemberOversizeList = endcol + len > RIGHT_MARGIN_ALARM;
-			isMemberOfNonSingletonList = siblings.size()>1;
+			if ( siblings.size()>1 ) {
+				memberIndexOfNonSingletonList = siblings.indexOf(childOfSiblingList);
+			}
 		}
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
@@ -513,7 +515,7 @@ public class CollectFeatures {
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
-			isMemberOfNonSingletonList ? 1 : 0,
+			memberIndexOfNonSingletonList>1 ? CHILD_INDEX_LIST_ELEMENT : memberIndexOfNonSingletonList,
 			isMemberOversizeList ? 1 : 0,
 			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
 			getChildIndex(node),

@@ -111,9 +111,7 @@ public class Formatter {
 		emitCommentsToTheLeft(tokenIndexInStream);
 
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
-		// must set "prev end column" value as token stream doesn't have it;
-		// we're tracking it as we emit tokens
-//		features[INDEX_PREV_END_COLUMN] = charPosInLine;
+		int[] featuresForAlign = new int[features.length];
 
 		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_CONTEXT_DIFF_THRESHOLD);
 		int newlines = 0;
@@ -142,12 +140,13 @@ public class Formatter {
 				firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
 			}
 
+			System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 			// getNodeFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
-			features[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
+			featuresForAlign[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
-			features[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
+			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
 
-			alignOrIndent = alignClassifier.classify2(k, features, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
 
 			if ( alignOrIndent==CAT_INDENT ) {
 				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
@@ -202,7 +201,7 @@ public class Formatter {
 		}
 
 		TokenPositionAnalysis tokenPositionAnalysis =
-			getTokenAnalysis(features, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
+			getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
 		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -260,7 +259,8 @@ public class Formatter {
 		}
 	}
 
-	public TokenPositionAnalysis getTokenAnalysis(int[] features, int indexIntoRealTokens, int tokenIndexInStream,
+	public TokenPositionAnalysis getTokenAnalysis(int[] features, int[] featuresForAlign,
+	                                              int indexIntoRealTokens, int tokenIndexInStream,
 	                                              int injectNL_WS, int alignOrIndent)
 	{
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
@@ -281,7 +281,7 @@ public class Formatter {
 			nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
 			                                     MAX_CONTEXT_DIFF_THRESHOLD);
 		String alignAnalysis =alignPredictionString+"\n"+
-			alignClassifier.getPredictionAnalysis(doc, k, features, corpus.align,
+			alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
 			                                      MAX_CONTEXT_DIFF_THRESHOLD);
 		return new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
 	}
