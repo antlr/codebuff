@@ -433,21 +433,12 @@ public class Tool {
 			if ( featureTypes[i].type==FeatureType.TOKEN ||
 				featureTypes[i].type==FeatureType.RULE  ||
 				featureTypes[i].type==FeatureType.INT  ||
-				featureTypes[i].type==FeatureType.BOOL
-				)
+				featureTypes[i].type==FeatureType.BOOL)
 			{
 				if ( A[i] != B[i] ) {
 					count += featureTypes[i].mismatchCost;
 				}
 			}
-//			else if ( featureTypes[i].type==FeatureType.COL ) {
-//				double Asigmoid = sigmoid(A[i], 80);
-//				double Bsigmoid = sigmoid(B[i], 80);
-////				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
-////					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
-////				}
-//				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
-//			}
 		}
 		return count;
 	}
@@ -467,34 +458,6 @@ public class Tool {
 		for (int x : a) s += x;
 		return s;
 	}
-
-//	// From https://en.wikipedia.org/wiki/Levenshtein_distance
-//	public static int LevenshteinDistance(String s, String t) {
-//		return LevenshteinDistance(s, s.length(), t, t.length());
-//	}
-//
-//	public static int LevenshteinDistance(String s, int slen, String t, int tlen) {
-//		int cost;
-//
-//		// base case: empty strings
-//		if (slen == 0) return tlen;
-//		if (tlen == 0) return slen;
-//
-//		// test if last characters of the strings match
-//		if ( s.charAt(slen-1) == t.charAt(tlen-1) ) {
-//			cost = 0;
-//		}
-//		else {
-//			cost = 1;
-//		}
-//
-//		// return minimum of delete char from s, delete char from t, and delete char from both
-//		return
-//			Math.min(
-//				Math.min(LevenshteinDistance(s, slen - 1, t, tlen    ) + 1,
-//						 LevenshteinDistance(s, slen    , t, tlen - 1) + 1),
-//				LevenshteinDistance(s, slen - 1, t, tlen - 1) + cost);
-//	}
 
 	// from https://en.wikipedia.org/wiki/Levenshtein_distance
 	public static int levenshteinDistance(String s, String t) {
