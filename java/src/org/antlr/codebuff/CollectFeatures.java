@@ -27,7 +27,7 @@ import java.util.Set;
 import static org.antlr.codebuff.Formatter.RIGHT_MARGIN_ALARM;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.13;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
@@ -256,7 +256,7 @@ public class CollectFeatures {
 		int aligned = CAT_NO_ALIGNMENT;
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
-		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
+		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 		Pair<ParserRuleContext, Integer> pair =
 			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken);
 		if ( pair!=null ) {
@@ -335,7 +335,8 @@ public class CollectFeatures {
 	 *  block starting with '{'. For '}' of block, return just block as nothing
 	 *  starts with '}'. (block stops with it).
 	 */
-	public static ParserRuleContext earliestAncestorStartingWithToken(TerminalNode node, Token token) {
+	public static ParserRuleContext earliestAncestorStartingWithToken(TerminalNode node) {
+		Token token = node.getSymbol();
 		ParserRuleContext p = (ParserRuleContext)node.getParent();
 		ParserRuleContext prev = null;
 		while (p!=null && p.getStart()==token) {
@@ -354,7 +355,8 @@ public class CollectFeatures {
 	 *  block stopping with '}'. For '{' of block, return just block as nothing
 	 *  stops with '{'. (block starts with it).
 	 */
-	public static ParserRuleContext earliestAncestorEndingWithToken(TerminalNode node, Token token) {
+	public static ParserRuleContext earliestAncestorEndingWithToken(TerminalNode node) {
+		Token token = node.getSymbol();
 		ParserRuleContext p = (ParserRuleContext)node.getParent();
 		ParserRuleContext prev = null;
 		while (p!=null && p.getStop()==token) {
@@ -460,12 +462,13 @@ public class CollectFeatures {
 
 		// Get context information for previous token
 		Token prevToken = tokens.LT(-1);
-		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(node, prevToken);
+		TerminalNode prevNode = tokenToNodeMap.get(prevToken);
+		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(prevNode);
 		int prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
 		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
 
 		// Get context information for current token
-		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
+		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 		ParserRuleContext earliestLeftAncestorParent = earliestLeftAncestor.getParent();
 
 		ParserRuleContext earliestLeftAncestorParent2 = earliestLeftAncestorParent!=null ? earliestLeftAncestorParent.getParent() : null;

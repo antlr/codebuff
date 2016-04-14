@@ -159,7 +159,7 @@ public class Formatter {
 				int[] deltaChild = CollectFeatures.unaligncat(alignOrIndent);
 				int deltaFromAncestor = deltaChild[0];
 				int childIndex = deltaChild[1];
-				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
+				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 				Token start = null;
 				if ( ancestor==null ) {
@@ -186,7 +186,7 @@ public class Formatter {
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
 				int deltaFromAncestor = CollectFeatures.unindentcat(alignOrIndent);
-				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
+				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 				Token start = ancestor.getStart();
 				int indentCol = start.getCharPositionInLine() + INDENT_LEVEL;

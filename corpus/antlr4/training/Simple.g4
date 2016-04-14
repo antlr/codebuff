@@ -10,6 +10,14 @@ list_of_nontrivial_stuff
 	|	~A
 	;
 
+separator_pattern
+	:	a (',' a)*
+	;
+
+terminator_pattern
+	:	(stat ';')*
+	;
+
 single_alt_with_stuff
 	:	'this' (A)? B (',' B)*
 	;
@@ -21,7 +29,7 @@ subexpresssions
 		)*
 	|	again
 		(	a
-		|	X
+		|	'end'
 		)+
 	|	(	a
 		|	X
@@ -30,11 +38,21 @@ subexpresssions
 		start next line after list
 	;
 
+block
+	:	'{'
+		(	a
+		|	X
+		)+
+		'}'
+	;
+
 nested_nested
-	:	(	A
+	:	'{'
+		(	A
 			(	'lit'
 			|	x
 			)*
 		)?
+		'}'
 	;
 
