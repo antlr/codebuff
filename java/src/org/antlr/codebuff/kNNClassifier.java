@@ -50,7 +50,7 @@ public abstract class kNNClassifier {
 		Map<Integer,MutableDouble> similarities = getCategoryToSimilarityMap(kNN, k, Y);
 		int cat = getCategoryWithMaxValue(similarities);
 
-		if ( cat==0 ) {
+		if ( cat==-1 ) {
 			// try with less strict match threshold to get some indication of alignment
 			kNN = kNN(unknown, k, MAX_CONTEXT_DIFF_THRESHOLD2);
 			similarities = getCategoryToSimilarityMap(kNN, k, Y);
@@ -119,7 +119,7 @@ public abstract class kNNClassifier {
 
 	public int getCategoryWithMaxValue(Map<Integer,MutableDouble> catSimilarities) {
 		double max = Integer.MIN_VALUE;
-		int catWithMaxSimilarity = 0;
+		int catWithMaxSimilarity = -1;
 		for (Integer category : catSimilarities.keySet()) {
 			MutableDouble mutableDouble = catSimilarities.get(category);
 			if ( mutableDouble.d>max ) {
@@ -179,12 +179,14 @@ public abstract class kNNClassifier {
 			int n = corpus.X.size(); // num training samples
 			for (int i = 0; i<n; i++) {
 				int[] x = corpus.X.get(i);
-				Neighbor neighbor = new Neighbor(corpus, distance(x, unknown), i);
-				distances.add(neighbor);
+				double d = distance(x, unknown);
+				if ( d<=distanceThreshold ) {
+					Neighbor neighbor = new Neighbor(corpus, d, i);
+					distances.add(neighbor);
+				}
 			}
 		}
 		else {
-			int n = vectorIndexesMatchingTokenContext.size(); // num training samples
 			for (Integer vectorIndex : vectorIndexesMatchingTokenContext) {
 				int[] x = corpus.X.get(vectorIndex);
 				double d = distance(x, unknown);

@@ -200,20 +200,21 @@ public class Formatter {
 			charPosInLine += ws;
 		}
 
-		TokenPositionAnalysis tokenPositionAnalysis =
-			getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
-		analysis.setSize(tokenIndexInStream+1);
-		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
-
 		// update Token object with position information now that we are about
 		// to emit it.
 		curToken.setLine(line);
 		curToken.setCharPositionInLine(charPosInLine);
 
-		// emit
+		TokenPositionAnalysis tokenPositionAnalysis =
+			getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
+		analysis.setSize(tokenIndexInStream+1);
+		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
+
 		int n = tokText.length();
 		tokenPositionAnalysis.charIndexStart = output.length();
 		tokenPositionAnalysis.charIndexStop = tokenPositionAnalysis.charIndexStart + n - 1;
+
+		// emit
 		output.append(tokText);
 		charPosInLine += n;
 	}
@@ -271,9 +272,9 @@ public class Formatter {
 		boolean prevIsWS = prevToken.getChannel()==Token.HIDDEN_CHANNEL; // assume this means whitespace
 		int actualNL = Tool.count(prevToken.getText(), '\n');
 		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual ?",
-		                                               originalCurToken.getLine(), injectNL_WS, prevIsWS ? actualNL : "none");
+		                                               curToken.getLine(), injectNL_WS, prevIsWS ? actualNL : "none");
 		String alignPredictionString = String.format("### line %d: predicted %d actual %s",
-		                                             originalCurToken.getLine(),
+		                                             curToken.getLine(),
 		                                             alignOrIndent,
 		                                             "?");
 
