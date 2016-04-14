@@ -136,7 +136,7 @@ public abstract class kNNClassifier {
 		Map<Integer,MutableDouble> similarities = getCategoryToSimilarityMap(kNN, k, Y);
 		int cat = getCategoryWithMaxValue(similarities);
 
-		if ( cat==0 ) {
+		if ( cat==-1 ) {
 			// try with less strict match threshold to get some indication of alignment
 			kNN = kNN(unknown, k, MAX_CONTEXT_DIFF_THRESHOLD2);
 			similarities = getCategoryToSimilarityMap(kNN, k, Y);
