@@ -493,10 +493,10 @@ public class CollectFeatures {
 				endcol = prevToken.getCharPositionInLine() + prevToken.getText().length();
 			}
 
-			String sibParent = ruleNames[siblingListParent.getRuleIndex()];
-			sibParent = sibParent.replace("Context", "");
-			System.out.print(sibParent+":"+siblingListParent.getAltNumber()+"->"+child+":"+childOfSiblingList.getAltNumber());
-			System.out.println(" len="+len+", endcol="+endcol);
+//			String sibParent = ruleNames[siblingListParent.getRuleIndex()];
+//			sibParent = sibParent.replace("Context", "");
+//			System.out.print(sibParent+":"+siblingListParent.getAltNumber()+"->"+child+":"+childOfSiblingList.getAltNumber());
+//			System.out.println(" len="+len+", endcol="+endcol);
 
 			isMemberOversizeList = endcol + len > RIGHT_MARGIN_ALARM;
 		}

@@ -164,17 +164,22 @@ public class Formatter {
 				int childIndex = deltaChild[1];
 				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
-				ParseTree child = ancestor.getChild(childIndex);
 				Token start = null;
-				if ( child instanceof ParserRuleContext ) {
-					start = ((ParserRuleContext) child).getStart();
-				}
-				else if ( child instanceof TerminalNode ){
-					start = ((TerminalNode)child).getSymbol();
+				if ( ancestor==null ) {
+					System.err.println("Whoops. No ancestor at that delta");
 				}
 				else {
-					// uh oh.
-					System.err.println("Whoops. Tried to access invalid child");
+					ParseTree child = ancestor.getChild(childIndex);
+					if (child instanceof ParserRuleContext) {
+						start = ((ParserRuleContext) child).getStart();
+					}
+					else if (child instanceof TerminalNode) {
+						start = ((TerminalNode) child).getSymbol();
+					}
+					else {
+						// uh oh.
+						System.err.println("Whoops. Tried to access invalid child");
+					}
 				}
 				if ( start!=null ) {
 					int indentCol = start.getCharPositionInLine();
