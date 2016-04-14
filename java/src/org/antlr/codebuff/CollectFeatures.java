@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.BuffUtils;
+import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -21,6 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static org.antlr.codebuff.Formatter.RIGHT_MARGIN_ALARM;
 
 public class CollectFeatures {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.13;
@@ -80,22 +84,23 @@ public class CollectFeatures {
 	public static final int INDEX_CUR_TYPE = 2;
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3;
 	public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 5;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX  = 6;
-	public static final int INDEX_ANCESTORS_PARENT_RULE  = 7;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 8;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 9;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 10;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 11;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 12;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 13;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 14;
+	public static final int INDEX_MEMBER_OVERSIZE_LIST = 5;
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 6;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX  = 7;
+	public static final int INDEX_ANCESTORS_PARENT_RULE  = 8;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 9;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 10;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 11;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 12;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 13;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 14;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 15;
 
-	public static final int INDEX_INFO_FILE         = 15;
-	public static final int INDEX_INFO_LINE         = 16;
-	public static final int INDEX_INFO_CHARPOS      = 17;
+	public static final int INDEX_INFO_FILE         = 16;
+	public static final int INDEX_INFO_LINE         = 17;
+	public static final int INDEX_INFO_CHARPOS      = 18;
 
-	public static final int NUM_FEATURES            = 18;
+	public static final int NUM_FEATURES            = 19;
 	public static final int ANALYSIS_START_TOKEN_INDEX = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
@@ -104,6 +109,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,   new String[]{"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		// these previous 6 features seem to predict newline really well. whitespace ok too
@@ -126,6 +132,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -147,6 +154,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -162,6 +170,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
+	protected Corpus corpus;
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
@@ -175,14 +184,13 @@ public class CollectFeatures {
 
 	protected int tabSize;
 
-	protected static Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
-
-	public CollectFeatures(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairs) {
+	public CollectFeatures(InputDocument doc, int tabSize)
+	{
+		this.corpus = doc.corpus;
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
 		this.tabSize = tabSize;
-		ruleToPairsBag = ruleToPairs;
 	}
 
 	public void computeFeatureVectors() {
@@ -449,15 +457,11 @@ public class CollectFeatures {
 
 		// Get context information for previous token
 		Token prevToken = tokens.LT(-1);
-		TerminalNode prevTerminalNode = tokenToNodeMap.get(prevToken);
-		ParserRuleContext parent = (ParserRuleContext)prevTerminalNode.getParent();
-		int prevTokenRuleIndex = parent.getRuleIndex();
 		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(node, prevToken);
 		int prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
 		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
 
 		// Get context information for current token
-		parent = (ParserRuleContext)node.getParent();
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node, curToken);
 		ParserRuleContext earliestLeftAncestorParent = earliestLeftAncestor.getParent();
 
@@ -465,9 +469,37 @@ public class CollectFeatures {
 		ParserRuleContext earliestLeftAncestorParent3 = earliestLeftAncestorParent2!=null ? earliestLeftAncestorParent2.getParent() : null;
 		ParserRuleContext earliestLeftAncestorParent4 = earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3.getParent() : null;
 
-		ParserRuleContext earliestRightAncestor = earliestAncestorEndingWithToken(node, curToken);
-
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
+
+		ParserRuleContext childOfSiblingList =
+			isMemberOfSiblingList(doc.corpus.rootAndChildListPairs, node, earliestLeftAncestor);
+
+		boolean isMemberOversizeList = false;
+		if ( childOfSiblingList!=null ) {
+			String[] ruleNames = doc.parser.getRuleNames();
+			String child = ruleNames[childOfSiblingList.getRuleIndex()];
+			child = child.replace("Context", "");
+			ParserRuleContext siblingListParent = childOfSiblingList.getParent();
+			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
+			ParserRuleContext firstSibling = siblings.get(0);
+			Token firstSiblingToken = firstSibling.getStart();
+			int len = 0;
+			for (ParserRuleContext sib : siblings) {
+				len += sib.getText().length();
+			}
+			int endcol = firstSiblingToken.getCharPositionInLine(); // where does this list start off?
+			if ( firstSibling==childOfSiblingList ) { // cur token is start of list so must check prev token
+				// during formatting (not training) we don't know firstSiblingToken char pos so we must compute
+				endcol = prevToken.getCharPositionInLine() + prevToken.getText().length();
+			}
+
+//			String sibParent = ruleNames[siblingListParent.getRuleIndex()];
+//			sibParent = sibParent.replace("Context", "");
+//			System.out.print(sibParent+":"+siblingListParent.getAltNumber()+"->"+child+":"+childOfSiblingList.getAltNumber());
+//			System.out.println(" len="+len+", endcol="+endcol);
+
+			isMemberOversizeList = endcol + len > RIGHT_MARGIN_ALARM;
+		}
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
 		int[] features = {
@@ -476,6 +508,7 @@ public class CollectFeatures {
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
+			isMemberOversizeList ? 1 : 0,
 			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
 			getChildIndex(node),
 			earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent.getRuleIndex(), earliestLeftAncestorParent.getAltNumber()) : -1,
@@ -509,15 +542,50 @@ public class CollectFeatures {
 		return NOT_PAIR;
 	}
 
+	/** Walk upwards checking for an ancestor that is a sibling list element.
+	 *  We must find the earliest sibling list not the first. For example,
+	 *  we could have a (for ANTLR formatting) a grammar alternative with
+	 *  multiple elements which is part of a ruleAltList-labeledAlt list. The
+	 *  earliestLeftAncestor for first element of rule will be the ruleBlock
+	 *  and we pass over alternative subtree to the ruleAltList. Search
+	 *  continues until we see the ruleBlock but that fails "is sibling list
+	 *  test" so we drop back to last sibling list found.
+	 *
+	 *  The earliestLeftAncestor is the highest child we'll look at for
+	 *  efficiency reasons.
+	 */
+	public static ParserRuleContext isMemberOfSiblingList(Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs,
+	                                                      TerminalNode node,
+	                                                      ParserRuleContext earliestLeftAncestor)
+	{
+		ParserRuleContext child = (ParserRuleContext)node.getParent();
+		if ( child==null ) return null;
+		ParserRuleContext parent = child.getParent();
+		ParserRuleContext childMemberOfList = null; // track last good match we found
+		while ( parent!=null ) {
+			Quad<Integer,Integer,Integer,Integer> pair = new Quad<>(
+				parent.getRuleIndex(), parent.getAltNumber(),
+				child.getRuleIndex(), child.getAltNumber()
+			);
+			if ( rootAndChildListPairs.contains(pair) ) {
+				childMemberOfList = child;
+			}
+			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
+			child = parent;
+			parent = parent.getParent();
+		}
+		return childMemberOfList;
+	}
+
 	public static TerminalNode getMatchingLeftSymbol(InputDocument doc,
 													 TerminalNode node)
 	{
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		int curTokensParentRuleIndex = parent.getRuleIndex();
 		Token curToken = node.getSymbol();
-		if (ruleToPairsBag != null) {
+		if (doc.corpus.ruleToPairsBag != null) {
 			String ruleName = doc.parser.getRuleNames()[curTokensParentRuleIndex];
-			List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
+			List<Pair<Integer, Integer>> pairs = doc.corpus.ruleToPairsBag.get(ruleName);
 			if ( pairs!=null ) {
 				// Find appropriate pair given current token
 				// If more than one pair (a,b) with b=current token pick first one

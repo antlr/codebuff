@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class InputDocument {
+	public Corpus corpus;
 	public String fileName;
 	public String content;
 	public List<String> lines;
@@ -25,13 +26,8 @@ public class InputDocument {
 	public boolean dumpIncorrectWS = false;
 	public boolean dumpVotes = false;
 
-	public InputDocument(InputDocument d, int index) {
-		this.fileName = d.fileName;
-		this.content = d.content;
-		this.index = index;
-	}
-
-	public InputDocument(String fileName, String content) {
+	public InputDocument(Corpus corpus, String fileName, String content) {
+		this.corpus = corpus;
 		this.content = content;
 		this.fileName = fileName;
 	}

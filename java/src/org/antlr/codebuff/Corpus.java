@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class Corpus {
 	public static final int FEATURE_VECTOR_RANDOM_SEED = 314159; // need randomness but use same seed to get reproducibility
@@ -25,6 +27,9 @@ public class Corpus {
 	 *  a list of vectors with same key. Created by {@link #buildTokenContextIndex}.
 	 */
 	Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
+
+	Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
+	Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs;
 
 	public Corpus(List<InputDocument> documents,
 				  List<int[]> X,
