@@ -92,6 +92,7 @@ public class Formatter {
 		WritableToken firstToken = (WritableToken)tokens.LT(1);
 		String prefix = tokens.getText(Interval.of(0, firstToken.getTokenIndex())); // gets any comments in front + first real token
 		charPosInLine = firstToken.getStopIndex()+1; // start where first token left off
+		line = Tool.count(prefix, '\n') + 1;
 		output.append(prefix);
 
 		realTokens = getRealTokens(tokens);
