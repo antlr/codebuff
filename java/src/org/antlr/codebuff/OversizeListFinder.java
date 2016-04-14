@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public class OversizeListFinder implements ParseTreeListener {
-	public Map<String,String> lists = new HashMap<>();
+	public Map<String,String> ruleToChildListName = new HashMap<>();
 
 	@Override
 	public void enterEveryRule(ParserRuleContext ctx) {
@@ -20,23 +20,20 @@ public class OversizeListFinder implements ParseTreeListener {
 		if ( parent!=null ) {
 			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(myClass);
 			if ( siblings.size()>1 ) {
-				lists.put(parent.getClass().getSimpleName()+":"+parent.getAltNumber(), myClass.getSimpleName()+":"+ctx.getAltNumber());
+				ruleToChildListName.put(parent.getClass().getSimpleName()+":"+parent.getAltNumber(), myClass.getSimpleName()+":"+ctx.getAltNumber());
 			}
 		}
 	}
 
 	@Override
 	public void visitTerminal(TerminalNode node) {
-
 	}
 
 	@Override
 	public void visitErrorNode(ErrorNode node) {
-
 	}
 
 	@Override
 	public void exitEveryRule(ParserRuleContext ctx) {
-
 	}
 }

@@ -162,11 +162,16 @@ public class Tool {
 		}
 
 		// Walk all documents to compute matching token dependencies (we need this for feature computation)
+		// While we're at it, find oversize lists
 		Vocabulary vocab = getLexer(lexerClass, null).getVocabulary();
 		String[] ruleNames = getParser(parserClass, null).getRuleNames();
 		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ruleNames);
+
+		OversizeListFinder oversizeListFinder = new OversizeListFinder();
+
 		for (InputDocument doc : documents) {
 			ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
+			ParseTreeWalker.DEFAULT.walk(oversizeListFinder, doc.tree);
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
 
@@ -181,15 +186,22 @@ public class Tool {
 			}
 		}
 
-		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
+		if ( true ) {
+			for (String parent : oversizeListFinder.ruleToChildListName.keySet()) {
+				String childListName = oversizeListFinder.ruleToChildListName.get(parent);
+				parent = parent.replace("Context","");
+				childListName = childListName.replace("Context","");
+				System.out.println(parent+"->"+childListName);
+			}
+		}
+
+		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
 	}
 
 	public static Corpus processSampleDocs(List<InputDocument> docs,
-										   Class<? extends Lexer> lexerClass,
-										   Class<? extends Parser> parserClass,
 										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
 		throws Exception
