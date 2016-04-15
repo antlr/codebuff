@@ -209,7 +209,7 @@ pragma_stmt
     ;
 
 reindex_stmt
-    :   K_REINDEX
+    :	K_REINDEX
      	(	collation_name
         |   (database_name '.')? (table_name | index_name)
         )?

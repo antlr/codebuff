@@ -38,6 +38,8 @@ public class CollectFeatures {
 	 */
 	public static final int CHILD_INDEX_LIST_ELEMENT = 1_111_111_111;
 
+	public static final int INDEX_LIST_ELEMENT = 1_111_111_111;
+
 	// Feature values for pair on diff lines feature
 	public static final int NOT_PAIR = -1;
 	public static final int PAIR_ON_SAME_LINE = 0;
@@ -79,38 +81,40 @@ public class CollectFeatures {
 
 	// indexes into feature vector
 
-	public static final int INDEX_PREV_TYPE         = 0;
-	public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR = 1;
-	public static final int INDEX_CUR_TYPE = 2;
-	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE = 3; // during ws prediction, indicates current line on same as matching symbol
-	public static final int INDEX_FIRST_ON_LINE		= 4; // a \n right before this token?
-	public static final int INDEX_INDEX_IN_LIST = 5;
-	public static final int INDEX_MEMBER_OVERSIZE_LIST = 6;
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR = 7;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX  = 8;
-	public static final int INDEX_ANCESTORS_PARENT_RULE  = 9;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 10;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE  = 11;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX  = 12;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE  = 13;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX  = 14;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE  = 15;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX  = 16;
+	public static final int INDEX_PREV_TYPE                     = 0;
+	public static final int INDEX_PREV_FIRST_ON_LINE            = 1; // a \n right before this token?
+	public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR  = 2;
+	public static final int INDEX_CUR_TYPE                      = 3;
+	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
+	public static final int INDEX_FIRST_ON_LINE		            = 5; // a \n right before this token?
+	public static final int INDEX_INDEX_IN_LIST                 = 6; // either -1 (not member of list), 0 (first in list), or INDEX_LIST_ELEMENT
+	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 7;
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9;
+	public static final int INDEX_ANCESTORS_PARENT_RULE         = 10;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 11;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 12;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 13;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 14;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 15;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 16;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 17;
 
-	public static final int INDEX_INFO_FILE         = 17;
-	public static final int INDEX_INFO_LINE         = 18;
-	public static final int INDEX_INFO_CHARPOS      = 19;
+	public static final int INDEX_INFO_FILE                     = 18;
+	public static final int INDEX_INFO_LINE                     = 19;
+	public static final int INDEX_INFO_CHARPOS                  = 20;
 
-	public static final int NUM_FEATURES            = 20;
-	public static final int ANALYSIS_START_TOKEN_INDEX = 1; // we use current and previous token in context so can't start at index 0
+	public static final int NUM_FEATURES                        = 21;
+	public static final int ANALYSIS_START_TOKEN_INDEX          = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
@@ -129,6 +133,7 @@ public class CollectFeatures {
 
 	public static FeatureMetaData[] FEATURES_ALIGN = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
@@ -152,6 +157,7 @@ public class CollectFeatures {
 
 	public static FeatureMetaData[] FEATURES_ALL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
@@ -512,13 +518,16 @@ public class CollectFeatures {
 		}
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
+		boolean prevTokenStartsNewLine = tokens.LT(-2)!=null ? tokens.LT(-1).getLine()>tokens.LT(-2).getLine() : false;
+
 		int[] features = {
 			tokens.LT(-1).getType(),
+			prevTokenStartsNewLine ? 1 : 0,
 			rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum),
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
-			memberIndexOfNonSingletonList>1 ? CHILD_INDEX_LIST_ELEMENT : memberIndexOfNonSingletonList,
+			memberIndexOfNonSingletonList>0 ? INDEX_LIST_ELEMENT : memberIndexOfNonSingletonList,
 			isMemberOversizeList ? 1 : 0,
 			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
 			getChildIndex(node),
