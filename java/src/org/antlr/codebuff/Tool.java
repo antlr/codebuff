@@ -34,7 +34,7 @@ import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
  *
  * Testing:
  *
- * Tool  -antlr     ../corpus/antlr4/training      ../corpus/antlr4/testing/Java.g4
+ * Tool  -antlr     ../corpus/antlr4/training/Java.g4      grammars/org/antlr/codebuff/SQLite.g4
  * Tool  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
  * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql

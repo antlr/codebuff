@@ -28,7 +28,7 @@ import static org.antlr.codebuff.Formatter.RIGHT_MARGIN_ALARM;
 
 public class CollectFeatures {
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.12;
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.30;
 
 	/** When computing child indexes, we use this value for any child list
 	 *  element other than the first one.  If a parent has just one X child,

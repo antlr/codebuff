@@ -22,6 +22,10 @@ single_alt_with_stuff
 	:	'this' (A)? B (',' B)*
 	;
 
+optional_semi
+	:	stat ';'? (';')?
+	;
+
 subexpresssions
 	:	'do'
 		(	A
@@ -31,10 +35,12 @@ subexpresssions
 		(	a
 		|	'end'
 		)+
-	|	(	a
+	|	(	(	a
+			|	b
+			)
 		|	X
 		|
-		)
+		)+
 		start next line after list
 	;
 
@@ -56,3 +62,12 @@ nested_nested
 		'}'
 	;
 
+even_more_nested
+   :	'@' X
+		(	'('
+			(	v
+			|	w
+			)?
+			')'
+		)?
+   ;
