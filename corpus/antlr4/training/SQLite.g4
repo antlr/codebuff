@@ -147,16 +147,15 @@ create_virtual_table_stmt
     ;
 
 delete_stmt
-    :   with_clause? K_DELETE K_FROM qualified_table_name
-   (K_WHERE expr)?
+    :   with_clause? K_DELETE K_FROM qualified_table_name (K_WHERE expr)?
     ;
 
 delete_stmt_limited
-    :   with_clause? K_DELETE K_FROM qualified_table_name
-   (K_WHERE expr)?
-   ((K_ORDER K_BY ordering_term (',' ordering_term)*)?
-     K_LIMIT expr ((K_OFFSET | ',') expr)?
-  )?
+    :   with_clause? K_DELETE K_FROM qualified_table_name (K_WHERE expr)?
+		(
+		(K_ORDER K_BY ordering_term (',' ordering_term)*)?
+		K_LIMIT expr ((K_OFFSET | ',') expr)?
+		)?
     ;
 
 detach_stmt
@@ -181,35 +180,39 @@ drop_view_stmt
 
 factored_select_stmt
     :   (K_WITH K_RECURSIVE? common_tables)?
-   select_core (compound_operator select_core)*
-   (K_ORDER K_BY ordering_term (',' ordering_term)*)?
-   (K_LIMIT expr ((K_OFFSET | ',') expr)?)?
+		select_core (compound_operator select_core)*
+		(K_ORDER K_BY ordering_term (',' ordering_term)*)?
+		(K_LIMIT expr ((K_OFFSET | ',') expr)?)?
     ;
 
 insert_stmt
-    :   with_clause? (K_INSERT
-                |   K_REPLACE
-                |   K_INSERT K_OR K_REPLACE
-                |   K_INSERT K_OR K_ROLLBACK
-                |   K_INSERT K_OR K_ABORT
-                |   K_INSERT K_OR K_FAIL
-                |   K_INSERT K_OR K_IGNORE) K_INTO
-   (database_name '.')? table_name ('(' column_names ')')?
-   (K_VALUES '(' exprs ')' (',' '(' exprs ')')*
-   |   select_stmt
-   |   K_DEFAULT K_VALUES
-  )
+    :   with_clause?
+    	(	K_INSERT
+		|   K_REPLACE
+		|   K_INSERT K_OR K_REPLACE
+		|   K_INSERT K_OR K_ROLLBACK
+		|   K_INSERT K_OR K_ABORT
+		|   K_INSERT K_OR K_FAIL
+		|   K_INSERT K_OR K_IGNORE
+		)
+		K_INTO
+		(database_name '.')? table_name ('(' column_names ')')?
+		(	K_VALUES '(' exprs ')' (',' '(' exprs ')')*
+		|   select_stmt
+		|   K_DEFAULT K_VALUES
+		)
     ;
 
 pragma_stmt
-    :   K_PRAGMA (database_name '.')? pragma_name ('=' pragma_value
-                                               |   '(' pragma_value ')')?
+    :   K_PRAGMA (database_name '.')? pragma_name
+    	('=' pragma_value | '(' pragma_value ')')?
     ;
 
 reindex_stmt
-    :   K_REINDEX (collation_name
-             |   (database_name '.')? (table_name | index_name)
-            )?
+    :   K_REINDEX
+     	(	collation_name
+        |   (database_name '.')? (table_name | index_name)
+        )?
     ;
 
 release_stmt
@@ -226,44 +229,51 @@ savepoint_stmt
 
 simple_select_stmt
     :   (K_WITH K_RECURSIVE? common_tables)?
-   select_core (K_ORDER K_BY ordering_term (',' ordering_term)*)?
-   (K_LIMIT expr ((K_OFFSET | ',') expr)?)?
+		select_core (K_ORDER K_BY ordering_term (',' ordering_term)*)?
+		(K_LIMIT expr ((K_OFFSET | ',') expr)?)?
     ;
 
 select_stmt
     :   (K_WITH K_RECURSIVE? common_tables)?
-   select_or_values (compound_operator select_or_values)*
-   (K_ORDER K_BY ordering_term (',' ordering_term)*)?
-   (K_LIMIT expr ((K_OFFSET | ',') expr)?)?
+		select_or_values (compound_operator select_or_values)*
+		(K_ORDER K_BY ordering_term (',' ordering_term)*)?
+		(K_LIMIT expr ((K_OFFSET | ',') expr)?)?
     ;
 
 select_or_values
     :   K_SELECT (K_DISTINCT | K_ALL)? result_column (',' result_column)*
-   (K_FROM (table_or_subquery (',' table_or_subquery)* | join_clause))?
-   (K_WHERE expr)?
-   (K_GROUP K_BY exprs (K_HAVING expr)?)?
- |   K_VALUES '(' exprs ')' (',' '(' exprs ')')*
+		(K_FROM (table_or_subquery (',' table_or_subquery)* | join_clause))?
+		(K_WHERE expr)?
+		(K_GROUP K_BY exprs (K_HAVING expr)?)?
+	|   K_VALUES '(' exprs ')' (',' '(' exprs ')')*
     ;
 
 update_stmt
-    :   with_clause? K_UPDATE (K_OR K_ROLLBACK
-                         |   K_OR K_ABORT
-                         |   K_OR K_REPLACE
-                         |   K_OR K_FAIL
-                         |   K_OR K_IGNORE)? qualified_table_name
-   K_SET column_name '=' expr (',' column_name '=' expr)* (K_WHERE expr)?
+    :   with_clause? K_UPDATE
+     	(	K_OR K_ROLLBACK
+		|   K_OR K_ABORT
+		|   K_OR K_REPLACE
+		|   K_OR K_FAIL
+		|   K_OR K_IGNORE
+		)?
+		qualified_table_name
+   		K_SET column_name '=' expr (',' column_name '=' expr)* (K_WHERE expr)?
     ;
 
 update_stmt_limited
-    :   with_clause? K_UPDATE (K_OR K_ROLLBACK
-                         |   K_OR K_ABORT
-                         |   K_OR K_REPLACE
-                         |   K_OR K_FAIL
-                         |   K_OR K_IGNORE)? qualified_table_name
-   K_SET column_name '=' expr (',' column_name '=' expr)* (K_WHERE expr)?
-   ((K_ORDER K_BY ordering_term (',' ordering_term)*)?
-     K_LIMIT expr ((K_OFFSET | ',') expr)?
-  )?
+    :   with_clause? K_UPDATE
+    	(	K_OR K_ROLLBACK
+		|   K_OR K_ABORT
+		|   K_OR K_REPLACE
+		|   K_OR K_FAIL
+		|   K_OR K_IGNORE
+		)?
+		qualified_table_name
+		K_SET column_name '=' expr (',' column_name '=' expr)* (K_WHERE expr)?
+		(
+			(K_ORDER K_BY ordering_term (',' ordering_term)*)?
+			K_LIMIT expr ((K_OFFSET | ',') expr)?
+		)?
     ;
 
 vacuum_stmt
@@ -275,8 +285,10 @@ column_def
     ;
 
 type_name
-    :   name+ ('(' signed_number ')'
-         |   '(' signed_number ',' signed_number ')')?
+    :   name+
+    	(	'(' signed_number ')'
+        |   '(' signed_number ',' signed_number ')'
+        )?
     ;
 
 column_constraint
