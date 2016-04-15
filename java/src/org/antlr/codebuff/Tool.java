@@ -39,7 +39,7 @@ import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
  * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
  * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
- * Tool  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
+ * Tool  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
 	public static boolean showFileNames = false;
