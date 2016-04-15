@@ -212,7 +212,7 @@ constantDeclarator
 
 // see matching of [] comment in methodDeclaratorRest
 interfaceMethodDeclaration
-    :   (typeSpec|'void') Identifier formalParameters ('[' ']')*
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
         ('throws' qualifiedNameList)?
         ';'
     ;
@@ -320,7 +320,7 @@ literal
 // ANNOTATIONS
 
 annotation
-    :   '@' annotationName ( '(' ( elementValuePairs | elementValue )? ')' )?
+    :   '@' annotationName ( '(' (elementValuePairs | elementValue)? ')' )?
     ;
 
 annotationName : qualifiedName ;
@@ -506,10 +506,10 @@ expression
     |   'new' creator
     |   '(' typeSpec ')' expression
     |   expression ('++' | '--')
-    |   ('+'|'-'|'++'|'--') expression
-    |   ('~'|'!') expression
-    |   expression ('*'|'/'|'%') expression
-    |   expression ('+'|'-') expression
+    |   ('+' | '-' | '++' | '--') expression
+    |   ('~' | '!') expression
+    |   expression ('*' | '/' | '%') expression
+    |   expression ('+' | '-') expression
     |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression
     |   expression ('<=' | '>=' | '>' | '<') expression
     |   expression 'instanceof' typeSpec
