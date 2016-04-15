@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.atn.ATN;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -22,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.antlr.codebuff.Formatter.RIGHT_MARGIN_ALARM;
 
@@ -493,10 +493,7 @@ public class CollectFeatures {
 			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
 			ParserRuleContext firstSibling = siblings.get(0);
 			Token firstSiblingToken = firstSibling.getStart();
-			int len = 0;
-			for (ParserRuleContext sib : siblings) {
-				len += sib.getText().length();
-			}
+			int len = getSiblingsLength(siblings);
 			int endcol = firstSiblingToken.getCharPositionInLine(); // where does this list start off?
 			if ( firstSibling==childOfSiblingList ) { // cur token is start of list so must check prev token
 				// during formatting (not training) we don't know firstSiblingToken char pos so we must compute
@@ -550,6 +547,14 @@ public class CollectFeatures {
 		return features;
 	}
 
+	public static int getSiblingsLength(List<? extends ParserRuleContext> siblings) {
+		int len = 0;
+		for (ParserRuleContext sib : siblings) {
+			len += sib.getText().length();
+		}
+		return len;
+	}
+
 	public static int getMatchingSymbolOnDiffLine(InputDocument doc,
 												  TerminalNode node,
 												  int line)
@@ -575,9 +580,11 @@ public class CollectFeatures {
 	 *  The earliestLeftAncestor is the highest child we'll look at for
 	 *  efficiency reasons.
 	 */
-	public static ParserRuleContext isMemberOfSiblingList(Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs,
-	                                                      TerminalNode node,
-	                                                      ParserRuleContext earliestLeftAncestor)
+	public static ParserRuleContext isMemberOfSiblingList(
+		Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs,
+		TerminalNode node,
+		ParserRuleContext earliestLeftAncestor
+	)
 	{
 		ParserRuleContext child = (ParserRuleContext)node.getParent();
 		if ( child==null ) return null;
@@ -588,7 +595,7 @@ public class CollectFeatures {
 				parent.getRuleIndex(), parent.getAltNumber(),
 				child.getRuleIndex(), child.getAltNumber()
 			);
-			if ( rootAndChildListPairs.contains(pair) ) {
+			if ( rootAndChildListPairs.containsKey(pair) ) {
 				childMemberOfList = child;
 			}
 			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list

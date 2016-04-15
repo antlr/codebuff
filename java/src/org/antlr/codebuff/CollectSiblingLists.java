@@ -2,13 +2,16 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /** Find subtree roots with repeated child subtrees such as typeArguments
  *  has more than 1 typeArgument child.  For an actual feature vector
@@ -19,12 +22,10 @@ import java.util.Set;
  *  formal arg lists in Java. Sometimes they are split across lines.
  *
  *  Currently, I'm not tracking any separator or terminators.
- *
- *  Warning: can only track ONE sibling list per root.
  */
 public class CollectSiblingLists implements ParseTreeListener {
-	/** Track set of (parent:alt,child:alt) pairs */
-	public Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs = new HashSet<>();
+	/** Track set of (parent:alt,child:alt) pairs and their min,median,max */
+	public Map<Quad<Integer,Integer,Integer,Integer>, List<Integer>> listLength = new HashMap<>();
 
 	@Override
 	public void enterEveryRule(ParserRuleContext ctx) {
@@ -38,13 +39,28 @@ public class CollectSiblingLists implements ParseTreeListener {
 					parent.getRuleIndex(), parent.getAltNumber(),
 					ctx.getRuleIndex(), ctx.getAltNumber()
 				);
-				rootAndChildListPairs.add(pair);
+				List<Integer> lens = listLength.get(pair);
+				if ( lens==null ) {
+					lens = new ArrayList<>();
+					listLength.put(pair, lens);
+				}
+				lens.add(CollectFeatures.getSiblingsLength(siblings));
 			}
 		}
 	}
 
-	public Set<Quad<Integer,Integer,Integer,Integer>> getRootAndChildListPairs() {
-		return rootAndChildListPairs;
+	public Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> getListSizeMedians() {
+		Map<Quad<Integer,Integer,Integer,Integer>, Triple<Integer,Integer,Integer>> listSizes = new HashMap<>();
+		for (Quad<Integer, Integer, Integer, Integer> pair : listLength.keySet()) {
+			List<Integer> lens = listLength.get(pair);
+			Collections.sort(lens);
+			int n = lens.size();
+			Integer min = lens.get(0);
+			Integer median = lens.get(n/2);
+			Integer max = lens.get(n-1);
+			listSizes.put(pair, new Triple<>(lens.get(0), median, max));
+		}
+		return listSizes;
 	}
 
 	@Override

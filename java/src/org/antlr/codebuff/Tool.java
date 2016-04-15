@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.File;
@@ -26,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
 
@@ -177,7 +177,7 @@ public class Tool {
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
-		Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs = collectSiblingLists.getRootAndChildListPairs();
+		Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs = collectSiblingLists.getListSizeMedians();
 
 		if ( false ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
@@ -191,12 +191,12 @@ public class Tool {
 		}
 
 		if ( false ) {
-			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndChildListPairs) {
+			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndChildListPairs.keySet()) {
 				String parent = ruleNames[siblingPairs.a];
 				parent = parent.replace("Context","");
 				String siblingListName = ruleNames[siblingPairs.c];
 				siblingListName = siblingListName.replace("Context","");
-				System.out.println(parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d);
+				System.out.println(parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d+" (min,median,max)="+rootAndChildListPairs.get(siblingPairs));
 			}
 		}
 
@@ -209,7 +209,7 @@ public class Tool {
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
-										   Set<Quad<Integer,Integer,Integer,Integer>> rootAndChildListPairs)
+										   Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
