@@ -512,7 +512,7 @@ public class CollectFeatures {
 //			System.out.println(" len="+len+", endcol="+endcol);
 
 			isMemberOversizeList = endcol + len > RIGHT_MARGIN_ALARM;
-			System.out.println(endcol+len);
+//			System.out.println(endcol+len);
 			if ( siblings.size()>1 ) {
 				memberIndexOfNonSingletonList = siblings.indexOf(childOfSiblingList);
 			}
