@@ -7,8 +7,9 @@ lines = file("grammar-list-len.txt").read().split("\n")
 X = [int(x) for x in lines if len(x.strip())>0]
 #X = [x for x in X if x<1000]
 
-nvalues = len(X)
 X = sorted(X)
+print "median=%d avg=%f\n" % (X[len(X)/2], sum(X)/float(len(X)))
+nvalues = len(X)
 X = X[0:int(len(X)*.75)] # get 90th percentile only
 
 # the histogram of the data
