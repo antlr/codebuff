@@ -56,11 +56,13 @@ public class Formatter {
 
 	protected int tabSize;
 
+	protected boolean collectAnalysis;
+
 	protected boolean debug_NL = true;
 	protected int misclassified_NL = 0;
 	protected int misclassified_WS = 0;
 
-	public Formatter(Corpus corpus, InputDocument doc, int tabSize) {
+	public Formatter(Corpus corpus, InputDocument doc, int tabSize, boolean collectAnalysis) {
 		this.corpus = corpus;
 		this.doc = doc;
 		this.root = doc.tree;
@@ -73,6 +75,7 @@ public class Formatter {
 //		k = 7;
 		k = 11;
 		this.tabSize = tabSize;
+		this.collectAnalysis = collectAnalysis;
 	}
 
 	public String getOutput() {
@@ -205,8 +208,13 @@ public class Formatter {
 		curToken.setLine(line);
 		curToken.setCharPositionInLine(charPosInLine);
 
-		TokenPositionAnalysis tokenPositionAnalysis =
-			getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
+		TokenPositionAnalysis tokenPositionAnalysis;
+		if ( collectAnalysis ) {
+			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
+		}
+		else {
+			tokenPositionAnalysis = new TokenPositionAnalysis(curToken, injectNL_WS, "", alignOrIndent, "");
+		}
 		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 

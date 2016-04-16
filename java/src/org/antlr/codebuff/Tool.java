@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.gui.GUIController;
+import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -29,17 +30,18 @@ import java.util.List;
 import java.util.Map;
 
 import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
+import static org.antlr.codebuff.Formatter.RIGHT_MARGIN_ALARM;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
  * Testing:
  *
- * Tool  -antlr     ../corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
- * Tool  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
- * Tool  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
- * Tool  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
- * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
- * Tool  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
+ * Tool  -dbg  -antlr     ../corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
+ * Tool  -dbg  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
+ * Tool  -dbg  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
+ * Tool  -dbg  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
+ * Tool  -dbg  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
 	public static boolean showFileNames = false;
@@ -52,9 +54,15 @@ public class Tool {
 			System.err.println("ExtractFeatures [-java|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
 		}
 		int tabSize = 4; // TODO: MAKE AN ARGUMENT
-		String language = args[0];
-		String corpusDir = args[1];
-		String testFilename = args[2];
+		int arg = 0;
+		boolean collectAnalysis = false;
+		if ( args[arg].equals("-dbg") ) {
+			collectAnalysis = true;
+			arg++;
+		}
+		String language = args[arg++];
+		String corpusDir = args[arg++];
+		String testFilename = args[arg];
 		String output = "???";
 		Corpus corpus;
 		InputDocument testDoc;
@@ -65,7 +73,7 @@ public class Tool {
 			case "-java":
 				corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
 				testDoc = load(testFilename, JavaLexer.class, tabSize);
-				results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+				results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, collectAnalysis);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
@@ -74,7 +82,7 @@ public class Tool {
 			case "-antlr":
 				corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
 				testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
-				results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
+				results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, collectAnalysis);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
@@ -83,7 +91,7 @@ public class Tool {
 			case "-sqlite":
 				corpus = train(corpusDir, ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, true);
 				testDoc = load(testFilename, SQLiteLexer.class, tabSize);
-				results = format(corpus, testDoc, SQLiteLexer.class, SQLiteParser.class, "parse", tabSize);
+				results = format(corpus, testDoc, SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, collectAnalysis);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, SQLiteLexer.class);
@@ -92,7 +100,7 @@ public class Tool {
 			case "-tsql":
 				corpus = train(corpusDir, ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, true);
 				testDoc = load(testFilename, tsqlLexer.class, tabSize);
-				results = format(corpus, testDoc, tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize);
+				results = format(corpus, testDoc, tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, collectAnalysis);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, tsqlLexer.class);
@@ -101,7 +109,7 @@ public class Tool {
 			case "-plsql":
 				corpus = train(corpusDir, ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, true);
 				testDoc = load(testFilename, plsqlLexer.class, tabSize);
-				results = format(corpus, testDoc, plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize);
+				results = format(corpus, testDoc, plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, collectAnalysis);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, plsqlLexer.class);
@@ -118,10 +126,11 @@ public class Tool {
 	                                                              Class<? extends Lexer> lexerClass,
 	                                                              Class<? extends Parser> parserClass,
 	                                                              String startRuleName,
-	                                                              int tabSize)
+	                                                              int tabSize,
+	                                                              boolean collectAnalysis)
 		throws Exception
 	{
-		return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true);
+		return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true, collectAnalysis);
 	}
 
 	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus,
@@ -130,12 +139,13 @@ public class Tool {
 	                                                              Class<? extends Parser> parserClass,
 	                                                              String startRuleName,
 	                                                              int tabSize,
-	                                                              boolean showFormattedResult)
+	                                                              boolean showFormattedResult,
+	                                                              boolean collectAnalysis)
 		throws Exception
 	{
 		testDoc.corpus = corpus;
 		parse(testDoc, lexerClass, parserClass, startRuleName);
-		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
+		Formatter formatter = new Formatter(corpus, testDoc, tabSize, collectAnalysis);
 		String formattedOutput = formatter.format();
 		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
 		testDoc.dumpIncorrectWS = false;
@@ -253,7 +263,7 @@ public class Tool {
 		ANTLRInputStream input = new ANTLRInputStream(doc);
 		Lexer lexer = getLexer(lexerClass, input);
 
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
 		tokens.fill();
 		return tokens;
 	}
@@ -269,7 +279,7 @@ public class Tool {
 		Lexer lexer = getLexer(lexerClass, input);
 		input.name = doc.fileName;
 
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
 
 		if ( showTokens ) {
 			tokens.fill();
@@ -432,14 +442,23 @@ public class Tool {
 	public static double weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
 		double count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
-			if ( featureTypes[i].type==FeatureType.TOKEN ||
-				featureTypes[i].type==FeatureType.RULE  ||
-				featureTypes[i].type==FeatureType.INT  ||
-				featureTypes[i].type==FeatureType.BOOL)
+			FeatureType type = featureTypes[i].type;
+			if ( type==FeatureType.TOKEN ||
+				 type==FeatureType.RULE ||
+				 type==FeatureType.INT ||
+				 type==FeatureType.BOOL)
 			{
 				if ( A[i] != B[i] ) {
 					count += featureTypes[i].mismatchCost;
 				}
+			}
+			else if ( type==FeatureType.COLWIDTH ) {
+				// threshold any len > RIGHT_MARGIN_ALARM
+				int a = Math.min(A[i], RIGHT_MARGIN_ALARM);
+				int b = Math.min(B[i], RIGHT_MARGIN_ALARM);
+				count += Math.abs(a-b) / (float)RIGHT_MARGIN_ALARM; // normalize to 0..1
+//				double delta = Math.abs(sigmoid(A[i], 30)-sigmoid(B[i], 30));
+//				count += delta;
 			}
 		}
 		return count;
@@ -931,7 +950,7 @@ public class Tool {
 	public static class Foo {
 		public static void main(String[] args) throws Exception {
 			ANTLRv4Lexer lexer = new ANTLRv4Lexer(new ANTLRFileStream("grammars/org/antlr/codebuff/ANTLRv4Lexer.g4"));
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
+			CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
 			ANTLRv4Parser parser = new ANTLRv4Parser(tokens);
 			ANTLRv4Parser.GrammarSpecContext tree = parser.grammarSpec();
 			System.out.println(tree.toStringTree(parser));

@@ -38,7 +38,7 @@ public class TestJavaStability {
 		boolean shuffleFeatureVectors = false;
 		Corpus corpus = Tool.train(fileName, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4, shuffleFeatureVectors);
 		InputDocument testDoc = Tool.load(fileName, JavaLexer.class, 4);
-		Pair<String,List<TokenPositionAnalysis>> results = Tool.format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+		Pair<String,List<TokenPositionAnalysis>> results = Tool.format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", 4, false);
 		List<TokenPositionAnalysis> analysisPerToken = results.b;
 
 		int misclassified_ws = 0;
