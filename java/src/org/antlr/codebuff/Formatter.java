@@ -15,7 +15,7 @@ import java.util.Vector;
 
 import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
-import static org.antlr.codebuff.CollectFeatures.CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN;
+import static org.antlr.codebuff.CollectFeatures.CAT_INDENT_FROM_ANCESTOR_CHILD;
 import static org.antlr.codebuff.CollectFeatures.CAT_INJECT_NL;
 import static org.antlr.codebuff.CollectFeatures.CAT_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.CAT_NO_ALIGNMENT;
@@ -187,14 +187,34 @@ public class Formatter {
 					output.append(Tool.spaces(indentCol));
 				}
 			}
-			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN ) {
-				int deltaFromAncestor = CollectFeatures.unindentcat(alignOrIndent);
+			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
+				int[] deltaChild = CollectFeatures.unindentcat(alignOrIndent);
+				int deltaFromAncestor = deltaChild[0];
+				int childIndex = deltaChild[1];
 				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
-				Token start = ancestor.getStart();
-				int indentCol = start.getCharPositionInLine() + INDENT_LEVEL;
-				charPosInLine = indentCol;
-				output.append(Tool.spaces(indentCol));
+				Token start = null;
+				if ( ancestor==null ) {
+					System.err.println("Whoops. No ancestor at that delta");
+				}
+				else {
+					ParseTree child = ancestor.getChild(childIndex);
+					if ( child instanceof ParserRuleContext ) {
+						start = ((ParserRuleContext) child).getStart();
+					}
+					else if ( child instanceof TerminalNode ) {
+						start = ((TerminalNode) child).getSymbol();
+					}
+					else {
+						// uh oh.
+						System.err.println("Whoops. Tried to access invalid child");
+					}
+				}
+				if ( start!=null ) {
+					int indentCol = start.getCharPositionInLine()+INDENT_LEVEL;
+					charPosInLine = indentCol;
+					output.append(Tool.spaces(indentCol));
+				}
 			}
 		}
 		else {

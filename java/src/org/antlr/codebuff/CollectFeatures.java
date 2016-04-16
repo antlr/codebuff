@@ -73,7 +73,7 @@ public class CollectFeatures {
 	   current token is indented from start token of node i levels up
 	   from ancestor.
 	 */
-	public static final int CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN = 20; // left ancestor's first token is really current token
+	public static final int CAT_INDENT_FROM_ANCESTOR_CHILD = 20; // left ancestor's first token is really current token
 
 	public static final int CAT_INDENT = 30;
 
@@ -263,23 +263,25 @@ public class CollectFeatures {
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 		Pair<ParserRuleContext, Integer> pair =
-			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken);
+			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, curToken.getCharPositionInLine());
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 			aligned = aligncat(deltaFromLeftAncestor, pair.b);
-//			System.out.printf("ALIGN %s %s %d %x %s\n",
+//			System.out.printf("ALIGN %s %s i=%d %x %s\n",
 //			                  curToken,
 //			                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
 //			                  pair.b, aligned, doc.fileName);
  		}
 		else if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-Formatter.INDENT_LEVEL;
-			ParserRuleContext indentParent =
-				earliestAncestorStartingAtCharPos(earliestLeftAncestor.getParent(), indentedFromPos);
-			if ( indentParent!=null ) {
-				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, indentParent);
-				aligned = indentcat(deltaFromLeftAncestor);
-//				System.out.printf("INDENT %s %x\n", JavaParser.ruleNames[indentParent.getRuleIndex()], aligned);
+			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
+			if ( pair!=null ) {
+//				System.out.printf("INDENT %s %s i=%d %x %s\n",
+//				                  curToken,
+//				                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
+//				                  pair.b, aligned, doc.fileName);
+				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
+				aligned = indentcat(deltaFromLeftAncestor, pair.b);
 			}
 			else {
 				aligned = CAT_INDENT; // indent standard amount
@@ -388,12 +390,11 @@ public class CollectFeatures {
 		return null;
 	}
 
-	/** Walk upwards from node until we find a child of p at char position and
-	 *  that child (token or start token) is first token on a line;
+	/** Walk upwards from node until we find a child of p at t's char position.
+	 *  Don't see alignment with self, t, or element *after* us.
 	 *  return null if there is no such ancestor p.
 	 */
-	public Pair<ParserRuleContext,Integer> earliestAncestorWithChildStartingAtCharPos(ParserRuleContext node, Token t) {
-		int charpos = t.getCharPositionInLine();
+	public Pair<ParserRuleContext,Integer> earliestAncestorWithChildStartingAtCharPos(ParserRuleContext node, Token t, int charpos) {
 		ParserRuleContext p = node;
 		while ( p!=null ) {
 			// check all children of p to see if one of them starts at charpos
@@ -406,7 +407,7 @@ public class CollectFeatures {
 				else { // must be token
 					start = ((TerminalNode)child).getSymbol();
 				}
-				// check that we aren't aligned with self or element *after* us
+				// check that we don't see alignment with self or element *after* us
 				if ( start.getTokenIndex()<t.getTokenIndex() && start.getCharPositionInLine()==charpos ) {
 					return new Pair<>(p,i);
 				}
@@ -914,12 +915,14 @@ public class CollectFeatures {
 		return new int[] {(ra>>16)&0xFFFF,ra&0xFFFF};
 	}
 
-	public static int indentcat(int deltaFromLeftAncestor) {
-		return CAT_INDENT_FROM_ANCESTOR_FIRST_TOKEN | (deltaFromLeftAncestor<<8);
+	public static int indentcat(int deltaFromLeftAncestor, int child) {
+		return CAT_INDENT_FROM_ANCESTOR_CHILD| (deltaFromLeftAncestor<<8) | (child << 16);
 	}
 
-	public static int unindentcat(int v) {
-		return v >> 8 & 0xFFFF;
+	public static int[] unindentcat(int v) {
+		int deltaFromLeftAncestor = (v>>8)&0xFF;
+		int child = (v>>16)&0xFFFF;
+		return new int[] { deltaFromLeftAncestor, child };
 	}
 
 	public static int aligncat(int deltaFromLeftAncestor, int child) {
