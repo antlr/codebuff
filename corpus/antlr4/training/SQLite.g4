@@ -427,8 +427,7 @@ result_column
 
 table_or_subquery
     :   (database_name '.')? table_name (K_AS? table_alias)?
-		(K_INDEXED K_BY index_name
-	|   K_NOT K_INDEXED)?
+		(K_INDEXED K_BY index_name | K_NOT K_INDEXED)?
 	|   '('
 	 	(	table_or_subquery (',' table_or_subquery)*
 	   	|   join_clause

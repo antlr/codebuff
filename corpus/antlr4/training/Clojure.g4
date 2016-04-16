@@ -25,7 +25,7 @@
 
 grammar Clojure;
 
-file : form * ;
+file : form* ;
 
 form:	literal
     |   list
