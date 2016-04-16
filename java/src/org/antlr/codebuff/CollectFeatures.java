@@ -36,7 +36,7 @@ public class CollectFeatures {
 	 */
 	public static final int CHILD_INDEX_LIST_ELEMENT = 1_111_111_111;
 
-	public static final int INDEX_LIST_ELEMENT = 1_111_111_111;
+	public static final int MEMBER_INDEX_LIST_ELEMENT = 1_111_111_111;
 
 	// Feature values for pair on diff lines feature
 	public static final int NOT_PAIR = -1;
@@ -483,23 +483,20 @@ public class CollectFeatures {
 
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
-		ParserRuleContext childOfSiblingList =
-			isMemberOfSiblingList(doc.corpus.rootAndChildListPairs, node, earliestLeftAncestor);
-
 		int memberIndexOfNonSingletonList = -1; // >=0 if |list|>1.  -1 implies not member of list or singleton list
 		int nonSingletonListWidth = -1;
+
+		ParserRuleContext childOfSiblingList =
+			getMemberOfSiblingList(doc.corpus, node, earliestLeftAncestor);
 		if ( childOfSiblingList!=null ) {
 			ParserRuleContext siblingListParent = childOfSiblingList.getParent();
 			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
 
 			if ( siblings.size()>1 ) {
 				memberIndexOfNonSingletonList = siblings.indexOf(childOfSiblingList);
-			}
+				String siblingsText = getSiblingsText(siblings);
+				nonSingletonListWidth = siblingsText.length();
 
-			String siblingsText = getSiblingsText(siblings);
-			int len = siblingsText.length();
-
-			if ( siblings.size()>1 ) {
 //				String[] ruleNames = doc.parser.getRuleNames();
 //				String sibParent = ruleNames[siblingListParent.getRuleIndex()];
 //				String child = ruleNames[childOfSiblingList.getRuleIndex()];
@@ -509,9 +506,19 @@ public class CollectFeatures {
 //					                   "  "+sibParent+":"+siblingListParent.getAltNumber()+"->"+child+
 //					                   ":"+childOfSiblingList.getAltNumber()+" "+siblings.indexOf(childOfSiblingList)+" of "+siblings.size()+" sibs"+
 //				                  ": len="+len);
-				nonSingletonListWidth = len;
 			}
-
+		}
+		else { // maybe we're a separator?
+			childOfSiblingList = getFirstSiblingFromSeparatorNode(doc.corpus, node);
+			if ( childOfSiblingList!=null ) {
+				ParserRuleContext siblingListParent = childOfSiblingList.getParent();
+				List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
+				if ( siblings.size()>1 ) {
+					String siblingsText = getSiblingsText(siblings);
+					nonSingletonListWidth = siblingsText.length();
+					memberIndexOfNonSingletonList = MEMBER_INDEX_LIST_ELEMENT;
+				}
+			}
 		}
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
@@ -529,7 +536,7 @@ public class CollectFeatures {
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
-			memberIndexOfNonSingletonList>0 ? INDEX_LIST_ELEMENT : memberIndexOfNonSingletonList,
+			memberIndexOfNonSingletonList>0 ? MEMBER_INDEX_LIST_ELEMENT : memberIndexOfNonSingletonList,
 			nonSingletonListWidth,
 			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
 			getChildIndex(node),
@@ -591,22 +598,20 @@ public class CollectFeatures {
 	 *  The earliestLeftAncestor is the highest child we'll look at for
 	 *  efficiency reasons.
 	 */
-	public static ParserRuleContext isMemberOfSiblingList(
-		Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs,
-		TerminalNode node,
-		ParserRuleContext earliestLeftAncestor
-	)
+	public static ParserRuleContext getMemberOfSiblingList(Corpus corpus,
+	                                                       TerminalNode node,
+	                                                       ParserRuleContext earliestLeftAncestor)
 	{
 		ParserRuleContext child = (ParserRuleContext)node.getParent();
 		if ( child==null ) return null;
 		ParserRuleContext parent = child.getParent();
-		ParserRuleContext childMemberOfList = null; // track last good match we found
+		ParserRuleContext childMemberOfList = null;
 		while ( parent!=null ) {
 			Quad<Integer,Integer,Integer,Integer> pair = new Quad<>(
 				parent.getRuleIndex(), parent.getAltNumber(),
 				child.getRuleIndex(), child.getAltNumber()
 			);
-			if ( rootAndChildListPairs.containsKey(pair) ) {
+			if ( corpus.rootAndChildListPairs.containsKey(pair) ) {
 				// count children
 				List<? extends ParserRuleContext> siblings = parent.getRuleContexts(child.getClass());
 				if ( siblings.size()>1 ) {
@@ -633,6 +638,25 @@ public class CollectFeatures {
 		}
 
 		return childMemberOfList;
+	}
+
+	/** If current node is a separator in a list, return the first subtree root
+	 *  member of that sibling list.
+	 */
+	public static ParserRuleContext getFirstSiblingFromSeparatorNode(Corpus corpus, TerminalNode node) {
+		ParserRuleContext parent = (ParserRuleContext)node.getParent();
+		if ( parent==null ) return null;
+		Triple<Integer, Integer, Integer> key =
+			new Triple<>(parent.getRuleIndex(), parent.getAltNumber(), node.getSymbol().getType());
+		Class<? extends ParserRuleContext> memberClass = corpus.listSeparators.get(key);
+		if ( memberClass!=null ) {
+			// separator of list so get the siblings
+			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(memberClass);
+			if ( siblings.size()>1 ) {
+				return siblings.get(0);
+			}
+		}
+		return null;
 	}
 
 	public static TerminalNode getMatchingLeftSymbol(InputDocument doc,

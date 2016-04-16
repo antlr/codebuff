@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
-import static org.antlr.codebuff.Formatter.RIGHT_MARGIN_ALARM;
+import static org.antlr.codebuff.Formatter.WIDE_LIST_THRESHOLD;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
@@ -187,7 +187,10 @@ public class Tool {
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
-		Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs = collectSiblingLists.getListSizeMedians();
+		Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs =
+			collectSiblingLists.getListSizeMedians();
+		Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators =
+			collectSiblingLists.getListSeparators();
 
 		if ( false ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
@@ -206,11 +209,21 @@ public class Tool {
 				parent = parent.replace("Context","");
 				String siblingListName = ruleNames[siblingPairs.c];
 				siblingListName = siblingListName.replace("Context","");
-				System.out.println(parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d+" (min,median,max)="+rootAndChildListPairs.get(siblingPairs));
+				System.out.println(parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d+
+					                   " (min,median,max)="+rootAndChildListPairs.get(siblingPairs));
 			}
 		}
 
-		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag, rootAndChildListPairs);
+		if ( false ) {
+			for (Triple<Integer, Integer, Integer> ruleAltTokenTuple : listSeparators.keySet()) {
+				String parent = ruleNames[ruleAltTokenTuple.a];
+				parent = parent.replace("Context","");
+				System.out.println(parent+":"+ruleAltTokenTuple.b+","+vocab.getDisplayName(ruleAltTokenTuple.c)+
+				                  "->"+listSeparators.get(ruleAltTokenTuple).getSimpleName());
+			}
+		}
+
+		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag, rootAndChildListPairs, listSeparators);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
@@ -219,7 +232,8 @@ public class Tool {
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
-										   Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs)
+										   Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs,
+										   Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
@@ -229,6 +243,7 @@ public class Tool {
 		Corpus corpus = new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
 		corpus.ruleToPairsBag = ruleToPairsBag;
 		corpus.rootAndChildListPairs = rootAndChildListPairs;
+		corpus.listSeparators = listSeparators;
 
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
@@ -454,11 +469,11 @@ public class Tool {
 			}
 			else if ( type==FeatureType.COLWIDTH ) {
 				// threshold any len > RIGHT_MARGIN_ALARM
-				int a = Math.min(A[i], RIGHT_MARGIN_ALARM);
-				int b = Math.min(B[i], RIGHT_MARGIN_ALARM);
-				count += Math.abs(a-b) / (float)RIGHT_MARGIN_ALARM; // normalize to 0..1
-//				double delta = Math.abs(sigmoid(A[i], 30)-sigmoid(B[i], 30));
-//				count += delta;
+				int a = Math.min(A[i], WIDE_LIST_THRESHOLD);
+				int b = Math.min(B[i], WIDE_LIST_THRESHOLD);
+//				count += Math.abs(a-b) / (float) WIDE_LIST_THRESHOLD; // normalize to 0..1
+				double delta = Math.abs(sigmoid(a, 30)-sigmoid(b, 30));
+				count += delta;
 			}
 		}
 		return count;
