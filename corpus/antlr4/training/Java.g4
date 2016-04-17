@@ -88,7 +88,7 @@ variableModifier
     ;
 
 classDeclaration
-    :   'class' Identifier typeParameters?
+    :   'class' name=Identifier typeParameters?
         ('extends' typeSpec)?
         ('implements' typeList)?
         classBody
@@ -438,7 +438,7 @@ resourceSpecification
     ;
 
 resources
-    :   resource (';' resource)*
+    :   r+=resource (sep=';' r+=resource)*
     ;
 
 resource
@@ -511,7 +511,7 @@ expression
     |   expression ('*' | '/' | '%') expression
     |   expression ('+' | '-') expression
     |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression
-    |   expression ('<=' | '>=' | '>' | '<') expression
+    |   expression op=('<=' | '>=' | '>' | '<') expression
     |   expression 'instanceof' typeSpec
     |   expression ('==' | '!=') expression
     |   expression '&' expression
@@ -582,8 +582,8 @@ nonWildcardTypeArguments
     ;
 
 typeArgumentsOrDiamond
-    :   '<' '>'
-    |   typeArguments
+    :   '<' '>'			# Diamond
+    |   typeArguments		# NonDiamondTypeArguments
     ;
 
 nonWildcardTypeArgumentsOrDiamond
