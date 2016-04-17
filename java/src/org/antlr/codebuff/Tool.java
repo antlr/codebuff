@@ -203,7 +203,7 @@ public class Tool {
 			}
 		}
 
-		if ( false ) {
+		if ( true ) {
 			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndChildListPairs.keySet()) {
 				String parent = ruleNames[siblingPairs.a];
 				parent = parent.replace("Context","");
@@ -294,7 +294,7 @@ public class Tool {
 		Lexer lexer = getLexer(lexerClass, input);
 		input.name = doc.fileName;
 
-		CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
+		CodeBuffTokenStream tokens = new CodeBuffTokenStream(lexer);
 
 		if ( showTokens ) {
 			tokens.fill();
@@ -471,16 +471,16 @@ public class Tool {
 				// threshold any len > RIGHT_MARGIN_ALARM
 				int a = Math.min(A[i], WIDE_LIST_THRESHOLD);
 				int b = Math.min(B[i], WIDE_LIST_THRESHOLD);
-//				count += Math.abs(a-b) / (float) WIDE_LIST_THRESHOLD; // normalize to 0..1
-				double delta = Math.abs(sigmoid(a, 30)-sigmoid(b, 30));
-				count += delta;
+				count += Math.abs(a-b) / (float) WIDE_LIST_THRESHOLD; // normalize to 0..1
+//				double delta = Math.abs(sigmoid(a, 37)-sigmoid(b, 37));
+//				count += delta;
 			}
 		}
 		return count;
 	}
 
 	public static double sigmoid(int x, float center) {
-		return 1.0 / (1.0 + Math.exp(-0.2*(x-center)));
+		return 1.0 / (1.0 + Math.exp(-0.3*(x-center)));
 	}
 
 	public static int max(List<Integer> Y) {

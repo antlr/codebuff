@@ -174,6 +174,7 @@ public abstract class kNNClassifier {
 		Pair<Integer, Integer> key =  new Pair<>(pr, cr);
 		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
 		List<Neighbor> distances = new ArrayList<>();
+		vectorIndexesMatchingTokenContext = null;
 		if ( vectorIndexesMatchingTokenContext==null ) {
 			// no matching contexts for this feature, must rely on full training set
 			int n = corpus.X.size(); // num training samples

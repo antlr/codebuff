@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.BuffUtils;
+import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.Quad;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -25,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.12;
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.30;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.20;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
 	 *  element other than the first one.  If a parent has just one X child,
@@ -86,23 +87,25 @@ public class CollectFeatures {
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
 	public static final int INDEX_FIRST_ON_LINE		            = 5; // a \n right before this token?
 	public static final int INDEX_INDEX_IN_LIST                 = 6; // either -1 (not member of list), 0 (first in list), or INDEX_LIST_ELEMENT
-	public static final int INDEX_LIST_WIDTH                    = 7;
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9;
-	public static final int INDEX_ANCESTORS_PARENT_RULE         = 10;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 11;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 12;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 13;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 14;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 15;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 16;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 17;
+	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 7;
+	public static final int INDEX_LIST_PARENT                   = 8;
+	public static final int INDEX_LIST_WIDTH                    = 9;
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 10;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 11;
+	public static final int INDEX_ANCESTORS_PARENT_RULE         = 12;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 13;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 14;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 15;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 16;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 17;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 18;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 19;
 
-	public static final int INDEX_INFO_FILE                     = 18;
-	public static final int INDEX_INFO_LINE                     = 19;
-	public static final int INDEX_INFO_CHARPOS                  = 20;
+	public static final int INDEX_INFO_FILE                     = 20;
+	public static final int INDEX_INFO_LINE                     = 21;
+	public static final int INDEX_INFO_CHARPOS                  = 22;
 
-	public static final int NUM_FEATURES                        = 21;
+	public static final int NUM_FEATURES                        = 23;
 	public static final int ANALYSIS_START_TOKEN_INDEX          = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
@@ -112,8 +115,10 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"Col", "alarm"}, 4),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
-		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"List", "width"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"List", "parent"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		FeatureMetaData.UNUSED,
@@ -138,6 +143,8 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -160,7 +167,9 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"Col", "alarm"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"List", "parent"}, 1),
 		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"List", "width"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
@@ -456,7 +465,7 @@ public class CollectFeatures {
 	                                    int line,
 	                                    int tabSize)
 	{
-		CommonTokenStream tokens = doc.tokens;
+		CodeBuffTokenStream tokens = doc.tokens;
 		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
 		if ( node==null ) {
 			System.err.println("### No node associated with token "+tokens.get(i));
@@ -485,17 +494,28 @@ public class CollectFeatures {
 
 		int memberIndexOfNonSingletonList = -1; // >=0 if |list|>1.  -1 implies not member of list or singleton list
 		int nonSingletonListWidth = -1;
+		int parentOfMemberOfNonSingletonList = -1;
 
-		ParserRuleContext childOfSiblingList =
-			getMemberOfSiblingList(doc.corpus, node, earliestLeftAncestor);
+		int endcol = prevToken.getCharPositionInLine()+prevToken.getText().length();
+		List<Token> realTokens = tokens.getRealTokens(earliestLeftAncestor.getStart().getTokenIndex(),
+		                                              earliestLeftAncestor.getStop().getTokenIndex());
+		String nextElementText = getText(realTokens);
+		int oversizeListWidth = endcol + nextElementText.length();
+
+		ParserRuleContext childOfSiblingList = getMemberOfSiblingList(doc.corpus, node, earliestLeftAncestor);
 		if ( childOfSiblingList!=null ) {
 			ParserRuleContext siblingListParent = childOfSiblingList.getParent();
 			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
 
 			if ( siblings.size()>1 ) {
 				memberIndexOfNonSingletonList = siblings.indexOf(childOfSiblingList);
+				if ( memberIndexOfNonSingletonList>0 ) {
+					memberIndexOfNonSingletonList = MEMBER_INDEX_LIST_ELEMENT;
+				}
 				String siblingsText = getSiblingsText(siblings);
 				nonSingletonListWidth = siblingsText.length();
+
+				parentOfMemberOfNonSingletonList = rulealt(siblingListParent);
 
 //				String[] ruleNames = doc.parser.getRuleNames();
 //				String sibParent = ruleNames[siblingListParent.getRuleIndex()];
@@ -505,7 +525,7 @@ public class CollectFeatures {
 //				System.out.println(StringUtils.abbreviate(siblingsText,30)+
 //					                   "  "+sibParent+":"+siblingListParent.getAltNumber()+"->"+child+
 //					                   ":"+childOfSiblingList.getAltNumber()+" "+siblings.indexOf(childOfSiblingList)+" of "+siblings.size()+" sibs"+
-//				                  ": len="+len);
+//				                  ": len="+siblingsText.length());
 			}
 		}
 		else { // maybe we're a separator?
@@ -513,10 +533,19 @@ public class CollectFeatures {
 			if ( childOfSiblingList!=null ) {
 				ParserRuleContext siblingListParent = childOfSiblingList.getParent();
 				List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
-				if ( siblings.size()>1 ) {
+				if ( siblings.size()>1 ) { // It can't be separator if singleton list
 					String siblingsText = getSiblingsText(siblings);
 					nonSingletonListWidth = siblingsText.length();
-					memberIndexOfNonSingletonList = MEMBER_INDEX_LIST_ELEMENT;
+
+					List<TerminalNode> tokenSibs =
+						siblingListParent.getTokens(node.getSymbol().getType());
+					if ( tokenSibs.indexOf(node)==0 ) {
+						memberIndexOfNonSingletonList = 0;
+					}
+					else {
+						memberIndexOfNonSingletonList = MEMBER_INDEX_LIST_ELEMENT;
+					}
+					parentOfMemberOfNonSingletonList = rulealt(siblingListParent);
 				}
 			}
 		}
@@ -536,18 +565,20 @@ public class CollectFeatures {
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
-			memberIndexOfNonSingletonList>0 ? MEMBER_INDEX_LIST_ELEMENT : memberIndexOfNonSingletonList,
+			oversizeListWidth,
+			memberIndexOfNonSingletonList,
+			parentOfMemberOfNonSingletonList,
 			nonSingletonListWidth,
-			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
-			getChildIndex(node),
-			earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent.getRuleIndex(), earliestLeftAncestorParent.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestor),
-			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2.getRuleIndex(), earliestLeftAncestorParent2.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestorParent),
-			earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3.getRuleIndex(), earliestLeftAncestorParent3.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestorParent2),
-			earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4.getRuleIndex(), earliestLeftAncestorParent4.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestorParent3),
+			rulealt(earliestLeftAncestor),
+			getChildIndex(doc.corpus, node),
+			earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent) : -1,
+			getChildIndex(doc.corpus, earliestLeftAncestor),
+			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2) : -1,
+			getChildIndex(doc.corpus, earliestLeftAncestorParent),
+			earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3) : -1,
+			getChildIndex(doc.corpus, earliestLeftAncestorParent2),
+			earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4) : -1,
+			getChildIndex(doc.corpus, earliestLeftAncestorParent3),
 
 			// info
 			0, // dummy; we don't store file index into feature vector
@@ -569,6 +600,15 @@ public class CollectFeatures {
 	public static String getSiblingsText(List<? extends ParserRuleContext> siblings) {
 		StringBuilder buf = new StringBuilder();
 		for (ParserRuleContext sib : siblings) {
+			buf.append(sib.getText());
+		}
+		return buf.toString();
+	}
+
+	public static String getText(List<? extends Token> tokens) {
+		if ( tokens==null ) return "";
+		StringBuilder buf = new StringBuilder();
+		for (Token sib : tokens) {
 			buf.append(sib.getText());
 		}
 		return buf.toString();
@@ -637,6 +677,42 @@ public class CollectFeatures {
 //			System.out.println(StringUtils.abbreviate(parent.getText(),30)+"; "+len+" actual vs "+info);
 		}
 
+		return childMemberOfList;
+	}
+
+	/** Walk upwards checking for an ancestor that is a sibling list element.
+	 *  Only consider lists identified by the corpus if there are more than
+	 *  one actual elements in the list for node.  For example, a grammar
+	 *  alt with just element X is in a list from corpus as alternative:element
+	 *  is a pair in rootAndChildListPairs. But, it is a singleton list. Ignore
+	 *  it and look upwards to the altList:alternative pair and see if there
+	 *  is more than one alt in the altList.
+	 *
+	 *  The earliestLeftAncestor is the highest child we'll look at for
+	 *  efficiency reasons.
+	 */
+	public static ParserRuleContext getEarliestMemberOfSiblingList(
+		Corpus corpus,
+		TerminalNode node,
+		ParserRuleContext earliestLeftAncestor
+	)
+	{
+		ParserRuleContext child = (ParserRuleContext)node.getParent();
+		if ( child==null ) return null;
+		ParserRuleContext parent = child.getParent();
+		ParserRuleContext childMemberOfList = null; // track last good match we found
+		while ( parent!=null ) {
+			Quad<Integer,Integer,Integer,Integer> pair = new Quad<>(
+				parent.getRuleIndex(), parent.getAltNumber(),
+				child.getRuleIndex(), child.getAltNumber()
+			);
+			if ( corpus.rootAndChildListPairs.containsKey(pair) ) {
+				childMemberOfList = child;
+			}
+			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
+			child = parent;
+			parent = parent.getParent();
+		}
 		return childMemberOfList;
 	}
 
@@ -894,7 +970,7 @@ public class CollectFeatures {
 		return real;
 	}
 
-	public static int getChildIndex(ParseTree t) {
+	public static int getChildIndex(Corpus corpus, ParseTree t) {
 		if ( t==null ) return -1;
 		ParseTree parent = t.getParent();
 		if ( parent==null ) {
@@ -911,11 +987,18 @@ public class CollectFeatures {
 		}
 		else {
 			TerminalNode node = (TerminalNode)t;
-			List<TerminalNode> siblings =
-				((ParserRuleContext)parent).getTokens(node.getSymbol().getType());
-			if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
-				return CHILD_INDEX_LIST_ELEMENT;
+			ParserRuleContext firstSiblingFromSeparatorNode =
+				getFirstSiblingFromSeparatorNode(corpus, node);
+			if ( firstSiblingFromSeparatorNode!=null ) { // we are separator
+				// are we first separator?
+				List<TerminalNode> siblings =
+					((ParserRuleContext)parent).getTokens(node.getSymbol().getType());
+				if ( siblings.indexOf(t)==0 ) {
+					return 0;
+				}
+				return CHILD_INDEX_LIST_ELEMENT; // 2nd and beyond separator get "I'm a list member" index
 			}
+			// if token node but not a separator, then allow it to give actual index.
 		}
 		// Either first of sibling list or not in a list.
 		// Figure out which child index t is of parent
@@ -925,6 +1008,10 @@ public class CollectFeatures {
 			}
 		}
 		return -1;
+	}
+
+	public static int rulealt(ParserRuleContext r) {
+		return rulealt(r.getRuleIndex(), r.getAltNumber());
 	}
 
 	/** Pack a rule index and an alternative number into the same 32-bit integer. */
