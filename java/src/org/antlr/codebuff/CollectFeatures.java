@@ -1069,4 +1069,10 @@ public class CollectFeatures {
 	public static int unnlcat(int v) {
 		return v >> 8 & 0xFFFF;
 	}
+
+	public static int listForm(boolean nlBeforeSeparator, boolean nlAfterSeparator) {
+		return
+			(nlBeforeSeparator ? 0x10 : 0x00) |
+			(nlAfterSeparator? 0x10 : 0x00);
+	}
 }

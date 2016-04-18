@@ -198,12 +198,16 @@ public class Tool {
 		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
 		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 		for (InputDocument doc : documents) {
+			System.out.println(doc);
+			collectSiblingLists.setTokens(doc.tokens);
 			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
-		Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs =
-			collectSiblingLists.getListSizeMedians();
+		Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndChildListPairs =
+			collectSiblingLists.getListStats();
+		Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndSplitChildListPairs =
+			collectSiblingLists.getSplitListStats();
 		Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators =
 			collectSiblingLists.getListSeparators();
 
@@ -225,7 +229,15 @@ public class Tool {
 				String siblingListName = ruleNames[siblingPairs.c];
 				siblingListName = siblingListName.replace("Context","");
 				System.out.println(parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d+
-					                   " (min,median,max)="+rootAndChildListPairs.get(siblingPairs));
+					                   " (min,median,var,max)="+rootAndChildListPairs.get(siblingPairs));
+			}
+			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndSplitChildListPairs.keySet()) {
+				String parent = ruleNames[siblingPairs.a];
+				parent = parent.replace("Context","");
+				String siblingListName = ruleNames[siblingPairs.c];
+				siblingListName = siblingListName.replace("Context","");
+				System.out.println("SPLIT " +parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d+
+					                   " (min,median,var,max)="+rootAndSplitChildListPairs.get(siblingPairs));
 			}
 		}
 
@@ -247,7 +259,7 @@ public class Tool {
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
-										   Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs,
+										   Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndChildListPairs,
 										   Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators)
 		throws Exception
 	{

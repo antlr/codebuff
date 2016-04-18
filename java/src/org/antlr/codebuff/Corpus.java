@@ -30,7 +30,7 @@ public class Corpus {
 	Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
 
 	Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
-	Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs;
+	Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndChildListPairs;
 	Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators;
 
 	public Corpus(List<InputDocument> documents,
