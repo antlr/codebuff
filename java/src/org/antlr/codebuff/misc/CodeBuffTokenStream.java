@@ -34,7 +34,7 @@ public class CodeBuffTokenStream extends CommonTokenStream {
 		List<Token> real = new ArrayList<Token>();
 		for (int i=from; i<=to; i++) {
 			Token t = tokens.get(i);
-			if ( t.getChannel()!=Lexer.DEFAULT_TOKEN_CHANNEL ) real.add(t);
+			if ( t.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL ) real.add(t);
 		}
 		if ( real.size()==0 ) return null;
 		return real;

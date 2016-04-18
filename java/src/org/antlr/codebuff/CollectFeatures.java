@@ -25,8 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.antlr.codebuff.Formatter.COL_ALARM_THRESHOLD;
+
 public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.20;
+	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.10;
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
@@ -115,12 +118,12 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"Col", "alarm"}, 4),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Col.", "alarm"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"List", "parent"}, 1),
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"List", "width"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
+		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -142,7 +145,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
 		FeatureMetaData.UNUSED,
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
@@ -167,7 +170,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"Col", "alarm"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Col.", "alarm"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"List", "parent"}, 1),
 		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"List", "width"}, 1),
@@ -495,26 +498,31 @@ public class CollectFeatures {
 		int memberIndexOfNonSingletonList = -1; // >=0 if |list|>1.  -1 implies not member of list or singleton list
 		int nonSingletonListWidth = -1;
 		int parentOfMemberOfNonSingletonList = -1;
+		int projectedNextElementEndCol = -1;
 
 		int endcol = prevToken.getCharPositionInLine()+prevToken.getText().length();
-		List<Token> realTokens = tokens.getRealTokens(earliestLeftAncestor.getStart().getTokenIndex(),
-		                                              earliestLeftAncestor.getStop().getTokenIndex());
-		String nextElementText = getText(realTokens);
-		int oversizeListWidth = endcol + nextElementText.length();
+		if ( earliestLeftAncestor.getStart() == curToken ) {
+			List<Token> realTokens = tokens.getRealTokens(earliestLeftAncestor.getStart().getTokenIndex(),
+			                                              earliestLeftAncestor.getStop().getTokenIndex());
+			String nextElementText = getText(realTokens);
+			projectedNextElementEndCol = endcol+nextElementText.length();
+		}
+		else {
+			projectedNextElementEndCol = endcol+curToken.getText().length();
+		}
 
-		ParserRuleContext childOfSiblingList = getMemberOfSiblingList(doc.corpus, node, earliestLeftAncestor);
+		ParserRuleContext childOfSiblingList = getEarliestMemberOfSiblingList(doc.corpus, node, earliestLeftAncestor);
 		if ( childOfSiblingList!=null ) {
 			ParserRuleContext siblingListParent = childOfSiblingList.getParent();
 			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
 
-			if ( siblings.size()>1 ) {
+//			if ( siblings.size()>1 ) {
 				memberIndexOfNonSingletonList = siblings.indexOf(childOfSiblingList);
 				if ( memberIndexOfNonSingletonList>0 ) {
 					memberIndexOfNonSingletonList = MEMBER_INDEX_LIST_ELEMENT;
 				}
 				String siblingsText = getSiblingsText(siblings);
 				nonSingletonListWidth = siblingsText.length();
-
 				parentOfMemberOfNonSingletonList = rulealt(siblingListParent);
 
 //				String[] ruleNames = doc.parser.getRuleNames();
@@ -526,7 +534,7 @@ public class CollectFeatures {
 //					                   "  "+sibParent+":"+siblingListParent.getAltNumber()+"->"+child+
 //					                   ":"+childOfSiblingList.getAltNumber()+" "+siblings.indexOf(childOfSiblingList)+" of "+siblings.size()+" sibs"+
 //				                  ": len="+siblingsText.length());
-			}
+//			}
 		}
 		else { // maybe we're a separator?
 			childOfSiblingList = getFirstSiblingFromSeparatorNode(doc.corpus, node);
@@ -565,7 +573,7 @@ public class CollectFeatures {
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
 			curTokenStartsNewLine ? 1 : 0,
-			oversizeListWidth,
+			projectedNextElementEndCol > COL_ALARM_THRESHOLD ? 1 : 0,
 			memberIndexOfNonSingletonList,
 			parentOfMemberOfNonSingletonList,
 			nonSingletonListWidth,
@@ -654,10 +662,10 @@ public class CollectFeatures {
 			if ( corpus.rootAndChildListPairs.containsKey(pair) ) {
 				// count children
 				List<? extends ParserRuleContext> siblings = parent.getRuleContexts(child.getClass());
-				if ( siblings.size()>1 ) {
+//				if ( siblings.size()>1 ) {
 					childMemberOfList = child;
 					break; // stop at FIRST opportunity up the tree
-				}
+//				}
 			}
 			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
 			child = parent;
@@ -728,9 +736,9 @@ public class CollectFeatures {
 		if ( memberClass!=null ) {
 			// separator of list so get the siblings
 			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(memberClass);
-			if ( siblings.size()>1 ) {
+//			if ( siblings.size()>1 ) {
 				return siblings.get(0);
-			}
+//			}
 		}
 		return null;
 	}

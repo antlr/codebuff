@@ -23,7 +23,8 @@ import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_MATCHING_TOKEN_DIFF_LINE;
-import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD;
+import static org.antlr.codebuff.CollectFeatures.MAX_ALIGN_CONTEXT_DIFF_THRESHOLD;
+import static org.antlr.codebuff.CollectFeatures.MAX_WS_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
 import static org.antlr.codebuff.CollectFeatures.getMatchingSymbolOnDiffLine;
 import static org.antlr.codebuff.CollectFeatures.getNodeFeatures;
@@ -33,7 +34,8 @@ import static org.antlr.codebuff.CollectFeatures.indexTree;
 
 public class Formatter {
 	public static final int INDENT_LEVEL = 4;
-	public static final int WIDE_LIST_THRESHOLD = 90;
+	public static final int WIDE_LIST_THRESHOLD = 120;
+	public static final int COL_ALARM_THRESHOLD = 80;
 
 	protected final Corpus corpus;
 	protected StringBuilder output = new StringBuilder();
@@ -117,7 +119,7 @@ public class Formatter {
 		int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
 		int[] featuresForAlign = new int[features.length];
 
-		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_CONTEXT_DIFF_THRESHOLD);
+		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_WS_CONTEXT_DIFF_THRESHOLD);
 		int newlines = 0;
 		int ws = 0;
 		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
@@ -150,7 +152,7 @@ public class Formatter {
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
 
-			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.align, MAX_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.align, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
 			if ( alignOrIndent==CAT_INDENT ) {
 				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
@@ -309,10 +311,10 @@ public class Formatter {
 
 		String newlineAnalysis = newlinePredictionString+"\n"+
 			nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
-			                                     MAX_CONTEXT_DIFF_THRESHOLD);
+			                                     MAX_WS_CONTEXT_DIFF_THRESHOLD);
 		String alignAnalysis =alignPredictionString+"\n"+
 			alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
-			                                      MAX_CONTEXT_DIFF_THRESHOLD);
+			                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 		return new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
 	}
 

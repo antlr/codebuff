@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
-import static org.antlr.codebuff.Formatter.WIDE_LIST_THRESHOLD;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
@@ -51,7 +50,7 @@ public class Tool {
 		throws Exception
 	{
 		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures [-java|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
+			System.err.println("ExtractFeatures [-dbg] [-java|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
 		}
 		int tabSize = 4; // TODO: MAKE AN ARGUMENT
 		int arg = 0;
@@ -69,11 +68,15 @@ public class Tool {
 		GUIController controller;
 		List<TokenPositionAnalysis> analysisPerToken;
 		Pair<String, List<TokenPositionAnalysis>> results;
+		long start, stop;
 		switch ( language ) {
 			case "-java":
 				corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
 				testDoc = load(testFilename, JavaLexer.class, tabSize);
+				start = System.nanoTime();
 				results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
@@ -82,7 +85,10 @@ public class Tool {
 			case "-antlr":
 				corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
 				testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
+				start = System.nanoTime();
 				results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
@@ -91,7 +97,10 @@ public class Tool {
 			case "-sqlite":
 				corpus = train(corpusDir, ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, true);
 				testDoc = load(testFilename, SQLiteLexer.class, tabSize);
+				start = System.nanoTime();
 				results = format(corpus, testDoc, SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, SQLiteLexer.class);
@@ -100,7 +109,10 @@ public class Tool {
 			case "-tsql":
 				corpus = train(corpusDir, ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, true);
 				testDoc = load(testFilename, tsqlLexer.class, tabSize);
+				start = System.nanoTime();
 				results = format(corpus, testDoc, tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, tsqlLexer.class);
@@ -109,7 +121,10 @@ public class Tool {
 			case "-plsql":
 				corpus = train(corpusDir, ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, true);
 				testDoc = load(testFilename, plsqlLexer.class, tabSize);
+				start = System.nanoTime();
 				results = format(corpus, testDoc, plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 				output = results.a;
 				analysisPerToken = results.b;
 				controller = new GUIController(analysisPerToken, testDoc, output, plsqlLexer.class);
@@ -469,18 +484,21 @@ public class Tool {
 			}
 			else if ( type==FeatureType.COLWIDTH ) {
 				// threshold any len > RIGHT_MARGIN_ALARM
-				int a = Math.min(A[i], WIDE_LIST_THRESHOLD);
-				int b = Math.min(B[i], WIDE_LIST_THRESHOLD);
-				count += Math.abs(a-b) / (float) WIDE_LIST_THRESHOLD; // normalize to 0..1
-//				double delta = Math.abs(sigmoid(a, 37)-sigmoid(b, 37));
-//				count += delta;
+				int a = A[i];
+				int b = B[i];
+//				int a = Math.min(A[i], WIDE_LIST_THRESHOLD);
+//				int b = Math.min(B[i], WIDE_LIST_THRESHOLD);
+//				count += Math.abs(a-b) / (float) WIDE_LIST_THRESHOLD; // normalize to 0..1
+//				count += sigmoid(a-b, 37);
+				double delta = Math.abs(sigmoid(a, 43)-sigmoid(b, 43));
+				count += delta;
 			}
 		}
 		return count;
 	}
 
 	public static double sigmoid(int x, float center) {
-		return 1.0 / (1.0 + Math.exp(-0.3*(x-center)));
+		return 1.0 / (1.0 + Math.exp(-0.9*(x-center)));
 	}
 
 	public static int max(List<Integer> Y) {
