@@ -481,9 +481,18 @@ public class CollectFeatures {
 		// Get context information for previous token
 		Token prevToken = tokens.LT(-1);
 		TerminalNode prevNode = tokenToNodeMap.get(prevToken);
+
 		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(prevNode);
 		int prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
 		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
+
+///
+		/*
+		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(node, prevToken);
+		int prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
+		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
+		*/
+///
 
 		// Get context information for current token
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
