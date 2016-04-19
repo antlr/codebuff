@@ -2,7 +2,7 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
-import org.antlr.codebuff.misc.Quad;
+import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -655,11 +655,8 @@ public class CollectFeatures {
 		ParserRuleContext parent = child.getParent();
 		ParserRuleContext childMemberOfList = null;
 		while ( parent!=null ) {
-			Quad<Integer,Integer,Integer,Integer> pair = new Quad<>(
-				parent.getRuleIndex(), parent.getAltNumber(),
-				child.getRuleIndex(), child.getAltNumber()
-			);
-			if ( corpus.rootAndChildListPairs.containsKey(pair) ) {
+			ParentSiblingListKey pair = new ParentSiblingListKey(parent, child, node.getSymbol().getType());
+			if ( corpus.rootAndChildListStats.containsKey(pair) ) {
 				// count children
 				List<? extends ParserRuleContext> siblings = parent.getRuleContexts(child.getClass());
 //				if ( siblings.size()>1 ) {
@@ -710,11 +707,8 @@ public class CollectFeatures {
 		ParserRuleContext parent = child.getParent();
 		ParserRuleContext childMemberOfList = null; // track last good match we found
 		while ( parent!=null ) {
-			Quad<Integer,Integer,Integer,Integer> pair = new Quad<>(
-				parent.getRuleIndex(), parent.getAltNumber(),
-				child.getRuleIndex(), child.getAltNumber()
-			);
-			if ( corpus.rootAndChildListPairs.containsKey(pair) ) {
+			ParentSiblingListKey pair = new ParentSiblingListKey(parent, child, node.getSymbol().getType());
+			if ( corpus.rootAndChildListStats.containsKey(pair) ) {
 				childMemberOfList = child;
 			}
 			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
@@ -1070,9 +1064,11 @@ public class CollectFeatures {
 		return v >> 8 & 0xFFFF;
 	}
 
-	public static int listForm(boolean nlBeforeSeparator, boolean nlAfterSeparator) {
-		return
-			(nlBeforeSeparator ? 0x10 : 0x00) |
-			(nlAfterSeparator? 0x10 : 0x00);
+	public static int listform(boolean nlBeforeSeparator, boolean nlAfterSeparator) {
+		return (nlBeforeSeparator ? 1 << 4 : 0) | (nlAfterSeparator ? 1 : 0) ;
+	}
+
+	public static int[] unlistform(int v) {
+		return new int[] { v>>4, v & 0x0F };
 	}
 }

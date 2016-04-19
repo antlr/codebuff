@@ -2,7 +2,8 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.gui.GUIController;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
-import org.antlr.codebuff.misc.Quad;
+import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -204,10 +205,11 @@ public class Tool {
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
 		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
-		Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndChildListPairs =
+		Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats =
 			collectSiblingLists.getListStats();
-		Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndSplitChildListPairs =
+		Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats =
 			collectSiblingLists.getSplitListStats();
+		Map<ParentSiblingListKey, Integer> splitListForms = collectSiblingLists.getSplitListForms();
 		Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators =
 			collectSiblingLists.getListSeparators();
 
@@ -223,21 +225,22 @@ public class Tool {
 		}
 
 		if ( true ) {
-			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndChildListPairs.keySet()) {
-				String parent = ruleNames[siblingPairs.a];
+			for (ParentSiblingListKey siblingPairs : rootAndChildListStats.keySet()) {
+				String parent = ruleNames[siblingPairs.parentRuleIndex];
 				parent = parent.replace("Context","");
-				String siblingListName = ruleNames[siblingPairs.c];
+				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
 				siblingListName = siblingListName.replace("Context","");
-				System.out.println(parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d+
-					                   " (min,median,var,max)="+rootAndChildListPairs.get(siblingPairs));
+				System.out.println(parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
+					                   " (min,median,var,max)="+rootAndChildListStats.get(siblingPairs));
 			}
-			for (Quad<Integer,Integer,Integer,Integer> siblingPairs : rootAndSplitChildListPairs.keySet()) {
-				String parent = ruleNames[siblingPairs.a];
+			for (ParentSiblingListKey siblingPairs : rootAndSplitChildListStats.keySet()) {
+				String parent = ruleNames[siblingPairs.parentRuleIndex];
 				parent = parent.replace("Context","");
-				String siblingListName = ruleNames[siblingPairs.c];
+				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
 				siblingListName = siblingListName.replace("Context","");
-				System.out.println("SPLIT " +parent+":"+siblingPairs.b+"->"+siblingListName+":"+siblingPairs.d+
-					                   " (min,median,var,max)="+rootAndSplitChildListPairs.get(siblingPairs));
+				System.out.println("SPLIT " +parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
+					                   " (min,median,var,max)="+rootAndSplitChildListStats.get(siblingPairs)+
+				                  " form "+splitListForms.get(siblingPairs));
 			}
 		}
 
@@ -250,7 +253,9 @@ public class Tool {
 			}
 		}
 
-		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag, rootAndChildListPairs, listSeparators);
+		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag,
+		                                  rootAndChildListStats, rootAndSplitChildListStats,
+		                                  splitListForms, listSeparators);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
@@ -259,7 +264,9 @@ public class Tool {
 	public static Corpus processSampleDocs(List<InputDocument> docs,
 										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
-										   Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndChildListPairs,
+										   Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats,
+										   Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats,
+										   Map<ParentSiblingListKey, Integer> splitListForms,
 										   Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators)
 		throws Exception
 	{
@@ -269,7 +276,9 @@ public class Tool {
 		List<Integer> alignWithPrevious = new ArrayList<>();
 		Corpus corpus = new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
 		corpus.ruleToPairsBag = ruleToPairsBag;
-		corpus.rootAndChildListPairs = rootAndChildListPairs;
+		corpus.rootAndChildListStats = rootAndChildListStats;
+		corpus.rootAndSplitChildListStats = rootAndSplitChildListStats;
+		corpus.splitListForms = splitListForms;
 		corpus.listSeparators = listSeparators;
 
 		for (InputDocument doc : docs) {

@@ -1,7 +1,9 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
-import org.antlr.codebuff.misc.Quad;
+import org.antlr.codebuff.misc.HashBag;
+import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Triple;
@@ -34,14 +36,14 @@ public class CollectSiblingLists implements ParseTreeListener {
 	/** Track set of (parent:alt,child:alt) list pairs and their min,median,variance,max
 	 *  but only if the list is all on one line and has a separator.
 	 */
-	public Map<Quad<Integer,Integer,Integer,Integer>, List<Integer>> listInfo = new HashMap<>();
+	public Map<ParentSiblingListKey, List<Integer>> listInfo = new HashMap<>();
 	/** Track set of (parent:alt,child:alt) list pairs and their min,median,variance,max
 	 *  but only if the list is split with at least one '\n' before/after
 	 *  a separator.
 	 */
-	public Map<Quad<Integer,Integer,Integer,Integer>, List<Integer>> splitListInfo = new HashMap<>();
+	public Map<ParentSiblingListKey, List<Integer>> splitListInfo = new HashMap<>();
 
-	public Map<Quad<Integer,Integer,Integer,Integer>, List<Integer>> splitListForm = new HashMap<>();
+	public Map<ParentSiblingListKey, List<Integer>> splitListForm = new HashMap<>();
 
 	/** Map (parent:alt,tokentype) -> childMemberClassType if tokentype is separator in
 	 *  a (parent:alt,child:alt) list.
@@ -67,7 +69,7 @@ public class CollectSiblingLists implements ParseTreeListener {
 			if ( child instanceof ParserRuleContext ) { // found subtree child
 				List<? extends ParserRuleContext> siblings =
 					ctx.getRuleContexts(((ParserRuleContext)child).getClass());
-				if ( siblings.size()>1 ) { // we found a list
+				if ( siblings.size()>1 ) { // we found a non-singleton list
 					// check for separator by looking between first two siblings (assume all are same)
 					ParserRuleContext first = siblings.get(0);
 					ParserRuleContext second = siblings.get(1);
@@ -76,93 +78,14 @@ public class CollectSiblingLists implements ParseTreeListener {
 					int firstIndex = children.indexOf(first);
 					int secondIndex = children.indexOf(second);
 
+					if ( firstIndex+1 == secondIndex ) continue; // nothing between first and second so no separator
+
 					int form = -1;
-					if ( firstIndex+1 < secondIndex ) { // is there something in between first and second?
-						ParseTree between = ctx.getChild(firstIndex+1);
-						if ( between instanceof TerminalNode ) { // is it a token?
-							Token separator = ((TerminalNode)between).getSymbol();
-							Triple<Integer, Integer, Integer> key =
-								new Triple<>(ctx.getRuleIndex(), ctx.getAltNumber(), separator.getType());
-							// map (parent:alt,tokentype) -> (child:alt) so we can create look up key for listInfo later if we want
-							listSeparators.put(key, first.getClass());
-							List<Token> hiddenToLeft = tokens.getHiddenTokensToLeft(separator.getTokenIndex());
-							List<Token> hiddenToRight = tokens.getHiddenTokensToRight(separator.getTokenIndex());
-							if ( hiddenToLeft!=null ) {
-								Token left = hiddenToLeft.get(0);
-								String hiddenText = left.getText();
-								if ( Tool.count(hiddenText, '\n')>0 ) {
-									form = CollectFeatures.listForm(true, false);
-									System.out.println("BEFORE "+JavaParser.ruleNames[ctx.getRuleIndex()]+
-										                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
-										                   JavaParser.tokenNames[separator.getType()]+
-										                   " "+separator);
-								}
-							}
-							else if ( hiddenToRight!=null ) {
-								Token right = hiddenToRight.get(0);
-								String hiddenText = right.getText();
-								if ( Tool.count(hiddenText, '\n')>0 ) {
-									form = CollectFeatures.listForm(false, true);
-									System.out.println("AFTER "+JavaParser.ruleNames[ctx.getRuleIndex()]+
-										                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
-										                   JavaParser.tokenNames[separator.getType()]+
-										                   " "+separator);
-								}
-							}
-						}
-					}
-
-					// now track length of parent:alt,child:alt list or split-list
-					Quad<Integer, Integer, Integer, Integer> pair = new Quad<>(
-						ctx.getRuleIndex(), ctx.getAltNumber(),
-						first.getRuleIndex(), first.getAltNumber()
-					);
-					List<Integer> lens;
-					if ( form==-1 ) {
-						lens = listInfo.get(pair);
-						if ( lens==null ) {
-							lens = new ArrayList<>();
-							listInfo.put(pair, lens);
-						}
-					}
-					else {
-						lens = splitListInfo.get(pair);
-						if ( lens==null ) {
-							lens = new ArrayList<>();
-							splitListInfo.put(pair, lens);
-						}
-					}
-					lens.add(CollectFeatures.getSiblingsLength(siblings));
-				}
-			}
-		}
-	}
-
-	/*
-	@Override
-	public void enterEveryRuleOLD(ParserRuleContext ctx) {
-		// am I a child that is part of a list?
-		Class<? extends ParserRuleContext> myClass = ctx.getClass();
-		ParserRuleContext parent = ctx.getParent();
-		if ( parent!=null ) {
-			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(myClass);
-			if ( siblings.size()>1 ) {
-				// check for separator by looking between first two siblings
-				ParserRuleContext first = siblings.get(0);
-				ParserRuleContext second = siblings.get(1);
-
-				List<Tree> children = Trees.getChildren(parent);
-				int firstIndex = children.indexOf(first);
-				int secondIndex = children.indexOf(second);
-
-				int form = -1;
-
-				if ( firstIndex+1 < secondIndex ) { // is there something in between first and second?
-					ParseTree between = parent.getChild(firstIndex+1);
+					ParseTree between = ctx.getChild(firstIndex+1);
 					if ( between instanceof TerminalNode ) { // is it a token?
 						Token separator = ((TerminalNode)between).getSymbol();
 						Triple<Integer, Integer, Integer> key =
-							new Triple<>(parent.getRuleIndex(), parent.getAltNumber(), separator.getType());
+							new Triple<>(ctx.getRuleIndex(), ctx.getAltNumber(), separator.getType());
 						// map (parent:alt,tokentype) -> (child:alt) so we can create look up key for listInfo later if we want
 						listSeparators.put(key, first.getClass());
 						List<Token> hiddenToLeft = tokens.getHiddenTokensToLeft(separator.getTokenIndex());
@@ -171,8 +94,8 @@ public class CollectSiblingLists implements ParseTreeListener {
 							Token left = hiddenToLeft.get(0);
 							String hiddenText = left.getText();
 							if ( Tool.count(hiddenText, '\n')>0 ) {
-								form = CollectFeatures.listForm(true, false);
-								System.out.println("BEFORE "+JavaParser.ruleNames[parent.getRuleIndex()]+
+								form = CollectFeatures.listform(true, false);
+								System.out.println("BEFORE "+JavaParser.ruleNames[ctx.getRuleIndex()]+
 									                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
 									                   JavaParser.tokenNames[separator.getType()]+
 									                   " "+separator);
@@ -182,54 +105,67 @@ public class CollectSiblingLists implements ParseTreeListener {
 							Token right = hiddenToRight.get(0);
 							String hiddenText = right.getText();
 							if ( Tool.count(hiddenText, '\n')>0 ) {
-								form = CollectFeatures.listForm(false, true);
-								System.out.println("AFTER "+JavaParser.ruleNames[parent.getRuleIndex()]+
+								form = CollectFeatures.listform(false, true);
+								System.out.println("AFTER "+JavaParser.ruleNames[ctx.getRuleIndex()]+
 									                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
 									                   JavaParser.tokenNames[separator.getType()]+
 									                   " "+separator);
 							}
 						}
-					}
-				}
 
-				Quad<Integer, Integer, Integer, Integer> pair = new Quad<>(
-					parent.getRuleIndex(), parent.getAltNumber(),
-					ctx.getRuleIndex(), ctx.getAltNumber()
-				);
-				List<Integer> lens;
-				if ( form==-1 ) {
-					lens = listInfo.get(pair);
-					if ( lens==null ) {
-						lens = new ArrayList<>();
-						listInfo.put(pair, lens);
+						// now track length of parent:alt,child:alt list or split-list
+						ParentSiblingListKey pair = new ParentSiblingListKey(ctx, first, separator.getType());
+						List<Integer> lens;
+						if ( form==-1 ) {
+							lens = listInfo.get(pair);
+							if ( lens==null ) {
+								lens = new ArrayList<>();
+								listInfo.put(pair, lens);
+							}
+						}
+						else {
+							lens = splitListInfo.get(pair);
+							if ( lens==null ) {
+								lens = new ArrayList<>();
+								splitListInfo.put(pair, lens);
+							}
+							List<Integer> forms = splitListForm.get(pair);
+							if ( forms==null ) {
+								forms = new ArrayList<>();
+								splitListForm.put(pair, forms);
+							}
+							forms.add(form); // track where we put newlines for this list
+						}
+						lens.add(CollectFeatures.getSiblingsLength(siblings));
 					}
 				}
-				else {
-					lens = splitListInfo.get(pair);
-					if ( lens==null ) {
-						lens = new ArrayList<>();
-						splitListInfo.put(pair, lens);
-					}
-				}
-				lens.add(CollectFeatures.getSiblingsLength(siblings));
 			}
 		}
 	}
-	*/
 
-	public Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> getListStats() {
-		return getSizeInfo(listInfo);
+	public Map<ParentSiblingListKey, Integer> getSplitListForms() {
+		Map<ParentSiblingListKey, Integer> results = new HashMap<>();
+		for (ParentSiblingListKey pair : splitListForm.keySet()) {
+			HashBag<Integer> votes = new HashBag<>();
+			List<Integer> forms = splitListForm.get(pair);
+			forms.forEach(votes::add);
+			int mostCommonForm = kNNClassifier.getCategoryWithMostVotes(votes);
+			results.put(pair, mostCommonForm);
+		}
+		return results;
 	}
 
-	public Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> getSplitListStats() {
-		return getSizeInfo(splitListInfo);
+	public Map<ParentSiblingListKey, SiblingListStats> getListStats() {
+		return getListStats(listInfo);
 	}
 
-	public Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> getSizeInfo(
-		Map<Quad<Integer,Integer,Integer,Integer>, List<Integer>> map)
-	{
-		Map<Quad<Integer,Integer,Integer,Integer>, Quad<Integer,Integer,Double,Integer>> listSizes = new HashMap<>();
-		for (Quad<Integer, Integer, Integer, Integer> pair : map.keySet()) {
+	public Map<ParentSiblingListKey, SiblingListStats> getSplitListStats() {
+		return getListStats(splitListInfo);
+	}
+
+	public Map<ParentSiblingListKey, SiblingListStats> getListStats(Map<ParentSiblingListKey, List<Integer>> map) {
+		Map<ParentSiblingListKey, SiblingListStats> listSizes = new HashMap<>();
+		for (ParentSiblingListKey pair : map.keySet()) {
 			List<Integer> lens = map.get(pair);
 			Collections.sort(lens);
 			int n = lens.size();
@@ -237,7 +173,7 @@ public class CollectSiblingLists implements ParseTreeListener {
 			Integer median = lens.get(n/2);
 			Integer max = lens.get(n-1);
 			double var = variance(lens);
-			listSizes.put(pair, new Quad<>(min, median, var, max));
+			listSizes.put(pair, new SiblingListStats(n, min, median, var, max));
 		}
 		return listSizes;
 	}

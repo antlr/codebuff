@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.WritableToken;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;
@@ -38,6 +39,12 @@ public class Formatter {
 	public static final int COL_ALARM_THRESHOLD = 80;
 
 	protected final Corpus corpus;
+
+	/** injection[i] is whitespace ('\n', ' ') that should be injected before
+	 *  emitting token i. Primary output mechanism.
+	 */
+	protected String[] injection;
+
 	protected StringBuilder output = new StringBuilder();
 	protected InputDocument doc;
 	protected ParserRuleContext root;
@@ -71,6 +78,11 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens); // all except for first token
+		injection = new String[tokens.size()];
+		for (int i = 0; i<injection.length; i++) {
+			injection[i] = "";
+			injection[i] = null;
+		}
 		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
@@ -101,12 +113,32 @@ public class Formatter {
 		line = Tool.count(prefix, '\n') + 1;
 		output.append(prefix);
 
+		// first identify oversize lists with separators
+		SplitOversizeLists splitter = new SplitOversizeLists(corpus, injection);
+		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
+
 		realTokens = getRealTokens(tokens);
-		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 2 tokens
+
+		System.out.println(prefix + getOutput(realTokens, injection));
+
+		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(i, tokenIndexInStream);
 		}
-		return output.toString();
+		return prefix + getOutput(realTokens, injection);
+	}
+
+	public static String getOutput(List<Token> tokens, String[] injection) {
+		StringBuilder buf = new StringBuilder();
+		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) {
+			Token t = tokens.get(i);
+			int tokenIndexInStream = t.getTokenIndex();
+			if ( injection[tokenIndexInStream]!=null ) {
+				buf.append(injection[tokenIndexInStream]);
+			}
+			buf.append(t.getText());
+		}
+		return buf.toString();
 	}
 
 	public void processToken(int indexIntoRealTokens, int tokenIndexInStream) {
@@ -137,6 +169,9 @@ public class Formatter {
 
 		if ( newlines>0 ) {
 			output.append(Tool.newlines(newlines));
+			if ( injection[tokenIndexInStream]==null ) {
+				injection[tokenIndexInStream] = Tool.newlines(newlines);
+			}
 			line+=newlines;
 			charPosInLine = 0;
 
@@ -159,6 +194,7 @@ public class Formatter {
 					int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
 					charPosInLine = indentedCol;
 					output.append(Tool.spaces(indentedCol));
+					injection[tokenIndexInStream] += Tool.spaces(indentedCol);
 				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
@@ -188,6 +224,7 @@ public class Formatter {
 					int indentCol = start.getCharPositionInLine();
 					charPosInLine = indentCol;
 					output.append(Tool.spaces(indentCol));
+					injection[tokenIndexInStream] += Tool.spaces(indentCol);
 				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
@@ -217,12 +254,16 @@ public class Formatter {
 					int indentCol = start.getCharPositionInLine()+INDENT_LEVEL;
 					charPosInLine = indentCol;
 					output.append(Tool.spaces(indentCol));
+					injection[tokenIndexInStream] += Tool.spaces(indentCol);
 				}
 			}
 		}
 		else {
 			// inject whitespace instead of \n?
 			output.append(Tool.spaces(ws));
+			if ( injection[tokenIndexInStream]==null ) {
+				injection[tokenIndexInStream] = Tool.spaces(ws);
+			}
 			charPosInLine += ws;
 		}
 
@@ -278,6 +319,7 @@ public class Formatter {
 				for (Token hidden : stripped) {
 					String hiddenText = hidden.getText();
 					output.append(hiddenText);
+					injection[tokenIndexInStream] += hiddenText;
 					if ( hiddenText.matches("\\n+") ) {
 						line += Tool.count(hiddenText, '\n');
 						charPosInLine = 0;

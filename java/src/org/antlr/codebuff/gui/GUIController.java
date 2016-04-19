@@ -50,8 +50,8 @@ public class GUIController {
 		realFormattedTokens = CollectFeatures.getRealTokens(formatted_tokens);
 
 		// show spaces as dots
-		originalText = originalText.replace(' ','\u00B7');
-		formattedText = formattedText.replace(' ','\u00B7');
+//		originalText = originalText.replace(' ','\u00B7');
+//		formattedText = formattedText.replace(' ','\u00B7');
 
 		// set text and font
 		Font docFont = new Font("Monaco", Font.PLAIN, 14);

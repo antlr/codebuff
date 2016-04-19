@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
-import org.antlr.codebuff.misc.Quad;
+import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.misc.Triple;
@@ -30,7 +31,9 @@ public class Corpus {
 	Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
 
 	Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
-	Map<Quad<Integer, Integer, Integer, Integer>, Quad<Integer,Integer,Double,Integer>> rootAndChildListPairs;
+	Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats;
+	Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats;
+	Map<ParentSiblingListKey, Integer> splitListForms;
 	Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators;
 
 	public Corpus(List<InputDocument> documents,

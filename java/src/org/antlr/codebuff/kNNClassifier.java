@@ -59,7 +59,7 @@ public abstract class kNNClassifier {
 		return cat;
 	}
 
-	public int getCategoryWithMostVotes(HashBag<Integer> votes) {
+	public static int getCategoryWithMostVotes(HashBag<Integer> votes) {
 		int max = Integer.MIN_VALUE;
 		int catWithMostVotes = 0;
 		for (Integer category : votes.keySet()) {
