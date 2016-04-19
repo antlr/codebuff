@@ -140,7 +140,7 @@ public class CollectFeatures {
 	public static FeatureMetaData[] FEATURES_ALIGN = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
@@ -271,6 +271,8 @@ public class CollectFeatures {
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
 	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
 		int aligned = CAT_NO_ALIGNMENT;
+		Pair<Integer,Integer> alignInfo = null;
+		Pair<Integer,Integer> indentInfo = null;
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
@@ -278,13 +280,16 @@ public class CollectFeatures {
 			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, curToken.getCharPositionInLine());
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
+			alignInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
 			aligned = aligncat(deltaFromLeftAncestor, pair.b);
 //			System.out.printf("ALIGN %s %s i=%d %x %s\n",
 //			                  curToken,
 //			                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
 //			                  pair.b, aligned, doc.fileName);
  		}
-		else if ( columnDelta!=0 ) {
+
+		// perhaps we are indented as well?
+		if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-Formatter.INDENT_LEVEL;
 			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
 			if ( pair!=null ) {
@@ -294,13 +299,31 @@ public class CollectFeatures {
 //				                  pair.b, aligned, doc.fileName);
 				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 				aligned = indentcat(deltaFromLeftAncestor, pair.b);
-			}
-			else {
-				aligned = CAT_INDENT; // indent standard amount
+				indentInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
 			}
 		}
 
-		return aligned;
+		// If both align and indent from ancestor child exist, choose closest (lowest delta up tree)
+		if ( alignInfo!=null && indentInfo!=null ) {
+			if ( alignInfo.a < indentInfo.a ) {
+				return aligncat(alignInfo.a, alignInfo.b);
+			}
+			return indentcat(indentInfo.a, indentInfo.b);
+		}
+
+		// otherwise just return the align or indent we computed
+		if ( alignInfo!=null ) {
+			return aligncat(alignInfo.a, alignInfo.b);
+		}
+		else if ( indentInfo!=null ) {
+			return indentcat(indentInfo.a, indentInfo.b);
+		}
+
+		if ( columnDelta!=0 ) {
+			return CAT_INDENT; // indent standard amount
+		}
+
+		return CAT_NO_ALIGNMENT;
 	}
 
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
