@@ -145,7 +145,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
+		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
@@ -995,10 +995,15 @@ public class CollectFeatures {
 				// are we first separator?
 				List<TerminalNode> siblings =
 					((ParserRuleContext)parent).getTokens(node.getSymbol().getType());
-				if ( siblings.indexOf(t)==0 ) {
-					return 0;
+				if ( siblings.size()>1 ) {
+					if ( siblings.indexOf(t)==0 ) {
+						return 0;
+					}
+					if ( siblings.indexOf(t)>0 ) {
+						// 2nd and beyond separator get "I'm a list member" index
+						return CHILD_INDEX_LIST_ELEMENT;
+					}
 				}
-				return CHILD_INDEX_LIST_ELEMENT; // 2nd and beyond separator get "I'm a list member" index
 			}
 			// if token node but not a separator, then allow it to give actual index.
 		}

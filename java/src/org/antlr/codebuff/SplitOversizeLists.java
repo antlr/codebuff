@@ -99,19 +99,19 @@ public class SplitOversizeLists implements ParseTreeListener {
 								int ti = r.getStart().getTokenIndex();
 								injection[ti] = "\n";
 							});
-							separators.forEach(t -> {
-								int ti = ((Token) t.getPayload()).getTokenIndex();
-								injection[ti] = ""; // mark injections for separators as done
-							});
+//							separators.forEach(t -> {
+//								int ti = ((Token) t.getPayload()).getTokenIndex();
+//								injection[ti] = ""; // mark injections for separators as done (don't allow next phase to inject '\n' before separator)
+//							});
 						}
 					}
-					else {
-						// mark as already done so next phase doesn't try to inject a newline
-						separators.forEach(t -> {
-							int ti = ((Token)t.getPayload()).getTokenIndex();
-							injection[ti] = "";
-						});
-					}
+//					else {
+//						// mark as already done so next phase doesn't try to inject a newline
+//						separators.forEach(t -> {
+//							int ti = ((Token)t.getPayload()).getTokenIndex();
+//							injection[ti] = "";
+//						});
+//					}
 				}
 			}
 		}

@@ -87,8 +87,8 @@ public class Formatter {
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
 //		k = 7;
-//		k = 11;
-		k = 29;
+		k = 11;
+//		k = 29;
 		this.tabSize = tabSize;
 		this.collectAnalysis = collectAnalysis;
 	}
