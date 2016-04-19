@@ -121,11 +121,15 @@ public class Formatter {
 
 		System.out.println(prefix + getOutput(realTokens, injection));
 
+		injectWhitespace();
+		System.out.println("------------");
+		System.out.println(prefix + getOutput(realTokens, injection));
+
 		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(i, tokenIndexInStream);
 		}
-		return prefix + getOutput(realTokens, injection);
+		return output.toString();
 	}
 
 	public static String getOutput(List<Token> tokens, String[] injection) {
@@ -141,6 +145,44 @@ public class Formatter {
 		return buf.toString();
 	}
 
+	public void injectWhitespace() {
+		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
+			int indexIntoRealTokens = i;
+			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
+
+			CommonToken curToken = (CommonToken) tokens.get(tokenIndexInStream);
+
+			if ( injection[tokenIndexInStream]!=null ) {
+				// we have already decided what to do here
+				continue;
+			}
+
+			int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
+
+			int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_WS_CONTEXT_DIFF_THRESHOLD);
+			int newlines = 0;
+			int ws = 0;
+			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
+				newlines = CollectFeatures.unnlcat(injectNL_WS);
+			}
+			else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
+				ws = CollectFeatures.unwscat(injectNL_WS);
+			}
+
+			if ( newlines==0 && ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
+				ws = 1;
+			}
+
+			if ( newlines>0 ) {
+				injection[tokenIndexInStream] = Tool.newlines(newlines);
+			}
+			else {
+				// inject whitespace instead of \n?
+				injection[tokenIndexInStream] = Tool.spaces(ws);
+			}
+		}
+	}
+
 	public void processToken(int indexIntoRealTokens, int tokenIndexInStream) {
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
 		String tokText = curToken.getText();
@@ -148,30 +190,20 @@ public class Formatter {
 
 		emitCommentsToTheLeft(tokenIndexInStream);
 
-		int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
-		int[] featuresForAlign = new int[features.length];
-
-		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_WS_CONTEXT_DIFF_THRESHOLD);
+		String injectedWS = injection[curToken.getTokenIndex()];
 		int newlines = 0;
 		int ws = 0;
-		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
-			newlines = CollectFeatures.unnlcat(injectNL_WS);
-		}
-		else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
-			ws = CollectFeatures.unwscat(injectNL_WS);
-		}
-
-		if ( newlines==0 && ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
-			ws = 1;
+		if ( injectedWS!=null ) {
+			newlines = Tool.count(injectedWS, '\n');
+			ws = Tool.count(injectedWS, ' ');
 		}
 
 		int alignOrIndent = CAT_NO_ALIGNMENT;
 
+		int[] featuresForAlign = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
+
 		if ( newlines>0 ) {
 			output.append(Tool.newlines(newlines));
-			if ( injection[tokenIndexInStream]==null ) {
-				injection[tokenIndexInStream] = Tool.newlines(newlines);
-			}
 			line+=newlines;
 			charPosInLine = 0;
 
@@ -181,9 +213,8 @@ public class Formatter {
 				firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
 			}
 
-			System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 			// getNodeFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
-			featuresForAlign[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
+			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
 
@@ -194,7 +225,6 @@ public class Formatter {
 					int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
 					charPosInLine = indentedCol;
 					output.append(Tool.spaces(indentedCol));
-					injection[tokenIndexInStream] += Tool.spaces(indentedCol);
 				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
@@ -224,7 +254,6 @@ public class Formatter {
 					int indentCol = start.getCharPositionInLine();
 					charPosInLine = indentCol;
 					output.append(Tool.spaces(indentCol));
-					injection[tokenIndexInStream] += Tool.spaces(indentCol);
 				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
@@ -254,16 +283,12 @@ public class Formatter {
 					int indentCol = start.getCharPositionInLine()+INDENT_LEVEL;
 					charPosInLine = indentCol;
 					output.append(Tool.spaces(indentCol));
-					injection[tokenIndexInStream] += Tool.spaces(indentCol);
 				}
 			}
 		}
 		else {
 			// inject whitespace instead of \n?
 			output.append(Tool.spaces(ws));
-			if ( injection[tokenIndexInStream]==null ) {
-				injection[tokenIndexInStream] = Tool.spaces(ws);
-			}
 			charPosInLine += ws;
 		}
 
@@ -274,10 +299,10 @@ public class Formatter {
 
 		TokenPositionAnalysis tokenPositionAnalysis;
 		if ( collectAnalysis ) {
-			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
+			tokenPositionAnalysis = getTokenAnalysis(featuresForAlign, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, -1, alignOrIndent);
 		}
 		else {
-			tokenPositionAnalysis = new TokenPositionAnalysis(curToken, injectNL_WS, "", alignOrIndent, "");
+			tokenPositionAnalysis = new TokenPositionAnalysis(curToken, -1, "", alignOrIndent, "");
 		}
 		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
@@ -319,7 +344,6 @@ public class Formatter {
 				for (Token hidden : stripped) {
 					String hiddenText = hidden.getText();
 					output.append(hiddenText);
-					injection[tokenIndexInStream] += hiddenText;
 					if ( hiddenText.matches("\\n+") ) {
 						line += Tool.count(hiddenText, '\n');
 						charPosInLine = 0;
