@@ -6,32 +6,26 @@ import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.Tree;
-import org.antlr.v4.runtime.tree.Trees;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /** [USED IN TRAINING ONLY]
  *  Find subtree roots with repeated child rule subtrees and separators.
  *  Track oversize and regular lists are sometimes treated differently, such as
  *  formal arg lists in Java. Sometimes they are split across lines.
  */
-public class CollectSiblingLists implements ParseTreeListener {
+public class CollectSiblingLists extends VisitSiblingLists {
 	/** Track set of (parent:alt,child:alt) list pairs and their min,median,variance,max
 	 *  but only if the list is all on one line and has a separator.
 	 */
 	public Map<ParentSiblingListKey, List<Integer>> listInfo = new HashMap<>();
+
 	/** Track set of (parent:alt,child:alt) list pairs and their min,median,variance,max
 	 *  but only if the list is split with at least one '\n' before/after
 	 *  a separator.
@@ -40,6 +34,8 @@ public class CollectSiblingLists implements ParseTreeListener {
 
 	public Map<ParentSiblingListKey, List<Integer>> splitListForm = new HashMap<>();
 
+	public int[] listElementTypes ;
+
 	CodeBuffTokenStream tokens;
 
 	// reuse object so the maps above fill from multiple files during training
@@ -47,52 +43,16 @@ public class CollectSiblingLists implements ParseTreeListener {
 		this.tokens = tokens;
 	}
 
-	@Override
-	public void enterEveryRule(ParserRuleContext ctx) {
-		// Find sibling lists that are children of this parent node
-		Set<Class> completed = new HashSet<>(); // only count sibling list for each subtree type once
-		for (int i = 0; i<ctx.getChildCount(); i++) {
-			ParseTree child = ctx.getChild(i);
-
-			if ( completed.contains(child.getClass()) ) continue; // avoid counting repeatedly
-			completed.add(child.getClass());
-
-			if ( child instanceof ParserRuleContext ) { // found subtree child
-				List<? extends ParserRuleContext> siblings =
-					ctx.getRuleContexts(((ParserRuleContext)child).getClass());
-				if ( siblings.size()>1 ) { // we found a non-singleton list
-					// check for separator by looking between first two siblings (assume all are same)
-					ParserRuleContext first = siblings.get(0);
-					ParserRuleContext second = siblings.get(1);
-
-					List<Tree> children = Trees.getChildren(ctx);
-					int firstIndex = children.indexOf(first);
-					int secondIndex = children.indexOf(second);
-
-					if ( firstIndex+1 == secondIndex ) continue; // nothing between first and second so no separator
-
-					ParseTree between = ctx.getChild(firstIndex+1);
-					if ( between instanceof TerminalNode ) { // is it a token?
-						Token separator = ((TerminalNode)between).getSymbol();
-						processNonSingletonWithSeparator(ctx, siblings, separator);
-					}
-				}
-			}
-		}
-	}
-
-	public void processNonSingletonWithSeparator(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings, Token separator) {
+	public void visitNonSingletonWithSeparator(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings, Token separator) {
 		ParserRuleContext first = siblings.get(0);
 		ParserRuleContext last = siblings.get(siblings.size()-1);
-		Triple<Integer, Integer, Integer> key =	new Triple<>(ctx.getRuleIndex(), ctx.getAltNumber(), separator.getType());
-		// map (parent:alt,tokentype) -> (child:alt) so we can create look up key for listInfo later if we want
 		List<Token> hiddenToLeft       = tokens.getHiddenTokensToLeft(first.getStart().getTokenIndex());
 		List<Token> hiddenToLeftOfSep  = tokens.getHiddenTokensToLeft(separator.getTokenIndex());
 		List<Token> hiddenToRightOfSep = tokens.getHiddenTokensToRight(separator.getTokenIndex());
 		List<Token> hiddenToRight      = tokens.getHiddenTokensToRight(last.getStop().getTokenIndex());
 
-		Token hiddenTokenToLeft = hiddenToLeft.get(0);
-		Token hiddenTokenToRight = hiddenToRight.get(0);
+		Token hiddenTokenToLeft = hiddenToLeft!=null ? hiddenToLeft.get(0) : null;
+		Token hiddenTokenToRight = hiddenToRight!=null ? hiddenToRight.get(0) : null;
 
 		tokens.seek(first.getStart().getTokenIndex());
 		Token prefixToken = tokens.LT(-1); // e.g., '(' in an arg list or ':' in grammar def
@@ -100,7 +60,7 @@ public class CollectSiblingLists implements ParseTreeListener {
 		Token suffixToken = tokens.LT(1);  // e.g., ')' in an arg list of ';' in grammar def
 
 		int[] ws = new int[4]; // '\n' (before list, before sep, after sep, after last element)
-		if ( hiddenToLeft!=null && Tool.count(hiddenTokenToLeft.getText(), '\n')>0 ) {
+		if ( hiddenTokenToLeft!=null && Tool.count(hiddenTokenToLeft.getText(), '\n')>0 ) {
 			ws[0] = '\n';
 		}
 		if ( hiddenToLeftOfSep!=null && Tool.count(hiddenToLeftOfSep.get(0).getText(), '\n')>0 ) {
@@ -117,7 +77,7 @@ public class CollectSiblingLists implements ParseTreeListener {
 				                   JavaParser.tokenNames[separator.getType()]+
 				                   " "+separator);
 		}
-		if ( hiddenToRight!=null && Tool.count(hiddenTokenToRight.getText(), '\n')>0 ) {
+		if ( hiddenTokenToRight!=null && Tool.count(hiddenTokenToRight.getText(), '\n')>0 ) {
 			ws[3] = '\n';
 		}
 		boolean isSplitList = ws[1]=='\n' || ws[2]=='\n';
