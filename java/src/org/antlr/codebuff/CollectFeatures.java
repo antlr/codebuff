@@ -116,12 +116,12 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Col.", "alarm"}, 1),
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"List", "parent"}, 1),
-		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"List", "width"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -145,7 +145,7 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
 		FeatureMetaData.UNUSED,
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
@@ -233,7 +233,13 @@ public class CollectFeatures {
 		Token prevToken = tokens.LT(-1);
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
-		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
+		boolean prevTokenStartsLine = false;
+		if ( tokens.index()-2 >= 0 ) {
+			if ( tokens.LT(-2)!=null ) {
+				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
+			}
+		}
+		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, prevTokenStartsLine, curToken.getLine(), tabSize);
 
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
 
@@ -488,6 +494,7 @@ public class CollectFeatures {
 	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
 	                                    InputDocument doc,
 	                                    int i,
+	                                    boolean prevTokenStartsLine,
 	                                    int line,
 	                                    int tabSize)
 	{
@@ -508,14 +515,6 @@ public class CollectFeatures {
 		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(prevNode);
 		int prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
 		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
-
-///
-		/*
-		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(node, prevToken);
-		int prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
-		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
-		*/
-///
 
 		// Get context information for current token
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
@@ -591,16 +590,16 @@ public class CollectFeatures {
 		}
 
 		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
-		boolean prevTokenStartsNewLine = false;
-		if ( tokens.index()-2 >= 0 ) {
-			if ( tokens.LT(-2)!=null ) {
-				prevTokenStartsNewLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
-			}
-		}
-
+//		boolean prevTokenStartsNewLine = false;
+//		if ( tokens.index()-2 >= 0 ) {
+//			if ( tokens.LT(-2)!=null ) {
+//				prevTokenStartsNewLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
+//			}
+//		}
+//
 		int[] features = {
 			tokens.LT(-1).getType(),
-			prevTokenStartsNewLine ? 1 : 0,
+			prevTokenStartsLine ? 1 : 0,
 			rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum),
 			tokens.LT(1).getType(),
 			matchingSymbolOnDiffLine,
@@ -1101,11 +1100,22 @@ public class CollectFeatures {
 		return v >> 8 & 0xFFFF;
 	}
 
-	public static int listform(boolean nlBeforeSeparator, boolean nlAfterSeparator) {
-		return (nlBeforeSeparator ? 1 << 4 : 0) | (nlAfterSeparator ? 1 : 0) ;
+	// '\n' (before list, before sep, after sep, after last element)
+	public static int listform(int[] ws) {
+		boolean[] nl = {
+			ws[0]=='\n',
+			ws[1]=='\n',
+			ws[2]=='\n',
+			ws[3]=='\n'
+		};
+		return
+			(nl[0]?0x01000000:0) |
+			(nl[1]?0x00010000:0) |
+			(nl[2]?0x00000100:0) |
+			(nl[3]?0x00000001:0);
 	}
 
 	public static int[] unlistform(int v) {
-		return new int[] { v>>4, v & 0x0F };
+		return new int[] { v>>24&0xFF, v>>16&0xFF, v>>8&0xFF, v & 0xFF };
 	}
 }

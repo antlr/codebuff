@@ -1,7 +1,7 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.v4.runtime.CommonToken;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.WritableToken;
@@ -48,7 +48,7 @@ public class Formatter {
 	protected StringBuilder output = new StringBuilder();
 	protected InputDocument doc;
 	protected ParserRuleContext root;
-	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
+	protected CodeBuffTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
 	protected List<Token> realTokens;           // just the real tokens from tokens
 
@@ -114,7 +114,7 @@ public class Formatter {
 		output.append(prefix);
 
 		// first identify oversize lists with separators
-		SplitOversizeLists splitter = new SplitOversizeLists(corpus, injection);
+		SplitOversizeLists splitter = new SplitOversizeLists(corpus, tokens, injection);
 		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
 
 		realTokens = getRealTokens(tokens);
@@ -157,7 +157,15 @@ public class Formatter {
 				continue;
 			}
 
-			int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
+			tokens.seek(tokenIndexInStream);
+			Token prevToken = tokens.LT(-1);
+			boolean prevTokenStartsLine = false;
+			if ( injection[prevToken.getTokenIndex()]!=null ) {
+				System.out.println();
+				prevTokenStartsLine = Tool.count(injection[prevToken.getTokenIndex()], '\n')>0;
+			}
+
+			int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, prevTokenStartsLine, line, tabSize);
 
 			int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_WS_CONTEXT_DIFF_THRESHOLD);
 			int newlines = 0;
@@ -200,7 +208,14 @@ public class Formatter {
 
 		int alignOrIndent = CAT_NO_ALIGNMENT;
 
-		int[] featuresForAlign = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, line, tabSize);
+		tokens.seek(tokenIndexInStream);
+		boolean prevTokenStartsLine = false;
+		if ( tokens.index()-2 >= 0 ) {
+			if ( tokens.LT(-2)!=null ) {
+				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
+			}
+		}
+		int[] featuresForAlign = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, prevTokenStartsLine, line, tabSize);
 
 		if ( newlines>0 ) {
 			output.append(Tool.newlines(newlines));
@@ -299,7 +314,8 @@ public class Formatter {
 
 		TokenPositionAnalysis tokenPositionAnalysis;
 		if ( collectAnalysis ) {
-			tokenPositionAnalysis = getTokenAnalysis(featuresForAlign, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, -1, alignOrIndent);
+			int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, prevTokenStartsLine, line, tabSize);
+			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, -1, alignOrIndent);
 		}
 		else {
 			tokenPositionAnalysis = new TokenPositionAnalysis(curToken, -1, "", alignOrIndent, "");

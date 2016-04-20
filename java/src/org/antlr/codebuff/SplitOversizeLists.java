@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.BuffUtils;
+import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -23,9 +24,11 @@ import java.util.Set;
 public class SplitOversizeLists implements ParseTreeListener {
 	Corpus corpus;
 	String[] injection;
+	CodeBuffTokenStream tokens;
 
-	public SplitOversizeLists(Corpus corpus, String[] injection) {
+	public SplitOversizeLists(Corpus corpus, CodeBuffTokenStream tokens, String[] injection) {
 		this.corpus = corpus;
+		this.tokens = tokens;
 		this.injection = injection;
 	}
 
@@ -47,7 +50,7 @@ public class SplitOversizeLists implements ParseTreeListener {
 				// check for separator by looking between first two siblings (assume all are same)
 				ParserRuleContext first = siblings.get(0);
 				ParserRuleContext second = siblings.get(1);
-				ParserRuleContext lastSibling = siblings.get(siblings.size()-1);
+				ParserRuleContext last = siblings.get(siblings.size()-1);
 				List<Tree> children = Trees.getChildren(ctx);
 
 				int firstIndex = children.indexOf(first);
@@ -80,21 +83,24 @@ public class SplitOversizeLists implements ParseTreeListener {
 						                   "' len="+len+" stats="+stats+" splitstats="+splitStats+" oversize="+oversize);
 					// find all separators
 					int start = BuffUtils.indexOf(ctx, first);
-					int end = BuffUtils.indexOf(ctx, lastSibling);
+					int end = BuffUtils.indexOf(ctx, last);
 
 					List<Tree> elements = children.subList(start, end+1);
 					List<Tree> separators = BuffUtils.filter(elements, c -> c instanceof TerminalNode);
 					if ( oversize ) {
-						// inject newline before or after depending on most common pattern
+						// inject newline before or after separator and before/after list depending on most common pattern
 						Integer formI = corpus.splitListForms.get(pair);
 						int[] form = CollectFeatures.unlistform(formI);
-						if ( form[0]!=0 ) { // before separator
+						if ( form[0]!=0 ) { // before first element in list
+							injection[first.getStart().getTokenIndex()] = "\n";
+						}
+						if ( form[1]!=0 ) { // before separator
 							separators.forEach(t -> {
 								int ti = ((Token) t.getPayload()).getTokenIndex();
 								injection[ti] = "\n";
 							});
 						}
-						else if ( form[1]!=0 ) { // after separator, meaning right before sibling elements (except first element)
+						if ( form[2]!=0 ) { // after separator, meaning right before sibling elements (except first element)
 							siblings.subList(1,siblings.size()).forEach(r -> {
 								int ti = r.getStart().getTokenIndex();
 								injection[ti] = "\n";
@@ -103,6 +109,13 @@ public class SplitOversizeLists implements ParseTreeListener {
 //								int ti = ((Token) t.getPayload()).getTokenIndex();
 //								injection[ti] = ""; // mark injections for separators as done (don't allow next phase to inject '\n' before separator)
 //							});
+						}
+						if ( form[3]!=0 ) { // after last element in list
+							int indexOfTokenAfterList = last.getStop().getTokenIndex()+1;
+							List<Token> nextRealToken = tokens.getRealTokens(indexOfTokenAfterList, indexOfTokenAfterList);
+							if ( nextRealToken!=null ) {
+								injection[nextRealToken.get(0).getTokenIndex()] = "\n";
+							}
 						}
 					}
 //					else {

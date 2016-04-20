@@ -80,66 +80,68 @@ public class CollectSiblingLists implements ParseTreeListener {
 
 					if ( firstIndex+1 == secondIndex ) continue; // nothing between first and second so no separator
 
-					int form = -1;
 					ParseTree between = ctx.getChild(firstIndex+1);
 					if ( between instanceof TerminalNode ) { // is it a token?
 						Token separator = ((TerminalNode)between).getSymbol();
-						Triple<Integer, Integer, Integer> key =
-							new Triple<>(ctx.getRuleIndex(), ctx.getAltNumber(), separator.getType());
-						// map (parent:alt,tokentype) -> (child:alt) so we can create look up key for listInfo later if we want
-						listSeparators.put(key, first.getClass());
-						List<Token> hiddenToLeft = tokens.getHiddenTokensToLeft(separator.getTokenIndex());
-						List<Token> hiddenToRight = tokens.getHiddenTokensToRight(separator.getTokenIndex());
-						if ( hiddenToLeft!=null ) {
-							Token left = hiddenToLeft.get(0);
-							String hiddenText = left.getText();
-							if ( Tool.count(hiddenText, '\n')>0 ) {
-								form = CollectFeatures.listform(true, false);
-								System.out.println("BEFORE "+JavaParser.ruleNames[ctx.getRuleIndex()]+
-									                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
-									                   JavaParser.tokenNames[separator.getType()]+
-									                   " "+separator);
-							}
-						}
-						else if ( hiddenToRight!=null ) {
-							Token right = hiddenToRight.get(0);
-							String hiddenText = right.getText();
-							if ( Tool.count(hiddenText, '\n')>0 ) {
-								form = CollectFeatures.listform(false, true);
-								System.out.println("AFTER "+JavaParser.ruleNames[ctx.getRuleIndex()]+
-									                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
-									                   JavaParser.tokenNames[separator.getType()]+
-									                   " "+separator);
-							}
-						}
-
-						// now track length of parent:alt,child:alt list or split-list
-						ParentSiblingListKey pair = new ParentSiblingListKey(ctx, first, separator.getType());
-						List<Integer> lens;
-						if ( form==-1 ) {
-							lens = listInfo.get(pair);
-							if ( lens==null ) {
-								lens = new ArrayList<>();
-								listInfo.put(pair, lens);
-							}
-						}
-						else {
-							lens = splitListInfo.get(pair);
-							if ( lens==null ) {
-								lens = new ArrayList<>();
-								splitListInfo.put(pair, lens);
-							}
-							List<Integer> forms = splitListForm.get(pair);
-							if ( forms==null ) {
-								forms = new ArrayList<>();
-								splitListForm.put(pair, forms);
-							}
-							forms.add(form); // track where we put newlines for this list
-						}
-						lens.add(CollectFeatures.getSiblingsLength(siblings));
+						processNonSingletonWithSeparator(ctx, siblings, separator);
 					}
 				}
 			}
+		}
+	}
+
+	public void processNonSingletonWithSeparator(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings, Token separator) {
+		ParserRuleContext first = siblings.get(0);
+		ParserRuleContext last = siblings.get(siblings.size()-1);
+		Triple<Integer, Integer, Integer> key =	new Triple<>(ctx.getRuleIndex(), ctx.getAltNumber(), separator.getType());
+		// map (parent:alt,tokentype) -> (child:alt) so we can create look up key for listInfo later if we want
+		listSeparators.put(key, first.getClass());
+		List<Token> hiddenToLeft       = tokens.getHiddenTokensToLeft(first.getStart().getTokenIndex());
+		List<Token> hiddenToLeftOfSep  = tokens.getHiddenTokensToLeft(separator.getTokenIndex());
+		List<Token> hiddenToRightOfSep = tokens.getHiddenTokensToRight(separator.getTokenIndex());
+		List<Token> hiddenToRight      = tokens.getHiddenTokensToRight(last.getStop().getTokenIndex());
+		int[] ws = new int[4]; // '\n' (before list, before sep, after sep, after last element)
+		if ( hiddenToLeft!=null && Tool.count(hiddenToLeft.get(0).getText(), '\n')>0 ) {
+			ws[0] = '\n';
+		}
+		if ( hiddenToLeftOfSep!=null && Tool.count(hiddenToLeftOfSep.get(0).getText(), '\n')>0 ) {
+			ws[1] = '\n';
+			System.out.println("BEFORE "+JavaParser.ruleNames[ctx.getRuleIndex()]+
+				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
+				                   JavaParser.tokenNames[separator.getType()]+
+				                   " "+separator);
+		}
+		if ( hiddenToRightOfSep!=null && Tool.count(hiddenToRightOfSep.get(0).getText(), '\n')>0 ) {
+			ws[2] = '\n';
+			System.out.println("AFTER "+JavaParser.ruleNames[ctx.getRuleIndex()]+
+				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
+				                   JavaParser.tokenNames[separator.getType()]+
+				                   " "+separator);
+		}
+		if ( hiddenToRight!=null && Tool.count(hiddenToRight.get(0).getText(), '\n')>0 ) {
+			ws[3] = '\n';
+		}
+		boolean isSplitList = ws[1]=='\n' || ws[2]=='\n';
+
+		// now track length of parent:alt,child:alt list or split-list
+		ParentSiblingListKey pair = new ParentSiblingListKey(ctx, first, separator.getType());
+		Map<ParentSiblingListKey, List<Integer>> info = isSplitList ? splitListInfo : listInfo;
+		List<Integer> lens = info.get(pair);
+		if ( lens==null ) {
+			lens = new ArrayList<>();
+			info.put(pair, lens);
+		}
+		lens.add(CollectFeatures.getSiblingsLength(siblings));
+
+		// track the form split lists take
+		if ( isSplitList ) {
+			int form = CollectFeatures.listform(ws);
+			List<Integer> forms = splitListForm.get(pair);
+			if ( forms==null ) {
+				forms = new ArrayList<>();
+				splitListForm.put(pair, forms);
+			}
+			forms.add(form); // track where we put newlines for this list
 		}
 	}
 
