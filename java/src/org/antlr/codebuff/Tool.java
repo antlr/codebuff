@@ -16,7 +16,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.File;
@@ -210,8 +209,6 @@ public class Tool {
 		Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats =
 			collectSiblingLists.getSplitListStats();
 		Map<ParentSiblingListKey, Integer> splitListForms = collectSiblingLists.getSplitListForms();
-		Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators =
-			collectSiblingLists.getListSeparators();
 
 		if ( false ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
@@ -244,18 +241,9 @@ public class Tool {
 			}
 		}
 
-		if ( false ) {
-			for (Triple<Integer, Integer, Integer> ruleAltTokenTuple : listSeparators.keySet()) {
-				String parent = ruleNames[ruleAltTokenTuple.a];
-				parent = parent.replace("Context","");
-				System.out.println(parent+":"+ruleAltTokenTuple.b+","+vocab.getDisplayName(ruleAltTokenTuple.c)+
-				                  "->"+listSeparators.get(ruleAltTokenTuple).getSimpleName());
-			}
-		}
-
 		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag,
 		                                  rootAndChildListStats, rootAndSplitChildListStats,
-		                                  splitListForms, listSeparators);
+		                                  splitListForms);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
@@ -266,8 +254,7 @@ public class Tool {
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats,
-										   Map<ParentSiblingListKey, Integer> splitListForms,
-										   Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators)
+										   Map<ParentSiblingListKey, Integer> splitListForms)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
@@ -279,7 +266,6 @@ public class Tool {
 		corpus.rootAndChildListStats = rootAndChildListStats;
 		corpus.rootAndSplitChildListStats = rootAndSplitChildListStats;
 		corpus.splitListForms = splitListForms;
-		corpus.listSeparators = listSeparators;
 
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
