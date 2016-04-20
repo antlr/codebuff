@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.WritableToken;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -24,9 +25,7 @@ import static org.antlr.codebuff.Trainer.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.Trainer.FEATURES_ALIGN;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.Trainer.INDEX_FIRST_ON_LINE;
-import static org.antlr.codebuff.Trainer.INDEX_LIST_ELEMENT_TYPE;
 import static org.antlr.codebuff.Trainer.INDEX_MATCHING_TOKEN_DIFF_LINE;
-import static org.antlr.codebuff.Trainer.INDEX_MEMBER_OVERSIZE_LIST;
 import static org.antlr.codebuff.Trainer.INDEX_PREV_FIRST_ON_LINE;
 import static org.antlr.codebuff.Trainer.MAX_ALIGN_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD;
@@ -36,6 +35,7 @@ import static org.antlr.codebuff.Trainer.getMatchingSymbolOnDiffLine;
 import static org.antlr.codebuff.Trainer.getRealTokens;
 import static org.antlr.codebuff.Trainer.getTokensOnPreviousLine;
 import static org.antlr.codebuff.Trainer.indexTree;
+import static org.antlr.codebuff.Trainer.setListInfoFeatures;
 
 public class Formatter {
 	public static final int INDENT_LEVEL = 4;
@@ -59,6 +59,9 @@ public class Formatter {
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	protected Vector<TokenPositionAnalysis> analysis = new Vector<>();
+
+	/** Collected for formatting (not training) by SplitOversizeLists */
+	protected Map<Token,Pair<Boolean,Integer>> tokenToListInfo;
 
 	protected CodekNNClassifier nlwsClassifier;
 	protected CodekNNClassifier alignClassifier;
@@ -120,6 +123,7 @@ public class Formatter {
 		// first identify oversize lists with separators
 		SplitOversizeLists splitter = new SplitOversizeLists(corpus, tokens, injection);
 		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
+		tokenToListInfo = splitter.tokenToListInfo;
 
 		realTokens = getRealTokens(tokens);
 
@@ -218,6 +222,7 @@ public class Formatter {
 				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
 			}
 		}
+
 		int[] featuresForAlign = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
 
 		if ( newlines>0 ) {
@@ -353,16 +358,13 @@ public class Formatter {
 
 		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
 
-		boolean isOversizeList = false;
-		int listElementType = -1;
-
 		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
+
+		setListInfoFeatures(tokenToListInfo, features, curToken);
 
 		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
 		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
 		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
-		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList ? 1 : 0;
-		features[INDEX_LIST_ELEMENT_TYPE]        = listElementType;
 
 		return features;
 	}

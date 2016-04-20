@@ -14,7 +14,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +25,8 @@ import java.util.Map;
  *  Find subtree roots with repeated child rule subtrees and separators.
  *  Track oversize and regular lists are sometimes treated differently, such as
  *  formal arg lists in Java. Sometimes they are split across lines.
+ *
+ *  A single instance is shared across all training docs to collect complete info.
  */
 public class CollectSiblingLists extends VisitSiblingLists {
 	/** Track set of (parent:alt,child:alt) list pairs and their min,median,variance,max
@@ -41,10 +42,8 @@ public class CollectSiblingLists extends VisitSiblingLists {
 
 	public Map<ParentSiblingListKey, List<Integer>> splitListForm = new HashMap<>();
 
-	/** Map token to ("is oversize", element type). Used to compute feature
-	 *  vector.
-	 */
-	Map<Token,Pair<Boolean,Integer>> tokenToListInfo = new HashMap<>();
+	/** Map token to ("is oversize", element type). Used to compute feature vector. */
+	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo = new HashMap<>();
 
 	CodeBuffTokenStream tokens;
 
@@ -108,26 +107,8 @@ public class CollectSiblingLists extends VisitSiblingLists {
 			forms.add(form); // track where we put newlines for this list
 		}
 
-		// identify the various tokens re list membership
-
-		tokens.seek(first.getStart().getTokenIndex());
-		Token prefixToken = tokens.LT(-1); // e.g., '(' in an arg list or ':' in grammar def
-		tokenToListInfo.put(prefixToken, new Pair<>(isSplitList, Trainer.LIST_PREFIX));
-
-		List<Tree> separators = getSeparators(ctx, siblings);
-		for (Tree s : separators) {
-			tokenToListInfo.put((Token)s.getPayload(), new Pair<>(isSplitList, Trainer.LIST_SEPARATOR));
-		}
-
-		// handle sibling members
-		tokenToListInfo.put(first.getStart(), new Pair<>(isSplitList, Trainer.LIST_FIRST_ELEMENT));
-		for (ParserRuleContext s : siblings.subList(1,siblings.size())) {
-			tokenToListInfo.put(s.getStart(), new Pair<>(isSplitList, Trainer.LIST_MEMBER));
-		}
-
-		tokens.seek(last.getStop().getTokenIndex());
-		Token suffixToken = tokens.LT(2);  // e.g., LT(1) is last token of list; LT(2) is ')' in an arg list of ';' in grammar def
-		tokenToListInfo.put(suffixToken, new Pair<>(isSplitList, Trainer.LIST_SUFFIX));
+		Map<Token, Pair<Boolean, Integer>> tokenInfo = getInfoAboutListTokens(ctx, tokens, siblings, isSplitList);
+		tokenToListInfo.putAll(tokenInfo);
 	}
 
 	public Map<ParentSiblingListKey, Integer> getSplitListForms() {

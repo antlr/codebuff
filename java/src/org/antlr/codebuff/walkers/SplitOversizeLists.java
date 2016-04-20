@@ -9,11 +9,13 @@ import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.Tree;
-import org.antlr.v4.runtime.tree.Trees;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** [USED IN FORMATTING ONLY]
  *  Walk tree and inject newlines where needed, before or after lists
@@ -23,6 +25,9 @@ public class SplitOversizeLists extends VisitSiblingLists {
 	Corpus corpus;
 	String[] injection;
 	CodeBuffTokenStream tokens;
+
+	/** Map token to ("is oversize", element type). Used to compute feature vector. */
+	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo = new HashMap<>();
 
 	public SplitOversizeLists(Corpus corpus, CodeBuffTokenStream tokens, String[] injection) {
 		this.corpus = corpus;
@@ -36,15 +41,11 @@ public class SplitOversizeLists extends VisitSiblingLists {
 	{
 		ParserRuleContext first = siblings.get(0);
 		ParserRuleContext last = siblings.get(siblings.size()-1);
-		List<Tree> children = Trees.getChildren(ctx);
 		ParentSiblingListKey pair = new ParentSiblingListKey(ctx, first, separator.getType());
 		SiblingListStats stats = corpus.rootAndChildListStats.get(pair);
 		SiblingListStats splitStats = corpus.rootAndSplitChildListStats.get(pair);
-		// Either:
-		// a) we've only seen as a split list
-		// b) we've seen as both list and split list: if len closer to split median, decide it's oversize
 		int len = Trainer.getSiblingsLength(siblings);
-		boolean oversize = Trainer.isOversizeList(corpus, ctx, siblings, separator);
+		boolean oversize = isOversizeList(ctx, siblings, separator);
 		System.out.println((oversize?"   ":"")+
 			                   "SPLIT "+JavaParser.ruleNames[ctx.getRuleIndex()]+
 			                   "->"+JavaParser.ruleNames[first.getRuleIndex()]+" sep "+
@@ -80,6 +81,31 @@ public class SplitOversizeLists extends VisitSiblingLists {
 				}
 			}
 		}
+
+		Map<Token, Pair<Boolean, Integer>> tokenInfo = getInfoAboutListTokens(ctx, tokens, siblings, oversize);
+		tokenToListInfo.putAll(tokenInfo);
 	}
 
+	/** Return true if we've only seen parent-sibling-separator combo as a split list.
+	 *  Return true if we've seen that combo as both list and split list AND
+	 *  len of all siblings is closer to split median than to regular nonsplit median.
+	 */
+	public boolean isOversizeList(ParserRuleContext ctx,
+	                              List<? extends ParserRuleContext> siblings,
+	                              Token separator)
+	{
+		ParserRuleContext first = siblings.get(0);
+		ParentSiblingListKey pair = new ParentSiblingListKey(ctx, first, separator.getType());
+		SiblingListStats stats = corpus.rootAndChildListStats.get(pair);
+		SiblingListStats splitStats = corpus.rootAndSplitChildListStats.get(pair);
+		boolean oversize = stats==null && splitStats!=null;
+
+		int len = Trainer.getSiblingsLength(siblings);
+		if ( stats!=null&&splitStats!=null &&
+			Math.abs(splitStats.median-len) < Math.abs(stats.median-len) )
+		{
+			oversize = true;
+		}
+		return oversize;
+	}
 }

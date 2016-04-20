@@ -1,8 +1,10 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.BuffUtils;
+import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -10,8 +12,10 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class VisitSiblingLists implements ParseTreeListener {
@@ -52,13 +56,46 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 	                                                    List<? extends ParserRuleContext> siblings,
 	                                                    Token separator);
 
-	public List<Tree> getSeparators(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings) {
+	public static List<Tree> getSeparators(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings) {
 		ParserRuleContext first = siblings.get(0);
 		ParserRuleContext last = siblings.get(siblings.size()-1);
 		int start = BuffUtils.indexOf(ctx, first);
 		int end = BuffUtils.indexOf(ctx, last);
 		List<Tree> elements = Trees.getChildren(ctx).subList(start, end+1);
 		return BuffUtils.filter(elements, c -> c instanceof TerminalNode);
+	}
+
+	/** Return map for the various tokens related to this list re list membership */
+	public static Map<Token,Pair<Boolean,Integer>> getInfoAboutListTokens(ParserRuleContext ctx,
+	                                                                      CodeBuffTokenStream tokens,
+	                                                                      List<? extends ParserRuleContext> siblings,
+	                                                                      boolean isOversizeList)
+	{
+		Map<Token,Pair<Boolean,Integer>> tokenToListInfo = new HashMap<>();
+
+		ParserRuleContext first = siblings.get(0);
+		ParserRuleContext last = siblings.get(siblings.size()-1);
+
+		tokens.seek(first.getStart().getTokenIndex());
+		Token prefixToken = tokens.LT(-1); // e.g., '(' in an arg list or ':' in grammar def
+		tokenToListInfo.put(prefixToken, new Pair<>(isOversizeList, Trainer.LIST_PREFIX));
+
+		List<Tree> separators = getSeparators(ctx, siblings);
+		for (Tree s : separators) {
+			tokenToListInfo.put((Token)s.getPayload(), new Pair<>(isOversizeList, Trainer.LIST_SEPARATOR));
+		}
+
+		// handle sibling members
+		tokenToListInfo.put(first.getStart(), new Pair<>(isOversizeList, Trainer.LIST_FIRST_ELEMENT));
+		for (ParserRuleContext s : siblings.subList(1,siblings.size())) {
+			tokenToListInfo.put(s.getStart(), new Pair<>(isOversizeList, Trainer.LIST_MEMBER));
+		}
+
+		tokens.seek(last.getStop().getTokenIndex());
+		Token suffixToken = tokens.LT(2);  // e.g., LT(1) is last token of list; LT(2) is ')' in an arg list of ';' in grammar def
+		tokenToListInfo.put(suffixToken, new Pair<>(isOversizeList, Trainer.LIST_SUFFIX));
+
+		return tokenToListInfo;
 	}
 
 	@Override

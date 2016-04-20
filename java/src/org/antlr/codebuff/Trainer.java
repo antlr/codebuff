@@ -3,7 +3,6 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
-import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -503,21 +502,13 @@ public class Trainer {
 
 		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
 
-		int isOversizeList = -1;
-		int listElementType = -1;
-		Pair<Boolean, Integer> listInfo = corpus.tokenToListInfo.get(curToken);
-		if ( listInfo!=null ) {
-			isOversizeList = listInfo.a ? 1 : 0;
-			listElementType = listInfo.b;
-		}
-
 		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
+
+		setListInfoFeatures(corpus.tokenToListInfo, features, curToken);
 
 		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
 		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
 		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
-		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList; // -1 if we don't know; false means list but not big list
-		features[INDEX_LIST_ELEMENT_TYPE]        = listElementType;
 
 		return features;
 	}
@@ -576,6 +567,18 @@ public class Trainer {
 		return features;
 	}
 
+	public static void setListInfoFeatures(Map<Token,Pair<Boolean,Integer>> tokenToListInfo, int[] features, Token curToken) {
+		int isOversizeList = -1;
+		int listElementType = -1;
+		Pair<Boolean, Integer> listInfo = tokenToListInfo.get(curToken);
+		if ( listInfo!=null ) {
+			isOversizeList = listInfo.a ? 1 : 0;
+			listElementType = listInfo.b;
+		}
+		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList; // -1 if we don't know; false means list but not big list
+		features[INDEX_LIST_ELEMENT_TYPE]        = listElementType;
+	}
+
 	public static int getSiblingsLength(List<? extends ParserRuleContext> siblings) {
 		int len = 0;
 		for (ParserRuleContext sib : siblings) {
@@ -599,30 +602,6 @@ public class Trainer {
 			buf.append(sib.getText());
 		}
 		return buf.toString();
-	}
-
-	/** Return true if we've only seen parent-sibling-separator combo as a split list.
-	 *  Return true if we've seen that combo as both list and split list AND
-	 *  len of all siblings is closer to split median than to regular nonsplit median.
-	 */
-	public static boolean isOversizeList(Corpus corpus,
-	                                     ParserRuleContext ctx,
-	                                     List<? extends ParserRuleContext> siblings,
-	                                     Token separator)
-	{
-		ParserRuleContext first = siblings.get(0);
-		ParentSiblingListKey pair = new ParentSiblingListKey(ctx, first, separator.getType());
-		SiblingListStats stats = corpus.rootAndChildListStats.get(pair);
-		SiblingListStats splitStats = corpus.rootAndSplitChildListStats.get(pair);
-		boolean oversize = stats==null && splitStats!=null;
-
-		int len = getSiblingsLength(siblings);
-		if ( stats!=null&&splitStats!=null &&
-			Math.abs(splitStats.median-len) < Math.abs(stats.median-len) )
-		{
-			oversize = true;
-		}
-		return oversize;
 	}
 
 
