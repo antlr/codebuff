@@ -1,4 +1,4 @@
-package org.antlr.codebuff;
+package org.antlr.codebuff.walkers;
 
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.HashBag;

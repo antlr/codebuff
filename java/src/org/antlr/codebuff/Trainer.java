@@ -4,6 +4,7 @@ import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
+import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -11,7 +12,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.atn.ATN;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -26,7 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CollectFeatures {
+/** Collect feature vectors trained on a single file */
+public class Trainer {
 	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.10;
 	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
@@ -92,7 +93,7 @@ public class CollectFeatures {
 	public static final int INDEX_CUR_TYPE                      = 3;
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
 	public static final int INDEX_FIRST_ON_LINE		            = 5; // a \n right before this token?
-	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6;
+	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6; // -1 if we don't know; false means list but not big list
 	public static final int INDEX_LIST_ELEMENT_TYPE             = 7; // see LIST_PREFIX, etc...
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
 	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9;
@@ -189,7 +190,7 @@ public class CollectFeatures {
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<Token> realTokens;
-	protected List<int[]> features = new ArrayList<>();
+	protected List<int[]> featureVectors = new ArrayList<>();
 	protected List<Integer> injectWhitespace = new ArrayList<>();
 	protected List<Integer> align = new ArrayList<>();
 
@@ -199,8 +200,7 @@ public class CollectFeatures {
 
 	protected int tabSize;
 
-	public CollectFeatures(InputDocument doc, int tabSize)
-	{
+	public Trainer(InputDocument doc, int tabSize) {
 		this.corpus = doc.corpus;
 		this.doc = doc;
 		this.root = doc.tree;
@@ -258,9 +258,9 @@ public class CollectFeatures {
 			aligned = getAlignmentCategory(node, curToken, columnDelta);
 		}
 
-		this.align.add(aligned);
+		align.add(aligned);
 
-		this.features.add(features);
+		featureVectors.add(features);
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
@@ -503,15 +503,20 @@ public class CollectFeatures {
 
 		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
 
-		boolean isOversizeList = false;
+		int isOversizeList = -1;
 		int listElementType = -1;
+		Pair<Boolean, Integer> listInfo = corpus.tokenToListInfo.get(curToken);
+		if ( listInfo!=null ) {
+			isOversizeList = listInfo.a ? 1 : 0;
+			listElementType = listInfo.b;
+		}
 
 		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
 
 		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
 		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
 		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
-		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList ? 1 : 0;
+		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList; // -1 if we don't know; false means list but not big list
 		features[INDEX_LIST_ELEMENT_TYPE]        = listElementType;
 
 		return features;
@@ -717,25 +722,6 @@ public class CollectFeatures {
 		return childMemberOfList;
 	}
 
-	/** If current node is a separator in a list, return the first subtree root
-	 *  member of that sibling list.
-	 */
-	public static ParserRuleContext getFirstSiblingFromSeparatorNode(Corpus corpus, TerminalNode node) {
-		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-		if ( parent==null ) return null;
-		Triple<Integer, Integer, Integer> key =
-			new Triple<>(parent.getRuleIndex(), parent.getAltNumber(), node.getSymbol().getType());
-		Class<? extends ParserRuleContext> memberClass = corpus.listSeparators.get(key);
-		if ( memberClass!=null ) {
-			// separator of list so get the siblings
-			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(memberClass);
-//			if ( siblings.size()>1 ) {
-				return siblings.get(0);
-//			}
-		}
-		return null;
-	}
-
 	public static TerminalNode getMatchingLeftSymbol(InputDocument doc,
 													 TerminalNode node)
 	{
@@ -812,8 +798,8 @@ public class CollectFeatures {
 		return online;
 	}
 
-	public List<int[]> getFeatures() {
-		return features;
+	public List<int[]> getFeatureVectors() {
+		return featureVectors;
 	}
 
 	public List<Integer> getInjectWhitespace() {

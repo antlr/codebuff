@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -50,6 +51,15 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 	public abstract void visitNonSingletonWithSeparator(ParserRuleContext ctx,
 	                                                    List<? extends ParserRuleContext> siblings,
 	                                                    Token separator);
+
+	public List<Tree> getSeparators(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings) {
+		ParserRuleContext first = siblings.get(0);
+		ParserRuleContext last = siblings.get(siblings.size()-1);
+		int start = BuffUtils.indexOf(ctx, first);
+		int end = BuffUtils.indexOf(ctx, last);
+		List<Tree> elements = Trees.getChildren(ctx).subList(start, end+1);
+		return BuffUtils.filter(elements, c -> c instanceof TerminalNode);
+	}
 
 	@Override
 	public void visitTerminal(TerminalNode node) {

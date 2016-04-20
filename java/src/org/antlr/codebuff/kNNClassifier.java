@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.antlr.codebuff.CollectFeatures.MAX_CONTEXT_DIFF_THRESHOLD2;
+import static org.antlr.codebuff.Trainer.MAX_CONTEXT_DIFF_THRESHOLD2;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
@@ -23,7 +23,7 @@ public abstract class kNNClassifier {
 	public kNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES) {
 		this.corpus = corpus;
 		this.FEATURES = FEATURES;
-		assert FEATURES.length <= CollectFeatures.NUM_FEATURES;
+		assert FEATURES.length <= Trainer.NUM_FEATURES;
 		int n = 0;
 		for (FeatureMetaData FEATURE : FEATURES) {
 			n += FEATURE.mismatchCost;
@@ -83,9 +83,9 @@ public abstract class kNNClassifier {
 			votes.add(Y.get(kNN[i].corpusVectorIndex));
 		}
 		if ( dumpVotes && kNN.length>0 ) {
-			System.out.print(CollectFeatures.featureNameHeader(FEATURES));
+			System.out.print(Trainer.featureNameHeader(FEATURES));
 			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
-			System.out.println(CollectFeatures._toString(FEATURES, firstDoc, unknown)+"->"+votes);
+			System.out.println(Trainer._toString(FEATURES, firstDoc, unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
 			StringBuilder buf = new StringBuilder();
 			for (Neighbor n : kNN) {
@@ -142,12 +142,12 @@ public abstract class kNNClassifier {
 			similarities = getCategoryToSimilarityMap(kNN, k, Y);
 			cat = getCategoryWithMaxValue(similarities);
 		}
-		int[] elements = CollectFeatures.unaligncat(cat);
+		int[] elements = Trainer.unaligncat(cat);
 		String displayCat = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
 
 		StringBuilder buf = new StringBuilder();
-		buf.append(CollectFeatures.featureNameHeader(FEATURES));
-		buf.append(CollectFeatures._toString(FEATURES, doc, unknown)+"->"+similarities+" predicts "+displayCat);
+		buf.append(Trainer.featureNameHeader(FEATURES));
+		buf.append(Trainer._toString(FEATURES, doc, unknown)+"->"+similarities+" predicts "+displayCat);
 		buf.append("\n");
 		if ( kNN.length>0 ) {
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
@@ -167,10 +167,10 @@ public abstract class kNNClassifier {
 	}
 
 	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
-		int curTokenRuleIndex = unknown[CollectFeatures.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
-		int prevTokenRuleIndex = unknown[CollectFeatures.INDEX_EARLIEST_LEFT_ANCESTOR];
-		int pr = CollectFeatures.unrulealt(prevTokenRuleIndex)[0];
-		int cr = CollectFeatures.unrulealt(curTokenRuleIndex)[0];
+		int curTokenRuleIndex = unknown[Trainer.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
+		int prevTokenRuleIndex = unknown[Trainer.INDEX_EARLIEST_LEFT_ANCESTOR];
+		int pr = Trainer.unrulealt(prevTokenRuleIndex)[0];
+		int cr = Trainer.unrulealt(curTokenRuleIndex)[0];
 		Pair<Integer, Integer> key =  new Pair<>(pr, cr);
 		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
 		List<Neighbor> distances = new ArrayList<>();

@@ -4,6 +4,8 @@ import org.antlr.codebuff.gui.GUIController;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
+import org.antlr.codebuff.walkers.CollectSiblingLists;
+import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -29,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
+import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
 
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
@@ -209,6 +211,7 @@ public class Tool {
 		Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats =
 			collectSiblingLists.getSplitListStats();
 		Map<ParentSiblingListKey, Integer> splitListForms = collectSiblingLists.getSplitListForms();
+		Map<Token, Pair<Boolean, Integer>> tokenToListInfo = collectSiblingLists.getTokenToListInfo();
 
 		if ( false ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
@@ -243,7 +246,7 @@ public class Tool {
 
 		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag,
 		                                  rootAndChildListStats, rootAndSplitChildListStats,
-		                                  splitListForms);
+		                                  splitListForms, tokenToListInfo);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
@@ -254,7 +257,8 @@ public class Tool {
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats,
-										   Map<ParentSiblingListKey, Integer> splitListForms)
+										   Map<ParentSiblingListKey, Integer> splitListForms,
+										   Map<Token, Pair<Boolean, Integer>> tokenToListInfo)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
@@ -266,6 +270,7 @@ public class Tool {
 		corpus.rootAndChildListStats = rootAndChildListStats;
 		corpus.rootAndSplitChildListStats = rootAndSplitChildListStats;
 		corpus.splitListForms = splitListForms;
+		corpus.tokenToListInfo = tokenToListInfo;
 
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
@@ -284,14 +289,14 @@ public class Tool {
 		return corpus;
 	}
 
-	/** Parse document, save feature vectors to the doc but return it also */
+	/** Parse document, save feature vectors to the doc */
 	public static void process(InputDocument doc, int tabSize) {
-		CollectFeatures collector = new CollectFeatures(doc, tabSize);
-		collector.computeFeatureVectors();
+		Trainer trainer = new Trainer(doc, tabSize);
+		trainer.computeFeatureVectors();
 
-		doc.featureVectors = collector.getFeatures();
-		doc.injectWhitespace = collector.getInjectWhitespace();
-		doc.align = collector.getAlign();
+		doc.featureVectors = trainer.getFeatureVectors();
+		doc.injectWhitespace = trainer.getInjectWhitespace();
+		doc.align = trainer.getAlign();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)

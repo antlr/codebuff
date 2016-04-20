@@ -1,13 +1,20 @@
-package org.antlr.codebuff;
+package org.antlr.codebuff.walkers;
 
+import org.antlr.codebuff.JavaParser;
+import org.antlr.codebuff.Tool;
+import org.antlr.codebuff.Trainer;
+import org.antlr.codebuff.VisitSiblingLists;
+import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +41,10 @@ public class CollectSiblingLists extends VisitSiblingLists {
 
 	public Map<ParentSiblingListKey, List<Integer>> splitListForm = new HashMap<>();
 
-	public int[] listElementTypes ;
+	/** Map token to ("is oversize", element type). Used to compute feature
+	 *  vector.
+	 */
+	Map<Token,Pair<Boolean,Integer>> tokenToListInfo = new HashMap<>();
 
 	CodeBuffTokenStream tokens;
 
@@ -53,11 +63,6 @@ public class CollectSiblingLists extends VisitSiblingLists {
 
 		Token hiddenTokenToLeft = hiddenToLeft!=null ? hiddenToLeft.get(0) : null;
 		Token hiddenTokenToRight = hiddenToRight!=null ? hiddenToRight.get(0) : null;
-
-		tokens.seek(first.getStart().getTokenIndex());
-		Token prefixToken = tokens.LT(-1); // e.g., '(' in an arg list or ':' in grammar def
-		tokens.seek(last.getStop().getTokenIndex());
-		Token suffixToken = tokens.LT(1);  // e.g., ')' in an arg list of ';' in grammar def
 
 		int[] ws = new int[4]; // '\n' (before list, before sep, after sep, after last element)
 		if ( hiddenTokenToLeft!=null && Tool.count(hiddenTokenToLeft.getText(), '\n')>0 ) {
@@ -90,11 +95,11 @@ public class CollectSiblingLists extends VisitSiblingLists {
 			lens = new ArrayList<>();
 			info.put(pair, lens);
 		}
-		lens.add(CollectFeatures.getSiblingsLength(siblings));
+		lens.add(Trainer.getSiblingsLength(siblings));
 
 		// track the form split lists take
 		if ( isSplitList ) {
-			int form = CollectFeatures.listform(ws);
+			int form = Trainer.listform(ws);
 			List<Integer> forms = splitListForm.get(pair);
 			if ( forms==null ) {
 				forms = new ArrayList<>();
@@ -102,6 +107,27 @@ public class CollectSiblingLists extends VisitSiblingLists {
 			}
 			forms.add(form); // track where we put newlines for this list
 		}
+
+		// identify the various tokens re list membership
+
+		tokens.seek(first.getStart().getTokenIndex());
+		Token prefixToken = tokens.LT(-1); // e.g., '(' in an arg list or ':' in grammar def
+		tokenToListInfo.put(prefixToken, new Pair<>(isSplitList, Trainer.LIST_PREFIX));
+
+		List<Tree> separators = getSeparators(ctx, siblings);
+		for (Tree s : separators) {
+			tokenToListInfo.put((Token)s.getPayload(), new Pair<>(isSplitList, Trainer.LIST_SEPARATOR));
+		}
+
+		// handle sibling members
+		tokenToListInfo.put(first.getStart(), new Pair<>(isSplitList, Trainer.LIST_FIRST_ELEMENT));
+		for (ParserRuleContext s : siblings.subList(1,siblings.size())) {
+			tokenToListInfo.put(s.getStart(), new Pair<>(isSplitList, Trainer.LIST_MEMBER));
+		}
+
+		tokens.seek(last.getStop().getTokenIndex());
+		Token suffixToken = tokens.LT(2);  // e.g., LT(1) is last token of list; LT(2) is ')' in an arg list of ';' in grammar def
+		tokenToListInfo.put(suffixToken, new Pair<>(isSplitList, Trainer.LIST_SUFFIX));
 	}
 
 	public Map<ParentSiblingListKey, Integer> getSplitListForms() {
@@ -137,6 +163,10 @@ public class CollectSiblingLists extends VisitSiblingLists {
 			listSizes.put(pair, new SiblingListStats(n, min, median, var, max));
 		}
 		return listSizes;
+	}
+
+	public Map<Token, Pair<Boolean, Integer>> getTokenToListInfo() {
+		return tokenToListInfo;
 	}
 
 	public static int sum(List<Integer> data) {

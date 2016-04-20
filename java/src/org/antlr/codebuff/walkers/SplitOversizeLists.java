@@ -1,19 +1,22 @@
-package org.antlr.codebuff;
+package org.antlr.codebuff.walkers;
 
-import org.antlr.codebuff.misc.BuffUtils;
+import org.antlr.codebuff.Corpus;
+import org.antlr.codebuff.JavaParser;
+import org.antlr.codebuff.Trainer;
+import org.antlr.codebuff.VisitSiblingLists;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
-/** Walk tree and inject newlines where needed, before or after lists
+/** [USED IN FORMATTING ONLY]
+ *  Walk tree and inject newlines where needed, before or after lists
  *  with separators that are oversized.
  */
 public class SplitOversizeLists extends VisitSiblingLists {
@@ -40,27 +43,23 @@ public class SplitOversizeLists extends VisitSiblingLists {
 		// Either:
 		// a) we've only seen as a split list
 		// b) we've seen as both list and split list: if len closer to split median, decide it's oversize
-		int len = CollectFeatures.getSiblingsLength(siblings);
-		boolean oversize = CollectFeatures.isOversizeList(corpus, ctx, siblings, separator);
+		int len = Trainer.getSiblingsLength(siblings);
+		boolean oversize = Trainer.isOversizeList(corpus, ctx, siblings, separator);
 		System.out.println((oversize?"   ":"")+
 			                   "SPLIT "+JavaParser.ruleNames[ctx.getRuleIndex()]+
 			                   "->"+JavaParser.ruleNames[first.getRuleIndex()]+" sep "+
 			                   JavaParser.tokenNames[separator.getType()]+
-			                   " "+separator+" '"+StringUtils.abbreviate(CollectFeatures.getSiblingsText(siblings), 30)+
+			                   " "+separator+" '"+StringUtils.abbreviate(Trainer.getSiblingsText(siblings), 30)+
 			                   "' len="+len+" stats="+stats+" splitstats="+splitStats+" oversize="+oversize);
-		// find all separators
-		int start = BuffUtils.indexOf(ctx, first);
-		int end = BuffUtils.indexOf(ctx, last);
 
-		List<Tree> elements = children.subList(start, end+1);
-		List<Tree> separators = BuffUtils.filter(elements, c -> c instanceof TerminalNode);
 		if ( oversize ) {
 			// inject newline before or after separator and before/after list depending on most common pattern
 			Integer formI = corpus.splitListForms.get(pair);
-			int[] form = CollectFeatures.unlistform(formI);
+			int[] form = Trainer.unlistform(formI);
 			if ( form[0]!=0 ) { // before first element in list
 				injection[first.getStart().getTokenIndex()] = "\n";
 			}
+			List<Tree> separators = getSeparators(ctx, siblings);
 			if ( form[1]!=0 ) { // before separator
 				separators.forEach(t -> {
 					int ti = ((Token) t.getPayload()).getTokenIndex();

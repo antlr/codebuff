@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
+import org.antlr.codebuff.walkers.SplitOversizeLists;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -14,27 +15,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import static org.antlr.codebuff.CollectFeatures.CAT_ALIGN_WITH_ANCESTOR_CHILD;
-import static org.antlr.codebuff.CollectFeatures.CAT_INDENT;
-import static org.antlr.codebuff.CollectFeatures.CAT_INDENT_FROM_ANCESTOR_CHILD;
-import static org.antlr.codebuff.CollectFeatures.CAT_INJECT_NL;
-import static org.antlr.codebuff.CollectFeatures.CAT_INJECT_WS;
-import static org.antlr.codebuff.CollectFeatures.CAT_NO_ALIGNMENT;
-import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
-import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
-import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
-import static org.antlr.codebuff.CollectFeatures.INDEX_LIST_ELEMENT_TYPE;
-import static org.antlr.codebuff.CollectFeatures.INDEX_MATCHING_TOKEN_DIFF_LINE;
-import static org.antlr.codebuff.CollectFeatures.INDEX_MEMBER_OVERSIZE_LIST;
-import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_FIRST_ON_LINE;
-import static org.antlr.codebuff.CollectFeatures.MAX_ALIGN_CONTEXT_DIFF_THRESHOLD;
-import static org.antlr.codebuff.CollectFeatures.MAX_WS_CONTEXT_DIFF_THRESHOLD;
-import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
-import static org.antlr.codebuff.CollectFeatures.getContextFeatures;
-import static org.antlr.codebuff.CollectFeatures.getMatchingSymbolOnDiffLine;
-import static org.antlr.codebuff.CollectFeatures.getRealTokens;
-import static org.antlr.codebuff.CollectFeatures.getTokensOnPreviousLine;
-import static org.antlr.codebuff.CollectFeatures.indexTree;
+import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
+import static org.antlr.codebuff.Trainer.CAT_INDENT;
+import static org.antlr.codebuff.Trainer.CAT_INDENT_FROM_ANCESTOR_CHILD;
+import static org.antlr.codebuff.Trainer.CAT_INJECT_NL;
+import static org.antlr.codebuff.Trainer.CAT_INJECT_WS;
+import static org.antlr.codebuff.Trainer.CAT_NO_ALIGNMENT;
+import static org.antlr.codebuff.Trainer.FEATURES_ALIGN;
+import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
+import static org.antlr.codebuff.Trainer.INDEX_FIRST_ON_LINE;
+import static org.antlr.codebuff.Trainer.INDEX_LIST_ELEMENT_TYPE;
+import static org.antlr.codebuff.Trainer.INDEX_MATCHING_TOKEN_DIFF_LINE;
+import static org.antlr.codebuff.Trainer.INDEX_MEMBER_OVERSIZE_LIST;
+import static org.antlr.codebuff.Trainer.INDEX_PREV_FIRST_ON_LINE;
+import static org.antlr.codebuff.Trainer.MAX_ALIGN_CONTEXT_DIFF_THRESHOLD;
+import static org.antlr.codebuff.Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD;
+import static org.antlr.codebuff.Trainer.earliestAncestorStartingWithToken;
+import static org.antlr.codebuff.Trainer.getContextFeatures;
+import static org.antlr.codebuff.Trainer.getMatchingSymbolOnDiffLine;
+import static org.antlr.codebuff.Trainer.getRealTokens;
+import static org.antlr.codebuff.Trainer.getTokensOnPreviousLine;
+import static org.antlr.codebuff.Trainer.indexTree;
 
 public class Formatter {
 	public static final int INDENT_LEVEL = 4;
@@ -128,7 +129,7 @@ public class Formatter {
 		System.out.println("------------");
 		System.out.println(prefix + getOutput(realTokens, injection));
 
-		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
+		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(i, tokenIndexInStream);
 		}
@@ -137,7 +138,7 @@ public class Formatter {
 
 	public static String getOutput(List<Token> tokens, String[] injection) {
 		StringBuilder buf = new StringBuilder();
-		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) {
+		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) {
 			Token t = tokens.get(i);
 			int tokenIndexInStream = t.getTokenIndex();
 			if ( injection[tokenIndexInStream]!=null ) {
@@ -149,7 +150,7 @@ public class Formatter {
 	}
 
 	public void injectWhitespace() {
-		for (int i = CollectFeatures.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
+		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
 			int indexIntoRealTokens = i;
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 
@@ -173,10 +174,10 @@ public class Formatter {
 			int newlines = 0;
 			int ws = 0;
 			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
-				newlines = CollectFeatures.unnlcat(injectNL_WS);
+				newlines = Trainer.unnlcat(injectNL_WS);
 			}
 			else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
-				ws = CollectFeatures.unwscat(injectNL_WS);
+				ws = Trainer.unwscat(injectNL_WS);
 			}
 
 			if ( newlines==0 && ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
@@ -245,11 +246,11 @@ public class Formatter {
 				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
-				int[] deltaChild = CollectFeatures.unaligncat(alignOrIndent);
+				int[] deltaChild = Trainer.unaligncat(alignOrIndent);
 				int deltaFromAncestor = deltaChild[0];
 				int childIndex = deltaChild[1];
 				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
-				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+				ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 				Token start = null;
 				if ( ancestor==null ) {
 					System.err.println("Whoops. No ancestor at that delta");
@@ -274,11 +275,11 @@ public class Formatter {
 				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
-				int[] deltaChild = CollectFeatures.unindentcat(alignOrIndent);
+				int[] deltaChild = Trainer.unindentcat(alignOrIndent);
 				int deltaFromAncestor = deltaChild[0];
 				int childIndex = deltaChild[1];
 				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
-				ParserRuleContext ancestor = CollectFeatures.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+				ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 				Token start = null;
 				if ( ancestor==null ) {
 					System.err.println("Whoops. No ancestor at that delta");
@@ -378,7 +379,7 @@ public class Formatter {
 		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(tokenIndexInStream);
 		if ( hiddenTokensToLeft!=null ) {
 			// if at least one is not whitespace, assume it's a comment and print all hidden stuff including whitespace
-			boolean hasComment = CollectFeatures.hasCommentToken(hiddenTokensToLeft);
+			boolean hasComment = Trainer.hasCommentToken(hiddenTokensToLeft);
 			if ( hasComment ) {
 				// avoid whitespace at end of sequence as we'll inject that
 				int last = -1;
