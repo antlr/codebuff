@@ -1,6 +1,5 @@
 package org.antlr.codebuff.walkers;
 
-import org.antlr.codebuff.JavaParser;
 import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.VisitSiblingLists;
@@ -72,17 +71,17 @@ public class CollectSiblingLists extends VisitSiblingLists {
 		}
 		if ( hiddenToLeftOfSep!=null && Tool.count(hiddenToLeftOfSep.get(0).getText(), '\n')>0 ) {
 			ws[1] = '\n';
-			System.out.println("BEFORE "+JavaParser.ruleNames[ctx.getRuleIndex()]+
-				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
-				                   JavaParser.tokenNames[separator.getType()]+
-				                   " "+separator);
+//			System.out.println("BEFORE "+JavaParser.ruleNames[ctx.getRuleIndex()]+
+//				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
+//				                   JavaParser.tokenNames[separator.getType()]+
+//				                   " "+separator);
 		}
 		if ( hiddenToRightOfSep!=null && Tool.count(hiddenToRightOfSep.get(0).getText(), '\n')>0 ) {
 			ws[2] = '\n';
-			System.out.println("AFTER "+JavaParser.ruleNames[ctx.getRuleIndex()]+
-				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
-				                   JavaParser.tokenNames[separator.getType()]+
-				                   " "+separator);
+//			System.out.println("AFTER "+JavaParser.ruleNames[ctx.getRuleIndex()]+
+//				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
+//				                   JavaParser.tokenNames[separator.getType()]+
+//				                   " "+separator);
 		}
 		if ( hiddenTokenToRight!=null && Tool.count(hiddenTokenToRight.getText(), '\n')>0 ) {
 			ws[3] = '\n';

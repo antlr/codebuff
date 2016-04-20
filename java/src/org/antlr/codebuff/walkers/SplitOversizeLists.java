@@ -1,7 +1,6 @@
 package org.antlr.codebuff.walkers;
 
 import org.antlr.codebuff.Corpus;
-import org.antlr.codebuff.JavaParser;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.VisitSiblingLists;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
@@ -12,7 +11,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,12 +52,12 @@ public class SplitOversizeLists extends VisitSiblingLists {
 		SiblingListStats splitStats = corpus.rootAndSplitChildListStats.get(pair);
 		int len = Trainer.getSiblingsLength(siblings);
 		boolean oversize = isOversizeList(ctx, siblings, separator);
-		System.out.println((oversize?"   ":"")+
-			                   "SPLIT "+JavaParser.ruleNames[ctx.getRuleIndex()]+
-			                   "->"+JavaParser.ruleNames[first.getRuleIndex()]+" sep "+
-			                   JavaParser.tokenNames[separator.getType()]+
-			                   " "+separator+" '"+StringUtils.abbreviate(Trainer.getSiblingsText(siblings), 30)+
-			                   "' len="+len+" stats="+stats+" splitstats="+splitStats+" oversize="+oversize);
+//		System.out.println((oversize?"   ":"")+
+//			                   "SPLIT "+JavaParser.ruleNames[ctx.getRuleIndex()]+
+//			                   "->"+JavaParser.ruleNames[first.getRuleIndex()]+" sep "+
+//			                   JavaParser.tokenNames[separator.getType()]+
+//			                   " "+separator+" '"+StringUtils.abbreviate(Trainer.getSiblingsText(siblings), 30)+
+//			                   "' len="+len+" stats="+stats+" splitstats="+splitStats+" oversize="+oversize);
 
 		if ( oversize ) {
 			// inject newline before or after separator and before/after list depending on most common pattern
