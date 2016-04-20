@@ -1,6 +1,11 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.gui.GUIController;
+import org.antlr.codebuff.misc.CodeBuffTokenStream;
+import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.misc.SiblingListStats;
+import org.antlr.codebuff.walkers.CollectSiblingLists;
+import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -26,12 +31,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
+
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
  * Testing:
  *
- * Tool  -antlr     grammars                       /Users/parrt/antlr/code/grammars-v4/clojure/Clojure.g4
- * Tool  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -dbg  -antlr     ../corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
+ * Tool  -dbg  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
+ * Tool  -dbg  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
+ * Tool  -dbg  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
+ * Tool  -dbg  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
 	public static boolean showFileNames = false;
@@ -41,30 +52,86 @@ public class Tool {
 		throws Exception
 	{
 		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures [-java|-antlr] root-dir-of-samples test-file");
+			System.err.println("ExtractFeatures [-dbg] [-java|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
 		}
 		int tabSize = 4; // TODO: MAKE AN ARGUMENT
-		String language = args[0];
-		String corpusDir = args[1];
-		String testFilename = args[2];
-		String output;
-		if ( language.equals("-java") ) {
-			Corpus corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
-			InputDocument testDoc = load(testFilename, JavaLexer.class, tabSize);
-			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
-			output = results.a;
-			List<TokenPositionAnalysis> analysisPerToken = results.b;
-			GUIController controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
-			controller.show();
+		int arg = 0;
+		boolean collectAnalysis = false;
+		if ( args[arg].equals("-dbg") ) {
+			collectAnalysis = true;
+			arg++;
 		}
-		else {
-			Corpus corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
-			InputDocument testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
-			Pair<String,List<TokenPositionAnalysis>> results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize);
-			output = results.a;
-			List<TokenPositionAnalysis> analysisPerToken = results.b;
-			GUIController controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
-			controller.show();
+		String language = args[arg++];
+		String corpusDir = args[arg++];
+		String testFilename = args[arg];
+		String output = "???";
+		Corpus corpus;
+		InputDocument testDoc;
+		GUIController controller;
+		List<TokenPositionAnalysis> analysisPerToken;
+		Pair<String, List<TokenPositionAnalysis>> results;
+		long start, stop;
+		switch ( language ) {
+			case "-java":
+				corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
+				testDoc = load(testFilename, JavaLexer.class, tabSize);
+				start = System.nanoTime();
+				results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
+				controller.show();
+				break;
+			case "-antlr":
+				corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
+				testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
+				start = System.nanoTime();
+				results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
+				controller.show();
+				break;
+			case "-sqlite":
+				corpus = train(corpusDir, ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, true);
+				testDoc = load(testFilename, SQLiteLexer.class, tabSize);
+				start = System.nanoTime();
+				results = format(corpus, testDoc, SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, SQLiteLexer.class);
+				controller.show();
+				break;
+			case "-tsql":
+				corpus = train(corpusDir, ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, true);
+				testDoc = load(testFilename, tsqlLexer.class, tabSize);
+				start = System.nanoTime();
+				results = format(corpus, testDoc, tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, tsqlLexer.class);
+				controller.show();
+				break;
+			case "-plsql":
+				corpus = train(corpusDir, ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, true);
+				testDoc = load(testFilename, plsqlLexer.class, tabSize);
+				start = System.nanoTime();
+				results = format(corpus, testDoc, plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, collectAnalysis);
+				stop = System.nanoTime();
+				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
+				output = results.a;
+				analysisPerToken = results.b;
+				controller = new GUIController(analysisPerToken, testDoc, output, plsqlLexer.class);
+				controller.show();
+				break;
 		}
 		System.out.println(output);
 	}
@@ -76,10 +143,11 @@ public class Tool {
 	                                                              Class<? extends Lexer> lexerClass,
 	                                                              Class<? extends Parser> parserClass,
 	                                                              String startRuleName,
-	                                                              int tabSize)
+	                                                              int tabSize,
+	                                                              boolean collectAnalysis)
 		throws Exception
 	{
-		return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true);
+		return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true, collectAnalysis);
 	}
 
 	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus,
@@ -88,11 +156,13 @@ public class Tool {
 	                                                              Class<? extends Parser> parserClass,
 	                                                              String startRuleName,
 	                                                              int tabSize,
-	                                                              boolean showFormattedResult)
+	                                                              boolean showFormattedResult,
+	                                                              boolean collectAnalysis)
 		throws Exception
 	{
+		testDoc.corpus = corpus;
 		parse(testDoc, lexerClass, parserClass, startRuleName);
-		Formatter formatter = new Formatter(corpus, testDoc, tabSize);
+		Formatter formatter = new Formatter(corpus, testDoc, tabSize, collectAnalysis);
 		String formattedOutput = formatter.format();
 		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
 		testDoc.dumpIncorrectWS = false;
@@ -110,7 +180,8 @@ public class Tool {
 							   Class<? extends Lexer> lexerClass,
 							   Class<? extends Parser> parserClass,
 							   String startRuleName,
-							   int tabSize)
+							   int tabSize,
+	                           boolean shuffleFeatureVectors)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
@@ -123,13 +194,24 @@ public class Tool {
 		}
 
 		// Walk all documents to compute matching token dependencies (we need this for feature computation)
+		// While we're at it, find sibling lists
 		Vocabulary vocab = getLexer(lexerClass, null).getVocabulary();
 		String[] ruleNames = getParser(parserClass, null).getRuleNames();
-		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ruleNames);
+		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
+		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 		for (InputDocument doc : documents) {
-			ParseTreeWalker.DEFAULT.walk(listener, doc.tree);
+			System.out.println(doc);
+			collectSiblingLists.setTokens(doc.tokens, doc.tree);
+			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
+			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
-		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = listener.getDependencies();
+		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
+		Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats =
+			collectSiblingLists.getListStats();
+		Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats =
+			collectSiblingLists.getSplitListStats();
+		Map<ParentSiblingListKey, Integer> splitListForms = collectSiblingLists.getSplitListForms();
+		Map<Token, Pair<Boolean, Integer>> tokenToListInfo = collectSiblingLists.getTokenToListInfo();
 
 		if ( false ) {
 			for (String ruleName : ruleToPairsBag.keySet()) {
@@ -142,50 +224,79 @@ public class Tool {
 			}
 		}
 
-		Corpus corpus = processSampleDocs(documents, lexerClass, parserClass, tabSize, ruleToPairsBag);
-		corpus.randomShuffleInPlace();
+		if ( true ) {
+			for (ParentSiblingListKey siblingPairs : rootAndChildListStats.keySet()) {
+				String parent = ruleNames[siblingPairs.parentRuleIndex];
+				parent = parent.replace("Context","");
+				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
+				siblingListName = siblingListName.replace("Context","");
+				System.out.println(parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
+					                   " (min,median,var,max)="+rootAndChildListStats.get(siblingPairs));
+			}
+			for (ParentSiblingListKey siblingPairs : rootAndSplitChildListStats.keySet()) {
+				String parent = ruleNames[siblingPairs.parentRuleIndex];
+				parent = parent.replace("Context","");
+				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
+				siblingListName = siblingListName.replace("Context","");
+				System.out.println("SPLIT " +parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
+					                   " (min,median,var,max)="+rootAndSplitChildListStats.get(siblingPairs)+
+				                  " form "+splitListForms.get(siblingPairs));
+			}
+		}
+
+		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag,
+		                                  rootAndChildListStats, rootAndSplitChildListStats,
+		                                  splitListForms, tokenToListInfo);
+		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
 		corpus.buildTokenContextIndex();
 		return corpus;
 	}
 
 	public static Corpus processSampleDocs(List<InputDocument> docs,
-										   Class<? extends Lexer> lexerClass,
-										   Class<? extends Parser> parserClass,
 										   int tabSize,
-										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag)
+										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
+										   Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats,
+										   Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats,
+										   Map<ParentSiblingListKey, Integer> splitListForms,
+										   Map<Token, Pair<Boolean, Integer>> tokenToListInfo)
 		throws Exception
 	{
 		List<InputDocument> documents = new ArrayList<>();
 		List<int[]> featureVectors = new ArrayList<>();
 		List<Integer> injectNewlines = new ArrayList<>();
-		List<Integer> injectWS = new ArrayList<>();
 		List<Integer> alignWithPrevious = new ArrayList<>();
+		Corpus corpus = new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
+		corpus.ruleToPairsBag = ruleToPairsBag;
+		corpus.rootAndChildListStats = rootAndChildListStats;
+		corpus.rootAndSplitChildListStats = rootAndSplitChildListStats;
+		corpus.splitListForms = splitListForms;
+		corpus.tokenToListInfo = tokenToListInfo;
+
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc, tabSize, ruleToPairsBag);
+			doc.corpus = corpus; // we know the corpus object now
+			process(doc, tabSize);
 
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
 				int[] featureVec = doc.featureVectors.get(i);
-				injectNewlines.add(doc.injectNewlines.get(i));
-				injectWS.add(doc.injectWS.get(i));
-				alignWithPrevious.add(doc.alignWithPrevious.get(i));
+				injectNewlines.add(doc.injectWhitespace.get(i));
+				alignWithPrevious.add(doc.align.get(i));
 				featureVectors.add(featureVec);
 			}
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious, injectWS);
+		return corpus;
 	}
 
-	/** Parse document, save feature vectors to the doc but return it also */
-	public static void process(InputDocument doc, int tabSize, Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag) {
-		CollectFeatures collector = new CollectFeatures(doc, tabSize, ruleToPairsBag);
-		collector.computeFeatureVectors();
+	/** Parse document, save feature vectors to the doc */
+	public static void process(InputDocument doc, int tabSize) {
+		Trainer trainer = new Trainer(doc, tabSize);
+		trainer.computeFeatureVectors();
 
-		doc.featureVectors = collector.getFeatures();
-		doc.injectNewlines = collector.getInjectNewlines();
-		doc.injectWS = collector.getInjectWS();
-		doc.alignWithPrevious = collector.getAlign();
+		doc.featureVectors = trainer.getFeatureVectors();
+		doc.injectWhitespace = trainer.getInjectWhitespace();
+		doc.align = trainer.getAlign();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
@@ -194,7 +305,7 @@ public class Tool {
 		ANTLRInputStream input = new ANTLRInputStream(doc);
 		Lexer lexer = getLexer(lexerClass, input);
 
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
 		tokens.fill();
 		return tokens;
 	}
@@ -210,7 +321,7 @@ public class Tool {
 		Lexer lexer = getLexer(lexerClass, input);
 		input.name = doc.fileName;
 
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		CodeBuffTokenStream tokens = new CodeBuffTokenStream(lexer);
 
 		if ( showTokens ) {
 			tokens.fill();
@@ -289,7 +400,7 @@ public class Tool {
 			i++;
 		}
 
-		return new InputDocument(fileName, buf.toString());
+		return new InputDocument(null, fileName, buf.toString());
 	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
@@ -339,10 +450,10 @@ public class Tool {
 
 	public static void wipeLineAndPositionInfo(CommonTokenStream tokens) {
 		tokens.fill();
-		for (Token t : tokens.getTokens()) {
-			CommonToken ct = (CommonToken)t;
-			ct.setLine(0);
-			ct.setCharPositionInLine(-1);
+		for (int i = ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) { // can't process first 1 token so leave it alone
+			CommonToken t = (CommonToken)tokens.get(i);
+			t.setLine(0);
+			t.setCharPositionInLine(-1);
 		}
 	}
 
@@ -373,30 +484,33 @@ public class Tool {
 	public static double weightedL0_Distance(FeatureMetaData[] featureTypes, int[] A, int[] B) {
 		double count = 0; // count how many mismatched categories there are
 		for (int i=0; i<A.length; i++) {
-			if ( featureTypes[i].type==FeatureType.TOKEN ||
-				featureTypes[i].type==FeatureType.RULE  ||
-				featureTypes[i].type==FeatureType.INT  ||
-				featureTypes[i].type==FeatureType.BOOL
-				)
+			FeatureType type = featureTypes[i].type;
+			if ( type==FeatureType.TOKEN ||
+				 type==FeatureType.RULE ||
+				 type==FeatureType.INT ||
+				 type==FeatureType.BOOL)
 			{
 				if ( A[i] != B[i] ) {
 					count += featureTypes[i].mismatchCost;
 				}
 			}
-//			else if ( featureTypes[i].type==FeatureType.COL ) {
-//				double Asigmoid = sigmoid(A[i], 80);
-//				double Bsigmoid = sigmoid(B[i], 80);
-////				if ( B[i]!=-1 && A[i]!=-1 && Math.abs(B[i]-80)<10 ) {
-////					System.out.println("sigmoids "+A[i]+','+B[i]+":"+Asigmoid+", "+Bsigmoid+"="+Math.abs(Asigmoid-Bsigmoid));
-////				}
-//				count += Math.abs(Asigmoid-Bsigmoid) * featureTypes[i].mismatchCost;
-//			}
+			else if ( type==FeatureType.COLWIDTH ) {
+				// threshold any len > RIGHT_MARGIN_ALARM
+				int a = A[i];
+				int b = B[i];
+//				int a = Math.min(A[i], WIDE_LIST_THRESHOLD);
+//				int b = Math.min(B[i], WIDE_LIST_THRESHOLD);
+//				count += Math.abs(a-b) / (float) WIDE_LIST_THRESHOLD; // normalize to 0..1
+//				count += sigmoid(a-b, 37);
+				double delta = Math.abs(sigmoid(a, 43)-sigmoid(b, 43));
+				count += delta;
+			}
 		}
 		return count;
 	}
 
 	public static double sigmoid(int x, float center) {
-		return 1.0 / (1.0 + Math.exp(-0.2*(x-center)));
+		return 1.0 / (1.0 + Math.exp(-0.9*(x-center)));
 	}
 
 	public static int max(List<Integer> Y) {
@@ -410,34 +524,6 @@ public class Tool {
 		for (int x : a) s += x;
 		return s;
 	}
-
-//	// From https://en.wikipedia.org/wiki/Levenshtein_distance
-//	public static int LevenshteinDistance(String s, String t) {
-//		return LevenshteinDistance(s, s.length(), t, t.length());
-//	}
-//
-//	public static int LevenshteinDistance(String s, int slen, String t, int tlen) {
-//		int cost;
-//
-//		// base case: empty strings
-//		if (slen == 0) return tlen;
-//		if (tlen == 0) return slen;
-//
-//		// test if last characters of the strings match
-//		if ( s.charAt(slen-1) == t.charAt(tlen-1) ) {
-//			cost = 0;
-//		}
-//		else {
-//			cost = 1;
-//		}
-//
-//		// return minimum of delete char from s, delete char from t, and delete char from both
-//		return
-//			Math.min(
-//				Math.min(LevenshteinDistance(s, slen - 1, t, tlen    ) + 1,
-//						 LevenshteinDistance(s, slen    , t, tlen - 1) + 1),
-//				LevenshteinDistance(s, slen - 1, t, tlen - 1) + cost);
-//	}
 
 	// from https://en.wikipedia.org/wiki/Levenshtein_distance
 	public static int levenshteinDistance(String s, String t) {
@@ -796,7 +882,9 @@ public class Tool {
 					buf.append(c);
 					break;
 				case '\t' :
-					buf.append(spaces(tabSize - col % tabSize));
+					int n = tabSize-col%tabSize;
+					col+=n;
+					buf.append(spaces(n));
 					break;
 				default :
 					col++;
@@ -872,7 +960,8 @@ public class Tool {
 		ArrayList<Double> differenceRatios = new ArrayList<>();
 
 		for (InputDocument testDoc: testDocs) {
-			Pair<String, List<TokenPositionAnalysis>> results = format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, false);
+			Pair<String, List<TokenPositionAnalysis>> results =
+				format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, false);
 			String formattedDoc = results.a;
 			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
 			testDoc.dumpIncorrectWS = false;
@@ -891,7 +980,8 @@ public class Tool {
 	                              int tabSize)
 		throws Exception
 	{
-		ArrayList<Double> differenceRatios = validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
+		ArrayList<Double> differenceRatios =
+			validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
 		Collections.sort(differenceRatios);
 		if (differenceRatios.size() % 2 == 1) return differenceRatios.get(differenceRatios.size() / 2);
 		else if (differenceRatios.size() == 0) {
@@ -905,7 +995,7 @@ public class Tool {
 	public static class Foo {
 		public static void main(String[] args) throws Exception {
 			ANTLRv4Lexer lexer = new ANTLRv4Lexer(new ANTLRFileStream("grammars/org/antlr/codebuff/ANTLRv4Lexer.g4"));
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
+			CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
 			ANTLRv4Parser parser = new ANTLRv4Parser(tokens);
 			ANTLRv4Parser.GrammarSpecContext tree = parser.grammarSpec();
 			System.out.println(tree.toStringTree(parser));
