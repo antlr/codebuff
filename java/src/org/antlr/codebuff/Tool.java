@@ -201,7 +201,7 @@ public class Tool {
 		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 		for (InputDocument doc : documents) {
 			System.out.println(doc);
-			collectSiblingLists.setTokens(doc.tokens);
+			collectSiblingLists.setTokens(doc.tokens, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}

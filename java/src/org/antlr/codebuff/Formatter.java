@@ -121,7 +121,7 @@ public class Formatter {
 		output.append(prefix);
 
 		// first identify oversize lists with separators
-		SplitOversizeLists splitter = new SplitOversizeLists(corpus, tokens, injection);
+		SplitOversizeLists splitter = new SplitOversizeLists(corpus, tokens, tokenToNodeMap, injection);
 		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
 		tokenToListInfo = splitter.tokenToListInfo;
 

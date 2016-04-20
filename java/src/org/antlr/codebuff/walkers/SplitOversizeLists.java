@@ -10,6 +10,7 @@ import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,10 +30,17 @@ public class SplitOversizeLists extends VisitSiblingLists {
 	/** Map token to ("is oversize", element type). Used to compute feature vector. */
 	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo = new HashMap<>();
 
-	public SplitOversizeLists(Corpus corpus, CodeBuffTokenStream tokens, String[] injection) {
+	public Map<Token, TerminalNode> tokenToNodeMap;
+
+	public SplitOversizeLists(Corpus corpus,
+	                          CodeBuffTokenStream tokens,
+	                          Map<Token, TerminalNode> tokenToNodeMap,
+	                          String[] injection)
+	{
 		this.corpus = corpus;
 		this.tokens = tokens;
 		this.injection = injection;
+		this.tokenToNodeMap = tokenToNodeMap;
 	}
 
 	public void visitNonSingletonWithSeparator(ParserRuleContext ctx,
@@ -82,7 +90,7 @@ public class SplitOversizeLists extends VisitSiblingLists {
 			}
 		}
 
-		Map<Token, Pair<Boolean, Integer>> tokenInfo = getInfoAboutListTokens(ctx, tokens, siblings, oversize);
+		Map<Token, Pair<Boolean, Integer>> tokenInfo = getInfoAboutListTokens(ctx, tokens, tokenToNodeMap, siblings, oversize);
 		tokenToListInfo.putAll(tokenInfo);
 	}
 

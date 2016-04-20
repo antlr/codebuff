@@ -264,7 +264,6 @@ public class Trainer {
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
 	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
-		int aligned = CAT_NO_ALIGNMENT;
 		Pair<Integer,Integer> alignInfo = null;
 		Pair<Integer,Integer> indentInfo = null;
 
@@ -275,7 +274,6 @@ public class Trainer {
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 			alignInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
-			aligned = aligncat(deltaFromLeftAncestor, pair.b);
 //			System.out.printf("ALIGN %s %s i=%d %x %s\n",
 //			                  curToken,
 //			                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
@@ -292,7 +290,6 @@ public class Trainer {
 //				                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
 //				                  pair.b, aligned, doc.fileName);
 				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
-				aligned = indentcat(deltaFromLeftAncestor, pair.b);
 				indentInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
 			}
 		}

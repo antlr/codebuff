@@ -45,11 +45,14 @@ public class CollectSiblingLists extends VisitSiblingLists {
 	/** Map token to ("is oversize", element type). Used to compute feature vector. */
 	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo = new HashMap<>();
 
-	CodeBuffTokenStream tokens;
+	public Map<Token, TerminalNode> tokenToNodeMap = null;
+
+	public CodeBuffTokenStream tokens;
 
 	// reuse object so the maps above fill from multiple files during training
-	public void setTokens(CodeBuffTokenStream tokens) {
+	public void setTokens(CodeBuffTokenStream tokens, ParserRuleContext root) {
 		this.tokens = tokens;
+		tokenToNodeMap = Trainer.indexTree(root);
 	}
 
 	public void visitNonSingletonWithSeparator(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings, Token separator) {
@@ -107,7 +110,8 @@ public class CollectSiblingLists extends VisitSiblingLists {
 			forms.add(form); // track where we put newlines for this list
 		}
 
-		Map<Token, Pair<Boolean, Integer>> tokenInfo = getInfoAboutListTokens(ctx, tokens, siblings, isSplitList);
+		Map<Token, Pair<Boolean, Integer>> tokenInfo =
+			getInfoAboutListTokens(ctx, tokens, tokenToNodeMap, siblings, isSplitList);
 		tokenToListInfo.putAll(tokenInfo);
 	}
 

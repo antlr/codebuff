@@ -68,6 +68,7 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 	/** Return map for the various tokens related to this list re list membership */
 	public static Map<Token,Pair<Boolean,Integer>> getInfoAboutListTokens(ParserRuleContext ctx,
 	                                                                      CodeBuffTokenStream tokens,
+	                                                                      Map<Token, TerminalNode> tokenToNodeMap,
 	                                                                      List<? extends ParserRuleContext> siblings,
 	                                                                      boolean isOversizeList)
 	{
@@ -78,7 +79,16 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 
 		tokens.seek(first.getStart().getTokenIndex());
 		Token prefixToken = tokens.LT(-1); // e.g., '(' in an arg list or ':' in grammar def
-		tokenToListInfo.put(prefixToken, new Pair<>(isOversizeList, Trainer.LIST_PREFIX));
+		tokens.seek(last.getStop().getTokenIndex());
+		Token suffixToken = tokens.LT(2);  // e.g., LT(1) is last token of list; LT(2) is ')' in an arg list of ';' in grammar def
+
+		TerminalNode prefixNode = tokenToNodeMap.get(prefixToken);
+		TerminalNode suffixNode = tokenToNodeMap.get(suffixToken);
+		boolean hasSurroundingTokens  = prefixNode.getParent() == suffixNode.getParent();
+
+		if ( hasSurroundingTokens ) {
+			tokenToListInfo.put(prefixToken, new Pair<>(isOversizeList, Trainer.LIST_PREFIX));
+		}
 
 		List<Tree> separators = getSeparators(ctx, siblings);
 		for (Tree s : separators) {
@@ -91,9 +101,9 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 			tokenToListInfo.put(s.getStart(), new Pair<>(isOversizeList, Trainer.LIST_MEMBER));
 		}
 
-		tokens.seek(last.getStop().getTokenIndex());
-		Token suffixToken = tokens.LT(2);  // e.g., LT(1) is last token of list; LT(2) is ')' in an arg list of ';' in grammar def
-		tokenToListInfo.put(suffixToken, new Pair<>(isOversizeList, Trainer.LIST_SUFFIX));
+		if ( hasSurroundingTokens ) {
+			tokenToListInfo.put(suffixToken, new Pair<>(isOversizeList, Trainer.LIST_SUFFIX));
+		}
 
 		return tokenToListInfo;
 	}
