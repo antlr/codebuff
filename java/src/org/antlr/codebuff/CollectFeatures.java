@@ -228,13 +228,7 @@ public class CollectFeatures {
 		Token prevToken = tokens.LT(-1);
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
-		boolean prevTokenStartsLine = false;
-		if ( tokens.index()-2 >= 0 ) {
-			if ( tokens.LT(-2)!=null ) {
-				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
-			}
-		}
-		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, prevTokenStartsLine, curToken.getLine(), tabSize);
+		int[] features = getFeatures(i);
 
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
 
@@ -486,23 +480,60 @@ public class CollectFeatures {
 		return t.getLine()>prevToken.getLine();
 	}
 
-	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
-	                                    InputDocument doc,
-	                                    int i,
-	                                    boolean prevTokenStartsLine,
-	                                    int line,
-	                                    int tabSize)
-	{
+	public int[] getFeatures(int i)	{
 		CodeBuffTokenStream tokens = doc.tokens;
 		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
 		if ( node==null ) {
 			System.err.println("### No node associated with token "+tokens.get(i));
 			return null;
 		}
+
+		Token curToken = node.getSymbol();
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
+		Token prevToken = tokens.LT(-1);
+
+		boolean prevTokenStartsLine = false;
+		if ( tokens.index()-2 >= 0 ) {
+			if ( tokens.LT(-2)!=null ) {
+				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
+			}
+		}
+
+		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, curToken.getLine());
+
+		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
+
+		boolean isOversizeList = false;
+		int listElementType = -1;
+
+		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
+
+		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
+		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
+		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
+		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList ? 1 : 0;
+		features[INDEX_LIST_ELEMENT_TYPE]        = listElementType;
+
+		return features;
+	}
+
+	/** Get the token type and tree ancestor features. These are computed
+	 *  the same for both training and formatting.
+	 */
+	public static int[] getContextFeatures(Map<Token, TerminalNode> tokenToNodeMap,
+	                                       InputDocument doc,
+	                                       int i)
+	{
+		int[] features = new int[NUM_FEATURES];
+		CodeBuffTokenStream tokens = doc.tokens;
+		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+		if ( node==null ) {
+			System.err.println("### No node associated with token "+tokens.get(i));
+			return features;
+		}
 		Token curToken = node.getSymbol();
 
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-
 		// Get context information for previous token
 		Token prevToken = tokens.LT(-1);
 		TerminalNode prevNode = tokenToNodeMap.get(prevToken);
@@ -519,39 +550,24 @@ public class CollectFeatures {
 		ParserRuleContext earliestLeftAncestorParent3 = earliestLeftAncestorParent2!=null ? earliestLeftAncestorParent2.getParent() : null;
 		ParserRuleContext earliestLeftAncestorParent4 = earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3.getParent() : null;
 
-		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
+		features[INDEX_PREV_TYPE]                     = prevToken.getType();
+		features[INDEX_PREV_EARLIEST_RIGHT_ANCESTOR]  = rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum);
+		features[INDEX_CUR_TYPE]                      = curToken.getType();
+		features[INDEX_EARLIEST_LEFT_ANCESTOR]        = rulealt(earliestLeftAncestor);
+		features[INDEX_ANCESTORS_CHILD_INDEX]         = getChildIndexOrListMembership(node);
+		features[INDEX_ANCESTORS_PARENT_RULE]         = earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent) : -1;
+		features[INDEX_ANCESTORS_PARENT_CHILD_INDEX]  = getChildIndexOrListMembership(earliestLeftAncestor);
+		features[INDEX_ANCESTORS_PARENT2_RULE]        = earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2) : -1;
+		features[INDEX_ANCESTORS_PARENT2_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent);
+		features[INDEX_ANCESTORS_PARENT3_RULE]        = earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3) : -1;
+		features[INDEX_ANCESTORS_PARENT3_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent2);
+		features[INDEX_ANCESTORS_PARENT4_RULE]        = earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4) : -1;
+		features[INDEX_ANCESTORS_PARENT4_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent3);
 
-		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
+		features[INDEX_INFO_FILE]    = 0; // dummy; _toString() dumps filename w/o this value; placeholder for col in printout
+		features[INDEX_INFO_LINE]    = curToken.getLine();
+		features[INDEX_INFO_CHARPOS] = curToken.getCharPositionInLine();
 
-		boolean isOversizeList = false;
-		int listElementType = -1;
-
-		int[] features = {
-			prevToken.getType(),
-			prevTokenStartsLine ? 1 : 0,
-			rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum),
-			curToken.getType(),
-			matchingSymbolOnDiffLine,
-			curTokenStartsNewLine ? 1 : 0,
-			isOversizeList ? 1 : 0,
-			listElementType,
-			rulealt(earliestLeftAncestor),
-			getChildIndexOrListMembership(node),
-			earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent) : -1,
-			getChildIndexOrListMembership(earliestLeftAncestor),
-			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2) : -1,
-			getChildIndexOrListMembership(earliestLeftAncestorParent),
-			earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3) : -1,
-			getChildIndexOrListMembership(earliestLeftAncestorParent2),
-			earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4) : -1,
-			getChildIndexOrListMembership(earliestLeftAncestorParent3),
-
-			// info
-			0, // dummy; we don't store file index into feature vector
-			curToken.getLine(),
-			curToken.getCharPositionInLine()
-		};
-		assert features.length == NUM_FEATURES;
 		return features;
 	}
 

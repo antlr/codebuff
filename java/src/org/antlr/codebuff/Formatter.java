@@ -23,12 +23,15 @@ import static org.antlr.codebuff.CollectFeatures.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_ALIGN;
 import static org.antlr.codebuff.CollectFeatures.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.CollectFeatures.INDEX_FIRST_ON_LINE;
+import static org.antlr.codebuff.CollectFeatures.INDEX_LIST_ELEMENT_TYPE;
 import static org.antlr.codebuff.CollectFeatures.INDEX_MATCHING_TOKEN_DIFF_LINE;
+import static org.antlr.codebuff.CollectFeatures.INDEX_MEMBER_OVERSIZE_LIST;
+import static org.antlr.codebuff.CollectFeatures.INDEX_PREV_FIRST_ON_LINE;
 import static org.antlr.codebuff.CollectFeatures.MAX_ALIGN_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.CollectFeatures.MAX_WS_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.CollectFeatures.earliestAncestorStartingWithToken;
+import static org.antlr.codebuff.CollectFeatures.getContextFeatures;
 import static org.antlr.codebuff.CollectFeatures.getMatchingSymbolOnDiffLine;
-import static org.antlr.codebuff.CollectFeatures.getNodeFeatures;
 import static org.antlr.codebuff.CollectFeatures.getRealTokens;
 import static org.antlr.codebuff.CollectFeatures.getTokensOnPreviousLine;
 import static org.antlr.codebuff.CollectFeatures.indexTree;
@@ -161,11 +164,10 @@ public class Formatter {
 			Token prevToken = tokens.LT(-1);
 			boolean prevTokenStartsLine = false;
 			if ( injection[prevToken.getTokenIndex()]!=null ) {
-				System.out.println();
 				prevTokenStartsLine = Tool.count(injection[prevToken.getTokenIndex()], '\n')>0;
 			}
 
-			int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, prevTokenStartsLine, line, tabSize);
+			int[] features = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
 
 			int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_WS_CONTEXT_DIFF_THRESHOLD);
 			int newlines = 0;
@@ -215,7 +217,7 @@ public class Formatter {
 				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
 			}
 		}
-		int[] featuresForAlign = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, prevTokenStartsLine, line, tabSize);
+		int[] featuresForAlign = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
 
 		if ( newlines>0 ) {
 			output.append(Tool.newlines(newlines));
@@ -314,7 +316,7 @@ public class Formatter {
 
 		TokenPositionAnalysis tokenPositionAnalysis;
 		if ( collectAnalysis ) {
-			int[] features = getNodeFeatures(tokenToNodeMap, doc, tokenIndexInStream, prevTokenStartsLine, line, tabSize);
+			int[] features = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
 			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, -1, alignOrIndent);
 		}
 		else {
@@ -330,6 +332,38 @@ public class Formatter {
 		// emit
 		output.append(tokText);
 		charPosInLine += n;
+	}
+
+	public int[] getFeatures(int i,
+	                         boolean prevTokenStartsLine,
+	                         int tabSize)
+	{
+		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+		if ( node==null ) {
+			System.err.println("### No node associated with token "+tokens.get(i));
+			return null;
+		}
+
+		Token curToken = node.getSymbol();
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
+		Token prevToken = tokens.LT(-1);
+
+		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
+
+		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
+
+		boolean isOversizeList = false;
+		int listElementType = -1;
+
+		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
+
+		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
+		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
+		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
+		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList ? 1 : 0;
+		features[INDEX_LIST_ELEMENT_TYPE]        = listElementType;
+
+		return features;
 	}
 
 	/** Look into the token stream to get the comments to the left of current
