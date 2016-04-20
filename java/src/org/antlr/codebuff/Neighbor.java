@@ -16,16 +16,16 @@ public class Neighbor {
 	public String toString(FeatureMetaData[] FEATURES, List<Integer> Y) {
 		int[] X = corpus.X.get(corpusVectorIndex);
 		InputDocument doc = corpus.documents.get(corpusVectorIndex);
-		String features = CollectFeatures._toString(FEATURES, doc, X);
-		int line = X[CollectFeatures.INDEX_INFO_LINE];
+		String features = Trainer._toString(FEATURES, doc, X);
+		int line = X[Trainer.INDEX_INFO_LINE];
 		String lineText = doc.getLine(line);
-		int col = X[CollectFeatures.INDEX_INFO_CHARPOS];
+		int col = X[Trainer.INDEX_INFO_CHARPOS];
 		// insert a dot right before char position
 		if ( lineText!=null ) {
 			lineText = lineText.substring(0, col)+'\u00B7'+lineText.substring(col, lineText.length());
 		}
 		int cat = Y.get(corpusVectorIndex);
-		int[] elements = CollectFeatures.unaligncat(cat);
+		int[] elements = Trainer.unaligncat(cat);
 		String display = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
 		return String.format("%s (cat=%s,d=%1.3f): %s", features, display, distance, lineText);
 	}

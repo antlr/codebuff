@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.antlr.codebuff.CollectFeatures.ANALYSIS_START_TOKEN_INDEX;
-import static org.antlr.codebuff.CollectFeatures.getRealTokens;
+import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
+import static org.antlr.codebuff.Trainer.getRealTokens;
 import static org.junit.Assert.assertTrue;
 
 /*

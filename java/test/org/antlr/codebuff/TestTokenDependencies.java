@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;

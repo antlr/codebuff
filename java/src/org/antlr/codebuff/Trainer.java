@@ -1,7 +1,9 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.BuffUtils;
-import org.antlr.codebuff.misc.Quad;
+import org.antlr.codebuff.misc.CodeBuffTokenStream;
+import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -9,7 +11,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.atn.ATN;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -24,9 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CollectFeatures {
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD = 0.12;
-	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.30;
+/** Collect feature vectors trained on a single file */
+public class Trainer {
+	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.10;
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
+	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
 	 *  element other than the first one.  If a parent has just one X child,
@@ -36,7 +39,11 @@ public class CollectFeatures {
 	 */
 	public static final int CHILD_INDEX_LIST_ELEMENT = 1_111_111_111;
 
-	public static final int MEMBER_INDEX_LIST_ELEMENT = 1_111_111_111;
+	public static final int LIST_PREFIX         = 0;
+	public static final int LIST_FIRST_ELEMENT  = 1;
+	public static final int LIST_SEPARATOR      = 2;
+	public static final int LIST_SUFFIX         = 3;
+	public static final int LIST_MEMBER         = 1_111_111_111;
 
 	// Feature values for pair on diff lines feature
 	public static final int NOT_PAIR = -1;
@@ -85,8 +92,8 @@ public class CollectFeatures {
 	public static final int INDEX_CUR_TYPE                      = 3;
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
 	public static final int INDEX_FIRST_ON_LINE		            = 5; // a \n right before this token?
-	public static final int INDEX_INDEX_IN_LIST                 = 6; // either -1 (not member of list), 0 (first in list), or INDEX_LIST_ELEMENT
-	public static final int INDEX_LIST_WIDTH                    = 7;
+	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6; // -1 if we don't know; false means list but not big list
+	public static final int INDEX_LIST_ELEMENT_TYPE             = 7; // see LIST_PREFIX, etc...
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
 	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9;
 	public static final int INDEX_ANCESTORS_PARENT_RULE         = 10;
@@ -110,12 +117,12 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
-		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"List", "width"}, 1),
+		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
+		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -132,12 +139,12 @@ public class CollectFeatures {
 	public static FeatureMetaData[] FEATURES_ALIGN = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
+		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
-		FeatureMetaData.UNUSED,
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -160,8 +167,8 @@ public class CollectFeatures {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "index"}, 1),
-		new FeatureMetaData(FeatureType.COLWIDTH,   new String[] {"List", "width"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -182,7 +189,7 @@ public class CollectFeatures {
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected List<Token> realTokens;
-	protected List<int[]> features = new ArrayList<>();
+	protected List<int[]> featureVectors = new ArrayList<>();
 	protected List<Integer> injectWhitespace = new ArrayList<>();
 	protected List<Integer> align = new ArrayList<>();
 
@@ -192,8 +199,7 @@ public class CollectFeatures {
 
 	protected int tabSize;
 
-	public CollectFeatures(InputDocument doc, int tabSize)
-	{
+	public Trainer(InputDocument doc, int tabSize) {
 		this.corpus = doc.corpus;
 		this.doc = doc;
 		this.root = doc.tree;
@@ -221,7 +227,7 @@ public class CollectFeatures {
 		Token prevToken = tokens.LT(-1);
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
-		int[] features = getNodeFeatures(tokenToNodeMap, doc, i, curToken.getLine(), tabSize);
+		int[] features = getFeatures(i);
 
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
 
@@ -251,14 +257,15 @@ public class CollectFeatures {
 			aligned = getAlignmentCategory(node, curToken, columnDelta);
 		}
 
-		this.align.add(aligned);
+		align.add(aligned);
 
-		this.features.add(features);
+		featureVectors.add(features);
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
 	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
-		int aligned = CAT_NO_ALIGNMENT;
+		Pair<Integer,Integer> alignInfo = null;
+		Pair<Integer,Integer> indentInfo = null;
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
@@ -266,13 +273,15 @@ public class CollectFeatures {
 			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, curToken.getCharPositionInLine());
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
-			aligned = aligncat(deltaFromLeftAncestor, pair.b);
+			alignInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
 //			System.out.printf("ALIGN %s %s i=%d %x %s\n",
 //			                  curToken,
 //			                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
 //			                  pair.b, aligned, doc.fileName);
  		}
-		else if ( columnDelta!=0 ) {
+
+		// perhaps we are indented as well?
+		if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-Formatter.INDENT_LEVEL;
 			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
 			if ( pair!=null ) {
@@ -281,14 +290,31 @@ public class CollectFeatures {
 //				                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
 //				                  pair.b, aligned, doc.fileName);
 				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
-				aligned = indentcat(deltaFromLeftAncestor, pair.b);
-			}
-			else {
-				aligned = CAT_INDENT; // indent standard amount
+				indentInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
 			}
 		}
 
-		return aligned;
+		// If both align and indent from ancestor child exist, choose closest (lowest delta up tree)
+		if ( alignInfo!=null && indentInfo!=null ) {
+			if ( alignInfo.a < indentInfo.a ) {
+				return aligncat(alignInfo.a, alignInfo.b);
+			}
+			return indentcat(indentInfo.a, indentInfo.b);
+		}
+
+		// otherwise just return the align or indent we computed
+		if ( alignInfo!=null ) {
+			return aligncat(alignInfo.a, alignInfo.b);
+		}
+		else if ( indentInfo!=null ) {
+			return indentcat(indentInfo.a, indentInfo.b);
+		}
+
+		if ( columnDelta!=0 ) {
+			return CAT_INDENT; // indent standard amount
+		}
+
+		return CAT_NO_ALIGNMENT;
 	}
 
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
@@ -450,25 +476,61 @@ public class CollectFeatures {
 		return t.getLine()>prevToken.getLine();
 	}
 
-	public static int[] getNodeFeatures(Map<Token, TerminalNode> tokenToNodeMap,
-	                                    InputDocument doc,
-	                                    int i,
-	                                    int line,
-	                                    int tabSize)
-	{
-		CommonTokenStream tokens = doc.tokens;
+	public int[] getFeatures(int i)	{
+		CodeBuffTokenStream tokens = doc.tokens;
 		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
 		if ( node==null ) {
 			System.err.println("### No node associated with token "+tokens.get(i));
 			return null;
 		}
+
+		Token curToken = node.getSymbol();
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
+		Token prevToken = tokens.LT(-1);
+
+		boolean prevTokenStartsLine = false;
+		if ( tokens.index()-2 >= 0 ) {
+			if ( tokens.LT(-2)!=null ) {
+				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
+			}
+		}
+
+		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, curToken.getLine());
+
+		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
+
+		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
+
+		setListInfoFeatures(corpus.tokenToListInfo, features, curToken);
+
+		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
+		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
+		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
+
+		return features;
+	}
+
+	/** Get the token type and tree ancestor features. These are computed
+	 *  the same for both training and formatting.
+	 */
+	public static int[] getContextFeatures(Map<Token, TerminalNode> tokenToNodeMap,
+	                                       InputDocument doc,
+	                                       int i)
+	{
+		int[] features = new int[NUM_FEATURES];
+		CodeBuffTokenStream tokens = doc.tokens;
+		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+		if ( node==null ) {
+			System.err.println("### No node associated with token "+tokens.get(i));
+			return features;
+		}
 		Token curToken = node.getSymbol();
 
 		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-
 		// Get context information for previous token
 		Token prevToken = tokens.LT(-1);
 		TerminalNode prevNode = tokenToNodeMap.get(prevToken);
+
 		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(prevNode);
 		int prevEarliestAncestorRuleIndex = prevEarliestRightAncestor.getRuleIndex();
 		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
@@ -481,81 +543,37 @@ public class CollectFeatures {
 		ParserRuleContext earliestLeftAncestorParent3 = earliestLeftAncestorParent2!=null ? earliestLeftAncestorParent2.getParent() : null;
 		ParserRuleContext earliestLeftAncestorParent4 = earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3.getParent() : null;
 
-		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
+		features[INDEX_PREV_TYPE]                     = prevToken.getType();
+		features[INDEX_PREV_EARLIEST_RIGHT_ANCESTOR]  = rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum);
+		features[INDEX_CUR_TYPE]                      = curToken.getType();
+		features[INDEX_EARLIEST_LEFT_ANCESTOR]        = rulealt(earliestLeftAncestor);
+		features[INDEX_ANCESTORS_CHILD_INDEX]         = getChildIndexOrListMembership(node);
+		features[INDEX_ANCESTORS_PARENT_RULE]         = earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent) : -1;
+		features[INDEX_ANCESTORS_PARENT_CHILD_INDEX]  = getChildIndexOrListMembership(earliestLeftAncestor);
+		features[INDEX_ANCESTORS_PARENT2_RULE]        = earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2) : -1;
+		features[INDEX_ANCESTORS_PARENT2_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent);
+		features[INDEX_ANCESTORS_PARENT3_RULE]        = earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3) : -1;
+		features[INDEX_ANCESTORS_PARENT3_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent2);
+		features[INDEX_ANCESTORS_PARENT4_RULE]        = earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4) : -1;
+		features[INDEX_ANCESTORS_PARENT4_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent3);
 
-		int memberIndexOfNonSingletonList = -1; // >=0 if |list|>1.  -1 implies not member of list or singleton list
-		int nonSingletonListWidth = -1;
+		features[INDEX_INFO_FILE]    = 0; // dummy; _toString() dumps filename w/o this value; placeholder for col in printout
+		features[INDEX_INFO_LINE]    = curToken.getLine();
+		features[INDEX_INFO_CHARPOS] = curToken.getCharPositionInLine();
 
-		ParserRuleContext childOfSiblingList =
-			getMemberOfSiblingList(doc.corpus, node, earliestLeftAncestor);
-		if ( childOfSiblingList!=null ) {
-			ParserRuleContext siblingListParent = childOfSiblingList.getParent();
-			List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
-
-			if ( siblings.size()>1 ) {
-				memberIndexOfNonSingletonList = siblings.indexOf(childOfSiblingList);
-				String siblingsText = getSiblingsText(siblings);
-				nonSingletonListWidth = siblingsText.length();
-
-//				String[] ruleNames = doc.parser.getRuleNames();
-//				String sibParent = ruleNames[siblingListParent.getRuleIndex()];
-//				String child = ruleNames[childOfSiblingList.getRuleIndex()];
-//				child = child.replace("Context", "");
-//				sibParent = sibParent.replace("Context", "");
-//				System.out.println(StringUtils.abbreviate(siblingsText,30)+
-//					                   "  "+sibParent+":"+siblingListParent.getAltNumber()+"->"+child+
-//					                   ":"+childOfSiblingList.getAltNumber()+" "+siblings.indexOf(childOfSiblingList)+" of "+siblings.size()+" sibs"+
-//				                  ": len="+len);
-			}
-		}
-		else { // maybe we're a separator?
-			childOfSiblingList = getFirstSiblingFromSeparatorNode(doc.corpus, node);
-			if ( childOfSiblingList!=null ) {
-				ParserRuleContext siblingListParent = childOfSiblingList.getParent();
-				List<? extends ParserRuleContext> siblings = siblingListParent.getRuleContexts(childOfSiblingList.getClass());
-				if ( siblings.size()>1 ) {
-					String siblingsText = getSiblingsText(siblings);
-					nonSingletonListWidth = siblingsText.length();
-					memberIndexOfNonSingletonList = MEMBER_INDEX_LIST_ELEMENT;
-				}
-			}
-		}
-
-		boolean curTokenStartsNewLine = tokens.LT(1).getLine()>tokens.LT(-1).getLine();
-		boolean prevTokenStartsNewLine = false;
-		if ( tokens.index()-2 >= 0 ) {
-			if ( tokens.LT(-2)!=null ) {
-				prevTokenStartsNewLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
-			}
-		}
-
-		int[] features = {
-			tokens.LT(-1).getType(),
-			prevTokenStartsNewLine ? 1 : 0,
-			rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum),
-			tokens.LT(1).getType(),
-			matchingSymbolOnDiffLine,
-			curTokenStartsNewLine ? 1 : 0,
-			memberIndexOfNonSingletonList>0 ? MEMBER_INDEX_LIST_ELEMENT : memberIndexOfNonSingletonList,
-			nonSingletonListWidth,
-			rulealt(earliestLeftAncestor.getRuleIndex(),earliestLeftAncestor.getAltNumber()),
-			getChildIndex(node),
-			earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent.getRuleIndex(), earliestLeftAncestorParent.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestor),
-			earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2.getRuleIndex(), earliestLeftAncestorParent2.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestorParent),
-			earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3.getRuleIndex(), earliestLeftAncestorParent3.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestorParent2),
-			earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4.getRuleIndex(), earliestLeftAncestorParent4.getAltNumber()) : -1,
-			getChildIndex(earliestLeftAncestorParent3),
-
-			// info
-			0, // dummy; we don't store file index into feature vector
-			curToken.getLine(),
-			curToken.getCharPositionInLine()
-		};
-		assert features.length == NUM_FEATURES;
 		return features;
+	}
+
+	public static void setListInfoFeatures(Map<Token,Pair<Boolean,Integer>> tokenToListInfo, int[] features, Token curToken) {
+		int isOversizeList = -1;
+		int listElementType = -1;
+		Pair<Boolean, Integer> listInfo = tokenToListInfo.get(curToken);
+		if ( listInfo!=null ) {
+			isOversizeList = listInfo.a ? 1 : 0;
+			listElementType = listInfo.b;
+		}
+		features[INDEX_MEMBER_OVERSIZE_LIST]     = isOversizeList; // -1 if we don't know; false means list but not big list
+		features[INDEX_LIST_ELEMENT_TYPE]        = listElementType;
 	}
 
 	public static int getSiblingsLength(List<? extends ParserRuleContext> siblings) {
@@ -573,6 +591,16 @@ public class CollectFeatures {
 		}
 		return buf.toString();
 	}
+
+	public static String getText(List<? extends Token> tokens) {
+		if ( tokens==null ) return "";
+		StringBuilder buf = new StringBuilder();
+		for (Token sib : tokens) {
+			buf.append(sib.getText());
+		}
+		return buf.toString();
+	}
+
 
 	public static int getMatchingSymbolOnDiffLine(InputDocument doc,
 												  TerminalNode node,
@@ -607,17 +635,14 @@ public class CollectFeatures {
 		ParserRuleContext parent = child.getParent();
 		ParserRuleContext childMemberOfList = null;
 		while ( parent!=null ) {
-			Quad<Integer,Integer,Integer,Integer> pair = new Quad<>(
-				parent.getRuleIndex(), parent.getAltNumber(),
-				child.getRuleIndex(), child.getAltNumber()
-			);
-			if ( corpus.rootAndChildListPairs.containsKey(pair) ) {
+			ParentSiblingListKey pair = new ParentSiblingListKey(parent, child, node.getSymbol().getType());
+			if ( corpus.rootAndChildListStats.containsKey(pair) ) {
 				// count children
 				List<? extends ParserRuleContext> siblings = parent.getRuleContexts(child.getClass());
-				if ( siblings.size()>1 ) {
+//				if ( siblings.size()>1 ) {
 					childMemberOfList = child;
 					break; // stop at FIRST opportunity up the tree
-				}
+//				}
 			}
 			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
 			child = parent;
@@ -640,23 +665,37 @@ public class CollectFeatures {
 		return childMemberOfList;
 	}
 
-	/** If current node is a separator in a list, return the first subtree root
-	 *  member of that sibling list.
+	/** Walk upwards checking for an ancestor that is a sibling list element.
+	 *  Only consider lists identified by the corpus if there are more than
+	 *  one actual elements in the list for node.  For example, a grammar
+	 *  alt with just element X is in a list from corpus as alternative:element
+	 *  is a pair in rootAndChildListPairs. But, it is a singleton list. Ignore
+	 *  it and look upwards to the altList:alternative pair and see if there
+	 *  is more than one alt in the altList.
+	 *
+	 *  The earliestLeftAncestor is the highest child we'll look at for
+	 *  efficiency reasons.
 	 */
-	public static ParserRuleContext getFirstSiblingFromSeparatorNode(Corpus corpus, TerminalNode node) {
-		ParserRuleContext parent = (ParserRuleContext)node.getParent();
-		if ( parent==null ) return null;
-		Triple<Integer, Integer, Integer> key =
-			new Triple<>(parent.getRuleIndex(), parent.getAltNumber(), node.getSymbol().getType());
-		Class<? extends ParserRuleContext> memberClass = corpus.listSeparators.get(key);
-		if ( memberClass!=null ) {
-			// separator of list so get the siblings
-			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(memberClass);
-			if ( siblings.size()>1 ) {
-				return siblings.get(0);
+	public static ParserRuleContext getEarliestMemberOfSiblingList(
+		Corpus corpus,
+		TerminalNode node,
+		ParserRuleContext earliestLeftAncestor
+	)
+	{
+		ParserRuleContext child = (ParserRuleContext)node.getParent();
+		if ( child==null ) return null;
+		ParserRuleContext parent = child.getParent();
+		ParserRuleContext childMemberOfList = null; // track last good match we found
+		while ( parent!=null ) {
+			ParentSiblingListKey pair = new ParentSiblingListKey(parent, child, node.getSymbol().getType());
+			if ( corpus.rootAndChildListStats.containsKey(pair) ) {
+				childMemberOfList = child;
 			}
+			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
+			child = parent;
+			parent = parent.getParent();
 		}
-		return null;
+		return childMemberOfList;
 	}
 
 	public static TerminalNode getMatchingLeftSymbol(InputDocument doc,
@@ -735,8 +774,8 @@ public class CollectFeatures {
 		return online;
 	}
 
-	public List<int[]> getFeatures() {
-		return features;
+	public List<int[]> getFeatureVectors() {
+		return featureVectors;
 	}
 
 	public List<Integer> getInjectWhitespace() {
@@ -894,7 +933,12 @@ public class CollectFeatures {
 		return real;
 	}
 
-	public static int getChildIndex(ParseTree t) {
+	/** Return the index 0..n-1 of t as child of t.parent.
+	 *  If t is index 0, always return 0.
+	 *  If t is a repeated subtree root and index>0, return CHILD_INDEX_LIST_ELEMENT.
+	 *  In all other cases, return the actual index of t.
+	 */
+	public static int getChildIndexOrListMembership(ParseTree t) {
 		if ( t==null ) return -1;
 		ParseTree parent = t.getParent();
 		if ( parent==null ) {
@@ -909,15 +953,15 @@ public class CollectFeatures {
 				return CHILD_INDEX_LIST_ELEMENT;
 			}
 		}
-		else {
-			TerminalNode node = (TerminalNode)t;
-			List<TerminalNode> siblings =
-				((ParserRuleContext)parent).getTokens(node.getSymbol().getType());
-			if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
-				return CHILD_INDEX_LIST_ELEMENT;
-			}
+		return getChildIndex(t);
+	}
+
+	public static int getChildIndex(ParseTree t) {
+		if ( t==null ) return -1;
+		ParseTree parent = t.getParent();
+		if ( parent==null ) {
+			return -1;
 		}
-		// Either first of sibling list or not in a list.
 		// Figure out which child index t is of parent
 		for (int i = 0; i<parent.getChildCount(); i++) {
 			if ( parent.getChild(i)==t ) {
@@ -925,6 +969,10 @@ public class CollectFeatures {
 			}
 		}
 		return -1;
+	}
+
+	public static int rulealt(ParserRuleContext r) {
+		return rulealt(r.getRuleIndex(), r.getAltNumber());
 	}
 
 	/** Pack a rule index and an alternative number into the same 32-bit integer. */
@@ -973,5 +1021,24 @@ public class CollectFeatures {
 
 	public static int unnlcat(int v) {
 		return v >> 8 & 0xFFFF;
+	}
+
+	// '\n' (before list, before sep, after sep, after last element)
+	public static int listform(int[] ws) {
+		boolean[] nl = {
+			ws[0]=='\n',
+			ws[1]=='\n',
+			ws[2]=='\n',
+			ws[3]=='\n'
+		};
+		return
+			(nl[0]?0x01000000:0) |
+			(nl[1]?0x00010000:0) |
+			(nl[2]?0x00000100:0) |
+			(nl[3]?0x00000001:0);
+	}
+
+	public static int[] unlistform(int v) {
+		return new int[] { v>>24&0xFF, v>>16&0xFF, v>>8&0xFF, v & 0xFF };
 	}
 }

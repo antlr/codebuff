@@ -1,9 +1,9 @@
 package org.antlr.codebuff;
 
-import org.antlr.codebuff.misc.Quad;
-import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.misc.SiblingListStats;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.misc.Triple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +27,13 @@ public class Corpus {
 	 *  The key is (previous token's rule index, current token's rule index). It yields
 	 *  a list of vectors with same key. Created by {@link #buildTokenContextIndex}.
 	 */
-	Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
+	public Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
 
-	Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
-	Map<Quad<Integer, Integer, Integer, Integer>, Triple<Integer,Integer,Integer>> rootAndChildListPairs;
-	Map<Triple<Integer, Integer, Integer>, Class<? extends ParserRuleContext>> listSeparators;
+	public Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
+	public Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats;
+	public Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats;
+	public Map<ParentSiblingListKey, Integer> splitListForms;
+	public Map<Token, Pair<Boolean, Integer>> tokenToListInfo;
 
 	public Corpus(List<InputDocument> documents,
 				  List<int[]> X,
@@ -84,10 +86,10 @@ public class Corpus {
 	public void buildTokenContextIndex() {
 		curAndPrevTokenRuleIndexToVectorsMap = new HashMap<>();
 		for (int i=0; i<X.size(); i++) {
-			int curTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
-			int prevTokenRuleIndex = X.get(i)[CollectFeatures.INDEX_EARLIEST_LEFT_ANCESTOR];
-			int pr = CollectFeatures.unrulealt(prevTokenRuleIndex)[0];
-			int cr = CollectFeatures.unrulealt(curTokenRuleIndex)[0];
+			int curTokenRuleIndex = X.get(i)[Trainer.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
+			int prevTokenRuleIndex = X.get(i)[Trainer.INDEX_EARLIEST_LEFT_ANCESTOR];
+			int pr = Trainer.unrulealt(prevTokenRuleIndex)[0];
+			int cr = Trainer.unrulealt(curTokenRuleIndex)[0];
 			Pair<Integer, Integer> key = new Pair<>(pr, cr);
 			List<Integer> vectorIndexes = curAndPrevTokenRuleIndexToVectorsMap.get(key);
 			if ( vectorIndexes==null ) {

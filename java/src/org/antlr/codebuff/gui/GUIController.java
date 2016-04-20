@@ -1,9 +1,9 @@
 package org.antlr.codebuff.gui;
 
-import org.antlr.codebuff.CollectFeatures;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.TokenPositionAnalysis;
 import org.antlr.codebuff.Tool;
+import org.antlr.codebuff.Trainer;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
@@ -47,11 +47,11 @@ public class GUIController {
 		original_tokens = Tool.tokenize(originalText, lexerClass);
 		formatted_tokens = Tool.tokenize(formattedText, lexerClass);
 
-		realFormattedTokens = CollectFeatures.getRealTokens(formatted_tokens);
+		realFormattedTokens = Trainer.getRealTokens(formatted_tokens);
 
 		// show spaces as dots
-		originalText = originalText.replace(' ','\u00B7');
-		formattedText = formattedText.replace(' ','\u00B7');
+//		originalText = originalText.replace(' ','\u00B7');
+//		formattedText = formattedText.replace(' ','\u00B7');
 
 		// set text and font
 		Font docFont = new Font("Monaco", Font.PLAIN, 14);
