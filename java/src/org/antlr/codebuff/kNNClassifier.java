@@ -173,6 +173,9 @@ public abstract class kNNClassifier {
 		int cr = Trainer.unrulealt(curTokenRuleIndex)[0];
 		Pair<Integer, Integer> key =  new Pair<>(pr, cr);
 		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
+		if ( distanceThreshold==MAX_CONTEXT_DIFF_THRESHOLD2 ) { // couldn't find anything, open it all up.
+			vectorIndexesMatchingTokenContext = null;
+		}
 		List<Neighbor> distances = new ArrayList<>();
 		if ( vectorIndexesMatchingTokenContext==null ) {
 			// no matching contexts for this feature, must rely on full training set

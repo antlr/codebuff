@@ -1,7 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
-import org.antlr.codebuff.walkers.SplitOversizeLists;
+import org.antlr.codebuff.walkers.IdentifyOversizeLists;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.WritableToken;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;
@@ -38,15 +39,10 @@ import static org.antlr.codebuff.Trainer.setListInfoFeatures;
 
 public class Formatter {
 	public static final int INDENT_LEVEL = 4;
-	public static final int WIDE_LIST_THRESHOLD = 120;
+	public static final int WIDE_LIST_THRESHOLD = 120; // anything this big is definitely "oversize list"
 	public static final int COL_ALARM_THRESHOLD = 80;
 
 	protected final Corpus corpus;
-
-	/** injection[i] is whitespace ('\n', ' ') that should be injected before
-	 *  emitting token i. Primary output mechanism.
-	 */
-	protected String[] injection;
 
 	protected StringBuilder output = new StringBuilder();
 	protected InputDocument doc;
@@ -84,11 +80,6 @@ public class Formatter {
 		this.tokens = doc.tokens;
 		this.originalTokens = Tool.copy(tokens);
 		Tool.wipeLineAndPositionInfo(tokens); // all except for first token
-		injection = new String[tokens.size()];
-		for (int i = 0; i<injection.length; i++) {
-			injection[i] = "";
-			injection[i] = null;
-		}
 		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
@@ -120,81 +111,16 @@ public class Formatter {
 		output.append(prefix);
 
 		// first identify oversize lists with separators
-		SplitOversizeLists splitter = new SplitOversizeLists(corpus, tokens, tokenToNodeMap, injection);
-//		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
+		IdentifyOversizeLists splitter = new IdentifyOversizeLists(corpus, tokens, tokenToNodeMap);
+		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
 		tokenToListInfo = splitter.tokenToListInfo;
 
 		realTokens = getRealTokens(tokens);
-
-		System.out.println(prefix + getOutput(realTokens, injection));
-
-		injectWhitespace();
-		System.out.println("------------");
-		System.out.println(prefix + getOutput(realTokens, injection));
-
 		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(i, tokenIndexInStream);
 		}
 		return output.toString();
-	}
-
-	public static String getOutput(List<Token> tokens, String[] injection) {
-		StringBuilder buf = new StringBuilder();
-		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) {
-			Token t = tokens.get(i);
-			int tokenIndexInStream = t.getTokenIndex();
-			if ( injection[tokenIndexInStream]!=null ) {
-				buf.append(injection[tokenIndexInStream]);
-			}
-			buf.append(t.getText());
-		}
-		return buf.toString();
-	}
-
-	public void injectWhitespace() {
-		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
-			int indexIntoRealTokens = i;
-			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
-
-			CommonToken curToken = (CommonToken) tokens.get(tokenIndexInStream);
-
-			if ( injection[tokenIndexInStream]!=null ) {
-				// we have already decided what to do here
-				continue;
-			}
-
-			tokens.seek(tokenIndexInStream);
-			Token prevToken = tokens.LT(-1);
-			boolean prevTokenStartsLine = false;
-			if ( injection[prevToken.getTokenIndex()]!=null ) {
-				prevTokenStartsLine = Tool.count(injection[prevToken.getTokenIndex()], '\n')>0;
-			}
-
-			int[] features = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
-
-			int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, MAX_WS_CONTEXT_DIFF_THRESHOLD);
-			int newlines = 0;
-			int ws = 0;
-			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
-				newlines = Trainer.unnlcat(injectNL_WS);
-			}
-			else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
-				ws = Trainer.unwscat(injectNL_WS);
-			}
-
-			if ( newlines==0 && ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
-				ws = 1;
-			}
-
-			if ( newlines>0 ) {
-				injection[tokenIndexInStream] = Tool.newlines(newlines);
-			}
-			else {
-				// inject whitespace instead of \n?
-				injection[tokenIndexInStream] = Tool.spaces(ws);
-			}
-		}
 	}
 
 	public void processToken(int indexIntoRealTokens, int tokenIndexInStream) {
@@ -204,16 +130,6 @@ public class Formatter {
 
 		emitCommentsToTheLeft(tokenIndexInStream);
 
-		String injectedWS = injection[curToken.getTokenIndex()];
-		int newlines = 0;
-		int ws = 0;
-		if ( injectedWS!=null ) {
-			newlines = Tool.count(injectedWS, '\n');
-			ws = Tool.count(injectedWS, ' ');
-		}
-
-		int alignOrIndent = CAT_NO_ALIGNMENT;
-
 		tokens.seek(tokenIndexInStream);
 		boolean prevTokenStartsLine = false;
 		if ( tokens.index()-2 >= 0 ) {
@@ -221,8 +137,26 @@ public class Formatter {
 				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
 			}
 		}
+		int[] features = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
+		int[] featuresForAlign = new int[features.length];
+		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
-		int[] featuresForAlign = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
+		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+
+		int newlines = 0;
+		int ws = 0;
+		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
+			newlines = Trainer.unnlcat(injectNL_WS);
+		}
+		else if ( (injectNL_WS&0xFF)==CAT_INJECT_WS ) {
+			ws = Trainer.unwscat(injectNL_WS);
+		}
+
+		if ( newlines==0 && ws==0 && cannotJoin(realTokens.get(indexIntoRealTokens-1), curToken) ) { // failsafe!
+			ws = 1;
+		}
+
+		int alignOrIndent = CAT_NO_ALIGNMENT;
 
 		if ( newlines>0 ) {
 			output.append(Tool.newlines(newlines));
@@ -235,8 +169,8 @@ public class Formatter {
 				firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
 			}
 
-			// getNodeFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
-			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
+			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
+			featuresForAlign[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
 
@@ -321,7 +255,6 @@ public class Formatter {
 
 		TokenPositionAnalysis tokenPositionAnalysis;
 		if ( collectAnalysis ) {
-			int[] features = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
 			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, -1, alignOrIndent);
 		}
 		else {

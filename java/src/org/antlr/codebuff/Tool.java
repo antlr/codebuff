@@ -216,7 +216,7 @@ public class Tool {
 			}
 		}
 
-		if ( true ) {
+		if ( false ) {
 			for (ParentSiblingListKey siblingPairs : rootAndChildListStats.keySet()) {
 				String parent = ruleNames[siblingPairs.parentRuleIndex];
 				parent = parent.replace("Context","");
