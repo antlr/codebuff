@@ -38,6 +38,7 @@ import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
  * Testing:
  *
  * Tool  -dbg  -antlr     ../corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
+ * Tool  -dbg  -asm6502   ../corpus/asm6502/training      ../corpus/asm6502/testing/combsort.txt
  * Tool  -dbg  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
  * Tool  -dbg  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -dbg  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
@@ -47,6 +48,39 @@ import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
 public class Tool {
 	public static boolean showFileNames = false;
 	public static boolean showTokens = false;
+
+	static class LangDescriptor {
+		String name;
+		String fileRegex;
+		Class<? extends Lexer> lexerClass;
+		Class<? extends Parser> parserClass;
+		String startRuleName;
+		int tabSize;
+
+		public LangDescriptor(String name,
+		                      String fileRegex,
+		                      Class<? extends Lexer> lexerClass,
+		                      Class<? extends Parser> parserClass,
+		                      String startRuleName,
+		                      int tabSize)
+		{
+			this.name = name;
+			this.fileRegex = fileRegex;
+			this.lexerClass = lexerClass;
+			this.parserClass = parserClass;
+			this.startRuleName = startRuleName;
+			this.tabSize = tabSize;
+		}
+	}
+
+	public static LangDescriptor[] languages = new LangDescriptor[] {
+		new LangDescriptor("java", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4),
+		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4),
+		new LangDescriptor("sqlite", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4),
+		new LangDescriptor("tsql", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4),
+		new LangDescriptor("plsql", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4),
+		new LangDescriptor("asm6502", ".*\\.txt", asm6502Lexer.class, asm6502Parser.class, "prog", 8),
+	};
 
 	public static void main(String[] args)
 		throws Exception
@@ -62,6 +96,7 @@ public class Tool {
 			arg++;
 		}
 		String language = args[arg++];
+		language = language.substring(1);
 		String corpusDir = args[arg++];
 		String testFilename = args[arg];
 		String output = "???";
@@ -70,70 +105,27 @@ public class Tool {
 		GUIController controller;
 		List<TokenPositionAnalysis> analysisPerToken;
 		Pair<String, List<TokenPositionAnalysis>> results;
+		LangDescriptor lang = null;
 		long start, stop;
-		switch ( language ) {
-			case "-java":
-				corpus = train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
-				testDoc = load(testFilename, JavaLexer.class, tabSize);
-				start = System.nanoTime();
-				results = format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, collectAnalysis);
-				stop = System.nanoTime();
-				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
-				output = results.a;
-				analysisPerToken = results.b;
-				controller = new GUIController(analysisPerToken, testDoc, output, JavaLexer.class);
-				controller.show();
+		for (int i = 0; i<languages.length; i++) {
+			if ( languages[i].name.equals(language) ) {
+				lang = languages[i];
 				break;
-			case "-antlr":
-				corpus = train(corpusDir, ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, true);
-				testDoc = load(testFilename, ANTLRv4Lexer.class, tabSize);
-				start = System.nanoTime();
-				results = format(corpus, testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", tabSize, collectAnalysis);
-				stop = System.nanoTime();
-				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
-				output = results.a;
-				analysisPerToken = results.b;
-				controller = new GUIController(analysisPerToken, testDoc, output, ANTLRv4Lexer.class);
-				controller.show();
-				break;
-			case "-sqlite":
-				corpus = train(corpusDir, ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, true);
-				testDoc = load(testFilename, SQLiteLexer.class, tabSize);
-				start = System.nanoTime();
-				results = format(corpus, testDoc, SQLiteLexer.class, SQLiteParser.class, "parse", tabSize, collectAnalysis);
-				stop = System.nanoTime();
-				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
-				output = results.a;
-				analysisPerToken = results.b;
-				controller = new GUIController(analysisPerToken, testDoc, output, SQLiteLexer.class);
-				controller.show();
-				break;
-			case "-tsql":
-				corpus = train(corpusDir, ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, true);
-				testDoc = load(testFilename, tsqlLexer.class, tabSize);
-				start = System.nanoTime();
-				results = format(corpus, testDoc, tsqlLexer.class, tsqlParser.class, "tsql_file", tabSize, collectAnalysis);
-				stop = System.nanoTime();
-				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
-				output = results.a;
-				analysisPerToken = results.b;
-				controller = new GUIController(analysisPerToken, testDoc, output, tsqlLexer.class);
-				controller.show();
-				break;
-			case "-plsql":
-				corpus = train(corpusDir, ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, true);
-				testDoc = load(testFilename, plsqlLexer.class, tabSize);
-				start = System.nanoTime();
-				results = format(corpus, testDoc, plsqlLexer.class, plsqlParser.class, "compilation_unit", tabSize, collectAnalysis);
-				stop = System.nanoTime();
-				System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
-				output = results.a;
-				analysisPerToken = results.b;
-				controller = new GUIController(analysisPerToken, testDoc, output, plsqlLexer.class);
-				controller.show();
-				break;
+			}
 		}
-		System.out.println(output);
+		if ( lang!=null ) {
+			corpus = train(corpusDir, lang.fileRegex, lang.lexerClass, lang.parserClass, lang.startRuleName, lang.tabSize, true);
+			testDoc = load(testFilename, lang.lexerClass, tabSize);
+			start = System.nanoTime();
+			results = format(corpus, testDoc, lang.lexerClass, lang.parserClass, lang.startRuleName, lang.tabSize, collectAnalysis);
+			stop = System.nanoTime();
+			System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
+			output = results.a;
+			analysisPerToken = results.b;
+			controller = new GUIController(analysisPerToken, testDoc, output, lang.lexerClass);
+			controller.show();
+			System.out.println(output);
+		}
 	}
 
 	/** Given a corpus, format the document by tokenizing and using the

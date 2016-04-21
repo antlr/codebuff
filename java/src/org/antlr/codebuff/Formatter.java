@@ -9,7 +9,6 @@ import org.antlr.v4.runtime.WritableToken;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.List;
@@ -122,7 +121,7 @@ public class Formatter {
 
 		// first identify oversize lists with separators
 		SplitOversizeLists splitter = new SplitOversizeLists(corpus, tokens, tokenToNodeMap, injection);
-		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
+//		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
 		tokenToListInfo = splitter.tokenToListInfo;
 
 		realTokens = getRealTokens(tokens);
@@ -356,7 +355,7 @@ public class Formatter {
 
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
-		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
+		boolean curTokenStartsNewLine = line>prevToken.getLine();
 
 		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
 
