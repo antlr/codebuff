@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.misc.ClassifierResultCacheKey;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.MutableDouble;
 import org.antlr.v4.runtime.misc.Pair;
@@ -19,6 +20,14 @@ public abstract class kNNClassifier {
 	protected final int maxDistanceCount;
 
 	public boolean dumpVotes = false;
+
+	public static Map<ClassifierResultCacheKey,Integer> classifyCache = new HashMap<>();
+	public static int nClassifyCalls=0;
+	public static int nClassifyCacheHits=0;
+
+	public static Map<ClassifierResultCacheKey, Neighbor[]> neighborCache = new HashMap<>();
+	public static int nNNCalls=0;
+	public static int nNNCacheHits=0;
 
 	public kNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES) {
 		this.corpus = corpus;
@@ -46,6 +55,13 @@ public abstract class kNNClassifier {
 	}
 
 	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+		ClassifierResultCacheKey key = new ClassifierResultCacheKey(unknown, Y);
+		Integer catI = classifyCache.get(key);
+		nClassifyCalls++;
+		if ( catI!=null ) {
+			nClassifyCacheHits++;
+			return catI;
+		}
 		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
 		Map<Integer,MutableDouble> similarities = getCategoryToSimilarityMap(kNN, k, Y);
 		int cat = getCategoryWithMaxValue(similarities);
@@ -56,6 +72,8 @@ public abstract class kNNClassifier {
 			similarities = getCategoryToSimilarityMap(kNN, k, Y);
 			cat = getCategoryWithMaxValue(similarities);
 		}
+
+		classifyCache.put(key, cat);
 		return cat;
 	}
 
@@ -132,16 +150,25 @@ public abstract class kNNClassifier {
 	}
 
 	public String getPredictionAnalysis(InputDocument doc, int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		Neighbor[] kNN = kNN(unknown, k, distanceThreshold);
-		Map<Integer,MutableDouble> similarities = getCategoryToSimilarityMap(kNN, k, Y);
+		ClassifierResultCacheKey key = new ClassifierResultCacheKey(unknown, Y);
+		Neighbor[] kNN = neighborCache.get(key);
+		nNNCalls++;
+		if ( kNN==null ) {
+			kNN = kNN(unknown, k, distanceThreshold);
+			neighborCache.put(key, kNN);
+		}
+		else {
+			nNNCacheHits++;
+		}
+		Map<Integer, MutableDouble> similarities = getCategoryToSimilarityMap(kNN, k, Y);
 		int cat = getCategoryWithMaxValue(similarities);
-
-		if ( cat==-1 ) {
+		if (cat == -1) {
 			// try with less strict match threshold to get some indication of alignment
 			kNN = kNN(unknown, k, MAX_CONTEXT_DIFF_THRESHOLD2);
 			similarities = getCategoryToSimilarityMap(kNN, k, Y);
 			cat = getCategoryWithMaxValue(similarities);
 		}
+
 		int[] elements = Trainer.unaligncat(cat);
 		String displayCat = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
 
