@@ -1,5 +1,7 @@
 package org.antlr.codebuff.misc;
 
+import org.antlr.v4.runtime.misc.MurmurHash;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,16 +16,22 @@ public class ClassifierResultCacheKey {
 
 	@Override
 	public int hashCode() {
-		int h = 0;
+		int hash = MurmurHash.initialize();
 		for (int feature : features) {
-			h += feature << 7;
+			hash = MurmurHash.update(hash, feature);
 		}
-		return h + System.identityHashCode(Y)<<7;
+		hash = MurmurHash.update(hash, System.identityHashCode(Y));
+		return MurmurHash.finish(hash, features.length + 1);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if ( !(obj instanceof ClassifierResultCacheKey) ) return false;
+		if (obj == this) {
+			return true;
+		}
+		else if ( !(obj instanceof ClassifierResultCacheKey) ) {
+			return false;
+		}
 		ClassifierResultCacheKey other = (ClassifierResultCacheKey) obj;
 		return Arrays.equals(features, other.features) &&
 			Y == other.Y;
