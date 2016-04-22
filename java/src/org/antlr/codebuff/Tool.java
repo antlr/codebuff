@@ -113,7 +113,7 @@ public class Tool {
 		}
 		if ( lang!=null ) {
 			corpus = train(corpusDir, lang.fileRegex, lang.lexerClass, lang.parserClass, lang.startRuleName, lang.tabSize, true);
-			testDoc = load(testFilename, lang.lexerClass, tabSize);
+			testDoc = load(testFilename, tabSize);
 			start = System.nanoTime();
 			results = format(corpus, testDoc, lang.lexerClass, lang.parserClass, lang.startRuleName, lang.tabSize, collectAnalysis);
 			stop = System.nanoTime();
@@ -181,7 +181,7 @@ public class Tool {
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
-		List<InputDocument> documents = load(allFiles, lexerClass, tabSize);
+		List<InputDocument> documents = load(allFiles, tabSize);
 
 		// Parse all documents into parse trees before training begins
 		for (InputDocument doc : documents) {
@@ -347,16 +347,14 @@ public class Tool {
 		return lexerCtor.newInstance(input);
 	}
 
-	/** Get all file contents into input array */
-	public static List<InputDocument> load(List<String> fileNames,
-										   Class<? extends Lexer> lexerClass,
-										   int tabSize)
+	/** Get all file contents into input doc list */
+	public static List<InputDocument> load(List<String> fileNames, int tabSize)
 		throws Exception
 	{
 		List<InputDocument> input = new ArrayList<>(fileNames.size());
 		int i = 0;
 		for (String f : fileNames) {
-			InputDocument doc = load(f, lexerClass, tabSize);
+			InputDocument doc = load(f, tabSize);
 			doc.index = i++;
 			input.add(doc);
 		}
@@ -364,39 +362,14 @@ public class Tool {
 		return input;
 	}
 
-	public static InputDocument load(String fileName,
-									 Class<? extends Lexer> lexerClass,
-									 int tabSize)
+	public static InputDocument load(String fileName, int tabSize)
 		throws Exception
 	{
 		Path path = FileSystems.getDefault().getPath(fileName);
 		byte[] filearray = Files.readAllBytes(path);
 		String content = new String(filearray);
 		String notabs = expandTabs(content, tabSize);
-		CommonTokenStream tokens = tokenize(notabs, lexerClass);
-		// delete any whitespace on a line by itself, including the newline
-		// most likely left over from a comment skipped by lexer
-		StringBuilder buf = new StringBuilder();
-		int i=0;
-		while ( i<tokens.size()-1 ) {
-			Token t = tokens.get(i);
-			buf.append(t.getText());
-			// if we see whitespace followed by whitespace, it must have been
-			// split up by a comment or other skipped token. Assume we want to
-			// delete the 2nd one.
-			// "\n    " then "   " should become "\n    "
-			// "\n\n    " then "   " should become "\n\n    "
-			if ( t.getText().matches("\n+ +") ) {
-				Token next = tokens.get(i+1);
-				if ( next.getText().matches("\n +") ) {
-					// delete by bumping i so we don't see next in next iteration
-					i++;
-				}
-			}
-			i++;
-		}
-
-		return new InputDocument(null, fileName, buf.toString());
+		return new InputDocument(null, fileName, notabs);
 	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {

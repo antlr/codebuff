@@ -187,7 +187,7 @@ public class FeatureMetaDataTweaker {
 		Corpus corpus = Tool.train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
 
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
-		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
+		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, tabSize);
 		FeatureMetaDataTweaker f = new FeatureMetaDataTweaker(Trainer.FEATURES_ALL, corpus, documents, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
 		f.tweakParameterAndTest();
 	}

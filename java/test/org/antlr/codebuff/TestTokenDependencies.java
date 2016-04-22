@@ -17,7 +17,7 @@ public class TestTokenDependencies {
 	public static void dumpJavaPairs(String fileName) throws Exception {
 		Vocabulary vocab = JavaParser.VOCABULARY;
 
-		InputDocument testDoc = Tool.load(fileName, JavaLexer.class, 4);
+		InputDocument testDoc = Tool.load(fileName, 4);
 		Tool.parse(testDoc, JavaLexer.class, JavaParser.class, "compilationUnit");
 		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, JavaParser.ruleNames);
 		ParseTreeWalker.DEFAULT.walk(listener, testDoc.tree);
@@ -36,7 +36,7 @@ public class TestTokenDependencies {
 	public static void dumpANTLRPairs(String fileName) throws Exception {
 		Vocabulary vocab = ANTLRv4Parser.VOCABULARY;
 
-		InputDocument testDoc = Tool.load(fileName, ANTLRv4Lexer.class, 4);
+		InputDocument testDoc = Tool.load(fileName, 4);
 		Tool.parse(testDoc, ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec");
 		CollectTokenDependencies listener = new CollectTokenDependencies(vocab, ANTLRv4Parser.ruleNames);
 		ParseTreeWalker.DEFAULT.walk(listener, testDoc.tree);

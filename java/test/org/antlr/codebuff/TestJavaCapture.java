@@ -24,20 +24,20 @@ result for same training corpus and test doc.
  */
 
 @RunWith(Parameterized.class)
-public class TestJavaStability {
+public class TestJavaCapture {
 	public static final String ST4_CORPUS = "../samples/stringtemplate4/org";
 
 	public String fileName;
 
-	public TestJavaStability(String fileName) {
+	public TestJavaCapture(String fileName) {
 		this.fileName = fileName;
 	}
 
 	@Test
-	public void testStability() throws Exception {
+	public void testCapture() throws Exception {
 		boolean shuffleFeatureVectors = false;
 		Corpus corpus = Tool.train(fileName, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4, shuffleFeatureVectors);
-		InputDocument testDoc = Tool.load(fileName, JavaLexer.class, 4);
+		InputDocument testDoc = Tool.load(fileName, 4);
 		Pair<String,List<TokenPositionAnalysis>> results = Tool.format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", 4, false);
 		List<TokenPositionAnalysis> analysisPerToken = results.b;
 

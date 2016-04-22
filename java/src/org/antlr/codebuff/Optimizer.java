@@ -165,7 +165,7 @@ public class Optimizer {
 		Corpus corpus = Tool.train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
 
 		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
-		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, JavaLexer.class, tabSize);
+		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, tabSize);
 
 		Tester t = new Tester(Trainer.FEATURES_INJECT_WS, corpus, documents, tabSize);
 		// sorry, had to comment this out
