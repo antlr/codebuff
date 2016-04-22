@@ -84,7 +84,8 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 
 		TerminalNode prefixNode = tokenToNodeMap.get(prefixToken);
 		TerminalNode suffixNode = tokenToNodeMap.get(suffixToken);
-		boolean hasSurroundingTokens  = prefixNode.getParent() == suffixNode.getParent();
+		boolean hasSurroundingTokens =
+			prefixNode!=null && prefixNode.getParent() == suffixNode.getParent();
 
 		if ( hasSurroundingTokens ) {
 			tokenToListInfo.put(prefixToken, new Pair<>(isOversizeList, Trainer.LIST_PREFIX));
