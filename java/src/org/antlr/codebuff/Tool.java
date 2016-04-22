@@ -38,7 +38,6 @@ import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
  * Testing:
  *
  * Tool  -dbg  -antlr     ../corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
- * Tool  -dbg  -asm6502   ../corpus/asm6502/training      ../corpus/asm6502/testing/combsort.txt
  * Tool  -dbg  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
  * Tool  -dbg  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -dbg  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
@@ -78,8 +77,7 @@ public class Tool {
 		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4),
 		new LangDescriptor("sqlite", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4),
 		new LangDescriptor("tsql", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4),
-		new LangDescriptor("plsql", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4),
-		new LangDescriptor("asm6502", ".*\\.txt", asm6502Lexer.class, asm6502Parser.class, "prog", 8),
+		new LangDescriptor("plsql", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4)
 	};
 
 	public static void main(String[] args)
