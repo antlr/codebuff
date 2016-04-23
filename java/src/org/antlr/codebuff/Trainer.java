@@ -199,26 +199,26 @@ public class Trainer {
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
+
+	// training results:
 	protected Vector<int[]> featureVectors;
 	protected Vector<Integer> injectWhitespace;
 	protected Vector<Integer> align;
 
-	protected int currentIndent = 0;
-
+	/** Make it fast to get a node for a specific token */
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
-	protected int tabSize;
-
-	public Trainer(InputDocument doc, int tabSize) {
+	public Trainer(InputDocument doc) {
 		this.corpus = doc.corpus;
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
-		this.tabSize = tabSize;
 	}
 
 	public void computeFeatureVectors() {
 		List<Token> realTokens = getRealTokens(tokens);
+
+		tokenToNodeMap = indexTree(root);
 
 		// make space for n feature vectors and decisions, one for each token
 		// from stream, including hidden tokens (though hidden tokens have no
@@ -240,9 +240,6 @@ public class Trainer {
 	}
 
 	public void computeFeatureVectorForToken(int i) {
-		if ( tokenToNodeMap == null ) {
-			tokenToNodeMap = indexTree(root);
-		}
 
 		Token curToken = tokens.get(i);
 		if ( curToken.getType()==Token.EOF ) return;
@@ -271,8 +268,7 @@ public class Trainer {
 
 		int columnDelta = 0;
 		if ( precedingNL>0 ) { // && aligned!=1 ) {
-			columnDelta = curToken.getCharPositionInLine() - currentIndent;
-			currentIndent = curToken.getCharPositionInLine();
+			columnDelta = curToken.getCharPositionInLine() - prevToken.getCharPositionInLine();
 		}
 
 		int aligned = CAT_NO_ALIGNMENT ;
@@ -808,6 +804,18 @@ public class Trainer {
 
 	public List<Integer> getAlign() {
 		return BuffUtils.filter(align, v -> v!=null);
+	}
+
+	public List<int[]> getTokenToFeatureVectors() {
+		return featureVectors;
+	}
+
+	public List<Integer> getTokenInjectWhitespace() {
+		return injectWhitespace;
+	}
+
+	public List<Integer> getTokenAlign() {
+		return align;
 	}
 
 	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {

@@ -163,12 +163,6 @@ public class Formatter {
 			line+=newlines;
 			charPosInLine = 0;
 
-			List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokenIndexInStream, line);
-			Token firstTokenOnPrevLine = null;
-			if ( tokensOnPreviousLine.size()>0 ) {
-				firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
-			}
-
 			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
 			featuresForAlign[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
@@ -176,70 +170,11 @@ public class Formatter {
 
 			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.align, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
-			if ( alignOrIndent==CAT_INDENT ) {
-				if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
-					int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
-					charPosInLine = indentedCol;
-					output.append(Tool.spaces(indentedCol));
-				}
-			}
-			else if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
-				int[] deltaChild = Trainer.unaligncat(alignOrIndent);
-				int deltaFromAncestor = deltaChild[0];
-				int childIndex = deltaChild[1];
-				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
-				ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
-				Token start = null;
-				if ( ancestor==null ) {
-					System.err.println("Whoops. No ancestor at that delta");
-				}
-				else {
-					ParseTree child = ancestor.getChild(childIndex);
-					if (child instanceof ParserRuleContext) {
-						start = ((ParserRuleContext) child).getStart();
-					}
-					else if (child instanceof TerminalNode) {
-						start = ((TerminalNode) child).getSymbol();
-					}
-					else {
-						// uh oh.
-						System.err.println("Whoops. Tried to access invalid child");
-					}
-				}
-				if ( start!=null ) {
-					int indentCol = start.getCharPositionInLine();
-					charPosInLine = indentCol;
-					output.append(Tool.spaces(indentCol));
-				}
+			if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
+				align(alignOrIndent, node);
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
-				int[] deltaChild = Trainer.unindentcat(alignOrIndent);
-				int deltaFromAncestor = deltaChild[0];
-				int childIndex = deltaChild[1];
-				ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
-				ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
-				Token start = null;
-				if ( ancestor==null ) {
-					System.err.println("Whoops. No ancestor at that delta");
-				}
-				else {
-					ParseTree child = ancestor.getChild(childIndex);
-					if ( child instanceof ParserRuleContext ) {
-						start = ((ParserRuleContext) child).getStart();
-					}
-					else if ( child instanceof TerminalNode ) {
-						start = ((TerminalNode) child).getSymbol();
-					}
-					else {
-						// uh oh.
-						System.err.println("Whoops. Tried to access invalid child");
-					}
-				}
-				if ( start!=null ) {
-					int indentCol = start.getCharPositionInLine()+INDENT_LEVEL;
-					charPosInLine = indentCol;
-					output.append(Tool.spaces(indentCol));
-				}
+				indent(alignOrIndent, node);
 			}
 		}
 		else {
@@ -270,6 +205,80 @@ public class Formatter {
 		// emit
 		output.append(tokText);
 		charPosInLine += n;
+	}
+
+	public void indent(int alignOrIndent, TerminalNode node) {
+		int tokenIndexInStream = node.getSymbol().getTokenIndex();
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokenIndexInStream, line);
+		Token firstTokenOnPrevLine = null;
+		if ( tokensOnPreviousLine.size()>0 ) {
+			firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
+		}
+
+		if ( alignOrIndent==CAT_INDENT ) {
+			if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
+				int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
+				charPosInLine = indentedCol;
+				output.append(Tool.spaces(indentedCol));
+			}
+		}
+		int[] deltaChild = Trainer.unindentcat(alignOrIndent);
+		int deltaFromAncestor = deltaChild[0];
+		int childIndex = deltaChild[1];
+		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
+		ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+		Token start = null;
+		if ( ancestor==null ) {
+			System.err.println("Whoops. No ancestor at that delta");
+		}
+		else {
+			ParseTree child = ancestor.getChild(childIndex);
+			if ( child instanceof ParserRuleContext ) {
+				start = ((ParserRuleContext) child).getStart();
+			}
+			else if ( child instanceof TerminalNode ) {
+				start = ((TerminalNode) child).getSymbol();
+			}
+			else {
+				// uh oh.
+				System.err.println("Whoops. Tried to access invalid child");
+			}
+		}
+		if ( start!=null ) {
+			int indentCol = start.getCharPositionInLine()+INDENT_LEVEL;
+			charPosInLine = indentCol;
+			output.append(Tool.spaces(indentCol));
+		}
+	}
+
+	public void align(int alignOrIndent, TerminalNode node) {
+		int[] deltaChild = Trainer.unaligncat(alignOrIndent);
+		int deltaFromAncestor = deltaChild[0];
+		int childIndex = deltaChild[1];
+		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
+		ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
+		Token start = null;
+		if ( ancestor==null ) {
+			System.err.println("Whoops. No ancestor at that delta");
+		}
+		else {
+			ParseTree child = ancestor.getChild(childIndex);
+			if (child instanceof ParserRuleContext) {
+				start = ((ParserRuleContext) child).getStart();
+			}
+			else if (child instanceof TerminalNode) {
+				start = ((TerminalNode) child).getSymbol();
+			}
+			else {
+				// uh oh.
+				System.err.println("Whoops. Tried to access invalid child");
+			}
+		}
+		if ( start!=null ) {
+			int indentCol = start.getCharPositionInLine();
+			charPosInLine = indentCol;
+			output.append(Tool.spaces(indentCol));
+		}
 	}
 
 	public int[] getFeatures(int i,

@@ -124,7 +124,7 @@ public class Tool {
 			analysisPerToken = results.b;
 			controller = new GUIController(analysisPerToken, testDoc, output, lang.lexerClass);
 			controller.show();
-			System.out.println(output);
+//			System.out.println(output);
 			System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 			System.out.printf("classify calls %d, hits %d rate %f\n",
 							  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
@@ -199,7 +199,6 @@ public class Tool {
 		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
 		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 		for (InputDocument doc : documents) {
-			System.out.println(doc);
 			collectSiblingLists.setTokens(doc.tokens, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
@@ -243,7 +242,7 @@ public class Tool {
 			}
 		}
 
-		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag,
+		Corpus corpus = processSampleDocs(documents, ruleToPairsBag,
 		                                  rootAndChildListStats, rootAndSplitChildListStats,
 		                                  splitListForms, tokenToListInfo);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
@@ -252,7 +251,6 @@ public class Tool {
 	}
 
 	public static Corpus processSampleDocs(List<InputDocument> docs,
-										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats,
@@ -274,7 +272,7 @@ public class Tool {
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			doc.corpus = corpus; // we know the corpus object now
-			process(doc, tabSize);
+			process(doc);
 
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
@@ -289,8 +287,8 @@ public class Tool {
 	}
 
 	/** Parse document, save feature vectors to the doc */
-	public static void process(InputDocument doc, int tabSize) {
-		Trainer trainer = new Trainer(doc, tabSize);
+	public static void process(InputDocument doc) {
+		Trainer trainer = new Trainer(doc);
 		trainer.computeFeatureVectors();
 
 		doc.featureVectors = trainer.getFeatureVectors();
