@@ -24,10 +24,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
-/** Collect feature vectors trained on a single file */
+/** Collect feature vectors trained on a single file.
+ *
+ *  The primary results are: (X, Y1, Y2)
+ *  For each feature vector, features[i], injectWhitespace[i] and align[i] tell us
+ *  the decisions associated with that context in a corpus file.
+ *  After calling {@link #computeFeatureVectors()}, those lists
+ *  are available.
+ *
+ *  There is no shared state computed by this object, only static defs
+ *  of feature types and category constants.
+ */
 public class Trainer {
-	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.10;
+	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
@@ -119,7 +130,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 4),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,
@@ -188,10 +199,9 @@ public class Trainer {
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
-	protected List<Token> realTokens;
-	protected List<int[]> featureVectors = new ArrayList<>();
-	protected List<Integer> injectWhitespace = new ArrayList<>();
-	protected List<Integer> align = new ArrayList<>();
+	protected Vector<int[]> featureVectors;
+	protected Vector<Integer> injectWhitespace;
+	protected Vector<Integer> align;
 
 	protected int currentIndent = 0;
 
@@ -208,7 +218,21 @@ public class Trainer {
 	}
 
 	public void computeFeatureVectors() {
-		realTokens = getRealTokens(tokens);
+		List<Token> realTokens = getRealTokens(tokens);
+
+		// make space for n feature vectors and decisions, one for each token
+		// from stream, including hidden tokens (though hidden tokens have no
+		// entries in featureVectors, injectWhitespace, align.
+		// Index i in features, decisions are token i
+		// for token index from stream, not index into purely real tokens list.
+		int n = tokens.size();
+		featureVectors = new Vector<>(n); // use vector so we can set ith value
+		featureVectors.setSize(n);
+		injectWhitespace = new Vector<>(n);
+		injectWhitespace.setSize(n);
+		align = new Vector<>(n);
+		align.setSize(n);
+
 		for (int i = ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			computeFeatureVectorForToken(tokenIndexInStream);
@@ -244,7 +268,6 @@ public class Trainer {
 		else if ( ws>0 ) {
 			injectNL_WS = wscat(ws);
 		}
-		this.injectWhitespace.add(injectNL_WS);
 
 		int columnDelta = 0;
 		if ( precedingNL>0 ) { // && aligned!=1 ) {
@@ -257,9 +280,10 @@ public class Trainer {
 			aligned = getAlignmentCategory(node, curToken, columnDelta);
 		}
 
-		align.add(aligned);
-
-		featureVectors.add(features);
+		// track feature -> injectws, align decisions for token i
+		featureVectors.set(i, features);
+		injectWhitespace.set(i, injectNL_WS);
+		align.set(i, aligned);
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
@@ -775,15 +799,15 @@ public class Trainer {
 	}
 
 	public List<int[]> getFeatureVectors() {
-		return featureVectors;
+		return BuffUtils.filter(featureVectors, v -> v!=null);
 	}
 
 	public List<Integer> getInjectWhitespace() {
-		return injectWhitespace;
+		return BuffUtils.filter(injectWhitespace, v -> v!=null);
 	}
 
 	public List<Integer> getAlign() {
-		return align;
+		return BuffUtils.filter(align, v -> v!=null);
 	}
 
 	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {

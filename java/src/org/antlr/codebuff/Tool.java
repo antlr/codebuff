@@ -42,7 +42,7 @@ import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
  * Tool  -dbg  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
  * Tool  -dbg  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -dbg  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
- * Tool  -dbg  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
