@@ -376,9 +376,13 @@ public class Formatter {
 		String newlineAnalysis = newlinePredictionString+"\n"+
 			nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
 			                                     MAX_WS_CONTEXT_DIFF_THRESHOLD);
-		String alignAnalysis =alignPredictionString+"\n"+
-			alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
-			                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+		String alignAnalysis = "";
+		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
+			alignAnalysis =
+				alignPredictionString+"\n"+
+				alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
+				                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+		}
 		return new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
 	}
 
