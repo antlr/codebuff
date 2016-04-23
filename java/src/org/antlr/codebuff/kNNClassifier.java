@@ -174,10 +174,10 @@ public abstract class kNNClassifier {
 		String displayCat;
 		int c = cat&0xFF;
 		if ( c==CAT_INJECT_NL||c==CAT_INJECT_WS ) {
-			displayCat = Formatter.getWSCategory(cat);
+			displayCat = Formatter.getWSCategoryStr(cat);
 		}
 		else {
-			displayCat = Formatter.getAlignCategory(cat);
+			displayCat = Formatter.getAlignCategoryStr(cat);
 		}
 
 		StringBuilder buf = new StringBuilder();

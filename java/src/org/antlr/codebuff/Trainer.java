@@ -240,7 +240,6 @@ public class Trainer {
 	}
 
 	public void computeFeatureVectorForToken(int i) {
-
 		Token curToken = tokens.get(i);
 		if ( curToken.getType()==Token.EOF ) return;
 
@@ -266,14 +265,9 @@ public class Trainer {
 			injectNL_WS = wscat(ws);
 		}
 
-		int columnDelta = 0;
-		if ( precedingNL>0 ) { // && aligned!=1 ) {
-			columnDelta = curToken.getCharPositionInLine() - prevToken.getCharPositionInLine();
-		}
-
 		int aligned = CAT_NO_ALIGNMENT ;
 		if ( precedingNL>0 ) {
-			aligned = getAlignmentCategory(node, curToken, columnDelta);
+			aligned = getAlignmentCategory(tokens, node);
 		}
 
 		// track feature -> injectws, align decisions for token i
@@ -283,9 +277,15 @@ public class Trainer {
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
-	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
+	public static int getAlignmentCategory(CommonTokenStream tokens, TerminalNode node) {
 		Pair<Integer,Integer> alignInfo = null;
 		Pair<Integer,Integer> indentInfo = null;
+
+		Token curToken = node.getSymbol();
+		tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
+		Token prevToken = tokens.LT(-1);
+
+		int columnDelta = curToken.getCharPositionInLine() - prevToken.getCharPositionInLine();
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
@@ -440,7 +440,7 @@ public class Trainer {
 	 *  Don't see alignment with self, t, or element *after* us.
 	 *  return null if there is no such ancestor p.
 	 */
-	public Pair<ParserRuleContext,Integer> earliestAncestorWithChildStartingAtCharPos(ParserRuleContext node, Token t, int charpos) {
+	public static Pair<ParserRuleContext,Integer> earliestAncestorWithChildStartingAtCharPos(ParserRuleContext node, Token t, int charpos) {
 		ParserRuleContext p = node;
 		while ( p!=null ) {
 			// check all children of p to see if one of them starts at charpos

@@ -1,5 +1,6 @@
 package org.antlr.codebuff.misc;
 
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
@@ -10,6 +11,15 @@ import java.util.List;
 
 /** Override to fix bug in LB() */
 public class CodeBuffTokenStream extends CommonTokenStream {
+	public CodeBuffTokenStream(CommonTokenStream stream) {
+		super(stream.getTokenSource());
+		this.fetchedEOF = false;
+		for (Token t : stream.getTokens()) {
+			tokens.add(new CommonToken(t));
+		}
+		reset();
+	}
+
 	public CodeBuffTokenStream(TokenSource tokenSource) {
 		super(tokenSource);
 	}

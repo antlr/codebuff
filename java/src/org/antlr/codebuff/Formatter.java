@@ -3,6 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.walkers.IdentifyOversizeLists;
 import org.antlr.v4.runtime.CommonToken;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.WritableToken;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.Trainer.CAT_INDENT;
 import static org.antlr.codebuff.Trainer.CAT_INDENT_FROM_ANCESTOR_CHILD;
@@ -48,7 +50,7 @@ public class Formatter {
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CodeBuffTokenStream tokens; // track stream so we can examine previous tokens
-	protected List<CommonToken> originalTokens; // copy of tokens with line/col info
+	protected CodeBuffTokenStream originalTokens; // copy of tokens with line/col info
 	protected List<Token> realTokens;           // just the real tokens from tokens
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
@@ -84,8 +86,10 @@ public class Formatter {
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
-		this.originalTokens = Tool.copy(tokens);
-		Tool.wipeLineAndPositionInfo(tokens); // all except for first token
+		// make a complete copy of token stream and token objects
+		this.originalTokens = new CodeBuffTokenStream(tokens);
+		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
+		wipeCharPositionInfoAndWhitespaceTokens(tokens); // all except for first token
 		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
 		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
@@ -321,7 +325,7 @@ public class Formatter {
 	 *  whitespace removed, we can't emit this stuff properly at moment.
 	 */
 	public void emitCommentsToTheLeft(int tokenIndexInStream) {
-		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(tokenIndexInStream);
+		List<Token> hiddenTokensToLeft = originalTokens.getHiddenTokensToLeft(tokenIndexInStream);
 		if ( hiddenTokensToLeft!=null ) {
 			// if at least one is not whitespace, assume it's a comment and print all hidden stuff including whitespace
 			boolean hasComment = Trainer.hasCommentToken(hiddenTokensToLeft);
@@ -358,20 +362,31 @@ public class Formatter {
 	                                              int injectNL_WS, int alignOrIndent)
 	{
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
+		TerminalNode node = tokenToNodeMap.get(curToken);
+
 		// compare prediction of newline against original, alert about any diffs
-		CommonToken prevToken = originalTokens.get(curToken.getTokenIndex()-1);
-		CommonToken originalCurToken = originalTokens.get(curToken.getTokenIndex());
+		CommonToken prevToken = (CommonToken)originalTokens.get(curToken.getTokenIndex()-1);
+		CommonToken originalCurToken = (CommonToken)originalTokens.get(curToken.getTokenIndex());
 
 		boolean prevIsWS = prevToken.getChannel()==Token.HIDDEN_CHANNEL; // assume this means whitespace
 		int actualNL = Tool.count(prevToken.getText(), '\n');
-		String wsDisplay = getWSCategory(injectNL_WS);
-		String alignDisplay = getAlignCategory(alignOrIndent);
-		String newlinePredictionString = String.format("### line %d: predicted %s \\n actual %s",
-		                                               curToken.getLine(), wsDisplay, prevIsWS ? actualNL : "none");
-		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
-		                                             curToken.getLine(),
-		                                             alignDisplay,
-		                                             "?");
+		int actualWS = Tool.count(prevToken.getText(), ' ');
+		String actualWSNL = actualNL>0 ? actualNL+"x'\n'" : actualWS+"x' '";
+		if ( !prevIsWS ) actualWSNL = "none";
+		String wsDisplay = getWSCategoryStr(injectNL_WS);
+		String alignDisplay = getAlignCategoryStr(alignOrIndent);
+		String newlinePredictionString =
+			String.format("### line %d: predicted %s \\n actual %s",
+			              curToken.getLine(), wsDisplay, actualWSNL);
+
+		int actualAlignCategory = Trainer.getAlignmentCategory(originalTokens, node);
+		String actualAlignDisplay = getAlignCategoryStr(actualAlignCategory);
+
+		String alignPredictionString =
+			String.format("### line %d: predicted %s actual %s",
+			              curToken.getLine(),
+			              alignDisplay,
+			              actualAlignDisplay);
 
 		String newlineAnalysis = newlinePredictionString+"\n"+
 			nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
@@ -386,7 +401,7 @@ public class Formatter {
 		return new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
 	}
 
-	public static String getWSCategory(int injectNL_WS) {
+	public static String getWSCategoryStr(int injectNL_WS) {
 		int[] elements = Trainer.triple(injectNL_WS);
 		int cat = injectNL_WS&0xFF;
 		String catS = "none";
@@ -395,7 +410,7 @@ public class Formatter {
 		return String.format("%s|%d|%d", catS, elements[0], elements[1]);
 	}
 
-	public static String getAlignCategory(int alignOrIndent) {
+	public static String getAlignCategoryStr(int alignOrIndent) {
 		int[] elements = Trainer.triple(alignOrIndent);
 		int cat = alignOrIndent&0xFF;
 		String catS = "none";
@@ -415,4 +430,19 @@ public class Formatter {
 		char curFirstChar = curTokenText.charAt(0);
 		return Character.isLetterOrDigit(prevLastChar) && Character.isLetterOrDigit(curFirstChar);
 	}
+
+	public static void wipeCharPositionInfoAndWhitespaceTokens(CommonTokenStream tokens) {
+		tokens.fill();
+		CommonToken dummy = new CommonToken(Token.INVALID_TYPE, "");
+		dummy.setChannel(Token.HIDDEN_CHANNEL);
+		for (int i = ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) { // can't process first 1 token so leave it alone
+			CommonToken t = (CommonToken)tokens.get(i);
+			if ( t.getText().matches("\\s+") ) {
+				tokens.getTokens().set(i, dummy); // wack whitespace token so we can't use it during prediction
+			}
+			t.setLine(0);
+			t.setCharPositionInLine(-1);
+		}
+	}
+
 }

@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
-
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
  * Testing:
@@ -442,15 +440,6 @@ public class Tool {
 		}
 
 		return builder.toString();
-	}
-
-	public static void wipeLineAndPositionInfo(CommonTokenStream tokens) {
-		tokens.fill();
-		for (int i = ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) { // can't process first 1 token so leave it alone
-			CommonToken t = (CommonToken)tokens.get(i);
-			t.setLine(0);
-			t.setCharPositionInLine(-1);
-		}
 	}
 
 	public static List<CommonToken> copy(CommonTokenStream tokens) {
