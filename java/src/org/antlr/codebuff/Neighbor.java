@@ -25,7 +25,7 @@ public class Neighbor {
 			lineText = lineText.substring(0, col)+'\u00B7'+lineText.substring(col, lineText.length());
 		}
 		int cat = Y.get(corpusVectorIndex);
-		int[] elements = Trainer.unaligncat(cat);
+		int[] elements = Trainer.triple(cat);
 		String display = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
 		return String.format("%s (cat=%s,d=%1.3f): %s", features, display, distance, lineText);
 	}

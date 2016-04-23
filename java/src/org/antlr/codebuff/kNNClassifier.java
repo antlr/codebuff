@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.antlr.codebuff.Trainer.CAT_INJECT_NL;
+import static org.antlr.codebuff.Trainer.CAT_INJECT_WS;
 import static org.antlr.codebuff.Trainer.MAX_CONTEXT_DIFF_THRESHOLD2;
 
 /** A kNN (k-Nearest Neighbor) classifier */
@@ -169,8 +171,14 @@ public abstract class kNNClassifier {
 			cat = getCategoryWithMaxValue(similarities);
 		}
 
-		int[] elements = Trainer.unaligncat(cat);
-		String displayCat = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
+		String displayCat;
+		int c = cat&0xFF;
+		if ( c==CAT_INJECT_NL||c==CAT_INJECT_WS ) {
+			displayCat = Formatter.getWSCategory(cat);
+		}
+		else {
+			displayCat = Formatter.getAlignCategory(cat);
+		}
 
 		StringBuilder buf = new StringBuilder();
 		buf.append(Trainer.featureNameHeader(FEATURES));

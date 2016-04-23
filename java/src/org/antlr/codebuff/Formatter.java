@@ -53,9 +53,16 @@ public class Formatter {
 
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
-	protected Vector<TokenPositionAnalysis> analysis = new Vector<>();
+	/** analysis[i] is info about what we decided for token index i from
+	 *  original stream (not index into real token list)
+	 */
+	protected Vector<TokenPositionAnalysis> analysis;
 
-	/** Collected for formatting (not training) by SplitOversizeLists */
+	/** Collected for formatting (not training) by SplitOversizeLists.
+	 *  Training finds split lists and normal lists. This uses list len
+	 *  (in char units) to decide split or not.  If size is closest to split median,
+	 *  we claim oversize list.
+	 */
 	protected Map<Token,Pair<Boolean,Integer>> tokenToListInfo;
 
 	protected CodekNNClassifier nlwsClassifier;
@@ -69,7 +76,6 @@ public class Formatter {
 
 	protected boolean collectAnalysis;
 
-	protected boolean debug_NL = true;
 	protected int misclassified_NL = 0;
 	protected int misclassified_WS = 0;
 
@@ -88,6 +94,8 @@ public class Formatter {
 //		k = 29;
 		this.tabSize = tabSize;
 		this.collectAnalysis = collectAnalysis;
+		analysis = new Vector<>(tokens.size());
+		analysis.setSize(tokens.size());
 	}
 
 	public String getOutput() {
@@ -116,7 +124,7 @@ public class Formatter {
 		tokenToListInfo = splitter.tokenToListInfo;
 
 		realTokens = getRealTokens(tokens);
-		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first 1 tokens
+		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(i, tokenIndexInStream);
 		}
@@ -130,18 +138,12 @@ public class Formatter {
 
 		emitCommentsToTheLeft(tokenIndexInStream);
 
-		tokens.seek(tokenIndexInStream);
-		boolean prevTokenStartsLine = false;
-		if ( tokens.index()-2 >= 0 ) {
-			if ( tokens.LT(-2)!=null ) {
-				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
-			}
-		}
-		int[] features = getFeatures(tokenIndexInStream, prevTokenStartsLine, tabSize);
+		int[] features = getFeatures(tokenIndexInStream);
 		int[] featuresForAlign = new int[features.length];
 		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
-		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace,
+		                                           Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
 
 		int newlines = 0;
 		int ws = 0;
@@ -164,7 +166,7 @@ public class Formatter {
 			charPosInLine = 0;
 
 			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
-			featuresForAlign[INDEX_FIRST_ON_LINE] = newlines>0 ? 1 : 0; // use \n prediction to match exemplars for alignment
+			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
 
@@ -188,14 +190,10 @@ public class Formatter {
 		curToken.setLine(line);
 		curToken.setCharPositionInLine(charPosInLine);
 
-		TokenPositionAnalysis tokenPositionAnalysis;
+		TokenPositionAnalysis tokenPositionAnalysis = new TokenPositionAnalysis(curToken, -1, "", alignOrIndent, "");
 		if ( collectAnalysis ) {
-			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, -1, alignOrIndent);
+			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
 		}
-		else {
-			tokenPositionAnalysis = new TokenPositionAnalysis(curToken, -1, "", alignOrIndent, "");
-		}
-		analysis.setSize(tokenIndexInStream+1);
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
 		int n = tokText.length();
@@ -252,7 +250,7 @@ public class Formatter {
 	}
 
 	public void align(int alignOrIndent, TerminalNode node) {
-		int[] deltaChild = Trainer.unaligncat(alignOrIndent);
+		int[] deltaChild = Trainer.triple(alignOrIndent);
 		int deltaFromAncestor = deltaChild[0];
 		int childIndex = deltaChild[1];
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
@@ -281,25 +279,29 @@ public class Formatter {
 		}
 	}
 
-	public int[] getFeatures(int i,
-	                         boolean prevTokenStartsLine,
-	                         int tabSize)
-	{
-		TerminalNode node = tokenToNodeMap.get(tokens.get(i));
+	public int[] getFeatures(int tokenIndexInStream) {
+		tokens.seek(tokenIndexInStream);
+		boolean prevTokenStartsLine = false;
+		if ( tokens.index()-2 >= 0 ) {
+			if ( tokens.LT(-2)!=null ) {
+				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
+			}
+		}
+		TerminalNode node = tokenToNodeMap.get(tokens.get(tokenIndexInStream));
 		if ( node==null ) {
-			System.err.println("### No node associated with token "+tokens.get(i));
+			System.err.println("### No node associated with token "+tokens.get(tokenIndexInStream));
 			return null;
 		}
 
 		Token curToken = node.getSymbol();
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
+		tokens.seek(tokenIndexInStream); // seek so that LT(1) is tokens.get(i);
 		Token prevToken = tokens.LT(-1);
 
 		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
 
 		boolean curTokenStartsNewLine = line>prevToken.getLine();
 
-		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
+		int[] features = getContextFeatures(tokenToNodeMap, doc, tokenIndexInStream);
 
 		setListInfoFeatures(tokenToListInfo, features, curToken);
 
@@ -362,11 +364,13 @@ public class Formatter {
 
 		boolean prevIsWS = prevToken.getChannel()==Token.HIDDEN_CHANNEL; // assume this means whitespace
 		int actualNL = Tool.count(prevToken.getText(), '\n');
-		String newlinePredictionString = String.format("### line %d: predicted %d \\n actual ?",
-		                                               curToken.getLine(), injectNL_WS, prevIsWS ? actualNL : "none");
-		String alignPredictionString = String.format("### line %d: predicted %d actual %s",
+		String wsDisplay = getWSCategory(injectNL_WS);
+		String alignDisplay = getAlignCategory(alignOrIndent);
+		String newlinePredictionString = String.format("### line %d: predicted %s \\n actual %s",
+		                                               curToken.getLine(), wsDisplay, prevIsWS ? actualNL : "none");
+		String alignPredictionString = String.format("### line %d: predicted %s actual %s",
 		                                             curToken.getLine(),
-		                                             alignOrIndent,
+		                                             alignDisplay,
 		                                             "?");
 
 		String newlineAnalysis = newlinePredictionString+"\n"+
@@ -376,6 +380,25 @@ public class Formatter {
 			alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
 			                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 		return new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
+	}
+
+	public static String getWSCategory(int injectNL_WS) {
+		int[] elements = Trainer.triple(injectNL_WS);
+		int cat = injectNL_WS&0xFF;
+		String catS = "none";
+		if ( cat==CAT_INJECT_NL ) catS = "'\\n'";
+		else if ( cat==CAT_INJECT_WS ) catS = "' '";
+		return String.format("%s|%d|%d", catS, elements[0], elements[1]);
+	}
+
+	public static String getAlignCategory(int alignOrIndent) {
+		int[] elements = Trainer.triple(alignOrIndent);
+		int cat = alignOrIndent&0xFF;
+		String catS = "none";
+		if ( cat==CAT_ALIGN_WITH_ANCESTOR_CHILD ) catS = "align^";
+		else if ( cat==CAT_INDENT_FROM_ANCESTOR_CHILD ) catS = "indent^";
+		else if ( cat==CAT_INDENT ) catS = "indent";
+		return String.format("%s|%d|%d", catS, elements[0], elements[1]);
 	}
 
 	/** Do not join two words like "finaldouble" or numbers like "3double",

@@ -1033,7 +1033,7 @@ public class Trainer {
 		return CAT_ALIGN_WITH_ANCESTOR_CHILD | (deltaFromLeftAncestor<<8) | (child << 16);
 	}
 
-	public static int[] unaligncat(int v) {
+	public static int[] triple(int v) {
 		int deltaFromLeftAncestor = (v>>8)&0xFF;
 		int child = (v>>16)&0xFFFF;
 		return new int[] { deltaFromLeftAncestor, child };
