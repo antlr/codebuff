@@ -53,12 +53,12 @@ public class TestJavaCapture {
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			TokenPositionAnalysis tokenPositionAnalysis = analysisPerToken.get(tokenIndexInStream);
 
-			if ( ws!=tokenPositionAnalysis.ws ) {
+			if ( ws!=tokenPositionAnalysis.wsPrediction ) {
 //				System.out.printf("%s ws=%d vs %d\n", realTokens.get(i).toString(), ws, tokenPositionAnalysis.ws);
 				misclassified_ws++;
 			}
 
-			if ( align!=tokenPositionAnalysis.align ) {
+			if ( align!=tokenPositionAnalysis.alignPrediction ) {
 //				System.out.printf("%s align=%d vs %d\n", realTokens.get(i).toString(), align, tokenPositionAnalysis.align);
 				misclassified_alignment++;
 			}

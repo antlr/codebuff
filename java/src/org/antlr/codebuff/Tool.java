@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
-
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
  * Testing:
@@ -42,7 +40,7 @@ import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
  * Tool  -dbg  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
  * Tool  -dbg  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
  * Tool  -dbg  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
- * Tool  -dbg  -java      ../samples/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
@@ -124,7 +122,7 @@ public class Tool {
 			analysisPerToken = results.b;
 			controller = new GUIController(analysisPerToken, testDoc, output, lang.lexerClass);
 			controller.show();
-			System.out.println(output);
+//			System.out.println(output);
 			System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 			System.out.printf("classify calls %d, hits %d rate %f\n",
 							  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
@@ -164,14 +162,97 @@ public class Tool {
 		Formatter formatter = new Formatter(corpus, testDoc, tabSize, collectAnalysis);
 		String formattedOutput = formatter.format();
 		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
+		dumpAccuracy(testDoc, analysisPerToken);
+
 		testDoc.dumpIncorrectWS = false;
-		Tool.compare(testDoc, formattedOutput, lexerClass);
-		if (showFormattedResult) System.out.printf("\n\nIncorrect_WS / All_WS: %d / %d = %3.1f%%\n", testDoc.incorrectWhiteSpaceCount, testDoc.allWhiteSpaceCount, 100*testDoc.getIncorrectWSRate());
-		if (showFormattedResult) System.out.println("misclassified: "+formatter.misclassified_NL);
-		double d = Tool.docDiff(testDoc.content, formattedOutput, lexerClass);
+		double d = docDiff(testDoc.content, formattedOutput, lexerClass);
 		if (showFormattedResult) System.out.println("Diff is "+d);
 
+//		int editDistance = levenshteinDistance(testDoc.content, formattedOutput);
+//		System.out.println("Levenshtein distance: "+editDistance);
+
 		return new Pair<>(formattedOutput, analysisPerToken);
+	}
+
+	public static void dumpAccuracy(InputDocument testDoc, List<TokenPositionAnalysis> analysisPerToken) {
+		System.out.println("num real tokens from 1: " +getNumberRealTokens(testDoc.tokens, 1, testDoc.tokens.size()-2)); // don't include first token nor EOF
+		int n = 0; // should be number of real tokens - 1 (we don't process 1st token)
+		int n_align_compares = 0;
+		int correct_ws = 0;
+		int n_none = 0;
+		int n_nl = 0;
+		int n_sp = 0;
+		int correct_none = 0;
+		int correct_nl = 0;
+		int correct_sp = 0;
+		int correct_align = 0;
+		/*
+		 predicted  |   actual  |   match
+		 ---------  -   ------  -   ------
+		            |           |     x
+		            |   ' '     |
+		            |   '\n'    |
+		    '\n'    |           |
+		    '\n'    |   ' '     |
+		    '\n'    |   '\n'    |     x
+		    ' '     |           |
+		    ' '     |   ' '     |     x
+		    ' '     |   '\n'    |
+		 */
+		for (TokenPositionAnalysis a : analysisPerToken) {
+			if ( a==null ) continue;
+			n++;
+			if ( a.actualWS==0 ) {
+				n_none++;
+			}
+			else if ( (a.actualWS&0xFF)==Trainer.CAT_INJECT_NL ) {
+				n_nl++;
+			}
+			else if ( (a.actualWS&0xFF)==Trainer.CAT_INJECT_WS ) {
+				n_sp++;
+			}
+
+			if ( a.wsPrediction==0 && a.wsPrediction==a.actualWS ) {
+				correct_none++;
+			}
+			else if ( (a.wsPrediction&0xFF)==Trainer.CAT_INJECT_NL && a.wsPrediction==a.actualWS ) {
+				correct_nl++;
+			}
+			else if ( (a.wsPrediction&0xFF)==Trainer.CAT_INJECT_WS && a.wsPrediction==a.actualWS ) {
+				correct_sp++;
+			}
+			if ( a.wsPrediction==a.actualWS ) {
+				correct_ws++;
+			}
+
+			if ( (a.wsPrediction&0xFF)==Trainer.CAT_INJECT_NL ) {
+				n_align_compares++;
+				// if we predicted newline *and* actual was newline, check alignment misclassification
+				// Can't compare if both aren't supposed to align. If we predict '\n' but actual is ' ',
+				// alignment will always fail to match. Similarly, if we predict no-'\n' but actual is '\n',
+				// we didn't compute align so can't compare.
+				if ( a.alignPrediction==a.actualAlign ) {
+					correct_align++;
+				}
+			}
+		}
+		float none_accuracy = correct_none/(float) n_none;
+		System.out.printf("correct none / num none = %d/%d, %4.3f%%\n",
+		                  correct_none, n_none, none_accuracy*100);
+		float nl_accuracy = correct_nl/(float) n_nl;
+		System.out.printf("correct nl / num nl = %d/%d, %4.3f%%\n",
+		                  correct_nl, n_nl, nl_accuracy*100);
+		float sp_accuracy = correct_sp/(float) n_sp;
+		System.out.printf("correct sp / num ws = %d/%d, %4.3f%%\n",
+		                  correct_sp, n_sp, sp_accuracy*100);
+
+		double overall_ws_accuracy = correct_ws/(float)n;
+		System.out.printf("overall ws correct = %d/%d %4.3f%%\n",
+		                  correct_ws, n, overall_ws_accuracy*100);
+
+		double align_accuracy = correct_align / (float)n_align_compares;
+		System.out.printf("align correct = %d/%d %4.3f%%\n",
+		                  correct_align, n_align_compares, align_accuracy*100.0);
 	}
 
 	public static Corpus train(String rootDir,
@@ -199,7 +280,6 @@ public class Tool {
 		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
 		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 		for (InputDocument doc : documents) {
-			System.out.println(doc);
 			collectSiblingLists.setTokens(doc.tokens, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
@@ -243,7 +323,7 @@ public class Tool {
 			}
 		}
 
-		Corpus corpus = processSampleDocs(documents, tabSize, ruleToPairsBag,
+		Corpus corpus = processSampleDocs(documents, ruleToPairsBag,
 		                                  rootAndChildListStats, rootAndSplitChildListStats,
 		                                  splitListForms, tokenToListInfo);
 		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
@@ -252,7 +332,6 @@ public class Tool {
 	}
 
 	public static Corpus processSampleDocs(List<InputDocument> docs,
-										   int tabSize,
 										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats,
 										   Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats,
@@ -274,7 +353,7 @@ public class Tool {
 		for (InputDocument doc : docs) {
 			if ( showFileNames ) System.out.println(doc);
 			doc.corpus = corpus; // we know the corpus object now
-			process(doc, tabSize);
+			process(doc);
 
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documents.add(doc);
@@ -289,8 +368,8 @@ public class Tool {
 	}
 
 	/** Parse document, save feature vectors to the doc */
-	public static void process(InputDocument doc, int tabSize) {
-		Trainer trainer = new Trainer(doc, tabSize);
+	public static void process(InputDocument doc) {
+		Trainer trainer = new Trainer(doc);
 		trainer.computeFeatureVectors();
 
 		doc.featureVectors = trainer.getFeatureVectors();
@@ -444,15 +523,6 @@ public class Tool {
 		}
 
 		return builder.toString();
-	}
-
-	public static void wipeLineAndPositionInfo(CommonTokenStream tokens) {
-		tokens.fill();
-		for (int i = ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) { // can't process first 1 token so leave it alone
-			CommonToken t = (CommonToken)tokens.get(i);
-			t.setLine(0);
-			t.setCharPositionInLine(-1);
-		}
 	}
 
 	public static List<CommonToken> copy(CommonTokenStream tokens) {

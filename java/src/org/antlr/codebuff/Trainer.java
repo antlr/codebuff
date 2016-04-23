@@ -24,10 +24,21 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
-/** Collect feature vectors trained on a single file */
+/** Collect feature vectors trained on a single file.
+ *
+ *  The primary results are: (X, Y1, Y2)
+ *  For each feature vector, features[i], injectWhitespace[i] and align[i] tell us
+ *  the decisions associated with that context in a corpus file.
+ *  After calling {@link #computeFeatureVectors()}, those lists
+ *  are available.
+ *
+ *  There is no shared state computed by this object, only static defs
+ *  of feature types and category constants.
+ */
 public class Trainer {
-	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.10;
+	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
@@ -119,7 +130,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 4),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,
@@ -188,27 +199,40 @@ public class Trainer {
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
-	protected List<Token> realTokens;
-	protected List<int[]> featureVectors = new ArrayList<>();
-	protected List<Integer> injectWhitespace = new ArrayList<>();
-	protected List<Integer> align = new ArrayList<>();
 
-	protected int currentIndent = 0;
+	// training results:
+	protected Vector<int[]> featureVectors;
+	protected Vector<Integer> injectWhitespace;
+	protected Vector<Integer> align;
 
+	/** Make it fast to get a node for a specific token */
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
-	protected int tabSize;
-
-	public Trainer(InputDocument doc, int tabSize) {
+	public Trainer(InputDocument doc) {
 		this.corpus = doc.corpus;
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
-		this.tabSize = tabSize;
 	}
 
 	public void computeFeatureVectors() {
-		realTokens = getRealTokens(tokens);
+		List<Token> realTokens = getRealTokens(tokens);
+
+		tokenToNodeMap = indexTree(root);
+
+		// make space for n feature vectors and decisions, one for each token
+		// from stream, including hidden tokens (though hidden tokens have no
+		// entries in featureVectors, injectWhitespace, align.
+		// Index i in features, decisions are token i
+		// for token index from stream, not index into purely real tokens list.
+		int n = tokens.size();
+		featureVectors = new Vector<>(n); // use vector so we can set ith value
+		featureVectors.setSize(n);
+		injectWhitespace = new Vector<>(n);
+		injectWhitespace.setSize(n);
+		align = new Vector<>(n);
+		align.setSize(n);
+
 		for (int i = ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			computeFeatureVectorForToken(tokenIndexInStream);
@@ -216,20 +240,31 @@ public class Trainer {
 	}
 
 	public void computeFeatureVectorForToken(int i) {
-		if ( tokenToNodeMap == null ) {
-			tokenToNodeMap = indexTree(root);
-		}
-
 		Token curToken = tokens.get(i);
 		if ( curToken.getType()==Token.EOF ) return;
 
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-		Token prevToken = tokens.LT(-1);
-		TerminalNode node = tokenToNodeMap.get(curToken);
-
 		int[] features = getFeatures(i);
 
+		int injectNL_WS = getInjectWSCategory(tokens, i);
+
+		int aligned = CAT_NO_ALIGNMENT ;
+		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
+			TerminalNode node = tokenToNodeMap.get(curToken);
+			aligned = getAlignmentCategory(tokens, node);
+		}
+
+		// track feature -> injectws, align decisions for token i
+		featureVectors.set(i, features);
+		injectWhitespace.set(i, injectNL_WS);
+		align.set(i, aligned);
+	}
+
+	public static int getInjectWSCategory(CommonTokenStream tokens, int i) {
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
+
+		Token curToken = tokens.get(i);
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
+		Token prevToken = tokens.LT(-1);
 
 		int ws = 0;
 		if ( precedingNL==0 ) {
@@ -244,28 +279,20 @@ public class Trainer {
 		else if ( ws>0 ) {
 			injectNL_WS = wscat(ws);
 		}
-		this.injectWhitespace.add(injectNL_WS);
 
-		int columnDelta = 0;
-		if ( precedingNL>0 ) { // && aligned!=1 ) {
-			columnDelta = curToken.getCharPositionInLine() - currentIndent;
-			currentIndent = curToken.getCharPositionInLine();
-		}
-
-		int aligned = CAT_NO_ALIGNMENT ;
-		if ( precedingNL>0 ) {
-			aligned = getAlignmentCategory(node, curToken, columnDelta);
-		}
-
-		align.add(aligned);
-
-		featureVectors.add(features);
+		return injectNL_WS;
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
-	public int getAlignmentCategory(TerminalNode node, Token curToken, int columnDelta) {
+	public static int getAlignmentCategory(CommonTokenStream tokens, TerminalNode node) {
 		Pair<Integer,Integer> alignInfo = null;
 		Pair<Integer,Integer> indentInfo = null;
+
+		Token curToken = node.getSymbol();
+		tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
+		Token prevToken = tokens.LT(-1);
+
+		int columnDelta = curToken.getCharPositionInLine() - prevToken.getCharPositionInLine();
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
@@ -420,7 +447,7 @@ public class Trainer {
 	 *  Don't see alignment with self, t, or element *after* us.
 	 *  return null if there is no such ancestor p.
 	 */
-	public Pair<ParserRuleContext,Integer> earliestAncestorWithChildStartingAtCharPos(ParserRuleContext node, Token t, int charpos) {
+	public static Pair<ParserRuleContext,Integer> earliestAncestorWithChildStartingAtCharPos(ParserRuleContext node, Token t, int charpos) {
 		ParserRuleContext p = node;
 		while ( p!=null ) {
 			// check all children of p to see if one of them starts at charpos
@@ -775,14 +802,26 @@ public class Trainer {
 	}
 
 	public List<int[]> getFeatureVectors() {
-		return featureVectors;
+		return BuffUtils.filter(featureVectors, v -> v!=null);
 	}
 
 	public List<Integer> getInjectWhitespace() {
-		return injectWhitespace;
+		return BuffUtils.filter(injectWhitespace, v -> v!=null);
 	}
 
 	public List<Integer> getAlign() {
+		return BuffUtils.filter(align, v -> v!=null);
+	}
+
+	public List<int[]> getTokenToFeatureVectors() {
+		return featureVectors;
+	}
+
+	public List<Integer> getTokenInjectWhitespace() {
+		return injectWhitespace;
+	}
+
+	public List<Integer> getTokenAlign() {
 		return align;
 	}
 
@@ -1001,7 +1040,7 @@ public class Trainer {
 		return CAT_ALIGN_WITH_ANCESTOR_CHILD | (deltaFromLeftAncestor<<8) | (child << 16);
 	}
 
-	public static int[] unaligncat(int v) {
+	public static int[] triple(int v) {
 		int deltaFromLeftAncestor = (v>>8)&0xFF;
 		int child = (v>>16)&0xFFFF;
 		return new int[] { deltaFromLeftAncestor, child };
