@@ -6,16 +6,18 @@ public class TokenPositionAnalysis {
 	public Token t;            // token from the input stream; it's position will usually differ from charIndexStart etc...
 	public int charIndexStart; // where in *output* buffer the associated token starts; used to respond to clicks in formatted text
 	public int charIndexStop;  // stop index (inclusive)
-	public int ws;             // predicted '\n' or ' '
-	public int align;          // predicted align/indent if ws indicates newline
+	public int wsPrediction;   // predicted category, '\n' or ' '
+	public int alignPrediction;// predicted category, align/indent if ws indicates newline
+	public int actualWS;       // actual category, '\n' or ' '
+	public int actualAlign;    // actual category
 	public String wsAnalysis = "n/a";
 	public String alignAnalysis = "n/a";
 
-	public TokenPositionAnalysis(Token t, int ws, String wsAnalysis, int align, String alignAnalysis) {
+	public TokenPositionAnalysis(Token t, int wsPrediction, String wsAnalysis, int alignPrediction, String alignAnalysis) {
 		this.t = t;
-		this.ws = ws;
+		this.wsPrediction = wsPrediction;
 		this.wsAnalysis = wsAnalysis;
-		this.align = align;
+		this.alignPrediction = alignPrediction;
 		this.alignAnalysis = alignAnalysis;
 	}
 }

@@ -243,13 +243,28 @@ public class Trainer {
 		Token curToken = tokens.get(i);
 		if ( curToken.getType()==Token.EOF ) return;
 
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-		Token prevToken = tokens.LT(-1);
-		TerminalNode node = tokenToNodeMap.get(curToken);
-
 		int[] features = getFeatures(i);
 
+		int injectNL_WS = getInjectWSCategory(tokens, i);
+
+		int aligned = CAT_NO_ALIGNMENT ;
+		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
+			TerminalNode node = tokenToNodeMap.get(curToken);
+			aligned = getAlignmentCategory(tokens, node);
+		}
+
+		// track feature -> injectws, align decisions for token i
+		featureVectors.set(i, features);
+		injectWhitespace.set(i, injectNL_WS);
+		align.set(i, aligned);
+	}
+
+	public static int getInjectWSCategory(CommonTokenStream tokens, int i) {
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
+
+		Token curToken = tokens.get(i);
+		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
+		Token prevToken = tokens.LT(-1);
 
 		int ws = 0;
 		if ( precedingNL==0 ) {
@@ -265,15 +280,7 @@ public class Trainer {
 			injectNL_WS = wscat(ws);
 		}
 
-		int aligned = CAT_NO_ALIGNMENT ;
-		if ( precedingNL>0 ) {
-			aligned = getAlignmentCategory(tokens, node);
-		}
-
-		// track feature -> injectws, align decisions for token i
-		featureVectors.set(i, features);
-		injectWhitespace.set(i, injectNL_WS);
-		align.set(i, aligned);
+		return injectNL_WS;
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...

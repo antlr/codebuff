@@ -196,7 +196,7 @@ public class Formatter {
 
 		TokenPositionAnalysis tokenPositionAnalysis = new TokenPositionAnalysis(curToken, -1, "", alignOrIndent, "");
 		if ( collectAnalysis ) {
-			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, indexIntoRealTokens, tokenIndexInStream, injectNL_WS, alignOrIndent);
+			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, tokenIndexInStream, injectNL_WS, alignOrIndent);
 		}
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -358,21 +358,15 @@ public class Formatter {
 	}
 
 	public TokenPositionAnalysis getTokenAnalysis(int[] features, int[] featuresForAlign,
-	                                              int indexIntoRealTokens, int tokenIndexInStream,
+	                                              int tokenIndexInStream,
 	                                              int injectNL_WS, int alignOrIndent)
 	{
 		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
-		// compare prediction of newline against original, alert about any diffs
-		CommonToken prevToken = (CommonToken)originalTokens.get(curToken.getTokenIndex()-1);
-		CommonToken originalCurToken = (CommonToken)originalTokens.get(curToken.getTokenIndex());
+		int actualWS = Trainer.getInjectWSCategory(originalTokens, tokenIndexInStream);
+		String actualWSNL = getWSCategoryStr(actualWS);
 
-		boolean prevIsWS = prevToken.getChannel()==Token.HIDDEN_CHANNEL; // assume this means whitespace
-		int actualNL = Tool.count(prevToken.getText(), '\n');
-		int actualWS = Tool.count(prevToken.getText(), ' ');
-		String actualWSNL = actualNL>0 ? actualNL+"x'\n'" : actualWS+"x' '";
-		if ( !prevIsWS ) actualWSNL = "none";
 		String wsDisplay = getWSCategoryStr(injectNL_WS);
 		String alignDisplay = getAlignCategoryStr(alignOrIndent);
 		String newlinePredictionString =
@@ -398,7 +392,10 @@ public class Formatter {
 				alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
 				                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 		}
-		return new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
+		TokenPositionAnalysis a = new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
+		a.actualWS = Trainer.getInjectWSCategory(originalTokens, tokenIndexInStream);
+		a.actualAlign = actualAlignCategory;
+		return a;
 	}
 
 	public static String getWSCategoryStr(int injectNL_WS) {
