@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
 
@@ -45,6 +46,8 @@ import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
  * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
+	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
+
 	public static boolean showFileNames = false;
 	public static boolean showTokens = false;
 
@@ -370,6 +373,32 @@ public class Tool {
 		String content = new String(filearray);
 		String notabs = expandTabs(content, tabSize);
 		return new InputDocument(null, fileName, notabs);
+	}
+
+
+	/** From input documents, grab n in random order w/o replacement */
+	public List<InputDocument> getRandomDocuments(List<InputDocument> documents, int n) {
+		final Random random = new Random();
+		random.setSeed(DOCLIST_RANDOM_SEED);
+		List<InputDocument> documents_ = new ArrayList<>(documents);
+		Collections.shuffle(documents_, random);
+		List<InputDocument> contentList = new ArrayList<>(n);
+		for (int i=0; i<n; i++) { // get first n files from shuffle and set file index for it
+			contentList.add(documents.get(i));
+		}
+		return contentList;
+	}
+
+	/** From input documents, grab n in random order w replacement */
+	public List<InputDocument> getRandomDocumentsWithRepl(List<InputDocument> documents, int n) {
+		final Random random = new Random();
+		random.setSeed(DOCLIST_RANDOM_SEED);
+		List<InputDocument> contentList = new ArrayList<>(n);
+		for (int i=1; i<=n; i++) {
+			int r = random.nextInt(documents.size()); // get random index from 0..|inputfiles|-1
+			contentList.add(documents.get(r));
+		}
+		return contentList;
 	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
