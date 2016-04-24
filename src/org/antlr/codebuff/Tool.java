@@ -91,7 +91,7 @@ public class Tool {
 			}
 		}
 		if ( lang!=null ) {
-			Corpus corpus = new Corpus(corpusDir, Tool.JAVA_DESCR);
+			Corpus corpus = new Corpus(corpusDir, lang);
 			corpus.train();
 			testDoc = load(testFilename, lang);
 			start = System.nanoTime();
