@@ -4,6 +4,7 @@ import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.misc.LangDescriptor;
+import org.antlr.v4.runtime.misc.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,13 +12,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.load;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 public class LeaveOneOutValidator {
 	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
+
+	public static final String outputDir = "/tmp";
 
 	final Random random = new Random();
 
@@ -32,7 +34,12 @@ public class LeaveOneOutValidator {
 		random.setSeed(DOCLIST_RANDOM_SEED);
 	}
 
-	public List<Float> validate() throws Exception {
+	public List<Float> validate(boolean saveOutput) throws Exception {
+		File dir = new File(outputDir+"/"+language.name);
+		if ( saveOutput ) {
+			dir = new File(outputDir+"/"+language.name);
+			dir.mkdir();
+		}
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		documents = load(allFiles, language);
 		List<Float> distances = new ArrayList<>();
@@ -44,6 +51,9 @@ public class LeaveOneOutValidator {
 			corpus.train();
 			Formatter formatter = new Formatter(corpus);
 			String output = formatter.format(testDoc, false);
+			if ( saveOutput ) {
+				Utils.writeFile(dir.getPath()+"/"+new File(testDoc.fileName).getName(), output);
+			}
 			float editDistance = formatter.getEditDistance();
 			System.out.println(testDoc.fileName+": "+editDistance);
 			distances.add(editDistance);
@@ -70,11 +80,5 @@ public class LeaveOneOutValidator {
 			contentList.add(documents.get(r));
 		}
 		return contentList;
-	}
-
-	public static void main(String[] args) throws Exception {
-		LeaveOneOutValidator validator = new LeaveOneOutValidator("corpus/java/training/stringtemplate4", JAVA_DESCR);
-		List<Float> distances = validator.validate();
-		System.out.println(distances);
 	}
 }

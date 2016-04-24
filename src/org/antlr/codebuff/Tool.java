@@ -35,6 +35,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
  * Tool  -dbg  -plsql     corpus/plsql/training       corpus/plsql/testing/condition15.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -dbg  -java      corpus/java/training/antlr4-tool     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
  * Tool  -dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
@@ -43,6 +44,8 @@ public class Tool {
 
 	public static final LangDescriptor JAVA_DESCR =
 		new LangDescriptor("java", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+	public static final LangDescriptor JAVA8_DESCR =
+		new LangDescriptor("java8", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 	public static final LangDescriptor ANTLR4_DESCR =
 		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
 	public static final LangDescriptor SQLITE_DESCR =
@@ -52,6 +55,7 @@ public class Tool {
 
 	public static LangDescriptor[] languages = new LangDescriptor[]{
 		JAVA_DESCR,
+		JAVA8_DESCR,
 		ANTLR4_DESCR,
 		SQLITE_DESCR,
 		TSQL_DESCR,
@@ -61,7 +65,7 @@ public class Tool {
 	public static void main(String[] args)
 		throws Exception {
 		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures [-dbg] [-java|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
+			System.err.println("ExtractFeatures [-dbg] [-java|-java8|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
 		}
 		int arg = 0;
 		boolean collectAnalysis = false;
