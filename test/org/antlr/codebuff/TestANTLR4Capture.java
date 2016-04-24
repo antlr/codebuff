@@ -12,10 +12,10 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
-public class TestGrammarCapture extends BaseTest {
+public class TestANTLR4Capture extends BaseTest {
 	public static final String CORPUS = "corpus/antlr4/training";
 
-	public TestGrammarCapture(String fileName) {
+	public TestANTLR4Capture(String fileName) {
 		super(fileName);
 	}
 
