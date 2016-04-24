@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import static org.antlr.codebuff.Tool.levenshteinDistance;
+import static org.antlr.codebuff.Tool.tokenText;
+import static org.antlr.codebuff.Tool.tokenize;
 import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.Trainer.CAT_INDENT;
@@ -38,6 +41,7 @@ import static org.antlr.codebuff.Trainer.getRealTokens;
 import static org.antlr.codebuff.Trainer.getTokensOnPreviousLine;
 import static org.antlr.codebuff.Trainer.indexTree;
 import static org.antlr.codebuff.Trainer.setListInfoFeatures;
+import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 public class Formatter {
 	public static final int INDENT_LEVEL = 4;
@@ -120,6 +124,20 @@ public class Formatter {
 			processToken(doc, i, tokenIndexInStream, collectAnalysis);
 		}
 		return output.toString();
+	}
+
+	public float getEditDistance() throws Exception {
+		List<Token> wsTokens = filter(originalTokens.getTokens(),
+		                              t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
+		String originalWS = tokenText(wsTokens);
+
+		CommonTokenStream formatted_tokens = tokenize(output.toString(), corpus.language.lexerClass);
+		wsTokens = filter(formatted_tokens.getTokens(),
+		                  t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
+		String formattedWS = tokenText(wsTokens);
+
+		float editDistance = levenshteinDistance(originalWS, formattedWS);
+		return editDistance;
 	}
 
 	public void processToken(InputDocument doc, int indexIntoRealTokens, int tokenIndexInStream, boolean collectAnalysis) {
