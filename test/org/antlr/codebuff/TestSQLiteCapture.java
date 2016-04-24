@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -26,7 +27,7 @@ public class TestSQLiteCapture extends BaseTest {
 		InputDocument testDoc = Tool.load(fileName, corpus.language);
 		Formatter formatter = new Formatter(corpus);
 		String output = formatter.format(testDoc, false);
-		float editDistance = formatter.getEditDistance();
+		float editDistance = levenshteinDistance(testDoc.content, output);
 		System.out.println("edit distance "+editDistance);
 		assertTrue("WS edit distance too high "+editDistance, editDistance < 0.05);
 	}

@@ -97,18 +97,19 @@ public class Tool {
 			start = System.nanoTime();
 			Formatter formatter = new Formatter(corpus);
 			output = formatter.format(testDoc, collectAnalysis);
+			String output1 = formatter.getOutput();
 			stop = System.nanoTime();
 			analysisPerToken = formatter.getAnalysisPerToken();
 
 			dumpAccuracy(testDoc, analysisPerToken);
 
 			List<Token> wsTokens = filter(formatter.originalTokens.getTokens(),
-			                              t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
+			                              t -> t.getText().matches("\\s+"));
 			String originalWS = tokenText(wsTokens);
 
 			CommonTokenStream formatted_tokens = tokenize(output, corpus.language.lexerClass);
 			wsTokens = filter(formatted_tokens.getTokens(),
-			                  t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
+			                  t -> t.getText().matches("\\s+"));
 			String formattedWS = tokenText(wsTokens);
 
 			float editDistance = levenshteinDistance(originalWS, formattedWS);

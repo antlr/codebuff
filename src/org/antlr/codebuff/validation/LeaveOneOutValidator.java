@@ -3,6 +3,7 @@ package org.antlr.codebuff.validation;
 import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
+import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Utils;
 
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 import static org.antlr.codebuff.Tool.getFilenames;
+import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
@@ -44,6 +46,7 @@ public class LeaveOneOutValidator {
 		documents = load(allFiles, language);
 		List<Float> distances = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
+			kNNClassifier.resetCache();
 			final int leaveOutIndex = i;
 			InputDocument testDoc = documents.get(leaveOutIndex);
 			List<InputDocument> others = filter(documents, f -> f.index!=leaveOutIndex);
@@ -54,7 +57,7 @@ public class LeaveOneOutValidator {
 			if ( saveOutput ) {
 				Utils.writeFile(dir.getPath()+"/"+new File(testDoc.fileName).getName(), output);
 			}
-			float editDistance = formatter.getEditDistance();
+			float editDistance = levenshteinDistance(testDoc.content, output);
 			System.out.println(testDoc.fileName+": "+editDistance);
 			distances.add(editDistance);
 		}

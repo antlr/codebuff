@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import static org.antlr.codebuff.Tool.levenshteinDistance;
+import static org.antlr.codebuff.Tool.parse;
 import static org.antlr.codebuff.Tool.tokenText;
 import static org.antlr.codebuff.Tool.tokenize;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
@@ -49,7 +50,7 @@ public class Formatter {
 
 	protected final Corpus corpus;
 
-	protected StringBuilder output = new StringBuilder();
+	protected StringBuilder output;
 	protected CodeBuffTokenStream originalTokens; // copy of tokens with line/col info
 	protected List<Token> realTokens;           // just the real tokens from tokens
 
@@ -90,7 +91,12 @@ public class Formatter {
 		return analysis;
 	}
 
+	/** Format the document.
+	 *
+	 *  As we need to wack info in doc.tokens, I reload/reparse at end of this.
+	 */
 	public String format(InputDocument doc, boolean collectAnalysis) throws Exception {
+		output = new StringBuilder();
 		// make a complete copy of token stream and token objects
 		this.originalTokens = new CodeBuffTokenStream(doc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
@@ -122,17 +128,21 @@ public class Formatter {
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(doc, i, tokenIndexInStream, collectAnalysis);
 		}
+
+		parse(doc, corpus.language); // restore order to the universe
+
 		return output.toString();
 	}
 
-	public float getEditDistance() throws Exception {
+	public float getWSEditDistance() throws Exception {
 		List<Token> wsTokens = filter(originalTokens.getTokens(),
-		                              t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
+		                              t -> t.getText().matches("\\s+")); // only count whitespace
 		String originalWS = tokenText(wsTokens);
 
-		CommonTokenStream formatted_tokens = tokenize(output.toString(), corpus.language.lexerClass);
+		String formattedOutput = getOutput();
+		CommonTokenStream formatted_tokens = tokenize(formattedOutput, corpus.language.lexerClass);
 		wsTokens = filter(formatted_tokens.getTokens(),
-		                  t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
+		                  t -> t.getText().matches("\\s+"));
 		String formattedWS = tokenText(wsTokens);
 
 		float editDistance = levenshteinDistance(originalWS, formattedWS);

@@ -42,6 +42,15 @@ public abstract class kNNClassifier {
 		maxDistanceCount = n;
 	}
 
+	public static void resetCache() {
+		classifyCache.clear();
+		nClassifyCacheHits = 0;
+		nClassifyCalls=0;
+		nClassifyCacheHits=0;
+		nNNCalls=0;
+		nNNCacheHits=0;
+	}
+
 	/**
 	 * Walk all training samples and compute distance(). Return indexes of k
 	 * smallest distance values.  Categories can be any negative or positive

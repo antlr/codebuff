@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.junit.Assert.assertTrue;
 
 /*
@@ -36,7 +37,7 @@ public class TestJavaCapture extends BaseTest {
 		Formatter formatter = new Formatter(corpus);
 		String output = formatter.format(testDoc, false);
 //		System.out.println(output);
-		float editDistance = formatter.getEditDistance();
+		float editDistance = levenshteinDistance(testDoc.content, output);
 		System.out.println("edit distance "+editDistance);
 		assertTrue("WS edit distance too high "+editDistance, editDistance < 0.05);
 	}
