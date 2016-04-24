@@ -47,9 +47,6 @@ public class Formatter {
 	protected final Corpus corpus;
 
 	protected StringBuilder output = new StringBuilder();
-	protected InputDocument doc;
-	protected ParserRuleContext root;
-	protected CodeBuffTokenStream tokens; // track stream so we can examine previous tokens
 	protected CodeBuffTokenStream originalTokens; // copy of tokens with line/col info
 	protected List<Token> realTokens;           // just the real tokens from tokens
 
@@ -74,32 +71,12 @@ public class Formatter {
 	protected int line = 1;
 	protected int charPosInLine = 0;
 
-	protected int tabSize;
-
-	protected boolean collectAnalysis;
-
-	protected int misclassified_NL = 0;
-	protected int misclassified_WS = 0;
-
-	public Formatter(Corpus corpus, InputDocument doc, int tabSize, boolean collectAnalysis) {
+	public Formatter(Corpus corpus) {
 		this.corpus = corpus;
-		this.doc = doc;
-		this.root = doc.tree;
-		this.tokens = doc.tokens;
-		// make a complete copy of token stream and token objects
-		this.originalTokens = new CodeBuffTokenStream(tokens);
-		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
-		wipeCharPositionInfoAndWhitespaceTokens(tokens); // all except for first token
-		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
-		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
 //		k = (int)Math.sqrt(corpus.X.size());
 //		k = 7;
 		k = 11;
 //		k = 29;
-		this.tabSize = tabSize;
-		this.collectAnalysis = collectAnalysis;
-		analysis = new Vector<>(tokens.size());
-		analysis.setSize(tokens.size());
 	}
 
 	public String getOutput() {
@@ -110,39 +87,49 @@ public class Formatter {
 		return analysis;
 	}
 
-	public String format() {
+	public String format(InputDocument doc, boolean collectAnalysis) throws Exception {
+		// make a complete copy of token stream and token objects
+		this.originalTokens = new CodeBuffTokenStream(doc.tokens);
+		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
+		wipeCharPositionInfoAndWhitespaceTokens(doc.tokens); // all except for first token
+		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
+		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
+
+		analysis = new Vector<>(doc.tokens.size());
+		analysis.setSize(doc.tokens.size());
+
 		if ( tokenToNodeMap == null ) {
-			tokenToNodeMap = indexTree(root);
+			tokenToNodeMap = indexTree(doc.tree);
 		}
 
-		tokens.seek(0);
-		WritableToken firstToken = (WritableToken)tokens.LT(1);
-		String prefix = tokens.getText(Interval.of(0, firstToken.getTokenIndex())); // gets any comments in front + first real token
+		doc.tokens.seek(0);
+		WritableToken firstToken = (WritableToken)doc.tokens.LT(1);
+		String prefix = doc.tokens.getText(Interval.of(0, firstToken.getTokenIndex())); // gets any comments in front + first real token
 		charPosInLine = firstToken.getStopIndex()+1; // start where first token left off
 		line = Tool.count(prefix, '\n') + 1;
 		output.append(prefix);
 
 		// first identify oversize lists with separators
-		IdentifyOversizeLists splitter = new IdentifyOversizeLists(corpus, tokens, tokenToNodeMap);
+		IdentifyOversizeLists splitter = new IdentifyOversizeLists(corpus, doc.tokens, tokenToNodeMap);
 		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
 		tokenToListInfo = splitter.tokenToListInfo;
 
-		realTokens = getRealTokens(tokens);
+		realTokens = getRealTokens(doc.tokens);
 		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
-			processToken(i, tokenIndexInStream);
+			processToken(doc, i, tokenIndexInStream, collectAnalysis);
 		}
 		return output.toString();
 	}
 
-	public void processToken(int indexIntoRealTokens, int tokenIndexInStream) {
-		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
+	public void processToken(InputDocument doc, int indexIntoRealTokens, int tokenIndexInStream, boolean collectAnalysis) {
+		CommonToken curToken = (CommonToken)doc.tokens.get(tokenIndexInStream);
 		String tokText = curToken.getText();
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
 		emitCommentsToTheLeft(tokenIndexInStream);
 
-		int[] features = getFeatures(tokenIndexInStream);
+		int[] features = getFeatures(doc, tokenIndexInStream);
 		int[] featuresForAlign = new int[features.length];
 		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
@@ -172,7 +159,7 @@ public class Formatter {
 			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
 			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
-			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(doc, node, line);
+			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(corpus, doc, node, line);
 
 			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.align, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
@@ -180,7 +167,7 @@ public class Formatter {
 				align(alignOrIndent, node);
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
-				indent(alignOrIndent, node);
+				indent(doc, alignOrIndent, node);
 			}
 		}
 		else {
@@ -196,7 +183,7 @@ public class Formatter {
 
 		TokenPositionAnalysis tokenPositionAnalysis = new TokenPositionAnalysis(curToken, -1, "", alignOrIndent, "");
 		if ( collectAnalysis ) {
-			tokenPositionAnalysis = getTokenAnalysis(features, featuresForAlign, tokenIndexInStream, injectNL_WS, alignOrIndent);
+			tokenPositionAnalysis = getTokenAnalysis(doc, features, featuresForAlign, tokenIndexInStream, injectNL_WS, alignOrIndent);
 		}
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -209,9 +196,9 @@ public class Formatter {
 		charPosInLine += n;
 	}
 
-	public void indent(int alignOrIndent, TerminalNode node) {
+	public void indent(InputDocument doc, int alignOrIndent, TerminalNode node) {
 		int tokenIndexInStream = node.getSymbol().getTokenIndex();
-		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokenIndexInStream, line);
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(doc.tokens, tokenIndexInStream, line);
 		Token firstTokenOnPrevLine = null;
 		if ( tokensOnPreviousLine.size()>0 ) {
 			firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
@@ -283,25 +270,25 @@ public class Formatter {
 		}
 	}
 
-	public int[] getFeatures(int tokenIndexInStream) {
-		tokens.seek(tokenIndexInStream);
+	public int[] getFeatures(InputDocument doc, int tokenIndexInStream) {
+		doc.tokens.seek(tokenIndexInStream);
 		boolean prevTokenStartsLine = false;
-		if ( tokens.index()-2 >= 0 ) {
-			if ( tokens.LT(-2)!=null ) {
-				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
+		if ( doc.tokens.index()-2 >= 0 ) {
+			if ( doc.tokens.LT(-2)!=null ) {
+				prevTokenStartsLine = doc.tokens.LT(-1).getLine()>doc.tokens.LT(-2).getLine();
 			}
 		}
-		TerminalNode node = tokenToNodeMap.get(tokens.get(tokenIndexInStream));
+		TerminalNode node = tokenToNodeMap.get(doc.tokens.get(tokenIndexInStream));
 		if ( node==null ) {
-			System.err.println("### No node associated with token "+tokens.get(tokenIndexInStream));
+			System.err.println("### No node associated with token "+doc.tokens.get(tokenIndexInStream));
 			return null;
 		}
 
 		Token curToken = node.getSymbol();
-		tokens.seek(tokenIndexInStream); // seek so that LT(1) is tokens.get(i);
-		Token prevToken = tokens.LT(-1);
+		doc.tokens.seek(tokenIndexInStream); // seek so that LT(1) is tokens.get(i);
+		Token prevToken = doc.tokens.LT(-1);
 
-		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, line);
+		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(corpus, doc, node, line);
 
 		boolean curTokenStartsNewLine = line>prevToken.getLine();
 
@@ -357,11 +344,12 @@ public class Formatter {
 		}
 	}
 
-	public TokenPositionAnalysis getTokenAnalysis(int[] features, int[] featuresForAlign,
+	public TokenPositionAnalysis getTokenAnalysis(InputDocument doc,
+	                                              int[] features, int[] featuresForAlign,
 	                                              int tokenIndexInStream,
 	                                              int injectNL_WS, int alignOrIndent)
 	{
-		CommonToken curToken = (CommonToken)tokens.get(tokenIndexInStream);
+		CommonToken curToken = (CommonToken)doc.tokens.get(tokenIndexInStream);
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
 		int actualWS = Trainer.getInjectWSCategory(originalTokens, tokenIndexInStream);

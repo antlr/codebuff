@@ -43,7 +43,8 @@ public class Tester {
 		}
 		double validateResult = 0;
 		try {
-			validateResult = Tool.validate(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
+//			validateResult = Tool.validate(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
+			validateResult = 0.0;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -3,11 +3,9 @@ package org.antlr.codebuff;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by morganzhang on 2/23/16.
@@ -149,7 +147,7 @@ public class FeatureMetaDataTweaker {
 	{
 		Trainer.FEATURES_ALL = testFeatures;
 
-		double validateResult = Tool.validate(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
+		double validateResult = 0.0;//Tool.validate(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
 
 		ArrayList<HashMap<Integer, Double>> newValue;
 		if (resultMap.containsKey(validateResult)) {
@@ -184,11 +182,11 @@ public class FeatureMetaDataTweaker {
 			corpusDir = "../samples/stringtemplate4/org/stringtemplate/v4/compiler/";
 			testFileDir = "../samples/stringtemplate4/org/stringtemplate/v4/compiler/";
 		}
-		Corpus corpus = Tool.train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
-
-		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
-		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, tabSize);
-		FeatureMetaDataTweaker f = new FeatureMetaDataTweaker(Trainer.FEATURES_ALL, corpus, documents, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
-		f.tweakParameterAndTest();
+//		Corpus corpus = Tool.train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
+//
+//		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
+//		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, tabSize);
+//		FeatureMetaDataTweaker f = new FeatureMetaDataTweaker(Trainer.FEATURES_ALL, corpus, documents, JavaLexer.class, JavaParser.class, "compilationUnit", tabSize);
+//		f.tweakParameterAndTest();
 	}
 }

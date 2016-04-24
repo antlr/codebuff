@@ -14,8 +14,8 @@ public class Neighbor {
 	}
 
 	public String toString(FeatureMetaData[] FEATURES, List<Integer> Y) {
-		int[] X = corpus.X.get(corpusVectorIndex);
-		InputDocument doc = corpus.documents.get(corpusVectorIndex);
+		int[] X = corpus.featureVectors.get(corpusVectorIndex);
+		InputDocument doc = corpus.documentsPerExemplar.get(corpusVectorIndex);
 		String features = Trainer._toString(FEATURES, doc, X);
 		int line = X[Trainer.INDEX_INFO_LINE];
 		String lineText = doc.getLine(line);

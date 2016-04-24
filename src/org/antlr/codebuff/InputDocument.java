@@ -3,31 +3,26 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.TokenSource;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class InputDocument {
-	public Corpus corpus;
 	public String fileName;
 	public String content;
 	public List<String> lines;
 	public int index;
 	public ParserRuleContext tree;
-	public Parser parser;
-	public CodeBuffTokenStream tokens;
+
 	public List<int[]> featureVectors;
 	public List<Integer> injectWhitespace;
 	public List<Integer> align;
-	public int allWhiteSpaceCount = 0;
-	public int incorrectWhiteSpaceCount = 0;
-	public int misclassifiedNewLineCount = 0;
-	public int misclassifiedWSCount = 0;
-	public boolean dumpIncorrectWS = false;
-	public boolean dumpVotes = false;
 
-	public InputDocument(Corpus corpus, String fileName, String content) {
-		this.corpus = corpus;
+	public Parser parser;
+	public CodeBuffTokenStream tokens;
+
+	public InputDocument(String fileName, String content) {
 		this.content = content;
 		this.fileName = fileName;
 	}
@@ -42,12 +37,12 @@ public class InputDocument {
 		return null;
 	}
 
-	public double getIncorrectWSRate() {
-		if (allWhiteSpaceCount == 0) {
-			System.err.printf("File: %s's all white space count is zero\n", fileName);
-			return -1.0;
-		}
-		return (double) incorrectWhiteSpaceCount / allWhiteSpaceCount;
+	public Class<? extends Parser> getParserClass() {
+		return parser.getClass();
+	}
+
+	public Class<? extends TokenSource> getLexerClass() {
+		return tokens.getTokenSource().getClass();
 	}
 
 	@Override

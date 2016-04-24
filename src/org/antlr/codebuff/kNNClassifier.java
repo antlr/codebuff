@@ -104,7 +104,7 @@ public abstract class kNNClassifier {
 		}
 		if ( dumpVotes && kNN.length>0 ) {
 			System.out.print(Trainer.featureNameHeader(FEATURES));
-			InputDocument firstDoc = corpus.documents.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
+			InputDocument firstDoc = corpus.documentsPerExemplar.get(kNN[0].corpusVectorIndex); // pick any neighbor to get parser
 			System.out.println(Trainer._toString(FEATURES, firstDoc, unknown)+"->"+votes);
 			kNN = Arrays.copyOfRange(kNN, 0, Math.min(k, kNN.length));
 			StringBuilder buf = new StringBuilder();
@@ -214,9 +214,9 @@ public abstract class kNNClassifier {
 		List<Neighbor> distances = new ArrayList<>();
 		if ( vectorIndexesMatchingTokenContext==null ) {
 			// no matching contexts for this feature, must rely on full training set
-			int n = corpus.X.size(); // num training samples
+			int n = corpus.featureVectors.size(); // num training samples
 			for (int i = 0; i<n; i++) {
-				int[] x = corpus.X.get(i);
+				int[] x = corpus.featureVectors.get(i);
 				double d = distance(x, unknown);
 				if ( d<=distanceThreshold ) {
 					Neighbor neighbor = new Neighbor(corpus, d, i);
@@ -226,7 +226,7 @@ public abstract class kNNClassifier {
 		}
 		else {
 			for (Integer vectorIndex : vectorIndexesMatchingTokenContext) {
-				int[] x = corpus.X.get(vectorIndex);
+				int[] x = corpus.featureVectors.get(vectorIndex);
 				double d = distance(x, unknown);
 				if ( d<=distanceThreshold ) {
 					Neighbor neighbor = new Neighbor(corpus, d, vectorIndex);

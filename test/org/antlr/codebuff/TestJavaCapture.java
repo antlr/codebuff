@@ -1,7 +1,6 @@
 package org.antlr.codebuff;
 
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -25,7 +24,7 @@ result for same training corpus and test doc.
 
 @RunWith(Parameterized.class)
 public class TestJavaCapture {
-	public static final String ST4_CORPUS = "../samples/stringtemplate4/org";
+	public static final String ST4_CORPUS = "corpus/java/training/stringtemplate4";
 
 	public String fileName;
 
@@ -35,16 +34,17 @@ public class TestJavaCapture {
 
 	@Test
 	public void testCapture() throws Exception {
-		boolean shuffleFeatureVectors = false;
-		Corpus corpus = Tool.train(fileName, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4, shuffleFeatureVectors);
-		InputDocument testDoc = Tool.load(fileName, 4);
-		Pair<String,List<TokenPositionAnalysis>> results = Tool.format(corpus, testDoc, JavaLexer.class, JavaParser.class, "compilationUnit", 4, false);
-		List<TokenPositionAnalysis> analysisPerToken = results.b;
+		Corpus corpus = new Corpus(fileName, ".*\\.java", Tool.JAVA_DESCR);
+		corpus.train();
+		InputDocument testDoc = Tool.load(fileName, corpus.language);
+		Formatter formatter = new Formatter(corpus);
+		String output = formatter.format(testDoc, false);
+		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
 
 		int misclassified_ws = 0;
 		int misclassified_alignment = 0;
 
-		List<Token> realTokens = getRealTokens(corpus.documents.get(0).tokens);
+		List<Token> realTokens = getRealTokens(corpus.documentsPerExemplar.get(0).tokens);
 		int n = realTokens.size();
 		for (int i = ANALYSIS_START_TOKEN_INDEX; i<n; i++) { // can't process first 2 tokens
 			int ws = corpus.injectWhitespace.get(i-ANALYSIS_START_TOKEN_INDEX);

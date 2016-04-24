@@ -208,8 +208,8 @@ public class Trainer {
 	/** Make it fast to get a node for a specific token */
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
-	public Trainer(InputDocument doc) {
-		this.corpus = doc.corpus;
+	public Trainer(Corpus corpus, InputDocument doc) {
+		this.corpus = corpus;
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
@@ -522,7 +522,7 @@ public class Trainer {
 			}
 		}
 
-		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(doc, node, curToken.getLine());
+		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(corpus, doc, node, curToken.getLine());
 
 		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
 
@@ -629,11 +629,12 @@ public class Trainer {
 	}
 
 
-	public static int getMatchingSymbolOnDiffLine(InputDocument doc,
+	public static int getMatchingSymbolOnDiffLine(Corpus corpus,
+	                                              InputDocument doc,
 												  TerminalNode node,
 												  int line)
 	{
-		TerminalNode matchingLeftNode = getMatchingLeftSymbol(doc, node);
+		TerminalNode matchingLeftNode = getMatchingLeftSymbol(corpus, doc, node);
 		if (matchingLeftNode != null) {
 //			System.out.println(node.getPayload()+" matches with "+matchingLeftNode.getSymbol());
 			int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
@@ -725,15 +726,16 @@ public class Trainer {
 		return childMemberOfList;
 	}
 
-	public static TerminalNode getMatchingLeftSymbol(InputDocument doc,
+	public static TerminalNode getMatchingLeftSymbol(Corpus corpus,
+	                                                 InputDocument doc,
 													 TerminalNode node)
 	{
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		int curTokensParentRuleIndex = parent.getRuleIndex();
 		Token curToken = node.getSymbol();
-		if (doc.corpus.ruleToPairsBag != null) {
+		if (corpus.ruleToPairsBag != null) {
 			String ruleName = doc.parser.getRuleNames()[curTokensParentRuleIndex];
-			List<Pair<Integer, Integer>> pairs = doc.corpus.ruleToPairsBag.get(ruleName);
+			List<Pair<Integer, Integer>> pairs = corpus.ruleToPairsBag.get(ruleName);
 			if ( pairs!=null ) {
 				// Find appropriate pair given current token
 				// If more than one pair (a,b) with b=current token pick first one

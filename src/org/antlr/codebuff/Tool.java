@@ -2,10 +2,7 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.gui.GUIController;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
-import org.antlr.codebuff.misc.ParentSiblingListKey;
-import org.antlr.codebuff.misc.SiblingListStats;
-import org.antlr.codebuff.walkers.CollectSiblingLists;
-import org.antlr.codebuff.walkers.CollectTokenDependencies;
+import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -16,9 +13,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -29,7 +24,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import static org.antlr.codebuff.misc.BuffUtils.filter;
@@ -51,32 +45,11 @@ public class Tool {
 	public static boolean showFileNames = false;
 	public static boolean showTokens = false;
 
-	static class LangDescriptor {
-		String name;
-		String fileRegex;
-		Class<? extends Lexer> lexerClass;
-		Class<? extends Parser> parserClass;
-		String startRuleName;
-		int tabSize;
-
-		public LangDescriptor(String name,
-		                      String fileRegex,
-		                      Class<? extends Lexer> lexerClass,
-		                      Class<? extends Parser> parserClass,
-		                      String startRuleName,
-		                      int tabSize)
-		{
-			this.name = name;
-			this.fileRegex = fileRegex;
-			this.lexerClass = lexerClass;
-			this.parserClass = parserClass;
-			this.startRuleName = startRuleName;
-			this.tabSize = tabSize;
-		}
-	}
+	public static final LangDescriptor JAVA_DESCR =
+		new LangDescriptor("java", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 
 	public static LangDescriptor[] languages = new LangDescriptor[] {
-		new LangDescriptor("java", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4),
+		JAVA_DESCR,
 		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4),
 		new LangDescriptor("sqlite", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4),
 		new LangDescriptor("tsql", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4),
@@ -101,7 +74,6 @@ public class Tool {
 		String corpusDir = args[arg++];
 		String testFilename = args[arg];
 		String output = "???";
-		Corpus corpus;
 		InputDocument testDoc;
 		GUIController controller;
 		List<TokenPositionAnalysis> analysisPerToken;
@@ -115,13 +87,32 @@ public class Tool {
 			}
 		}
 		if ( lang!=null ) {
-			corpus = train(corpusDir, lang.fileRegex, lang.lexerClass, lang.parserClass, lang.startRuleName, lang.tabSize, true);
-			testDoc = load(testFilename, tabSize);
+			Corpus corpus = new Corpus(corpusDir, lang.fileRegex, Tool.JAVA_DESCR);
+			corpus.train();
+			testDoc = load(testFilename, lang);
 			start = System.nanoTime();
-			results = format(corpus, testDoc, lang.lexerClass, lang.parserClass, lang.startRuleName, lang.tabSize, collectAnalysis);
+			Formatter formatter = new Formatter(corpus);
+			output = formatter.format(testDoc, collectAnalysis);
 			stop = System.nanoTime();
-			output = results.a;
-			analysisPerToken = results.b;
+			analysisPerToken = formatter.getAnalysisPerToken();
+
+			dumpAccuracy(testDoc, analysisPerToken);
+
+			List<Token> wsTokens = filter(formatter.originalTokens.getTokens(),
+			                              t->t.getChannel()!=Token.DEFAULT_CHANNEL);
+			String originalWS = tokenText(wsTokens);
+
+			CommonTokenStream formatted_tokens = tokenize(output, corpus.language.lexerClass);
+			wsTokens = filter(formatted_tokens.getTokens(),
+			                  t->t.getChannel()!=Token.DEFAULT_CHANNEL);
+			String formattedWS = tokenText(wsTokens);
+
+			float editDistance = levenshteinDistance(originalWS, formattedWS);
+			System.out.println("Levenshtein distance of ws: "+editDistance);
+			editDistance = levenshteinDistance(testDoc.content, output);
+			System.out.println("Levenshtein distance: "+editDistance);
+			System.out.println("ws len orig="+originalWS.length()+", "+formattedWS.length());
+
 			controller = new GUIController(analysisPerToken, testDoc, output, lang.lexerClass);
 			controller.show();
 //			System.out.println(output);
@@ -133,43 +124,6 @@ public class Tool {
 							  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
 							  kNNClassifier.nNNCacheHits/(float)kNNClassifier.nNNCalls);
 		}
-	}
-
-	/** Given a corpus, format the document by tokenizing and using the
-	 *  corpus to locate newline and whitespace injection points.
-	 */
-	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus,
-	                                                              InputDocument testDoc,
-	                                                              Class<? extends Lexer> lexerClass,
-	                                                              Class<? extends Parser> parserClass,
-	                                                              String startRuleName,
-	                                                              int tabSize,
-	                                                              boolean collectAnalysis)
-		throws Exception
-	{
-		testDoc.corpus = corpus;
-		parse(testDoc, lexerClass, parserClass, startRuleName);
-		Formatter formatter = new Formatter(corpus, testDoc, tabSize, collectAnalysis);
-		String formattedOutput = formatter.format();
-		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
-		dumpAccuracy(testDoc, analysisPerToken);
-
-		List<Token> wsTokens = filter(formatter.originalTokens.getTokens(),
-		                              t->t.getChannel()!=Token.DEFAULT_CHANNEL);
-		String originalWS = tokenText(wsTokens);
-
-		CommonTokenStream formatted_tokens = tokenize(formattedOutput, lexerClass);
-		wsTokens = filter(formatted_tokens.getTokens(),
-		                  t->t.getChannel()!=Token.DEFAULT_CHANNEL);
-		String formattedWS = tokenText(wsTokens);
-
-		float editDistance = levenshteinDistance(originalWS, formattedWS);
-		System.out.println("Levenshtein distance of ws: "+editDistance);
-		editDistance = levenshteinDistance(testDoc.content, formattedOutput);
-		System.out.println("Levenshtein distance: "+editDistance);
-		System.out.println("ws len orig="+originalWS.length()+", "+formattedWS.length());
-
-		return new Pair<>(formattedOutput, analysisPerToken);
 	}
 
 	public static void dumpAccuracy(InputDocument testDoc, List<TokenPositionAnalysis> analysisPerToken) {
@@ -253,128 +207,6 @@ public class Tool {
 		                  correct_align, n_align_compares, align_accuracy*100.0);
 	}
 
-	public static Corpus train(String rootDir,
-	                           String fileRegex,
-							   Class<? extends Lexer> lexerClass,
-							   Class<? extends Parser> parserClass,
-							   String startRuleName,
-							   int tabSize,
-	                           boolean shuffleFeatureVectors)
-		throws Exception
-	{
-		List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
-		List<InputDocument> documents = load(allFiles, tabSize);
-
-		// Parse all documents into parse trees before training begins
-		for (InputDocument doc : documents) {
-			if ( showFileNames ) System.out.println(doc);
-			parse(doc, lexerClass, parserClass, startRuleName);
-		}
-
-		// Walk all documents to compute matching token dependencies (we need this for feature computation)
-		// While we're at it, find sibling lists
-		Vocabulary vocab = getLexer(lexerClass, null).getVocabulary();
-		String[] ruleNames = getParser(parserClass, null).getRuleNames();
-		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
-		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
-		for (InputDocument doc : documents) {
-			collectSiblingLists.setTokens(doc.tokens, doc.tree);
-			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
-			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
-		}
-		Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = collectTokenDependencies.getDependencies();
-		Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats =
-			collectSiblingLists.getListStats();
-		Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats =
-			collectSiblingLists.getSplitListStats();
-		Map<ParentSiblingListKey, Integer> splitListForms = collectSiblingLists.getSplitListForms();
-		Map<Token, Pair<Boolean, Integer>> tokenToListInfo = collectSiblingLists.getTokenToListInfo();
-
-		if ( false ) {
-			for (String ruleName : ruleToPairsBag.keySet()) {
-				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
-				System.out.print(ruleName+": ");
-				for (Pair<Integer, Integer> p : pairs) {
-					System.out.print(vocab.getDisplayName(p.a)+","+vocab.getDisplayName(p.b)+" ");
-				}
-				System.out.println();
-			}
-		}
-
-		if ( false ) {
-			for (ParentSiblingListKey siblingPairs : rootAndChildListStats.keySet()) {
-				String parent = ruleNames[siblingPairs.parentRuleIndex];
-				parent = parent.replace("Context","");
-				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
-				siblingListName = siblingListName.replace("Context","");
-				System.out.println(parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
-					                   " (min,median,var,max)="+rootAndChildListStats.get(siblingPairs));
-			}
-			for (ParentSiblingListKey siblingPairs : rootAndSplitChildListStats.keySet()) {
-				String parent = ruleNames[siblingPairs.parentRuleIndex];
-				parent = parent.replace("Context","");
-				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
-				siblingListName = siblingListName.replace("Context","");
-				System.out.println("SPLIT " +parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
-					                   " (min,median,var,max)="+rootAndSplitChildListStats.get(siblingPairs)+
-				                  " form "+splitListForms.get(siblingPairs));
-			}
-		}
-
-		Corpus corpus = processSampleDocs(documents, ruleToPairsBag,
-		                                  rootAndChildListStats, rootAndSplitChildListStats,
-		                                  splitListForms, tokenToListInfo);
-		if ( shuffleFeatureVectors ) corpus.randomShuffleInPlace();
-		corpus.buildTokenContextIndex();
-		return corpus;
-	}
-
-	public static Corpus processSampleDocs(List<InputDocument> docs,
-										   Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag,
-										   Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats,
-										   Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats,
-										   Map<ParentSiblingListKey, Integer> splitListForms,
-										   Map<Token, Pair<Boolean, Integer>> tokenToListInfo)
-		throws Exception
-	{
-		List<InputDocument> documents = new ArrayList<>();
-		List<int[]> featureVectors = new ArrayList<>();
-		List<Integer> injectNewlines = new ArrayList<>();
-		List<Integer> alignWithPrevious = new ArrayList<>();
-		Corpus corpus = new Corpus(documents, featureVectors, injectNewlines, alignWithPrevious);
-		corpus.ruleToPairsBag = ruleToPairsBag;
-		corpus.rootAndChildListStats = rootAndChildListStats;
-		corpus.rootAndSplitChildListStats = rootAndSplitChildListStats;
-		corpus.splitListForms = splitListForms;
-		corpus.tokenToListInfo = tokenToListInfo;
-
-		for (InputDocument doc : docs) {
-			if ( showFileNames ) System.out.println(doc);
-			doc.corpus = corpus; // we know the corpus object now
-			process(doc);
-
-			for (int i=0; i<doc.featureVectors.size(); i++) {
-				documents.add(doc);
-				int[] featureVec = doc.featureVectors.get(i);
-				injectNewlines.add(doc.injectWhitespace.get(i));
-				alignWithPrevious.add(doc.align.get(i));
-				featureVectors.add(featureVec);
-			}
-		}
-		System.out.printf("%d feature vectors\n", featureVectors.size());
-		return corpus;
-	}
-
-	/** Parse document, save feature vectors to the doc */
-	public static void process(InputDocument doc) {
-		Trainer trainer = new Trainer(doc);
-		trainer.computeFeatureVectors();
-
-		doc.featureVectors = trainer.getFeatureVectors();
-		doc.injectWhitespace = trainer.getInjectWhitespace();
-		doc.align = trainer.getAlign();
-	}
-
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
 		throws Exception
 	{
@@ -387,32 +219,26 @@ public class Tool {
 	}
 
 	/** Parse doc and fill tree and tokens fields */
-	public static void parse(InputDocument doc,
-							 Class<? extends Lexer> lexerClass,
-							 Class<? extends Parser> parserClass,
-							 String startRuleName)
+	public static void parse(InputDocument doc, LangDescriptor language)
 		throws Exception
 	{
 		ANTLRInputStream input = new ANTLRInputStream(doc.content);
-		Lexer lexer = getLexer(lexerClass, input);
+		Lexer lexer = getLexer(language.lexerClass, input);
 		input.name = doc.fileName;
 
-		CodeBuffTokenStream tokens = new CodeBuffTokenStream(lexer);
+		doc.tokens = new CodeBuffTokenStream(lexer);
 
 		if ( showTokens ) {
-			tokens.fill();
-			for (Object tok : tokens.getTokens()) {
+			doc.tokens.fill();
+			for (Object tok : doc.tokens.getTokens()) {
 				System.out.println(tok);
 			}
 		}
 
-		doc.parser = getParser(parserClass, tokens);
+		doc.parser = getParser(language.parserClass, doc.tokens);
 		doc.parser.setBuildParseTree(true);
-		Method startRule = parserClass.getMethod(startRuleName);
-		ParserRuleContext tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[]) null);
-
-		doc.tokens = tokens;
-		doc.tree = tree;
+		Method startRule = language.parserClass.getMethod(language.startRuleName);
+		doc.tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[]) null);
 	}
 
 	public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
@@ -442,6 +268,14 @@ public class Tool {
 		return input;
 	}
 
+	public static InputDocument load(String fileName, LangDescriptor language)
+		throws Exception
+	{
+		InputDocument document = load(fileName, language.tabSize);
+		parse(document, language);
+		return document;
+	}
+
 	public static InputDocument load(String fileName, int tabSize)
 		throws Exception
 	{
@@ -449,7 +283,7 @@ public class Tool {
 		byte[] filearray = Files.readAllBytes(path);
 		String content = new String(filearray);
 		String notabs = expandTabs(content, tabSize);
-		return new InputDocument(null, fileName, notabs);
+		return new InputDocument(fileName, notabs);
 	}
 
 
@@ -726,16 +560,6 @@ public class Tool {
 		}
 		// it's probably ok to ignore ws diffs after last real token
 
-//		int non_ws = 0;
-//		for (Token tok : original_tokens.getTokens()) {
-//			if ( tok.getType()!=Token.EOF && tok.getChannel()==Lexer.DEFAULT_TOKEN_CHANNEL ) {
-//				non_ws += tok.getText().length();
-//			}
-//		}
-//		String original_text_with_ws = original_tokens.getText();
-//		int original_ws = original_text_with_ws.length() - non_ws;
-//		int formatted_ws = formatted.length() - non_ws;
-//		int ws_distance = Tool.levenshteinDistance(original_text_with_ws, formatted);
 		int max_ws = Math.max(original_ws, formatted_ws);
 		double normalized_ws_distance = ((float) ws_distance)/max_ws;
 		return normalized_ws_distance;
@@ -746,148 +570,11 @@ public class Tool {
 	 *  count in the original document text. It is a measure of document
 	 *  similarity.
 	 */
-	public static double compare(InputDocument doc,
-	                             String formatted,
-	                             Class<? extends Lexer> lexerClass)
-		throws Exception
-	{
-		doc.allWhiteSpaceCount = 0;
-		doc.incorrectWhiteSpaceCount = 0;
-
-		String original = doc.content;
-
-		// Grammar must strip all but real tokens and whitespace (and put that on hidden channel)
-		CommonTokenStream original_tokens = tokenize(original, lexerClass);
-		CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
-
-		// walk token streams and examine whitespace in between tokens
-		int i = 1;
-
-		while ( true ) {
-			Token ot = original_tokens.LT(i);
-			if ( ot==null || ot.getType()==Token.EOF ) break;
-			List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
-			String original_ws = tokenText(ows);
-
-			Token ft = formatted_tokens.LT(i);
-			if ( ft==null || ft.getType()==Token.EOF ) break;
-			List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
-			String formatted_ws = tokenText(fws);
-
-			if (original_ws.length() == 0) {
-				if (formatted_ws.length() != 0) {
-					doc.incorrectWhiteSpaceCount++;
-
-					if (doc.dumpIncorrectWS) {
-						System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
-						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-						System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
-					}
-				}
-			}
-			else {
-				doc.allWhiteSpaceCount++;
-
-				if (formatted_ws.length() == 0) {
-					doc.incorrectWhiteSpaceCount++;
-
-					if (doc.dumpIncorrectWS) {
-						System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
-						Tool.printOriginalFilePiece(doc, (CommonToken) ot);
-						System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
-					}
-				}
-				else if (!TwoWSEqual(original_ws, formatted_ws)) {
-					doc.incorrectWhiteSpaceCount++;
-
-					if (doc.dumpIncorrectWS) {
-						System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
-						Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-						System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
-						System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
-					}
-				}
-			}
-
-			i++;
-		}
-		return ((double)doc.incorrectWhiteSpaceCount) / doc.allWhiteSpaceCount;
-	}
-
-
-	// it's a compare function but only focus on NL
-	// basically this function is copy and paste from compare function on above
-	public static double compareNL(InputDocument doc,
-								 String formatted,
-								 Class<? extends Lexer> lexerClass)
-		throws Exception
-	{
-		doc.allWhiteSpaceCount = 0;
-		doc.incorrectWhiteSpaceCount = 0;
-
-		String original = doc.content;
-
-		// Grammar must strip all but real tokens and whitespace (and put that on hidden channel)
-		CommonTokenStream original_tokens = tokenize(original, lexerClass);
-		CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
-
-		// walk token streams and examine whitespace in between tokens
-		int i = 1;
-
-		while ( true ) {
-			Token ot = original_tokens.LT(i);
-			if ( ot==null || ot.getType()==Token.EOF ) break;
-			List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
-			String original_ws = tokenText(ows);
-
-			Token ft = formatted_tokens.LT(i);
-			if ( ft==null || ft.getType()==Token.EOF ) break;
-			List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
-			String formatted_ws = tokenText(fws);
-
-			if (original_ws.length() == 0) {
-				if (formatted_ws.length() != 0) {
-					if (count(formatted_ws, '\n') > 0) {
-						doc.incorrectWhiteSpaceCount++;
-
-						if (doc.dumpIncorrectWS) {
-							System.out.printf("\n*** Extra WS - line %d:\n", ot.getLine());
-							Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-							System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
-						}
-					}
-				}
-			}
-			else {
-				if (count(original_ws, '\n') > 0) {
-					doc.allWhiteSpaceCount++;
-
-					if (formatted_ws.length() == 0) {
-						doc.incorrectWhiteSpaceCount++;
-
-						if (doc.dumpIncorrectWS) {
-							System.out.printf("\n*** Miss a WS - line %d:\n", ot.getLine());
-							Tool.printOriginalFilePiece(doc, (CommonToken) ot);
-							System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
-						}
-					}
-					else if (count(original_ws, '\n') != count(formatted_ws, '\n')) {
-						doc.incorrectWhiteSpaceCount++;
-
-						if (doc.dumpIncorrectWS) {
-							System.out.printf("\n*** Incorrect WS - line %d:\n", ot.getLine());
-							Tool.printOriginalFilePiece(doc, (CommonToken)ot);
-							System.out.println("should: " + Tool.dumpWhiteSpace(original_ws));
-							System.out.println("actual: " + Tool.dumpWhiteSpace(formatted_ws));
-						}
-					}
-				}
-			}
-
-			i++;
-		}
-		return ((double)doc.incorrectWhiteSpaceCount) / doc.allWhiteSpaceCount;
-	}
+//	public static double compare(InputDocument doc,
+//	                             String formatted,
+//	                             Class<? extends Lexer> lexerClass)
+//		throws Exception {
+//	}
 
 	public static String tokenText(List<Token> tokens) {
 		if ( tokens==null ) return "";
@@ -1017,52 +704,6 @@ public class Tool {
 		System.out.print(Tool.spaces(originalCurToken.getCharPositionInLine()));
 		System.out.println("^");
 	}
-
-
-	/** Given a corpus, format the given input documents and compute their document
-	 *  similarities with {@link #compare}.
-	 */
-	public static ArrayList<Double> validateResults(Corpus corpus, List<InputDocument> testDocs,
-	                                                Class<? extends Lexer> lexerClass,
-	                                                Class<? extends Parser> parserClass,
-	                                                String startRuleName,
-	                                                int tabSize)
-		throws Exception
-	{
-		ArrayList<Double> differenceRatios = new ArrayList<>();
-
-		for (InputDocument testDoc: testDocs) {
-			Pair<String, List<TokenPositionAnalysis>> results =
-				format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, false);
-			String formattedDoc = results.a;
-			boolean dumpIncorrectWSOldValue = testDoc.dumpIncorrectWS;
-			testDoc.dumpIncorrectWS = false;
-			double differenceRatio = compareNL(testDoc, formattedDoc, lexerClass);
-			testDoc.dumpIncorrectWS = dumpIncorrectWSOldValue;
-			differenceRatios.add(differenceRatio);
-		}
-		return differenceRatios;
-	}
-
-	// return the median value of validate results array
-	public static double validate(Corpus corpus, List<InputDocument> testDocs,
-	                              Class<? extends Lexer> lexerClass,
-	                              Class<? extends Parser> parserClass,
-	                              String startRuleName,
-	                              int tabSize)
-		throws Exception
-	{
-		ArrayList<Double> differenceRatios =
-			validateResults(corpus, testDocs, lexerClass, parserClass, startRuleName, tabSize);
-		Collections.sort(differenceRatios);
-		if (differenceRatios.size() % 2 == 1) return differenceRatios.get(differenceRatios.size() / 2);
-		else if (differenceRatios.size() == 0) {
-			System.err.println("Don't have enough results to get median value from validate results array!");
-			return -1;
-		}
-		else return (differenceRatios.get(differenceRatios.size() / 2) + differenceRatios.get(differenceRatios.size() / 2 - 1))/2;
-	}
-
 
 	public static class Foo {
 		public static void main(String[] args) throws Exception {

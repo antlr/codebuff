@@ -1,9 +1,6 @@
 package org.antlr.codebuff;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 
 public class Optimizer {
@@ -162,12 +159,12 @@ public class Optimizer {
 			corpusDir = "../samples/stringtemplate4/org/stringtemplate/v4/debug/";
 			testFileDir = "../samples/stringtemplate4/org/stringtemplate/v4/debug/";
 		}
-		Corpus corpus = Tool.train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
-
-		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
-		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, tabSize);
-
-		Tester t = new Tester(Trainer.FEATURES_INJECT_WS, corpus, documents, tabSize);
+//		Corpus corpus = Tool.train(corpusDir, ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", tabSize, true);
+//
+//		List<String> allFiles = Tool.getFilenames(new File(testFileDir), ".*\\.java");
+//		ArrayList<InputDocument> documents = (ArrayList<InputDocument>) Tool.load(allFiles, tabSize);
+//
+//		Tester t = new Tester(Trainer.FEATURES_INJECT_WS, corpus, documents, tabSize);
 		// sorry, had to comment this out
 //		multiRoundMinimize(Tester::test, LEARNING_RATE, h, PRECISION, CollectFeatures.FEATURES_INJECT_NL, 5);
 	}
