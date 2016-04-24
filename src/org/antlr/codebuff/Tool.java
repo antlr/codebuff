@@ -38,12 +38,12 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  *
  * Testing:
  *
- * Tool  -dbg  -antlr     ../corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
- * Tool  -dbg  -sqlite    ../corpus/sqlite/training      ../corpus/sqlite/testing/t1.sql
- * Tool  -dbg  -tsql      ../corpus/tsql/training        ../corpus/tsql/testing/select1.sql
- * Tool  -dbg  -plsql     ../corpus/plsql/training       ../corpus/plsql/testing/condition15.sql
- * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
- * Tool  -dbg  -java      ../corpus/java/training/stringtemplate4     ../corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
+ * Tool  -dbg  -antlr     corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
+ * Tool  -dbg  -sqlite    corpus/sqlite/training      corpus/sqlite/testing/t1.sql
+ * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
+ * Tool  -dbg  -plsql     corpus/plsql/training       corpus/plsql/testing/condition15.sql
+ * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
+ * Tool  -dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
 	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
@@ -138,24 +138,12 @@ public class Tool {
 	/** Given a corpus, format the document by tokenizing and using the
 	 *  corpus to locate newline and whitespace injection points.
 	 */
-	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus, InputDocument testDoc,
-	                                                              Class<? extends Lexer> lexerClass,
-	                                                              Class<? extends Parser> parserClass,
-	                                                              String startRuleName,
-	                                                              int tabSize,
-	                                                              boolean collectAnalysis)
-		throws Exception
-	{
-		return format(corpus, testDoc, lexerClass, parserClass, startRuleName, tabSize, true, collectAnalysis);
-	}
-
 	public static Pair<String,List<TokenPositionAnalysis>> format(Corpus corpus,
 	                                                              InputDocument testDoc,
 	                                                              Class<? extends Lexer> lexerClass,
 	                                                              Class<? extends Parser> parserClass,
 	                                                              String startRuleName,
 	                                                              int tabSize,
-	                                                              boolean showFormattedResult,
 	                                                              boolean collectAnalysis)
 		throws Exception
 	{
@@ -165,10 +153,6 @@ public class Tool {
 		String formattedOutput = formatter.format();
 		List<TokenPositionAnalysis> analysisPerToken = formatter.getAnalysisPerToken();
 		dumpAccuracy(testDoc, analysisPerToken);
-
-		testDoc.dumpIncorrectWS = false;
-		double d = docDiff(testDoc.content, formattedOutput, lexerClass);
-		if (showFormattedResult) System.out.println("Diff is "+d);
 
 		List<Token> wsTokens = filter(formatter.originalTokens.getTokens(),
 		                              t->t.getChannel()!=Token.DEFAULT_CHANNEL);
