@@ -21,7 +21,7 @@ public class TestANTLR4Capture extends BaseTest {
 
 	@Test
 	public void testCapture() throws Exception {
-		Corpus corpus = new Corpus(fileName, Tool.ANTLR4_DESCR.fileRegex, Tool.ANTLR4_DESCR);
+		Corpus corpus = new Corpus(fileName, Tool.ANTLR4_DESCR);
 		corpus.train();
 		InputDocument testDoc = Tool.load(fileName, corpus.language);
 		Formatter formatter = new Formatter(corpus);

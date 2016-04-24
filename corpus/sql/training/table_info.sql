@@ -25,8 +25,7 @@ SELECT tab.name   table_name,
        END        is_identity
   FROM sysobjects tab,
        syscolumns col LEFT OUTER JOIN
-       syscomments com INNER JOIN
-       sysobjects obj ON com.id = obj.id AND com.colid = 1,
+       sysobjects obj ON com.id = obj.id,
        systypes typ
  WHERE tab.id = col.id
    AND tab.xtype = 'U'

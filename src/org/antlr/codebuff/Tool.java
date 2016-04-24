@@ -22,9 +22,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
@@ -40,8 +38,6 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Tool  -dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
-	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
-
 	public static boolean showFileNames = false;
 	public static boolean showTokens = false;
 
@@ -51,22 +47,22 @@ public class Tool {
 		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
 	public static final LangDescriptor SQLITE_DESCR =
 		new LangDescriptor("sqlite", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
+	public static final LangDescriptor TSQL_DESCR =
+		new LangDescriptor("tsql", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
 
-	public static LangDescriptor[] languages = new LangDescriptor[] {
+	public static LangDescriptor[] languages = new LangDescriptor[]{
 		JAVA_DESCR,
 		ANTLR4_DESCR,
 		SQLITE_DESCR,
-		new LangDescriptor("tsql", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4),
+		TSQL_DESCR,
 		new LangDescriptor("plsql", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4)
 	};
 
 	public static void main(String[] args)
-		throws Exception
-	{
+		throws Exception {
 		if ( args.length<2 ) {
 			System.err.println("ExtractFeatures [-dbg] [-java|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
 		}
-		int tabSize = 4; // TODO: MAKE AN ARGUMENT
 		int arg = 0;
 		boolean collectAnalysis = false;
 		if ( args[arg].equals("-dbg") ) {
@@ -91,7 +87,7 @@ public class Tool {
 			}
 		}
 		if ( lang!=null ) {
-			Corpus corpus = new Corpus(corpusDir, lang.fileRegex, Tool.JAVA_DESCR);
+			Corpus corpus = new Corpus(corpusDir, Tool.JAVA_DESCR);
 			corpus.train();
 			testDoc = load(testFilename, lang);
 			start = System.nanoTime();
@@ -103,12 +99,12 @@ public class Tool {
 			dumpAccuracy(testDoc, analysisPerToken);
 
 			List<Token> wsTokens = filter(formatter.originalTokens.getTokens(),
-			                              t->t.getChannel()!=Token.DEFAULT_CHANNEL);
+			                              t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
 			String originalWS = tokenText(wsTokens);
 
 			CommonTokenStream formatted_tokens = tokenize(output, corpus.language.lexerClass);
 			wsTokens = filter(formatted_tokens.getTokens(),
-			                  t->t.getChannel()!=Token.DEFAULT_CHANNEL);
+			                  t -> t.getChannel()!=Token.DEFAULT_CHANNEL);
 			String formattedWS = tokenText(wsTokens);
 
 			float editDistance = levenshteinDistance(originalWS, formattedWS);
@@ -122,16 +118,16 @@ public class Tool {
 //			System.out.println(output);
 			System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
 			System.out.printf("classify calls %d, hits %d rate %f\n",
-							  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
-							  kNNClassifier.nClassifyCacheHits/(float)kNNClassifier.nClassifyCalls);
+			                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
+			                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
 			System.out.printf("kNN calls %d, hits %d rate %f\n",
-							  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
-							  kNNClassifier.nNNCacheHits/(float)kNNClassifier.nNNCalls);
+			                  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
+			                  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
 		}
 	}
 
 	public static void dumpAccuracy(InputDocument testDoc, List<TokenPositionAnalysis> analysisPerToken) {
-		System.out.println("num real tokens from 1: " +getNumberRealTokens(testDoc.tokens, 1, testDoc.tokens.size()-2)); // don't include first token nor EOF
+		System.out.println("num real tokens from 1: "+getNumberRealTokens(testDoc.tokens, 1, testDoc.tokens.size()-2)); // don't include first token nor EOF
 		int n = 0; // should be number of real tokens - 1 (we don't process 1st token)
 		int n_align_compares = 0;
 		int correct_ws = 0;
@@ -202,18 +198,17 @@ public class Tool {
 		System.out.printf("correct sp / num ws = %d/%d, %4.3f%%\n",
 		                  correct_sp, n_sp, sp_accuracy*100);
 
-		double overall_ws_accuracy = correct_ws/(float)n;
+		double overall_ws_accuracy = correct_ws/(float) n;
 		System.out.printf("overall ws correct = %d/%d %4.3f%%\n",
 		                  correct_ws, n, overall_ws_accuracy*100);
 
-		double align_accuracy = correct_align / (float)n_align_compares;
+		double align_accuracy = correct_align/(float) n_align_compares;
 		System.out.printf("align correct = %d/%d %4.3f%%\n",
 		                  correct_align, n_align_compares, align_accuracy*100.0);
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
-		throws Exception
-	{
+		throws Exception {
 		ANTLRInputStream input = new ANTLRInputStream(doc);
 		Lexer lexer = getLexer(lexerClass, input);
 
@@ -222,10 +217,11 @@ public class Tool {
 		return tokens;
 	}
 
-	/** Parse doc and fill tree and tokens fields */
+	/**
+	 * Parse doc and fill tree and tokens fields
+	 */
 	public static void parse(InputDocument doc, LangDescriptor language)
-		throws Exception
-	{
+		throws Exception {
 		ANTLRInputStream input = new ANTLRInputStream(doc.content);
 		Lexer lexer = getLexer(language.lexerClass, input);
 		input.name = doc.fileName;
@@ -242,7 +238,7 @@ public class Tool {
 		doc.parser = getParser(language.parserClass, doc.tokens);
 		doc.parser.setBuildParseTree(true);
 		Method startRule = language.parserClass.getMethod(language.startRuleName);
-		doc.tree = (ParserRuleContext)startRule.invoke(doc.parser, (Object[]) null);
+		doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
 	}
 
 	public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
@@ -255,6 +251,16 @@ public class Tool {
 		Constructor<? extends Lexer> lexerCtor =
 			lexerClass.getConstructor(CharStream.class);
 		return lexerCtor.newInstance(input);
+	}
+
+	public static List<InputDocument> load(List<String> fileNames, LangDescriptor language)
+		throws Exception
+	{
+		List<InputDocument> documents = load(fileNames, language.tabSize);
+		for (InputDocument doc : documents) {
+			parse(doc, language);
+		}
+		return documents;
 	}
 
 	/** Get all file contents into input doc list */
@@ -290,31 +296,6 @@ public class Tool {
 		return new InputDocument(fileName, notabs);
 	}
 
-
-	/** From input documents, grab n in random order w/o replacement */
-	public List<InputDocument> getRandomDocuments(List<InputDocument> documents, int n) {
-		final Random random = new Random();
-		random.setSeed(DOCLIST_RANDOM_SEED);
-		List<InputDocument> documents_ = new ArrayList<>(documents);
-		Collections.shuffle(documents_, random);
-		List<InputDocument> contentList = new ArrayList<>(n);
-		for (int i=0; i<n; i++) { // get first n files from shuffle and set file index for it
-			contentList.add(documents.get(i));
-		}
-		return contentList;
-	}
-
-	/** From input documents, grab n in random order w replacement */
-	public List<InputDocument> getRandomDocumentsWithRepl(List<InputDocument> documents, int n) {
-		final Random random = new Random();
-		random.setSeed(DOCLIST_RANDOM_SEED);
-		List<InputDocument> contentList = new ArrayList<>(n);
-		for (int i=1; i<=n; i++) {
-			int r = random.nextInt(documents.size()); // get random index from 0..|inputfiles|-1
-			contentList.add(documents.get(r));
-		}
-		return contentList;
-	}
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
 		List<String> files = new ArrayList<>();
@@ -471,9 +452,9 @@ public class Tool {
 	    }
 
 	    int d = v1[t.length()];
-		int min = Math.abs(s.length()-t.length());
+//		int min = Math.abs(s.length()-t.length());
 		int max = Math.max(s.length(), t.length());
-		return (d-min) / (float)max;
+		return d / (float)max;
 	}
 
 	/* Compare whitespace and give an approximate Levenshtein distance /

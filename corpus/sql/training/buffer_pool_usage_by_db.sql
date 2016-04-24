@@ -5,7 +5,7 @@ SELECT @total_buffer = cntr_value
    WHERE RTRIM([object_name]) LIKE '%Buffer Manager'
    AND counter_name = 'Total Pages';
 
-;WITH src AS
+WITH src AS
 (
    SELECT 
        database_id, db_buffer_pages = COUNT_BIG(*)
@@ -28,7 +28,7 @@ ORDER BY db_buffer_MB DESC;
 ------------------------------------------------------
 -- specific database
 
-;WITH src AS
+WITH src AS
 (
    SELECT
        [Object] = o.name,

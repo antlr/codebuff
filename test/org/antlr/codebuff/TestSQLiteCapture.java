@@ -12,16 +12,16 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
-public class TestSQLCapture extends BaseTest {
+public class TestSQLiteCapture extends BaseTest {
 	public static final String CORPUS = "corpus/sql/training";
 
-	public TestSQLCapture(String fileName) {
+	public TestSQLiteCapture(String fileName) {
 		super(fileName);
 	}
 
 	@Test
 	public void testCapture() throws Exception {
-		Corpus corpus = new Corpus(fileName, Tool.SQLITE_DESCR.fileRegex, Tool.SQLITE_DESCR);
+		Corpus corpus = new Corpus(fileName, Tool.SQLITE_DESCR);
 		corpus.train();
 		InputDocument testDoc = Tool.load(fileName, corpus.language);
 		Formatter formatter = new Formatter(corpus);

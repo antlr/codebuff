@@ -21,7 +21,6 @@ import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.getLexer;
 import static org.antlr.codebuff.Tool.getParser;
 import static org.antlr.codebuff.Tool.load;
-import static org.antlr.codebuff.Tool.parse;
 import static org.antlr.codebuff.Tool.showFileNames;
 
 public class Corpus {
@@ -39,7 +38,6 @@ public class Corpus {
 	List<Integer> align;
 
 	public String rootDir;
-	public String fileRegex;
 	public LangDescriptor language;
 
 	/** an index to narrow down the number of vectors we compute distance() on each classification.
@@ -54,33 +52,22 @@ public class Corpus {
 	public Map<ParentSiblingListKey, Integer> splitListForms;
 	public Map<Token, Pair<Boolean, Integer>> tokenToListInfo;
 
-	public Corpus(String rootDir, String fileRegex, LangDescriptor language) {
+	public Corpus(String rootDir, LangDescriptor language) {
 		this.rootDir = rootDir;
-		this.fileRegex = fileRegex;
 		this.language = language;
 	}
 
-	public Corpus(List<InputDocument> documents,
-	              List<int[]> featureVectors,
-	              List<Integer> injectWhitespace,
-	              List<Integer> align)
-	{
+	public Corpus(List<InputDocument> documents, LangDescriptor language) {
 		this.documents = documents;
-		this.featureVectors = featureVectors;
-		this.injectWhitespace = injectWhitespace;
-		this.align = align;
+		this.language = language;
 	}
 
 	public void train() throws Exception { train(true); }
 
 	public void train(boolean shuffleFeatureVectors) throws Exception {
-		List<String> allFiles = getFilenames(new File(rootDir), fileRegex);
-		documents = load(allFiles, language.tabSize);
-
-		// Parse all documents into parse trees before training begins
-		for (InputDocument doc : documents) {
-			if ( showFileNames ) System.out.println(doc);
-			parse(doc, language);
+		if ( documents==null ) {
+			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
+			documents = load(allFiles, language);
 		}
 
 		collectTokenPairsAndSplitListInfo();
