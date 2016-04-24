@@ -10,5 +10,4 @@ public class ANTLR4LeaveOneOut {
 		List<Float> distances = validator.validate(true);
 		System.out.println(distances);
 	}
-
 }

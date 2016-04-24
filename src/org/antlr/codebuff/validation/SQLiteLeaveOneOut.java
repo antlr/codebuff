@@ -2,11 +2,11 @@ package org.antlr.codebuff.validation;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_DESCR;
 
-public class JavaLeaveOneOut {
+public class SQLiteLeaveOneOut {
 	public static void main(String[] args) throws Exception {
-		LeaveOneOutValidator validator = new LeaveOneOutValidator("corpus/java/training/antlr4-tool", JAVA_DESCR);
+		LeaveOneOutValidator validator = new LeaveOneOutValidator("corpus/sql/training", SQLITE_DESCR);
 		List<Float> distances = validator.validate(true);
 		System.out.println(distances);
 	}

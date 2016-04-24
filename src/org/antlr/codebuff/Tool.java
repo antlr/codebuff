@@ -97,26 +97,31 @@ public class Tool {
 			start = System.nanoTime();
 			Formatter formatter = new Formatter(corpus);
 			output = formatter.format(testDoc, collectAnalysis);
-			String output1 = formatter.getOutput();
 			stop = System.nanoTime();
 			analysisPerToken = formatter.getAnalysisPerToken();
 
 			dumpAccuracy(testDoc, analysisPerToken);
 
-			List<Token> wsTokens = filter(formatter.originalTokens.getTokens(),
+			CommonTokenStream original_tokens = tokenize(testDoc.content, corpus.language.lexerClass);
+			List<Token> wsTokens = filter(original_tokens.getTokens(),
 			                              t -> t.getText().matches("\\s+"));
 			String originalWS = tokenText(wsTokens);
+//			Utils.writeFile("/tmp/spaces1", originalWS);
+//			Utils.writeFile("/tmp/input", testDoc.content);
+//			Utils.writeFile("/tmp/output", output);
 
 			CommonTokenStream formatted_tokens = tokenize(output, corpus.language.lexerClass);
 			wsTokens = filter(formatted_tokens.getTokens(),
 			                  t -> t.getText().matches("\\s+"));
 			String formattedWS = tokenText(wsTokens);
+//			Utils.writeFile("/tmp/spaces2", formattedWS);
+
+			System.out.println("ws len orig="+originalWS.length()+", "+formattedWS.length());
 
 			float editDistance = levenshteinDistance(originalWS, formattedWS);
 			System.out.println("Levenshtein distance of ws: "+editDistance);
 			editDistance = levenshteinDistance(testDoc.content, output);
 			System.out.println("Levenshtein distance: "+editDistance);
-			System.out.println("ws len orig="+originalWS.length()+", "+formattedWS.length());
 
 			controller = new GUIController(analysisPerToken, testDoc, output, lang.lexerClass);
 			controller.show();
