@@ -34,7 +34,7 @@ import java.util.Random;
 
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
-/** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
+/** Grammar must have WS/comments on hidden channel
  *
  * Testing:
  *

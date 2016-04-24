@@ -17,7 +17,7 @@
       <profile default="true" name="Default" enabled="false">
         <processorPath useClasspath="true" />
       </profile>
-      <profile default="false" name="Annotation profile for codebuff" enabled="true">
+      <profile default="false" name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -31,6 +31,7 @@
   </component>
   <component name="CopyrightManager" default="" />
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/.." charset="UTF-8" />
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
@@ -59,6 +60,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/../pom.xml" />
       </list>
     </option>
   </component>
@@ -205,7 +207,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/codebuff.iml" filepath="$PROJECT_DIR$/codebuff.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../codebuff.iml" filepath="$PROJECT_DIR$/../codebuff.iml" />
     </modules>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="false" assert-keyword="true" jdk-15="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
