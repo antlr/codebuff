@@ -47,10 +47,12 @@ public class Tool {
 
 	public static final LangDescriptor JAVA_DESCR =
 		new LangDescriptor("java", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+	public static final LangDescriptor ANTLR4_DESCR =
+		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
 
 	public static LangDescriptor[] languages = new LangDescriptor[] {
 		JAVA_DESCR,
-		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4),
+		ANTLR4_DESCR,
 		new LangDescriptor("sqlite", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4),
 		new LangDescriptor("tsql", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4),
 		new LangDescriptor("plsql", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4)
