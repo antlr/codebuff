@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static org.antlr.codebuff.misc.BuffUtils.filter;
+
 /** Ok, changed requirements. Grammar must have WS on hidden channel and comments on non-HIDDEN channel
  *
  * Testing:
@@ -168,8 +170,20 @@ public class Tool {
 		double d = docDiff(testDoc.content, formattedOutput, lexerClass);
 		if (showFormattedResult) System.out.println("Diff is "+d);
 
-//		int editDistance = levenshteinDistance(testDoc.content, formattedOutput);
-//		System.out.println("Levenshtein distance: "+editDistance);
+		List<Token> wsTokens = filter(formatter.originalTokens.getTokens(),
+		                              t->t.getChannel()!=Token.DEFAULT_CHANNEL);
+		String originalWS = tokenText(wsTokens);
+
+		CommonTokenStream formatted_tokens = tokenize(formattedOutput, lexerClass);
+		wsTokens = filter(formatted_tokens.getTokens(),
+		                  t->t.getChannel()!=Token.DEFAULT_CHANNEL);
+		String formattedWS = tokenText(wsTokens);
+
+		float editDistance = levenshteinDistance(originalWS, formattedWS);
+		System.out.println("Levenshtein distance of ws: "+editDistance);
+		editDistance = levenshteinDistance(testDoc.content, formattedOutput);
+		System.out.println("Levenshtein distance: "+editDistance);
+		System.out.println("ws len orig="+originalWS.length()+", "+formattedWS.length());
 
 		return new Pair<>(formattedOutput, analysisPerToken);
 	}
@@ -593,8 +607,11 @@ public class Tool {
 		return s;
 	}
 
-	// from https://en.wikipedia.org/wiki/Levenshtein_distance
-	public static int levenshteinDistance(String s, String t) {
+	/** from https://en.wikipedia.org/wiki/Levenshtein_distance
+	 *  "It is always at least the difference of the sizes of the two strings."
+	 *  "It is at most the length of the longer string."
+	 */
+	public static float levenshteinDistance(String s, String t) {
 	    // degenerate cases
 	    if (s.equals(t)) return 0;
 	    if (s.length() == 0) return t.length();
@@ -631,7 +648,10 @@ public class Tool {
 			System.arraycopy(v1, 0, v0, 0, v0.length);
 	    }
 
-	    return v1[t.length()];
+	    int d = v1[t.length()];
+		int min = Math.abs(s.length()-t.length());
+		int max = Math.max(s.length(), t.length());
+		return (d-min) / (float)max;
 	}
 
 	/* Compare whitespace and give an approximate Levenshtein distance /
