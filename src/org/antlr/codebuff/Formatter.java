@@ -20,7 +20,6 @@ import java.util.Vector;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.tokenText;
 import static org.antlr.codebuff.Tool.tokenize;
-import static org.antlr.codebuff.Trainer.ANALYSIS_START_TOKEN_INDEX;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.Trainer.CAT_INDENT;
 import static org.antlr.codebuff.Trainer.CAT_INDENT_FROM_ANCESTOR_CHILD;
@@ -438,13 +437,18 @@ public class Formatter {
 		tokens.fill();
 		CommonToken dummy = new CommonToken(Token.INVALID_TYPE, "");
 		dummy.setChannel(Token.HIDDEN_CHANNEL);
-		for (int i = ANALYSIS_START_TOKEN_INDEX; i<tokens.size(); i++) { // can't process first 1 token so leave it alone
+		tokens.seek(0);
+		Token firstRealToken = tokens.LT(1);
+		for (int i = 0; i<tokens.size(); i++) {
+			if ( i==firstRealToken.getTokenIndex() ) continue; // don't wack first token
 			CommonToken t = (CommonToken)tokens.get(i);
 			if ( t.getText().matches("\\s+") ) {
 				tokens.getTokens().set(i, dummy); // wack whitespace token so we can't use it during prediction
 			}
-			t.setLine(0);
-			t.setCharPositionInLine(-1);
+			else {
+				t.setLine(0);
+				t.setCharPositionInLine(-1);
+			}
 		}
 	}
 
