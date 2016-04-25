@@ -1,0 +1,1067 @@
+Version 1.4 in pom.xml.
+
+ANTLR4:
+11 files
+17711 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/C.g4: 0.045293927
+19199 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/Clojure.g4: 0.11794517
+17570 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/Java.g4: 0.0664191
+16286 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/Java8.g4: 0.036425885
+19539 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/JSON.g4: 0.1472192
+17561 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/MASM.g4: 0.13322884
+19095 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/Smalltalk.g4: 0.18132259
+16146 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/SQLite.g4: 0.1326249
+14638 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/VisualBasic6.g4: 0.16709122
+19451 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/XMLLexer.g4: 0.14122596
+19584 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/antlr4/training/XMLParser.g4: 0.014371812
+[0.045293927, 0.11794517, 0.0664191, 0.036425885, 0.1472192, 0.13322884, 0.18132259, 0.1326249, 0.16709122, 0.14122596, 0.014371812]
+
+SQLite:
+37 files
+14890 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/backupset_queries.sql: 0.12138869
+14967 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/buffer_pool_usage_by_db.sql: 0.23317073
+14861 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/compare_db_powershell.sql: 0.15607736
+15192 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/compare_tables.sql: 0.08252427
+15236 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/create_columnlist.sql: 0.07821229
+15203 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/database_execute_permissions.sql: 0.26247987
+15201 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/daysCTE.sql: 0.2372449
+14966 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/dmart_bits.sql: 0.046166092
+14113 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/dmart_bits_IAPPBO510.sql: 0.08760279
+13848 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/dmart_bits_PSQLRPT24.sql: 0.12769346
+15038 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/DriveSpace.sql: 0.16967127
+15082 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/enum_permissions.sql: 0.13131313
+15023 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ex_CTEExample.sql: 0.15639496
+15048 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ex_GROUPBY.sql: 0.19490255
+15148 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ex_SUMbyColumn.sql: 0.33387622
+15147 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/filegroup_location_per_object.sql: 0.28064844
+14925 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/Generate_Weekly_Perfmon.sql: 0.12187088
+14690 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/index_bits.sql: 0.08896642
+14929 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ipmonitor_notes.sql: 0.1019665
+13317 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/IPMonVerificationMaster.sql: 0.27424765
+14670 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/mandelbrot.sql: 0.34063664
+15208 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/OrphanedUserCleanup_bits.sql: 0.103053436
+14742 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ProgressQueries.sql: 0.0940353
+15117 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/project_status.sql: 0.2043919
+15126 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/RealECOrdersBy30days.sql: 0.21768141
+15011 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/role_details.sql: 0.1323043
+15182 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/sel_DeadLinkedServers.sql: 0.071698114
+14929 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/server_correlate.sql: 0.10721443
+15184 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/sprocswithservernames_bits.sql: 0.058553386
+15090 feature vectors
+Whoops. Tried to access invalid child
+Whoops. Tried to access invalid child
+Whoops. Tried to access invalid child
+Whoops. Tried to access invalid child
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLErrorLogs_queries.sql: 0.19237435
+14820 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLFilesAudit.sql: 0.22424795
+14751 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLQuery23.sql: 0.2397108
+14980 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLSpaceStats_bits.sql: 0.16777566
+14706 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLStatsQueries.sql: 0.17766498
+14471 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/t_component_bits.sql: 0.11625442
+14318 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/table_info.sql: 0.2827057
+14915 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/vwTableInfo.sql: 0.076959394
+[0.12138869, 0.23317073, 0.15607736, 0.08252427, 0.07821229, 0.26247987, 0.2372449, 0.046166092, 0.08760279, 0.12769346, 0.16967127, 0.13131313, 0.15639496, 0.19490255, 0.33387622, 0.28064844, 0.12187088, 0.08896642, 0.1019665, 0.27424765, 0.34063664, 0.103053436, 0.0940353, 0.2043919, 0.21768141, 0.1323043, 0.071698114, 0.10721443, 0.058553386, 0.19237435, 0.22424795, 0.2397108, 0.16777566, 0.17766498, 0.11625442, 0.2827057, 0.076959394]
+
+TSQL:
+37 files
+14911 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/backupset_queries.sql: 0.09055596
+14990 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/buffer_pool_usage_by_db.sql: 0.17464492
+14884 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/compare_db_powershell.sql: 0.17081031
+15215 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/compare_tables.sql: 0.033898305
+15259 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/create_columnlist.sql: 0.09497207
+15226 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/database_execute_permissions.sql: 0.2190016
+15223 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/daysCTE.sql: 0.19473684
+14989 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/dmart_bits.sql: 0.073759615
+14135 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/dmart_bits_IAPPBO510.sql: 0.13219482
+13869 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/dmart_bits_PSQLRPT24.sql: 0.15748549
+15061 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/DriveSpace.sql: 0.11985899
+15104 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/enum_permissions.sql: 0.11652035
+15046 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ex_CTEExample.sql: 0.09440559
+15071 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ex_GROUPBY.sql: 0.23313344
+15171 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ex_SUMbyColumn.sql: 0.31433225
+15170 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/filegroup_location_per_object.sql: 0.35460994
+14948 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/Generate_Weekly_Perfmon.sql: 0.08366271
+14712 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/index_bits.sql: 0.11186219
+14952 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ipmonitor_notes.sql: 0.088370964
+13340 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/IPMonVerificationMaster.sql: 0.36359152
+14693 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/mandelbrot.sql: 0.30758017
+15231 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/OrphanedUserCleanup_bits.sql: 0.110687025
+14765 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/ProgressQueries.sql: 0.13511868
+15140 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/project_status.sql: 0.18074325
+15148 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/RealECOrdersBy30days.sql: 0.16328332
+15033 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/role_details.sql: 0.098575495
+15205 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/sel_DeadLinkedServers.sql: 0.06981132
+14952 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/server_correlate.sql: 0.058640372
+15207 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/sprocswithservernames_bits.sql: 0.07577497
+15113 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLErrorLogs_queries.sql: 0.20103987
+14839 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLFilesAudit.sql: 0.1627165
+14774 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLQuery23.sql: 0.11045104
+15003 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLSpaceStats_bits.sql: 0.1506654
+14729 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/SQLStatsQueries.sql: 0.17713064
+14494 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/t_component_bits.sql: 0.04896956
+14334 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/table_info.sql: 0.30001783
+14936 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/sql/training/vwTableInfo.sql: 0.07459868
+[0.09055596, 0.17464492, 0.17081031, 0.033898305, 0.09497207, 0.2190016, 0.19473684, 0.073759615, 0.13219482, 0.15748549, 0.11985899, 0.11652035, 0.09440559, 0.23313344, 0.31433225, 0.35460994, 0.08366271, 0.11186219, 0.088370964, 0.36359152, 0.30758017, 0.110687025, 0.13511868, 0.18074325, 0.16328332, 0.098575495, 0.06981132, 0.058640372, 0.07577497, 0.20103987, 0.1627165, 0.11045104, 0.1506654, 0.17713064, 0.04896956, 0.30001783, 0.07459868]
+
+Java:
+218 files
+110110 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/AnalysisPipeline.java: 0.006272983
+110080 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursionDetector.java: 0.034548663
+110579 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursiveRuleAltInfo.java: 0.01820208
+108018 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursiveRuleAnalyzer.java: 0.10300408
+109134 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursiveRuleTransformer.java: 0.022979582
+110332 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNFactory.java: 0.027522936
+109882 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNOptimizer.java: 0.042721745
+109683 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNPrinter.java: 0.028850628
+110552 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNVisitor.java: 0.0041476567
+107412 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/LexerATNFactory.java: 0.104059145
+106366 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ParserATNFactory.java: 0.05396878
+110398 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/TailEpsilonRemover.java: 0.021046644
+108089 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/ActionTranslator.java: 0.055507943
+110055 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/BlankOutputModelFactory.java: 0.068825126
+109266 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/CodeGenerator.java: 0.028207382
+110270 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/CodeGeneratorExtension.java: 0.060479667
+110114 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/CodeGenPipeline.java: 0.01610053
+110108 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/DefaultOutputModelFactory.java: 0.025084874
+110695 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/LexerFactory.java: 0.007540603
+110346 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Action.java: 0.03853897
+110641 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/AddToLabelList.java: 0.026799008
+110623 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/AltBlock.java: 0.0031208203
+110651 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ArgAction.java: 0.022267206
+110677 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/BaseListenerFile.java: 0.0011068069
+110677 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/BaseVisitorFile.java: 0.0011086474
+110669 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CaptureNextToken.java: 0.0016224986
+110669 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CaptureNextTokenType.java: 0.0010729614
+110337 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Choice.java: 0.0052194544
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ActionChunk.java: 0.0010314595
+110654 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ActionTemplate.java: 5.4054055E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ActionText.java: 0.0010917031
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ArgRef.java: 5.630631E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/LabelRef.java: 0.0016474464
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ListLabelRef.java: 0.00786959
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/LocalRef.java: 0.0016474464
+110637 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/NonLocalAttrRef.java: 0.04108265
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/QRetValueRef.java: 0.0010793308
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RetValueRef.java: 0.0016348774
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef.java: 0.0010834236
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_ctx.java: 0.0011086474
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_parser.java: 5.5035774E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_start.java: 5.509642E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_stop.java: 5.5157195E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_text.java: 5.5157195E-4
+110622 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/SetAttr.java: 0.021887159
+110630 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/SetNonLocalAttr.java: 0.028882576
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_ctx.java: 0.0011037528
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_parser.java: 5.479452E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_start.java: 5.485464E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_stop.java: 5.491488E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_text.java: 5.491488E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef.java: 0.0010822511
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_channel.java: 5.488474E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_index.java: 5.50055E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_int.java: 5.5126793E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_line.java: 5.5066077E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_pos.java: 5.5126793E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_text.java: 5.5066077E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_type.java: 5.5066077E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenRef.java: 0.0010940919
+110667 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CodeBlockForAlt.java: 0.0010649627
+110632 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CodeBlockForOuterMostAlt.java: 8.6843246E-4
+110706 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/dbg.java: 6.086427E-4
+110430 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/AltLabelStructDecl.java: 0.025969962
+110634 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/AttributeDecl.java: 0.0015274949
+110381 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/CodeBlock.java: 0.01918772
+110529 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextGetterDecl.java: 0.013097345
+110662 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextRuleGetterDecl.java: 0.034
+110662 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextRuleListGetterDecl.java: 0.03696498
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextRuleListIndexedGetterDecl.java: 0.04418262
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextTokenGetterDecl.java: 5.382131E-4
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextTokenListGetterDecl.java: 5.254861E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextTokenListIndexedGetterDecl.java: 0.005184033
+110543 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/Decl.java: 0.0018832391
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ElementListDecl.java: 0.0011142062
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/RuleContextDecl.java: 0.02855686
+110666 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/RuleContextListDecl.java: 0.03321225
+110185 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/StructDecl.java: 0.010883762
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/TokenDecl.java: 0.0010775862
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/TokenListDecl.java: 5.527916E-4
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/TokenTypeDecl.java: 5.561735E-4
+110682 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/DispatchMethod.java: 0.0011229647
+109777 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ElementFrequenciesVisitor.java: 0.028030444
+110625 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ExceptionClause.java: 0.0070488723
+110140 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/InvokeRule.java: 0.022978539
+110677 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LabeledOp.java: 0.0016638935
+110363 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LeftRecursiveRuleFunction.java: 0.007008691
+110539 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Lexer.java: 0.012371134
+110543 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LexerFile.java: 0.00456621
+110669 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ListenerDispatchMethod.java: 0.0010683761
+110355 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ListenerFile.java: 0.0060273972
+110560 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1AltBlock.java: 0.020333469
+110633 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1Choice.java: 0.015481374
+110527 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1Loop.java: 0.0072098053
+110649 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1OptionalBlock.java: 0.027128156
+110511 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1OptionalBlockSingleAlt.java: 0.0058600483
+110520 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1PlusBlockSingleAlt.java: 0.03061601
+110549 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1StarBlockSingleAlt.java: 0.027154664
+110540 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Loop.java: 0.017628206
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/MatchNotSet.java: 0.0010729614
+110525 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/MatchSet.java: 0.009615385
+110496 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/MatchToken.java: 0.0077730278
+110682 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ModelElement.java: 0.0016286644
+110649 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/OptionalBlock.java: 0.0030487804
+110593 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/OutputFile.java: 0.0012987013
+110631 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/OutputModelObject.java: 0.010159652
+110638 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Parser.java: 0.0045294412
+110445 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ParserFile.java: 0.022519583
+110535 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/PlusBlock.java: 0.12495709
+110072 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Recognizer.java: 0.028040998
+110607 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleActionFunction.java: 0.007762557
+110640 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleElement.java: 0.0034482758
+108782 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleFunction.java: 0.016493835
+110661 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleSempredFunction.java: 0.0010752688
+110400 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/SemPred.java: 0.075068355
+110414 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/SerializedATN.java: 0.022526935
+110496 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/SrcOp.java: 0.017980222
+110591 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/StarBlock.java: 0.008691873
+110632 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Sync.java: 0.0022291574
+110350 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/TestSetInline.java: 0.042084727
+110646 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ThrowEarlyExitException.java: 0.035044424
+110646 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ThrowNoViableAlt.java: 0.016304348
+110606 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ThrowRecognitionException.java: 0.03189342
+110682 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/VisitorDispatchMethod.java: 0.0011160715
+110355 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/VisitorFile.java: 0.0061867265
+107597 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/OutputModelController.java: 0.039601553
+110124 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/OutputModelFactory.java: 0.019500438
+109944 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/OutputModelWalker.java: 0.022882376
+108209 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/ParserFactory.java: 0.02372239
+110040 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/CSharpTarget.java: 0.05087719
+109896 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/JavaScriptTarget.java: 0.03833516
+110216 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/JavaTarget.java: 0.0227957
+110209 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/Python2Target.java: 0.05641593
+110197 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/Python3Target.java: 0.06533419
+108656 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/Target.java: 0.043216135
+110664 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/Wildcard.java: 5.5035774E-4
+110582 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/BasicFontMetrics.java: 0.0034201527
+110114 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/GraphicsSupport.java: 0.09761266
+110621 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/JFileChooserConfirmOverwrite.java: 0.004091653
+109713 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/PostScriptDocument.java: 0.06195639
+110506 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/SystemFontMetrics.java: 0.010570026
+109394 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TestRig.java: 0.17649026
+110264 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreeLayoutAdaptor.java: 0.017019419
+109891 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreePostScriptGenerator.java: 0.020698577
+109996 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/Trees.java: 0.08962483
+110690 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreeTextProvider.java: 0.0011848342
+106788 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreeViewer.java: 0.067692876
+110021 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/CharSupport.java: 0.008728944
+110614 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/FrequencySet.java: 0.008608322
+110226 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/Graph.java: 0.012749189
+110554 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/MutableInt.java: 0.04914619
+110481 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/OrderedHashMap.java: 0.0041920734
+109942 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/Utils.java: 0.07087044
+110629 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ActionSplitterListener.java: 0.0025471218
+110390 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/GrammarASTAdaptor.java: 0.027447652
+110354 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/GrammarToken.java: 0.040242556
+110708 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ResyncToEndOfRuleBlock.java: 5.6179776E-4
+109091 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ScopeParser.java: 0.055170707
+109984 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/TokenVocabParser.java: 0.047764767
+110551 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ToolANTLRLexer.java: 0.0012679629
+110426 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ToolANTLRParser.java: 0.019394651
+110668 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/v3TreeGrammarException.java: 0.0016042781
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/v4ParserException.java: 0.004075395
+110195 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/ActionSniffer.java: 0.028654577
+109068 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/AttributeChecks.java: 0.16503899
+107297 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/BasicSemanticChecks.java: 0.10397899
+110547 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/BlankActionSplitterListener.java: 4.0160643E-4
+109924 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/RuleCollector.java: 0.041919373
+109290 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/SemanticPipeline.java: 0.08285178
+108684 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/SymbolChecks.java: 0.18666509
+109698 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/SymbolCollector.java: 0.037368625
+110012 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/UseDefAnalyzer.java: 0.13462196
+109975 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Alternative.java: 0.013980757
+110267 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ANTLRMessage.java: 0.046859905
+110686 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ANTLRToolListener.java: 4.6296295E-4
+110558 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/ActionAST.java: 0.02723896
+110524 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/AltAST.java: 0.02812838
+110524 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/BlockAST.java: 0.03909544
+109291 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarAST.java: 0.010330139
+110573 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarASTErrorNode.java: 0.048119694
+110610 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarASTVisitor.java: 0.0034423408
+110360 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarASTWithOptions.java: 0.021349274
+110311 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarRootAST.java: 0.011025641
+110629 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/NotAST.java: 0.013124685
+110595 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/OptionalBlockAST.java: 0.011899515
+110595 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/PlusBlockAST.java: 0.012026726
+110605 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/PredAST.java: 0.030636668
+110703 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/QuantifierAST.java: 0.0017867779
+110634 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RangeAST.java: 0.013554217
+110452 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RuleAST.java: 0.018486222
+110708 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RuleElementAST.java: 5.9101655E-4
+110569 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RuleRefAST.java: 0.019953953
+110624 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/SetAST.java: 0.014507254
+110595 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/StarBlockAST.java: 0.012026726
+110603 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/TerminalAST.java: 0.02962963
+110598 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Attribute.java: 0.009063444
+110332 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/AttributeDict.java: 0.025304137
+110628 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/AttributeResolver.java: 5.847953E-4
+109661 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/BuildDependencyGenerator.java: 0.0148835415
+110501 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/DefaultToolListener.java: 0.008646617
+108183 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/DOTGenerator.java: 0.033870813
+109276 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ErrorManager.java: 0.03558906
+110650 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ErrorSeverity.java: 0.08933518
+109395 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ErrorType.java: 0.13218462
+104379 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Grammar.java: 0.038020983
+110602 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarInterpreterRuleContext.java: 0.033963587
+109085 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarParserInterpreter.java: 0.02716527
+110642 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarSemanticsMessage.java: 0.049409706
+110596 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarSyntaxMessage.java: 0.020952381
+108022 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarTransformPipeline.java: 0.037057992
+110457 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LabelElementPair.java: 0.031711146
+110692 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LabelType.java: 0.020730503
+110570 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LeftRecursionCyclesMessage.java: 0.03229665
+109818 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LeftRecursiveRule.java: 0.006319812
+110458 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LexerGrammar.java: 0.028508771
+108805 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Rule.java: 0.013482971
+110633 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ToolMessage.java: 0.0012371134
+105899 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/Tool.java: 0.056712247
+[0.006272983, 0.034548663, 0.01820208, 0.10300408, 0.022979582, 0.027522936, 0.042721745, 0.028850628, 0.0041476567, 0.104059145, 0.05396878, 0.021046644, 0.055507943, 0.068825126, 0.028207382, 0.060479667, 0.01610053, 0.025084874, 0.007540603, 0.03853897, 0.026799008, 0.0031208203, 0.022267206, 0.0011068069, 0.0011086474, 0.0016224986, 0.0010729614, 0.0052194544, 0.0010314595, 5.4054055E-4, 0.0010917031, 5.630631E-4, 0.0016474464, 0.00786959, 0.0016474464, 0.04108265, 0.0010793308, 0.0016348774, 0.0010834236, 0.0011086474, 5.5035774E-4, 5.509642E-4, 5.5157195E-4, 5.5157195E-4, 0.021887159, 0.028882576, 0.0011037528, 5.479452E-4, 5.485464E-4, 5.491488E-4, 5.491488E-4, 0.0010822511, 5.488474E-4, 5.50055E-4, 5.5126793E-4, 5.5066077E-4, 5.5126793E-4, 5.5066077E-4, 5.5066077E-4, 0.0010940919, 0.0010649627, 8.6843246E-4, 6.086427E-4, 0.025969962, 0.0015274949, 0.01918772, 0.013097345, 0.034, 0.03696498, 0.04418262, 5.382131E-4, 5.254861E-4, 0.005184033, 0.0018832391, 0.0011142062, 0.02855686, 0.03321225, 0.010883762, 0.0010775862, 5.527916E-4, 5.561735E-4, 0.0011229647, 0.028030444, 0.0070488723, 0.022978539, 0.0016638935, 0.007008691, 0.012371134, 0.00456621, 0.0010683761, 0.0060273972, 0.020333469, 0.015481374, 0.0072098053, 0.027128156, 0.0058600483, 0.03061601, 0.027154664, 0.017628206, 0.0010729614, 0.009615385, 0.0077730278, 0.0016286644, 0.0030487804, 0.0012987013, 0.010159652, 0.0045294412, 0.022519583, 0.12495709, 0.028040998, 0.007762557, 0.0034482758, 0.016493835, 0.0010752688, 0.075068355, 0.022526935, 0.017980222, 0.008691873, 0.0022291574, 0.042084727, 0.035044424, 0.016304348, 0.03189342, 0.0011160715, 0.0061867265, 0.039601553, 0.019500438, 0.022882376, 0.02372239, 0.05087719, 0.03833516, 0.0227957, 0.05641593, 0.06533419, 0.043216135, 5.5035774E-4, 0.0034201527, 0.09761266, 0.004091653, 0.06195639, 0.010570026, 0.17649026, 0.017019419, 0.020698577, 0.08962483, 0.0011848342, 0.067692876, 0.008728944, 0.008608322, 0.012749189, 0.04914619, 0.0041920734, 0.07087044, 0.0025471218, 0.027447652, 0.040242556, 5.6179776E-4, 0.055170707, 0.047764767, 0.0012679629, 0.019394651, 0.0016042781, 0.004075395, 0.028654577, 0.16503899, 0.10397899, 4.0160643E-4, 0.041919373, 0.08285178, 0.18666509, 0.037368625, 0.13462196, 0.013980757, 0.046859905, 4.6296295E-4, 0.02723896, 0.02812838, 0.03909544, 0.010330139, 0.048119694, 0.0034423408, 0.021349274, 0.011025641, 0.013124685, 0.011899515, 0.012026726, 0.030636668, 0.0017867779, 0.013554217, 0.018486222, 5.9101655E-4, 0.019953953, 0.014507254, 0.012026726, 0.02962963, 0.009063444, 0.025304137, 5.847953E-4, 0.0148835415, 0.008646617, 0.033870813, 0.03558906, 0.08933518, 0.13218462, 0.038020983, 0.033963587, 0.02716527, 0.049409706, 0.020952381, 0.037057992, 0.031711146, 0.020730503, 0.03229665, 0.006319812, 0.028508771, 0.013482971, 0.0012371134, 0.056712247]
+
+Java8:
+218 files
+110110 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/AnalysisPipeline.java: 0.006272983
+110080 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursionDetector.java: 0.034548663
+110579 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursiveRuleAltInfo.java: 0.01820208
+108018 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursiveRuleAnalyzer.java: 0.10300408
+109134 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/analysis/LeftRecursiveRuleTransformer.java: 0.022979582
+110332 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNFactory.java: 0.027522936
+109882 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNOptimizer.java: 0.042721745
+109683 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNPrinter.java: 0.028850628
+110552 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ATNVisitor.java: 0.0041476567
+107412 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/LexerATNFactory.java: 0.104059145
+106366 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/ParserATNFactory.java: 0.05396878
+110398 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/automata/TailEpsilonRemover.java: 0.021046644
+108089 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/ActionTranslator.java: 0.055507943
+110055 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/BlankOutputModelFactory.java: 0.068825126
+109266 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/CodeGenerator.java: 0.028207382
+110270 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/CodeGeneratorExtension.java: 0.060479667
+110114 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/CodeGenPipeline.java: 0.01610053
+110108 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/DefaultOutputModelFactory.java: 0.025084874
+110695 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/LexerFactory.java: 0.007540603
+110346 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Action.java: 0.03853897
+110641 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/AddToLabelList.java: 0.026799008
+110623 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/AltBlock.java: 0.0031208203
+110651 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ArgAction.java: 0.022267206
+110677 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/BaseListenerFile.java: 0.0011068069
+110677 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/BaseVisitorFile.java: 0.0011086474
+110669 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CaptureNextToken.java: 0.0016224986
+110669 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CaptureNextTokenType.java: 0.0010729614
+110337 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Choice.java: 0.0052194544
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ActionChunk.java: 0.0010314595
+110654 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ActionTemplate.java: 5.4054055E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ActionText.java: 0.0010917031
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ArgRef.java: 5.630631E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/LabelRef.java: 0.0016474464
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ListLabelRef.java: 0.00786959
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/LocalRef.java: 0.0016474464
+110637 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/NonLocalAttrRef.java: 0.04108265
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/QRetValueRef.java: 0.0010793308
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RetValueRef.java: 0.0016348774
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef.java: 0.0010834236
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_ctx.java: 0.0011086474
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_parser.java: 5.5035774E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_start.java: 5.509642E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_stop.java: 5.5157195E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/RulePropertyRef_text.java: 5.5157195E-4
+110622 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/SetAttr.java: 0.021887159
+110630 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/SetNonLocalAttr.java: 0.028882576
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_ctx.java: 0.0011037528
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_parser.java: 5.479452E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_start.java: 5.485464E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_stop.java: 5.491488E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/ThisRulePropertyRef_text.java: 5.491488E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef.java: 0.0010822511
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_channel.java: 5.488474E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_index.java: 5.50055E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_int.java: 5.5126793E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_line.java: 5.5066077E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_pos.java: 5.5126793E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_text.java: 5.5066077E-4
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenPropertyRef_type.java: 5.5066077E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/chunk/TokenRef.java: 0.0010940919
+110667 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CodeBlockForAlt.java: 0.0010649627
+110632 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/CodeBlockForOuterMostAlt.java: 8.6843246E-4
+110706 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/dbg.java: 6.086427E-4
+110430 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/AltLabelStructDecl.java: 0.025969962
+110634 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/AttributeDecl.java: 0.0015274949
+110381 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/CodeBlock.java: 0.01918772
+110529 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextGetterDecl.java: 0.013097345
+110662 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextRuleGetterDecl.java: 0.034
+110662 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextRuleListGetterDecl.java: 0.03696498
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextRuleListIndexedGetterDecl.java: 0.04418262
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextTokenGetterDecl.java: 5.382131E-4
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextTokenListGetterDecl.java: 5.254861E-4
+110663 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ContextTokenListIndexedGetterDecl.java: 0.005184033
+110543 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/Decl.java: 0.0018832391
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/ElementListDecl.java: 0.0011142062
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/RuleContextDecl.java: 0.02855686
+110666 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/RuleContextListDecl.java: 0.03321225
+110185 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/StructDecl.java: 0.010883762
+110671 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/TokenDecl.java: 0.0010775862
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/TokenListDecl.java: 5.527916E-4
+110675 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/decl/TokenTypeDecl.java: 5.561735E-4
+110682 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/DispatchMethod.java: 0.0011229647
+109777 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ElementFrequenciesVisitor.java: 0.028030444
+110625 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ExceptionClause.java: 0.0070488723
+110140 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/InvokeRule.java: 0.022978539
+110677 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LabeledOp.java: 0.0016638935
+110363 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LeftRecursiveRuleFunction.java: 0.007008691
+110539 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Lexer.java: 0.012371134
+110543 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LexerFile.java: 0.00456621
+110669 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ListenerDispatchMethod.java: 0.0010683761
+110355 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ListenerFile.java: 0.0060273972
+110560 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1AltBlock.java: 0.020333469
+110633 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1Choice.java: 0.015481374
+110527 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1Loop.java: 0.0072098053
+110649 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1OptionalBlock.java: 0.027128156
+110511 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1OptionalBlockSingleAlt.java: 0.0058600483
+110520 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1PlusBlockSingleAlt.java: 0.03061601
+110549 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/LL1StarBlockSingleAlt.java: 0.027154664
+110540 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Loop.java: 0.017628206
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/MatchNotSet.java: 0.0010729614
+110525 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/MatchSet.java: 0.009615385
+110496 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/MatchToken.java: 0.0077730278
+110682 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ModelElement.java: 0.0016286644
+110649 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/OptionalBlock.java: 0.0030487804
+110593 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/OutputFile.java: 0.0012987013
+110631 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/OutputModelObject.java: 0.010159652
+110638 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Parser.java: 0.0045294412
+110445 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ParserFile.java: 0.022519583
+110535 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/PlusBlock.java: 0.12495709
+110072 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Recognizer.java: 0.028040998
+110607 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleActionFunction.java: 0.007762557
+110640 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleElement.java: 0.0034482758
+108782 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleFunction.java: 0.016493835
+110661 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/RuleSempredFunction.java: 0.0010752688
+110400 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/SemPred.java: 0.075068355
+110414 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/SerializedATN.java: 0.022526935
+110496 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/SrcOp.java: 0.017980222
+110591 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/StarBlock.java: 0.008691873
+110632 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/Sync.java: 0.0022291574
+110350 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/TestSetInline.java: 0.042084727
+110646 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ThrowEarlyExitException.java: 0.035044424
+110646 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ThrowNoViableAlt.java: 0.016304348
+110606 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/ThrowRecognitionException.java: 0.03189342
+110682 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/VisitorDispatchMethod.java: 0.0011160715
+110355 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/model/VisitorFile.java: 0.0061867265
+107597 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/OutputModelController.java: 0.039601553
+110124 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/OutputModelFactory.java: 0.019500438
+109944 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/OutputModelWalker.java: 0.022882376
+108209 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/ParserFactory.java: 0.02372239
+110040 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/CSharpTarget.java: 0.05087719
+109896 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/JavaScriptTarget.java: 0.03833516
+110216 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/JavaTarget.java: 0.0227957
+110209 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/Python2Target.java: 0.05641593
+110197 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/target/Python3Target.java: 0.06533419
+108656 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/Target.java: 0.043216135
+110664 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/codegen/Wildcard.java: 5.5035774E-4
+110582 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/BasicFontMetrics.java: 0.0034201527
+110114 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/GraphicsSupport.java: 0.09761266
+110621 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/JFileChooserConfirmOverwrite.java: 0.004091653
+109713 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/PostScriptDocument.java: 0.06195639
+110506 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/SystemFontMetrics.java: 0.010570026
+109394 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TestRig.java: 0.17649026
+110264 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreeLayoutAdaptor.java: 0.017019419
+109891 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreePostScriptGenerator.java: 0.020698577
+109996 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/Trees.java: 0.08962483
+110690 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreeTextProvider.java: 0.0011848342
+106788 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/gui/TreeViewer.java: 0.067692876
+110021 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/CharSupport.java: 0.008728944
+110614 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/FrequencySet.java: 0.008608322
+110226 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/Graph.java: 0.012749189
+110554 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/MutableInt.java: 0.04914619
+110481 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/OrderedHashMap.java: 0.0041920734
+109942 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/misc/Utils.java: 0.07087044
+110629 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ActionSplitterListener.java: 0.0025471218
+110390 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/GrammarASTAdaptor.java: 0.027447652
+110354 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/GrammarToken.java: 0.040242556
+110708 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ResyncToEndOfRuleBlock.java: 5.6179776E-4
+109091 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ScopeParser.java: 0.055170707
+109984 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/TokenVocabParser.java: 0.047764767
+110551 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ToolANTLRLexer.java: 0.0012679629
+110426 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/ToolANTLRParser.java: 0.019394651
+110668 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/v3TreeGrammarException.java: 0.0016042781
+110658 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/parse/v4ParserException.java: 0.004075395
+110195 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/ActionSniffer.java: 0.028654577
+109068 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/AttributeChecks.java: 0.16503899
+107297 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/BasicSemanticChecks.java: 0.10397899
+110547 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/BlankActionSplitterListener.java: 4.0160643E-4
+109924 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/RuleCollector.java: 0.041919373
+109290 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/SemanticPipeline.java: 0.08285178
+108684 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/SymbolChecks.java: 0.18666509
+109698 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/SymbolCollector.java: 0.037368625
+110012 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/semantics/UseDefAnalyzer.java: 0.13462196
+109975 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Alternative.java: 0.013980757
+110267 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ANTLRMessage.java: 0.046859905
+110686 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ANTLRToolListener.java: 4.6296295E-4
+110558 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/ActionAST.java: 0.02723896
+110524 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/AltAST.java: 0.02812838
+110524 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/BlockAST.java: 0.03909544
+109291 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarAST.java: 0.010330139
+110573 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarASTErrorNode.java: 0.048119694
+110610 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarASTVisitor.java: 0.0034423408
+110360 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarASTWithOptions.java: 0.021349274
+110311 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/GrammarRootAST.java: 0.011025641
+110629 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/NotAST.java: 0.013124685
+110595 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/OptionalBlockAST.java: 0.011899515
+110595 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/PlusBlockAST.java: 0.012026726
+110605 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/PredAST.java: 0.030636668
+110703 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/QuantifierAST.java: 0.0017867779
+110634 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RangeAST.java: 0.013554217
+110452 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RuleAST.java: 0.018486222
+110708 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RuleElementAST.java: 5.9101655E-4
+110569 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/RuleRefAST.java: 0.019953953
+110624 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/SetAST.java: 0.014507254
+110595 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/StarBlockAST.java: 0.012026726
+110603 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ast/TerminalAST.java: 0.02962963
+110598 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Attribute.java: 0.009063444
+110332 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/AttributeDict.java: 0.025304137
+110628 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/AttributeResolver.java: 5.847953E-4
+109661 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/BuildDependencyGenerator.java: 0.0148835415
+110501 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/DefaultToolListener.java: 0.008646617
+108183 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/DOTGenerator.java: 0.033870813
+109276 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ErrorManager.java: 0.03558906
+110650 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ErrorSeverity.java: 0.08933518
+109395 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ErrorType.java: 0.13218462
+104379 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Grammar.java: 0.038020983
+110602 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarInterpreterRuleContext.java: 0.033963587
+109085 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarParserInterpreter.java: 0.02716527
+110642 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarSemanticsMessage.java: 0.049409706
+110596 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarSyntaxMessage.java: 0.020952381
+108022 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/GrammarTransformPipeline.java: 0.037057992
+110457 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LabelElementPair.java: 0.031711146
+110692 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LabelType.java: 0.020730503
+110570 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LeftRecursionCyclesMessage.java: 0.03229665
+109818 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LeftRecursiveRule.java: 0.006319812
+110458 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/LexerGrammar.java: 0.028508771
+108805 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/Rule.java: 0.013482971
+110633 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/tool/ToolMessage.java: 0.0012371134
+105899 feature vectors
+/Users/parrt/antlr/code/codebuff/corpus/java/training/antlr4-tool/org/antlr/v4/Tool.java: 0.056712247
+[0.006272983, 0.034548663, 0.01820208, 0.10300408, 0.022979582, 0.027522936, 0.042721745, 0.028850628, 0.0041476567, 0.104059145, 0.05396878, 0.021046644, 0.055507943, 0.068825126, 0.028207382, 0.060479667, 0.01610053, 0.025084874, 0.007540603, 0.03853897, 0.026799008, 0.0031208203, 0.022267206, 0.0011068069, 0.0011086474, 0.0016224986, 0.0010729614, 0.0052194544, 0.0010314595, 5.4054055E-4, 0.0010917031, 5.630631E-4, 0.0016474464, 0.00786959, 0.0016474464, 0.04108265, 0.0010793308, 0.0016348774, 0.0010834236, 0.0011086474, 5.5035774E-4, 5.509642E-4, 5.5157195E-4, 5.5157195E-4, 0.021887159, 0.028882576, 0.0011037528, 5.479452E-4, 5.485464E-4, 5.491488E-4, 5.491488E-4, 0.0010822511, 5.488474E-4, 5.50055E-4, 5.5126793E-4, 5.5066077E-4, 5.5126793E-4, 5.5066077E-4, 5.5066077E-4, 0.0010940919, 0.0010649627, 8.6843246E-4, 6.086427E-4, 0.025969962, 0.0015274949, 0.01918772, 0.013097345, 0.034, 0.03696498, 0.04418262, 5.382131E-4, 5.254861E-4, 0.005184033, 0.0018832391, 0.0011142062, 0.02855686, 0.03321225, 0.010883762, 0.0010775862, 5.527916E-4, 5.561735E-4, 0.0011229647, 0.028030444, 0.0070488723, 0.022978539, 0.0016638935, 0.007008691, 0.012371134, 0.00456621, 0.0010683761, 0.0060273972, 0.020333469, 0.015481374, 0.0072098053, 0.027128156, 0.0058600483, 0.03061601, 0.027154664, 0.017628206, 0.0010729614, 0.009615385, 0.0077730278, 0.0016286644, 0.0030487804, 0.0012987013, 0.010159652, 0.0045294412, 0.022519583, 0.12495709, 0.028040998, 0.007762557, 0.0034482758, 0.016493835, 0.0010752688, 0.075068355, 0.022526935, 0.017980222, 0.008691873, 0.0022291574, 0.042084727, 0.035044424, 0.016304348, 0.03189342, 0.0011160715, 0.0061867265, 0.039601553, 0.019500438, 0.022882376, 0.02372239, 0.05087719, 0.03833516, 0.0227957, 0.05641593, 0.06533419, 0.043216135, 5.5035774E-4, 0.0034201527, 0.09761266, 0.004091653, 0.06195639, 0.010570026, 0.17649026, 0.017019419, 0.020698577, 0.08962483, 0.0011848342, 0.067692876, 0.008728944, 0.008608322, 0.012749189, 0.04914619, 0.0041920734, 0.07087044, 0.0025471218, 0.027447652, 0.040242556, 5.6179776E-4, 0.055170707, 0.047764767, 0.0012679629, 0.019394651, 0.0016042781, 0.004075395, 0.028654577, 0.16503899, 0.10397899, 4.0160643E-4, 0.041919373, 0.08285178, 0.18666509, 0.037368625, 0.13462196, 0.013980757, 0.046859905, 4.6296295E-4, 0.02723896, 0.02812838, 0.03909544, 0.010330139, 0.048119694, 0.0034423408, 0.021349274, 0.011025641, 0.013124685, 0.011899515, 0.012026726, 0.030636668, 0.0017867779, 0.013554217, 0.018486222, 5.9101655E-4, 0.019953953, 0.014507254, 0.012026726, 0.02962963, 0.009063444, 0.025304137, 5.847953E-4, 0.0148835415, 0.008646617, 0.033870813, 0.03558906, 0.08933518, 0.13218462, 0.038020983, 0.033963587, 0.02716527, 0.049409706, 0.020952381, 0.037057992, 0.031711146, 0.020730503, 0.03229665, 0.006319812, 0.028508771, 0.013482971, 0.0012371134, 0.056712247]
