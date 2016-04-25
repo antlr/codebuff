@@ -1,0 +1,19 @@
+input:
+
+--------
+grammar T;
+
+a : X ;
+--------
+
+gives:
+
+--------
+grammar T;
+
+a
+    :   X
+    ;
+--------
+
+with Levenshtein distance: 0.37931034 so it doesn't always reflect "correctness", just closeness.
