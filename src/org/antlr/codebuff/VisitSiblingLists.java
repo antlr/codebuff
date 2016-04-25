@@ -92,7 +92,9 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 		}
 
 		List<Tree> separators = getSeparators(ctx, siblings);
-		for (Tree s : separators) {
+		Tree firstSep = separators.get(0);
+		tokenToListInfo.put((Token)firstSep.getPayload(), new Pair<>(isOversizeList, Trainer.LIST_FIRST_SEPARATOR));
+		for (Tree s : separators.subList(1,separators.size())) {
 			tokenToListInfo.put((Token)s.getPayload(), new Pair<>(isOversizeList, Trainer.LIST_SEPARATOR));
 		}
 

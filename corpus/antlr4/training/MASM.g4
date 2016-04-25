@@ -990,12 +990,12 @@ QUESTION : '?' ;
 
 TIMES : 'times' ; 
 
-Hexnum : HexDigit + ('h' | 'H') ; 
+Hexnum : HexDigit+ ('h' | 'H') ; 
 
 Integer : Digit+ ; 
 
 Octalnum
-	:	('0' .. '7') + ('o' | 'O')
+	:	('0' .. '7')+ ('o' | 'O')
 	;
 
 
@@ -1005,12 +1005,12 @@ fragment HexDigit
 
 
 FloatingPointLiteral
-	:	('0' .. '9') + '.' ('0' .. '9')* Exponent? | '.' ('0' .. '9') + Exponent? | ('0' .. '9') + Exponent
+	:	('0' .. '9')+ '.' ('0' .. '9')* Exponent? | '.' ('0' .. '9')+ Exponent? | ('0' .. '9')+ Exponent
 	;
 
 
 fragment Exponent
-	:	('e' | 'E') ('+' | '-')? ('0' .. '9') +
+	:	('e' | 'E') ('+' | '-')? ('0' .. '9')+
 	;
 
 

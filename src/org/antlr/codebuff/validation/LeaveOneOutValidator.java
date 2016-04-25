@@ -5,6 +5,7 @@ import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.LangDescriptor;
+import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.misc.Utils;
 
 import java.io.File;
@@ -36,32 +37,48 @@ public class LeaveOneOutValidator {
 		random.setSeed(DOCLIST_RANDOM_SEED);
 	}
 
-	public List<Float> validate(boolean saveOutput) throws Exception {
-		File dir = new File(outputDir+"/"+language.name);
-		if ( saveOutput ) {
-			dir = new File(outputDir+"/"+language.name);
-			dir.mkdir();
-		}
+	public Pair<Formatter,Float> validateOneDocument(String fileToExclude, boolean collectAnalysis, boolean saveOutput)
+		throws Exception
+	{
+		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
+		documents = load(allFiles, language);
+		return validate(fileToExclude, collectAnalysis, saveOutput);
+	}
+
+	public List<Float> validateDocuments(boolean saveOutput) throws Exception {
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		documents = load(allFiles, language);
 		List<Float> distances = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
-			kNNClassifier.resetCache();
-			final int leaveOutIndex = i;
-			InputDocument testDoc = documents.get(leaveOutIndex);
-			List<InputDocument> others = filter(documents, f -> f.index!=leaveOutIndex);
-			Corpus corpus = new Corpus(others, language);
-			corpus.train();
-			Formatter formatter = new Formatter(corpus);
-			String output = formatter.format(testDoc, false);
-			if ( saveOutput ) {
-				Utils.writeFile(dir.getPath()+"/"+new File(testDoc.fileName).getName(), output);
-			}
-			float editDistance = levenshteinDistance(testDoc.content, output);
-			System.out.println(testDoc.fileName+": "+editDistance);
+			Pair<Formatter,Float> results = validate(documents.get(i).fileName, false, saveOutput);
+			float editDistance = results.b;
 			distances.add(editDistance);
 		}
 		return distances;
+	}
+
+	public Pair<Formatter,Float> validate(String fileToExclude, boolean collectAnalysis, boolean saveOutput)
+		throws Exception
+	{
+		List<InputDocument> others = filter(documents, d -> !d.fileName.endsWith(fileToExclude));
+		List<InputDocument> excluded = filter(documents, d -> d.fileName.endsWith(fileToExclude));
+		kNNClassifier.resetCache();
+		InputDocument testDoc = excluded.get(0);
+		Corpus corpus = new Corpus(others, language);
+		corpus.train();
+		Formatter formatter = new Formatter(corpus);
+		String output = formatter.format(testDoc, collectAnalysis);
+		float editDistance = levenshteinDistance(testDoc.content, output);
+		System.out.println(testDoc.fileName+": "+editDistance);
+		if ( saveOutput ) {
+			File dir = new File(outputDir+"/"+language.name);
+			if ( saveOutput ) {
+				dir = new File(outputDir+"/"+language.name);
+				dir.mkdir();
+			}
+			Utils.writeFile(dir.getPath()+"/"+new File(testDoc.fileName).getName(), output);
+		}
+		return new Pair<>(formatter, editDistance);
 	}
 
 	/** From input documents, grab n in random order w/o replacement */

@@ -38,7 +38,7 @@ import java.util.Vector;
  *  of feature types and category constants.
  */
 public class Trainer {
-	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.12;
+	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 1.0/7; // 7 features; allow one fault
 	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
@@ -52,8 +52,9 @@ public class Trainer {
 
 	public static final int LIST_PREFIX         = 0;
 	public static final int LIST_FIRST_ELEMENT  = 1;
-	public static final int LIST_SEPARATOR      = 2;
-	public static final int LIST_SUFFIX         = 3;
+	public static final int LIST_FIRST_SEPARATOR= 2;
+	public static final int LIST_SEPARATOR      = 3;
+	public static final int LIST_SUFFIX         = 4;
 	public static final int LIST_MEMBER         = 1_111_111_111;
 
 	// Feature values for pair on diff lines feature
@@ -130,7 +131,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 2),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,
@@ -155,7 +156,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 2),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -574,7 +575,7 @@ public class Trainer {
 		features[INDEX_PREV_EARLIEST_RIGHT_ANCESTOR]  = rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum);
 		features[INDEX_CUR_TYPE]                      = curToken.getType();
 		features[INDEX_EARLIEST_LEFT_ANCESTOR]        = rulealt(earliestLeftAncestor);
-		features[INDEX_ANCESTORS_CHILD_INDEX]         = getChildIndexOrListMembership(node);
+		features[INDEX_ANCESTORS_CHILD_INDEX]         = getChildIndexOrListMembership(earliestLeftAncestor);
 		features[INDEX_ANCESTORS_PARENT_RULE]         = earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent) : -1;
 		features[INDEX_ANCESTORS_PARENT_CHILD_INDEX]  = getChildIndexOrListMembership(earliestLeftAncestor);
 		features[INDEX_ANCESTORS_PARENT2_RULE]        = earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2) : -1;

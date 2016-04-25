@@ -86,7 +86,11 @@ alter_table_stmt
     ;
 
 analyze_stmt
-    :   K_ANALYZE (database_name | table_or_index_name | database_name '.' table_or_index_name)?
+    :   K_ANALYZE
+		(	database_name
+		|	table_or_index_name 
+		|	database_name '.' table_or_index_name
+		)?
     ;
 
 attach_stmt
@@ -119,7 +123,8 @@ create_index_stmt
 create_table_stmt
     :   K_CREATE (K_TEMP | K_TEMPORARY)? K_TABLE (K_IF K_NOT K_EXISTS)?
 		(database_name '.')? table_name
-		(	'(' column_def (',' column_def)* (',' table_constraint)* ')' (K_WITHOUT IDENTIFIER)?
+		(	'(' column_def (',' column_def)* (',' table_constraint)* ')'
+			(K_WITHOUT IDENTIFIER)?
 		|   K_AS select_stmt
 		)
     ;
@@ -153,8 +158,8 @@ delete_stmt
 delete_stmt_limited
     :   with_clause? K_DELETE K_FROM qualified_table_name (K_WHERE expr)?
 		(
-		(K_ORDER K_BY ordering_term (',' ordering_term)*)?
-		K_LIMIT expr ((K_OFFSET | ',') expr)?
+			(K_ORDER K_BY ordering_term (',' ordering_term)*)?
+			K_LIMIT expr ((K_OFFSET | ',') expr)?
 		)?
     ;
 
@@ -361,12 +366,13 @@ exprs : expr (',' expr)* ;
 
 foreign_key_clause
     :   K_REFERENCES foreign_table ('(' column_names ')')?
-		(	(K_ON (K_DELETE | K_UPDATE)
-			(	K_SET K_NULL
-			|   K_SET K_DEFAULT
-			|   K_CASCADE
-			|   K_RESTRICT
-			|   K_NO K_ACTION)
+		(	(	K_ON (K_DELETE | K_UPDATE)
+				(	K_SET K_NULL
+				|   K_SET K_DEFAULT
+				|   K_CASCADE
+				|   K_RESTRICT
+				|   K_NO K_ACTION
+				)
 			|   K_MATCH name
 			)
 		)*

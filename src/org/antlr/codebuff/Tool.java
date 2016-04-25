@@ -3,6 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.gui.GUIController;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.LangDescriptor;
+import org.antlr.codebuff.validation.LeaveOneOutValidator;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -31,6 +32,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Testing:
  *
  * Tool  -dbg  -antlr     corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
+ * Tool  -dbg  -leave-one-out -antlr     corpus/antlr4/training      corpus/antlr4/training/C.g4
  * Tool  -dbg  -sqlite    corpus/sqlite/training      corpus/sqlite/testing/t1.sql
  * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
  * Tool  -dbg  -plsql     corpus/plsql/training       corpus/plsql/testing/condition15.sql
@@ -65,12 +67,17 @@ public class Tool {
 	public static void main(String[] args)
 		throws Exception {
 		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures [-dbg] [-java|-java8|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
+			System.err.println("ExtractFeatures [-dbg] [-leave-one-out] [-java|-java8|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
 		}
 		int arg = 0;
+		boolean leaveOneOut = false;
 		boolean collectAnalysis = false;
 		if ( args[arg].equals("-dbg") ) {
 			collectAnalysis = true;
+			arg++;
+		}
+		if ( args[arg].equals("-leave-one-out") ) {
+			leaveOneOut = true;
 			arg++;
 		}
 		String language = args[arg++];
@@ -78,19 +85,31 @@ public class Tool {
 		String corpusDir = args[arg++];
 		String testFilename = args[arg];
 		String output = "???";
-		InputDocument testDoc;
+		InputDocument testDoc = null;
 		GUIController controller;
-		List<TokenPositionAnalysis> analysisPerToken;
+		List<TokenPositionAnalysis> analysisPerToken = null;
 		Pair<String, List<TokenPositionAnalysis>> results;
 		LangDescriptor lang = null;
-		long start, stop;
+		long start = 0, stop = 0;
 		for (int i = 0; i<languages.length; i++) {
 			if ( languages[i].name.equals(language) ) {
 				lang = languages[i];
 				break;
 			}
 		}
-		if ( lang!=null ) {
+		if ( lang!=null && leaveOneOut ) {
+			start = System.nanoTime();
+			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpusDir, lang);
+			Pair<Formatter,Float> val = validator.validateOneDocument(testFilename, true, true);
+			testDoc = load(testFilename, lang);
+			stop = System.nanoTime();
+			Formatter formatter = val.a;
+			output = formatter.getOutput();
+			float editDistance = val.b;
+			analysisPerToken = formatter.getAnalysisPerToken();
+			System.out.println("Levenshtein distance: "+editDistance);
+		}
+		else if ( lang!=null ) {
 			Corpus corpus = new Corpus(corpusDir, lang);
 			corpus.train();
 			testDoc = load(testFilename, lang);
@@ -122,7 +141,9 @@ public class Tool {
 			System.out.println("Levenshtein distance of ws: "+editDistance);
 			editDistance = levenshteinDistance(testDoc.content, output);
 			System.out.println("Levenshtein distance: "+editDistance);
+		}
 
+		if ( lang!=null ) {
 			controller = new GUIController(analysisPerToken, testDoc, output, lang.lexerClass);
 			controller.show();
 //			System.out.println(output);

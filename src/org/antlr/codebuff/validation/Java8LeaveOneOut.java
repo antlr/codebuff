@@ -7,7 +7,7 @@ import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 public class Java8LeaveOneOut {
 	public static void main(String[] args) throws Exception {
 		LeaveOneOutValidator validator = new LeaveOneOutValidator("corpus/java/training/antlr4-tool", JAVA8_DESCR);
-		List<Float> distances = validator.validate(true);
+		List<Float> distances = validator.validateDocuments(true);
 		System.out.println(distances);
 	}
 }

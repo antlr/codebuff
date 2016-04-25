@@ -199,162 +199,58 @@ binaryMessage
     :   ws BINARY_SELECTOR ws ( unarySend | operand )
     ;
 
-
 SEPARATOR
     :   [ \t\r\n]
     ;
-
 
 STRING
     :   '\'' ( . )*? '\''
     ;
 
-
 COMMENT
     :   '"' ( . )*? '"'
     ;
-
-
-BLOCK_START
-    :   '['
-    ;
-
-
-BLOCK_END
-    :   ']'
-    ;
-
-
-CLOSE_PAREN
-    :   ')'
-    ;
-
-
-OPEN_PAREN
-    :   '('
-    ;
-
-
-PIPE
-    :   '|'
-    ;
-
-
-PERIOD
-    :   '.'
-    ;
-
-
-SEMI_COLON
-    :   ';'
-    ;
-
 
 BINARY_SELECTOR
     :   ( '\\' | '+' | '*' | '/' | '=' | '>' | '<' | ',' | '@' | '%' | '~' | PIPE | '&' | '-' | '?' )+
     ;
 
-
-LT
-    :   '<'
-    ;
-
-
-GT
-    :   '>'
-    ;
-
-
-MINUS
-    :   '-'
-    ;
-
-
 RESERVED_WORD
     :   'nil' | 'true' | 'false' | 'self' | 'super'
     ;
-
 
 IDENTIFIER
     :   [a-zA-Z]+ [a-zA-Z0-9_]*
     ;
 
+DIGIT : [0-9] ;
 
-CARROT
-    :   '^'
-    ;
+HEXDIGIT : [0-9a-fA-F] ;
 
+KEYWORD : IDENTIFIER COLON ;
 
-COLON
-    :   ':'
-    ;
+BLOCK_PARAM : COLON IDENTIFIER ;
 
+CHARACTER_CONSTANT : DOLLAR ( HEXDIGIT | DOLLAR ) ;
 
-ASSIGNMENT
-    :   ':='
-    ;
-
-
-HASH
-    :   '#'
-    ;
-
-
-DOLLAR
-    :   '$'
-    ;
-
-
-EXP
-    :   'e'
-    ;
-
-
-HEX
-    :   '16r'
-    ;
-
-
-LITARR_START
-    :   '#('
-    ;
-
-
-DYNDICT_START
-    :   '#{'
-    ;
-
-
-DYNARR_END
-    :   '}'
-    ;
-
-
-DYNARR_START
-    :   '{'
-    ;
-
-
-DIGIT
-    :   [0-9]
-    ;
-
-
-HEXDIGIT
-    :   [0-9a-fA-F]
-    ;
-
-
-KEYWORD
-    :   IDENTIFIER COLON
-    ;
-
-
-BLOCK_PARAM
-    :   COLON IDENTIFIER
-    ;
-
-
-CHARACTER_CONSTANT
-    :   DOLLAR ( HEXDIGIT | DOLLAR )
-    ;
+BLOCK_START : '[' ;
+BLOCK_END : ']' ;
+CLOSE_PAREN : ')' ;
+OPEN_PAREN : '(' ;
+PIPE : '|' ;
+PERIOD : '.' ;
+SEMI_COLON : ';' ;
+LT : '<' ;
+GT : '>' ;
+MINUS : '-' ;
+CARROT : '^' ;
+COLON : ':' ;
+ASSIGNMENT : ':=' ;
+HASH : '#' ;
+DOLLAR : '$' ;
+EXP : 'e' ;
+HEX : '16r' ;
+LITARR_START : '#(' ;
+DYNDICT_START : '#{' ;
+DYNARR_END : '}' ;
+DYNARR_START : '{' ;
