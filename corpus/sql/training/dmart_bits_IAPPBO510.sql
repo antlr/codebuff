@@ -42,14 +42,6 @@ SELECT  ClientID
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
 
---UPDATE ClientConnection_test
---	SET StageServer = 'STGSQLDOC710'
---WHERE StageServer IS NULL
-
---UPDATE ClientConnection_test
---	SET StageDB = 'NoDB'
---WHERE StageDB IS NULL
-
 UPDATE ClientConnection_test
 	SET Status = 0
 
@@ -83,24 +75,9 @@ ORDER BY Beta, SourceDB
 
 
 UPDATE ClientConnection
-SET Beta = '1'
---SET SSISInstanceID = 0
---where Client_id = '20000'
---WHERE beta = 1
+SET Beta = '1', SSISInstanceID = 0
 WHERE SourceDB = 'PADemoDU'
 -------------------------------------------
-/*
-DECLARE @3AM datetime
-SET @3AM = (SELECT CAST(CAST(GETDATE() - 1 AS DATE) AS VARCHAR(12)) + ' 03:00:00.000') --GetDate() -- 2 
-
-UPDATE ClientConnection
-SET LoadStageDBStartDate = @3AM
-,LoadStageDBEndDate = @3AM
-,LoadReportDBStartDate = @3AM
-,LoadReportDBEndDate = @3AM
-,Status = 4
-*/
-----------------------------------------------
 -- Sum of clients in each status by Beta number
 SELECT  CASE WHEN SSISInstanceID IS NULL THEN 'Total' ELSE SSISInstanceID END SSISInstanceID
 	, SUM(OldStatus4) AS OldStatus4
@@ -177,8 +154,6 @@ SELECT * FROM opsinfo_ops_dbo.clients
 WHERE client_name LIKE '%Eli%'
 
 
-----------------------------------------------
-
 ----------------------------------------------------------------
 SELECT  *
 FROM ClientConnection
@@ -189,7 +164,7 @@ ORDER BY 3 --DESC
 ----------------
 SELECT  *
 FROM ClientConnection
---WHERE ReportServer = 'PSQLRPT22'
+WHERE ReportServer = 'PSQLRPT22'
 ORDER BY Beta,3
 ----------------
 SELECT  Client_id, SourceServer, SourceDB, Status, Beta, StageServer, StageDB, ReportServer, ReportDB, 

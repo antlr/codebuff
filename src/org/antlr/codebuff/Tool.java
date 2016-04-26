@@ -4,6 +4,7 @@ import org.antlr.codebuff.gui.GUIController;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.codebuff.validation.LeaveOneOutValidator;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
@@ -12,8 +13,12 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.io.File;
@@ -23,6 +28,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 import static org.antlr.codebuff.misc.BuffUtils.filter;
@@ -33,7 +39,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  *
  * Tool  -dbg  -antlr     corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
  * Tool  -dbg  -leave-one-out -antlr     corpus/antlr4/training      corpus/antlr4/training/C.g4
- * Tool  -dbg  -sqlite    corpus/sqlite/training      corpus/sqlite/testing/t1.sql
+ * Tool  -dbg  -sqlite    corpus/sql/training      corpus/sql/training/dmart_bits.sql
  * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
  * Tool  -dbg  -plsql     corpus/plsql/training       corpus/plsql/testing/condition15.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
@@ -110,6 +116,9 @@ public class Tool {
 			float editDistance = val.b;
 			analysisPerToken = formatter.getAnalysisPerToken();
 			System.out.println("Levenshtein distance: "+editDistance);
+			analysisPerToken = formatter.getAnalysisPerToken();
+
+			dumpAccuracy(testDoc, analysisPerToken);
 		}
 		else if ( lang!=null ) {
 			Corpus corpus = new Corpus(corpusDir, lang);
@@ -270,29 +279,26 @@ public class Tool {
 
 		doc.parser = getParser(language.parserClass, doc.tokens);
 		doc.parser.setBuildParseTree(true);
-//		doc.parser.addErrorListener(
-//			new ANTLRErrorListener() {
-//				@Override
-//				public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-////					errors.add(recognizer.getInputStream().getSourceName());
-//				}
-//
-//				@Override
-//				public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
-//
-//				}
-//
-//				@Override
-//				public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
-//
-//				}
-//
-//				@Override
-//				public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
-//
-//				}
-//			}
-//		                           );
+		doc.parser.removeErrorListeners();
+		doc.parser.addErrorListener(
+			new ANTLRErrorListener() {
+				@Override
+				public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+					System.err.println(recognizer.getInputStream().getSourceName()+" line " + line + ":" + charPositionInLine + " " + msg);
+				}
+
+				@Override
+				public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
+				}
+
+				@Override
+				public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
+				}
+
+				@Override
+				public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
+				}
+			});
 		Method startRule = language.parserClass.getMethod(language.startRuleName);
 		doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
 	}
