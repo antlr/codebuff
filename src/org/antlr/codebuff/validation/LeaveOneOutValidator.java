@@ -3,6 +3,7 @@ package org.antlr.codebuff.validation;
 import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
+import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Pair;
@@ -11,7 +12,9 @@ import org.antlr.v4.runtime.misc.Utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
@@ -110,7 +113,14 @@ public class LeaveOneOutValidator {
 
 	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs) throws Exception {
 		List<String> languageNames = map(languages, l -> l.name);
-		List<String> languageNamesAsStr = map(languages, l -> '"'+l.name+'"');
+		Map<String, Integer> corpusSizes = new HashMap<>();
+		for (int i = 0; i<languages.length; i++) {
+			LangDescriptor language = languages[i];
+			List<String> filenames = Tool.getFilenames(new File(corpusDirs[i]), language.fileRegex);
+			corpusSizes.put(language.name, filenames.size());
+		}
+		List<String> languageNamesAsStr = map(languages, l -> '"'+l.name+"\\nn="+corpusSizes.get(l.name)+'"');
+
 		StringBuilder data = new StringBuilder();
 		for (int i = 0; i<languages.length; i++) {
 			LangDescriptor language = languages[i];
@@ -132,7 +142,9 @@ public class LeaveOneOutValidator {
 			"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
 			"           widths=.35,\n"+
 			"           labels=labels)\n"+
-			"\n"+
+			"ax.set_xlabel(\"Grammar and corpus size\")\n"+
+			"ax.set_ylabel(\"Edit distance / size of file\")\n" +
+			"ax.set_title(\"Leave-one-out Validation Using Edit Distance\\nBetween Formatted and Original File\")\n"+
 			"plt.show()\n";
 		return String.format(python, data, languageNames, languageNamesAsStr);
 	}
