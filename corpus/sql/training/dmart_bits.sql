@@ -1,33 +1,38 @@
-SELECT Client_ID
-	  , SourceDB
-	  , [Status]
-	  , Beta
-	  , LoadStageDBStartDate
-	  , LoadStageDBEndDate
-	  , DATEDIFF(minute,LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime
-	  , LoadReportDBStartDate
-	  , LoadReportDBEndDate
-	  , DATEDIFF(minute,LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
+SELECT  --SourceServer,
+		Client_ID, SourceDB, [Status], Beta,
+		LoadStageDBStartDate, LoadStageDBEndDate,
+		DATEDIFF(minute,LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime,
+		LoadReportDBStartDate, LoadReportDBEndDate,
+		DATEDIFF(minute,LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
 FROM ClientConnection
-WHERE Beta = '1'
+--WHERE Beta != '2'
+--WHERE Beta = '1'
 ORDER BY Beta,2
 
-UPDATE ClientConnection
-SET Beta = '0'
-WHERE SourceDB IN ('AddisonAve32','Chevron','EDCO','ConstructionLoanCompany','Delta','Dupont','Kern32','MembersMortgage','Suncoast32','Wescom')
-
-UPDATE ClientConnection
-SET Beta = '1'
-WHERE Client_ID IN ( '136')
+--UPDATE ClientConnection
+--SET Beta = '2'
+--WHERE SourceDB IN ('PADemoDU','RLC','PremierAmerica')
 -------------------------------------------
+--UPDATE ClientConnection
+--SET Beta = '0'
+--WHERE SourceDB IN ('AddisonAve32','Chevron','EDCO','ConstructionLoanCompany','Delta','Dupont','Kern32','MembersMortgage','Suncoast32','Wescom')
+--WHERE Client_ID <= 1025 -- Hutchinson, number 30 when sorted by client_id
 
-UPDATE ClientConnection
-SET LoadStageDBStartDate = @DayAgo
-,LoadStageDBEndDate = @DayAgo
-,LoadReportDBStartDate = @DayAgo
-,LoadReportDBEndDate = @DayAgo
-,Status = 4
-WHERE SourceDB = 'MembersMortgage'
+--UPDATE ClientConnection
+--SET Beta = '1'
+--WHERE Client_ID IN ( '136')
+-------------------------------------------
+--DECLARE @1DayAgo datetime
+--SET @1DayAgo = GetDate() - 2 
+
+--UPDATE ClientConnection
+--SET LoadStageDBStartDate = @1DayAgo
+--,LoadStageDBEndDate = @1DayAgo
+--,LoadReportDBStartDate = @1DayAgo
+--,LoadReportDBEndDate = @1DayAgo
+--,Status = 4
+--WHERE Beta='1'
+--WHERE SourceDB = 'MembersMortgage'
 ----------------------------------------------
 /*
 TRUNCATE TABLE DMartLogging
@@ -44,21 +49,11 @@ WHERE Name LIKE '%Data%'
 SELECT * FROM opsinfo_ops_dbo.clients
 WHERE client_name LIKE '%Merrimack%'
 ----------------------------------------------
-SELECT Client_id
-	  , SourceServer
-	  , SourceDB
-	  , Status
-	  , Beta
-	  , StageServer
-	  , StageDB
-	  , ReportServer
-	  , ReportDB
-	  , LoadStageDBStartDate
-	  , LoadStageDBEndDate
-	  , DATEDIFF(minute,LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime
-	  , LoadReportDBStartDate
-	  , LoadReportDBEndDate
-	  , DATEDIFF(minute,LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
+SELECT  Client_id, SourceServer, SourceDB, Status, Beta, StageServer, StageDB, ReportServer, ReportDB, 
+		LoadStageDBStartDate, LoadStageDBEndDate, 
+		DATEDIFF(minute,LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime,
+		LoadReportDBStartDate, LoadReportDBEndDate,
+		DATEDIFF(minute,LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
 FROM ClientConnection
 --WHERE ReportServer = 'PSQLRPT22'
 --WHERE SourceServer = 'STGSQL511'
@@ -106,6 +101,8 @@ UPDATE ClientConnection
 SET Client_ID = '228'
 WHERE SourceDB = 'RLC'
 
+
+
 SELECT SUM(StageLoadTime) AS TotalStageLoadTime, SUM(ReportLoadTime) AS TotalReportLoadTime
 FROM
 (
@@ -116,6 +113,7 @@ SELECT  --SourceServer,
 		LoadReportDBStartDate, LoadReportDBEndDate,
 		DATEDIFF(minute,LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
 FROM ClientConnection
-WHERE Beta != '2'
-ORDER BY Beta,2
+--WHERE Beta != '2'
+--WHERE Beta = '1'
+--ORDER BY Beta,2
 ) t

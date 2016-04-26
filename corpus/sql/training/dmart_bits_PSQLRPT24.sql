@@ -12,7 +12,7 @@ SELECT SourceServer, SourceDB
       , CONVERT(VARCHAR(12), DATEADD(ms,
                                      DATEDIFF(ms, LoadReportDBStartDate,
                                               LoadReportDBEndDate), 0), 114) AS ReportLoadTime
-FROM ClientConnection
+FROM    ClientConnection
 GROUP BY Beta
       , Status
       , SSISInstanceID
@@ -28,7 +28,7 @@ ORDER BY SourceDB, Status ASC
       , LoadStageDBStartDate ASC
       , SourceServer
 -------------------------------------------
-SELECT ClientID
+SELECT  ClientID
       , Status
       , Beta
       , SourceServer
@@ -60,7 +60,34 @@ WHERE   DATEPART(day, ErrorDateTime) = DATEPART(day, GETDATE())
         AND DATEPART(year, ErrorDateTime) = DATEPART(year, GETDATE())
 ORDER BY ErrorDateTime DESC
 ----------------------------------------------
-SELECT CASE WHEN SSISInstanceID IS NULL THEN 'Total' ELSE SSISInstanceID END SSISInstanceID
+/*
+UPDATE ClientConnection
+SET Beta = '1'
+--WHERE SourceDB IN ( 'DMartTemplate' )
+WHERE SourceDB IN ('Lockheed32')
+
+--America First
+Chevron
+ENT
+ORNL (CU Community)
+Patelco
+PADemoDU
+PATrain
+RLC
+
+UPDATE ClientConnection
+SET Status = 2
+WHERE Beta = 1
+
+UPDATE ClientConnection
+SET Beta = '5', SSISInstanceID = '5'
+WHERE SourceDB = 'DMartTemplate'
+
+UPDATE ClientConnection
+SET Status = '2'
+where SourceDB = 'Bethpage40'
+*/
+SELECT  CASE WHEN SSISInstanceID IS NULL THEN 'Total' ELSE SSISInstanceID END SSISInstanceID
 	, SUM(Status0) AS Status0
 	, SUM(Status1) AS Status1
 	, SUM(Status2) AS Status2
@@ -80,7 +107,7 @@ GROUP BY SSISInstanceID
 GROUP BY SSISInstanceID 
 ----------------------------------------------
 -- Sum of clients in each status by Beta number
-SELECT CASE WHEN SSISInstanceID IS NULL THEN 'Total' ELSE SSISInstanceID END SSISInstanceID
+SELECT  CASE WHEN SSISInstanceID IS NULL THEN 'Total' ELSE SSISInstanceID END SSISInstanceID
 	, SUM(Status0) AS Status0
 	, SUM(Status1) AS Status1
 	, SUM(Status2) AS Status2
@@ -99,7 +126,7 @@ GROUP BY SSISInstanceID
 ) AS StatusMatrix
 GROUP BY SSISInstanceID
 ----------------------------------------------
-SELECT CASE WHEN InstanceID IS NULL THEN 'Total' ELSE InstanceID END InstanceID
+SELECT  CASE WHEN InstanceID IS NULL THEN 'Total' ELSE InstanceID END InstanceID
 	, SUM(OldStatus4) AS OldStatus4
 	, SUM(Status0) AS Status0
 	, SUM(Status1) AS Status1
@@ -121,7 +148,7 @@ GROUP BY SSISInstanceID
 ) AS StatusMatrix
 GROUP BY InstanceID
 ----------------------------------------------
-SELECT CASE WHEN InstanceID IS NULL THEN 'Total' ELSE InstanceID END InstanceID
+SELECT  CASE WHEN InstanceID IS NULL THEN 'Total' ELSE InstanceID END InstanceID
 	, SUM(OldStatus4) AS OldStatus4
 	, SUM(Status0) AS Status0
 	, SUM(Status1) AS Status1
@@ -142,7 +169,9 @@ FROM dbo.ClientConnection
 GROUP BY SSISInstanceID
 ) AS StatusMatrix
 GROUP BY InstanceID;
-
+/*
+TRUNCATE TABLE DMartLogging
+*/
 SELECT * FROM DMartLogging
 WHERE TaskName NOT LIKE '%Kill%Active%'
 ORDER BY ErrorDateTime desc
@@ -159,6 +188,7 @@ FROM    dbo.DMartComponentLogging
 WHERE   DATEPART(day, ErrorDateTime) = DATEPART(day, GETDATE())
         AND DATEPART(month, ErrorDateTime) = DATEPART(month, GETDATE())
         AND DATEPART(year, ErrorDateTime) = DATEPART(year, GETDATE())
+--AND TaskName = 'Data Flow Task br_liability'
 GROUP BY TaskName
       , ErrorDateTime
       , PackageName
