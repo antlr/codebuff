@@ -22,7 +22,7 @@ public class TestTSQLCapture extends BaseTest {
 
 	@Test
 	public void testCapture() throws Exception {
-		Corpus corpus = new Corpus(fileName, Tool.TSQL_DESCR);
+		Corpus corpus = new Corpus(fileName, Tool.TSQL_CLEAN_DESCR);
 		corpus.train();
 		InputDocument testDoc = Tool.load(fileName, corpus.language);
 		Formatter formatter = new Formatter(corpus);
@@ -36,7 +36,7 @@ public class TestTSQLCapture extends BaseTest {
 	@Parameterized.Parameters(name="{0}")
 	public static Collection<Object[]> findInputFiles() throws Exception {
 		List<Object[]> args = new ArrayList<>();
-		List<String> filenames = Tool.getFilenames(new File(CORPUS), Tool.TSQL_DESCR.fileRegex);
+		List<String> filenames = Tool.getFilenames(new File(CORPUS), Tool.TSQL_CLEAN_DESCR.fileRegex);
 		for (String fname : filenames) {
 			args.add(new Object[] {fname});
 		}

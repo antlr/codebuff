@@ -20,8 +20,10 @@ import java.util.Random;
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
@@ -131,6 +133,7 @@ public class LeaveOneOutValidator {
 		}
 
 		String python =
+			"# CodeBuff AUTO-GENERATED FILE. DO NOT EDIT\n"+
 			"import numpy as np\n"+
 			"import matplotlib.pyplot as plt\n\n" +
 			"%s\n" +
@@ -151,11 +154,13 @@ public class LeaveOneOutValidator {
 
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-			JAVA_DESCR,
-			JAVA8_DESCR,
-			ANTLR4_DESCR,
-			SQLITE_DESCR,
-			TSQL_DESCR,
+//			JAVA_DESCR,
+//			JAVA8_DESCR,
+//			ANTLR4_DESCR,
+			SQLITE_NOISY_DESCR,
+			SQLITE_CLEAN_DESCR,
+			TSQL_NOISY_DESCR,
+			TSQL_CLEAN_DESCR,
 		};
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);
 		String[] dirs = corpusDirs.toArray(new String[languages.length]);

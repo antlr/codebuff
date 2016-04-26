@@ -11,24 +11,24 @@ SELECT
     , (
           SELECT ErrorDateTime
           WHERE ErrorMessage LIKE
-                '%Validation phase is beginning.%') AS TaskStartTime
+                '%Validation phase is beginning.%')                AS TaskStartTime
     , (
           SELECT ErrorDateTime
           WHERE ErrorMessage LIKE
-                '%Cleanup phase is beginning.%')    AS TaskEndTime
-    , CONVERT(NVARCHAR(12), DATEADD(MS, DATEDIFF(MS, (
+                '%Cleanup phase is beginning.%')                   AS TaskEndTime
+    , CONVERT(NVARCHAR(12), DATEADD(ms, DATEDIFF(ms, (
     SELECT ErrorDateTime
     WHERE ErrorMessage LIKE '%Validation phase is beginning.%'), (
                                                      SELECT ErrorDateTime
                                                      WHERE ErrorMessage LIKE
                                                            '%Cleanup phase is beginning.%')),
                                     0),
-              114)                                  AS TaskTimeTaken
+              114)                                                 AS TaskTimeTaken
 --, *
 FROM dbo.DMartComponentLogging
-WHERE DATEPART(DAY, ErrorDateTime) = DATEPART(DAY, GetDate())
-      AND DATEPART(MONTH, ErrorDateTime) = DATEPART(MONTH, GetDate())
-      AND DATEPART(YEAR, ErrorDateTime) = DATEPART(YEAR, GetDate())
+WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())
+      AND DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
+      AND DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
       AND ErrorMessage NOT LIKE '%Pre-Execute phase is beginning.  %'
       AND ErrorMessage NOT LIKE '%Prepare for Execute phase is beginning.  %'
       AND ErrorMessage NOT LIKE '%The final commit for the data insertion%'
@@ -50,9 +50,9 @@ SELECT
     , ErrorDateTime
 
 FROM dbo.DMartComponentLogging
-WHERE DATEPART(DAY, ErrorDateTime) = DATEPART(DAY, GetDate())
-      AND DATEPART(MONTH, ErrorDateTime) = DATEPART(MONTH, GetDate())
-      AND DATEPART(YEAR, ErrorDateTime) = DATEPART(YEAR, GetDate())
+WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())
+      AND DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
+      AND DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
       AND ErrorMessage NOT LIKE '%Pre-Execute phase is beginning.  %'
       AND ErrorMessage NOT LIKE '%Prepare for Execute phase is beginning.  %'
       AND ErrorMessage NOT LIKE '%The final commit for the data insertion%'
@@ -88,9 +88,9 @@ FROM dbo.DMartComponentLogging dmcl
                                             AND dmcl.SourceServer =
                                                 dmcl2.SourceServer
                                             AND dmcl.ClientID = dmcl2.ClientID
-WHERE DATEPART(DAY, dmcl.ErrorDateTime) = DATEPART(DAY, GetDate())
-      AND DATEPART(MONTH, dmcl.ErrorDateTime) = DATEPART(MONTH, GetDate())
-      AND DATEPART(YEAR, dmcl.ErrorDateTime) = DATEPART(YEAR, GetDate())
+WHERE DATEPART(day, dmcl.ErrorDateTime) = DATEPART(day, GetDate())
+      AND DATEPART(month, dmcl.ErrorDateTime) = DATEPART(month, GetDate())
+      AND DATEPART(year, dmcl.ErrorDateTime) = DATEPART(year, GetDate())
       AND dmcl.ErrorMessage NOT LIKE '%Pre-Execute phase is beginning.  %'
       AND
       dmcl.ErrorMessage NOT LIKE '%Prepare for Execute phase is beginning.  %'

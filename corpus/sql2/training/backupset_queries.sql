@@ -19,10 +19,9 @@ SELECT
     , msdb_dbo_backupset_name                          AS backupset_name
     , msdb_dbo_backupset_description
 FROM msdb_dbo_backupmediafamily
-    INNER JOIN msdb_dbo_backupset
-        ON msdb_dbg_backupmediafamily_media_set_id =
-           msdb_dbo_backupset_media_set_id
-WHERE (CONVERT(DATETIME, msdb_dbo_backupset_backup_start_date, 102) >=
+    INNER JOIN msdb_dbo_backupset ON msdb_dbg_backupmediafamily_media_set_id =
+                                     msdb_dbo_backupset_media_set_id
+WHERE (CONVERT(datetime, msdb_dbo_backupset_backup_start_date, 102) >=
        GETDATE() - 7)
 ORDER BY
     msdb_dbo_backupset_database_name,
@@ -35,10 +34,9 @@ SELECT
     , A.database_name
     , B.backup_start_date
     , B.backup_finish_date
-    , CONVERT(VARCHAR(12),
-              DATEADD(MS,
-                      DATEDIFF(MS, B.backup_start_date, B.backup_finish_date),
-                      0), 114) AS BackupTime
+    , CONVERT(varchar(12), DATEADD(ms, DATEDIFF(ms, B.backup_start_date,
+                                                B.backup_finish_date), 0),
+              114) AS BackupTime
     , B.backup_size
 --, B.expiration_date
 --, B.logical_device_name
@@ -91,13 +89,13 @@ SELECT
     , msdb_dbo_backupset_database_name
     , MAX(
           msdb_dbo_backupset_backup_finish_date)       AS last_db_backup_date
-    , DATEDIFF(HH, MAX(msdb_dbo_backupset_backup_finish_date),
+    , DATEDIFF(hh, MAX(msdb_dbo_backupset_backup_finish_date),
                GETDATE())                              AS [Backup Age (Hours)]
 FROM msdb_dbo_backupset
 WHERE msdb_dbo_backupset_type = 'D'
 GROUP BY msdb_dbo_backupset_database_name
 HAVING (MAX(msdb_dbo_backupset_backup_finish_date) <
-        DATEADD(HH, -24, GETDATE()))
+        DATEADD(hh, -24, GETDATE()))
 
 UNION
 

@@ -22,7 +22,7 @@ public class TestSQLiteCapture extends BaseTest {
 
 	@Test
 	public void testCapture() throws Exception {
-		Corpus corpus = new Corpus(fileName, Tool.SQLITE_DESCR);
+		Corpus corpus = new Corpus(fileName, Tool.SQLITE_CLEAN_DESCR);
 		corpus.train();
 		InputDocument testDoc = Tool.load(fileName, corpus.language);
 		Formatter formatter = new Formatter(corpus);
@@ -35,7 +35,7 @@ public class TestSQLiteCapture extends BaseTest {
 	@Parameterized.Parameters(name="{0}")
 	public static Collection<Object[]> findInputFiles() throws Exception {
 		List<Object[]> args = new ArrayList<>();
-		List<String> filenames = Tool.getFilenames(new File(CORPUS), Tool.SQLITE_DESCR.fileRegex);
+		List<String> filenames = Tool.getFilenames(new File(CORPUS), Tool.SQLITE_CLEAN_DESCR.fileRegex);
 		for (String fname : filenames) {
 			args.add(new Object[] {fname});
 		}

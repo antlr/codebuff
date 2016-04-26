@@ -56,10 +56,17 @@ public class Tool {
 		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 	public static final LangDescriptor ANTLR4_DESCR =
 		new LangDescriptor("antlr", "corpus/antlr4/training", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
-	public static final LangDescriptor SQLITE_DESCR =
-		new LangDescriptor("sqlite", "corpus/sql/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
-	public static final LangDescriptor TSQL_DESCR =
-		new LangDescriptor("tsql", "corpus/sql/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
+
+	public static final LangDescriptor SQLITE_NOISY_DESCR =
+		new LangDescriptor("sqlite_noisy", "corpus/sql/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
+	public static final LangDescriptor SQLITE_CLEAN_DESCR =
+		new LangDescriptor("sqlite", "corpus/sql2/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
+
+	public static final LangDescriptor TSQL_NOISY_DESCR =
+		new LangDescriptor("tsql_noisy", "corpus/sql/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
+	public static final LangDescriptor TSQL_CLEAN_DESCR =
+		new LangDescriptor("tsql", "corpus/sql2/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
+
 	public static final LangDescriptor PLSQL_DESCR =
 		new LangDescriptor("plsql", "corpus/sql/training", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4);
 
@@ -67,8 +74,10 @@ public class Tool {
 		JAVA_DESCR,
 		JAVA8_DESCR,
 		ANTLR4_DESCR,
-		SQLITE_DESCR,
-		TSQL_DESCR,
+		SQLITE_NOISY_DESCR,
+		SQLITE_CLEAN_DESCR,
+		TSQL_NOISY_DESCR,
+		TSQL_CLEAN_DESCR,
 //		PLSQL_DESCR, // doesn't parse the same sql corpus
 	};
 

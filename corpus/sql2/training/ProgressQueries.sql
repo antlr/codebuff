@@ -1,20 +1,20 @@
 SELECT
       CASE WHEN InstanceID IS NULL
           THEN 'Total'
-      ELSE InstanceID END                                                  InstanceID
-    , SUM(OldStatus4)                                                   AS OldStatus4
+      ELSE InstanceID END InstanceID
+    , SUM(OldStatus4) AS  OldStatus4
     , SUM(
-          Status0)                                                      AS Status0
+          Status0)    AS  Status0
     , SUM(
-          Status1)                                                      AS Status1
+          Status1)    AS  Status1
     , SUM(
-          Status2)                                                      AS Status2
+          Status2)    AS  Status2
     , SUM(
-          Status3)                                                      AS Status3
+          Status3)    AS  Status3
     , SUM(
-          Status4)                                                      AS Status4
+          Status4)    AS  Status4
     , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 +
-          Status4)                                                      AS InstanceTotal
+          Status4)    AS  InstanceTotal
 FROM
     (
         SELECT
@@ -51,19 +51,19 @@ SELECT
     SourceDB
     , [Status]
     , Beta
-    , SSISInstanceID                                                       AS SSISIID
+    , SSISInstanceID AS SSISIID
     , LoadStageDBStartDate
     , LoadStageDBEndDate
     , CONVERT(VARCHAR(12), DATEADD(ms,
                                    DATEDIFF(ms, LoadStageDBStartDate,
                                             LoadStageDBEndDate), 0),
-              114)                                                         AS StageLoadTime
+              114)   AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
     , CONVERT(VARCHAR(12), DATEADD(ms,
                                    DATEDIFF(ms, LoadReportDBStartDate,
                                             LoadReportDBEndDate), 0),
-              114)                                                         AS ReportLoadTime
+              114)   AS ReportLoadTime
 FROM ClientConnection
 GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate,
     LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate
@@ -90,24 +90,24 @@ ORDER BY ErrorDateTime
 SELECT
       CASE WHEN CAST(Beta AS VARCHAR) IS NULL
           THEN 'Grand Total'
-      ELSE CAST(Beta AS VARCHAR) END                                    AS Beta
+      ELSE CAST(Beta AS VARCHAR) END AS Beta
     , CASE WHEN SourceDB IS NULL
     THEN 'Beta Group Total'
-      ELSE SourceDB END                                                 AS SourceDB
+      ELSE SourceDB END              AS SourceDB
 --, LoadStageDBStartDate
 --, LoadStageDBEndDate
     , CONVERT(VARCHAR(12), DATEADD(ms, SUM(
     DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate)), 0),
-              114)                                                      AS StageLoadTime
+              114)                   AS StageLoadTime
 --, LoadReportDBStartDate
 --, LoadReportDBEndDate
     , CONVERT(VARCHAR(12), DATEADD(ms, SUM(
     DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate)), 0),
-              114)                                                      AS ReportLoadTime
+              114)                   AS ReportLoadTime
     , CONVERT(VARCHAR(12), DATEADD(ms, SUM((DATEDIFF(ms, LoadStageDBStartDate,
                                                      LoadStageDBEndDate))) +
                                        SUM((DATEDIFF(ms, LoadReportDBStartDate,
                                                      LoadReportDBEndDate))), 0),
-              114)                                                      AS ClientTotal
+              114)                   AS ClientTotal
 FROM ClientConnection
 GROUP BY Beta, SourceDB;
