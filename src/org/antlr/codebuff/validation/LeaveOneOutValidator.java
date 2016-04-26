@@ -14,10 +14,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
+import static org.antlr.codebuff.misc.BuffUtils.map;
 
 public class LeaveOneOutValidator {
 	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
@@ -100,5 +106,48 @@ public class LeaveOneOutValidator {
 			contentList.add(documents.get(r));
 		}
 		return contentList;
+	}
+
+	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs) throws Exception {
+		List<String> languageNames = map(languages, l -> l.name);
+		List<String> languageNamesAsStr = map(languages, l -> '"'+l.name+'"');
+		StringBuilder data = new StringBuilder();
+		for (int i = 0; i<languages.length; i++) {
+			LangDescriptor language = languages[i];
+			String corpus = corpusDirs[i];
+			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpus, language);
+			List<Float> distances = validator.validateDocuments(true);
+			data.append(language.name+" = "+distances+"\n");
+		}
+
+		String python =
+			"import numpy as np\n"+
+			"import matplotlib.pyplot as plt\n\n" +
+			"%s\n" +
+			"language_data = %s\n"+
+			"labels = %s\n"+
+			"fig = plt.figure()\n"+
+			"ax = plt.subplot(111)\n"+
+			"ax.boxplot(language_data,\n"+
+			"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
+			"           widths=.35,\n"+
+			"           labels=labels)\n"+
+			"\n"+
+			"plt.show()\n";
+		return String.format(python, data, languageNames, languageNamesAsStr);
+	}
+
+	public static void main(String[] args) throws Exception {
+		LangDescriptor[] languages = new LangDescriptor[] {
+			JAVA_DESCR,
+			JAVA8_DESCR,
+			ANTLR4_DESCR,
+			SQLITE_DESCR,
+			TSQL_DESCR,
+		};
+		List<String> corpusDirs = map(languages, l -> l.corpusDir);
+		String[] dirs = corpusDirs.toArray(new String[languages.length]);
+		String python = testAllLanguages(languages, dirs);
+		System.out.println(python);
 	}
 }

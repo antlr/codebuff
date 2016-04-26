@@ -45,23 +45,25 @@ public class Tool {
 	public static boolean showTokens = false;
 
 	public static final LangDescriptor JAVA_DESCR =
-		new LangDescriptor("java", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+		new LangDescriptor("java", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 	public static final LangDescriptor JAVA8_DESCR =
-		new LangDescriptor("java8", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 	public static final LangDescriptor ANTLR4_DESCR =
-		new LangDescriptor("antlr", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
+		new LangDescriptor("antlr", "corpus/antlr4/training", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
 	public static final LangDescriptor SQLITE_DESCR =
-		new LangDescriptor("sqlite", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
+		new LangDescriptor("sqlite", "corpus/sql/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
 	public static final LangDescriptor TSQL_DESCR =
-		new LangDescriptor("tsql", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
+		new LangDescriptor("tsql", "corpus/sql/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
+	public static final LangDescriptor PLSQL_DESCR =
+		new LangDescriptor("plsql", "corpus/sql/training", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4);
 
-	public static LangDescriptor[] languages = new LangDescriptor[]{
+	public static LangDescriptor[] languages = new LangDescriptor[] {
 		JAVA_DESCR,
 		JAVA8_DESCR,
 		ANTLR4_DESCR,
 		SQLITE_DESCR,
 		TSQL_DESCR,
-		new LangDescriptor("plsql", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4)
+//		PLSQL_DESCR, // doesn't parse the same sql corpus
 	};
 
 	public static void main(String[] args)
@@ -272,7 +274,7 @@ public class Tool {
 //			new ANTLRErrorListener() {
 //				@Override
 //				public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-//					System.out.println();
+////					errors.add(recognizer.getInputStream().getSourceName());
 //				}
 //
 //				@Override
