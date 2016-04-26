@@ -27,7 +27,7 @@ public class OneFileCapture {
 				corpusSizes.put(language.name, filenames.size());
 				Corpus corpus = new Corpus(fileName, Tool.ANTLR4_DESCR);
 				corpus.train();
-				InputDocument testDoc = Tool.load(fileName, corpus.language);
+				InputDocument testDoc = Tool.parse(fileName, corpus.language);
 				Formatter formatter = new Formatter(corpus);
 				String output = formatter.format(testDoc, false);
 				float editDistance = levenshteinDistance(testDoc.content, output);

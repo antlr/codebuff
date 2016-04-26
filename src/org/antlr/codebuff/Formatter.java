@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import static org.antlr.codebuff.Tool.levenshteinDistance;
-import static org.antlr.codebuff.Tool.parse;
 import static org.antlr.codebuff.Tool.tokenText;
 import static org.antlr.codebuff.Tool.tokenize;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
@@ -94,6 +93,8 @@ public class Formatter {
 	/** Format the document.
 	 *
 	 *  As we need to wack info in doc.tokens, I reload/reparse at end of this.
+	 *
+	 *  WARNING: destructive to the doc.tokens list
 	 */
 	public String format(InputDocument doc, boolean collectAnalysis) throws Exception {
 		output = new StringBuilder();
@@ -128,8 +129,6 @@ public class Formatter {
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			processToken(doc, i, tokenIndexInStream, collectAnalysis);
 		}
-
-		parse(doc, corpus.language); // restore order to the universe
 
 		return output.toString();
 	}
@@ -385,7 +384,7 @@ public class Formatter {
 		String wsDisplay = getWSCategoryStr(injectNL_WS);
 		String alignDisplay = getAlignCategoryStr(alignOrIndent);
 		String newlinePredictionString =
-			String.format("### line %d: predicted %s \\n actual %s",
+			String.format("### line %d: predicted %s actual %s",
 			              curToken.getLine(), wsDisplay, actualWSNL);
 
 		int actualAlignCategory = Trainer.getAlignmentCategory(originalTokens, node);

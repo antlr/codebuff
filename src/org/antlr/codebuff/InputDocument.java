@@ -15,10 +15,6 @@ public class InputDocument {
 	public int index;
 	public ParserRuleContext tree;
 
-	public List<int[]> featureVectors;
-	public List<Integer> injectWhitespace;
-	public List<Integer> align;
-
 	public Parser parser;
 	public CodeBuffTokenStream tokens;
 

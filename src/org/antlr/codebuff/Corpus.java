@@ -8,6 +8,7 @@ import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.File;
@@ -52,9 +53,13 @@ public class Corpus {
 	public Map<ParentSiblingListKey, Integer> splitListForms;
 	public Map<Token, Pair<Boolean, Integer>> tokenToListInfo;
 
-	public Corpus(String rootDir, LangDescriptor language) {
+	public Corpus(String rootDir, LangDescriptor language) throws Exception {
 		this.rootDir = rootDir;
 		this.language = language;
+		if ( documents==null ) {
+			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
+			documents = load(allFiles, language);
+		}
 	}
 
 	public Corpus(List<InputDocument> documents, LangDescriptor language) {
@@ -65,11 +70,6 @@ public class Corpus {
 	public void train() throws Exception { train(true); }
 
 	public void train(boolean shuffleFeatureVectors) throws Exception {
-		if ( documents==null ) {
-			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-			documents = load(allFiles, language);
-		}
-
 		collectTokenPairsAndSplitListInfo();
 
 		processSampleDocs();
@@ -138,10 +138,20 @@ public class Corpus {
 
 		for (InputDocument doc : documents) {
 			if ( showFileNames ) System.out.println(doc);
-			process(doc);
+			Triple<List<int[]>, List<Integer>, List<Integer>> results = process(doc);
+			List<int[]> features = results.a;
+			List<Integer> ws = results.b;
+			List<Integer> al = results.c;
 
-			// TODO: use addAll etc... instead
+			for (int i=0; i<features.size(); i++) {
+				documentsPerExemplar.add(doc);
+				int[] featureVec = features.get(i);
+				injectWhitespace.add(ws.get(i));
+				align.add(al.get(i));
+				featureVectors.add(featureVec);
+			}
 
+/*
 			featureVectors.addAll(doc.featureVectors);
 			injectWhitespace.addAll(doc.injectWhitespace);
 			align.addAll(doc.align);
@@ -150,18 +160,22 @@ public class Corpus {
 			for (int i=0; i<doc.featureVectors.size(); i++) {
 				documentsPerExemplar.add(doc);
 			}
+			 */
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
 	}
 
 	/** Parse document, save feature vectors to the doc */
-	public void process(InputDocument doc) {
+	public Triple<List<int[]>,List<Integer>,List<Integer>> process(InputDocument doc) {
 		Trainer trainer = new Trainer(this, doc);
 		trainer.computeFeatureVectors();
 
-		doc.featureVectors = trainer.getFeatureVectors();
-		doc.injectWhitespace = trainer.getInjectWhitespace();
-		doc.align = trainer.getAlign();
+		Triple<List<int[]>,List<Integer>,List<Integer>> results =
+			new Triple<>(trainer.getFeatureVectors(),
+						 trainer.getInjectWhitespace(),
+						 trainer.getAlign());
+		System.out.println(results.a.size()+" "+doc.tokens.size()+" tokens "+doc.fileName);
+		return results;
 	}
 
 	/** Feature vectors in X are lumped together as they are read in each

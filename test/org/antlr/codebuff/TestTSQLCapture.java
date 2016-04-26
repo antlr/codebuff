@@ -24,7 +24,7 @@ public class TestTSQLCapture extends BaseTest {
 	public void testCapture() throws Exception {
 		Corpus corpus = new Corpus(fileName, Tool.TSQL_CLEAN_DESCR);
 		corpus.train();
-		InputDocument testDoc = Tool.load(fileName, corpus.language);
+		InputDocument testDoc = Tool.parse(fileName, corpus.language);
 		Formatter formatter = new Formatter(corpus);
 		String output = formatter.format(testDoc, false);
 //		System.out.println(output);

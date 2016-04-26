@@ -17,9 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
@@ -40,7 +37,7 @@ public class LeaveOneOutValidator {
 	public String rootDir;
 	public LangDescriptor language;
 
-	public List<InputDocument> documents;
+//	public List<InputDocument> documents;
 
 	public LeaveOneOutValidator(String rootDir, LangDescriptor language) {
 		this.rootDir = rootDir;
@@ -52,27 +49,29 @@ public class LeaveOneOutValidator {
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-		documents = load(allFiles, language);
-		return validate(fileToExclude, collectAnalysis, saveOutput);
+		List<InputDocument> documents = load(allFiles, language);
+		return validate(documents, fileToExclude, collectAnalysis, saveOutput);
 	}
 
 	public List<Float> validateDocuments(boolean saveOutput) throws Exception {
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-		documents = load(allFiles, language);
+		List<InputDocument> documents = load(allFiles, language);
 		List<Float> distances = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
-			Pair<Formatter,Float> results = validate(documents.get(i).fileName, false, saveOutput);
+			Pair<Formatter,Float> results = validate(documents, documents.get(i).fileName, false, saveOutput);
 			float editDistance = results.b;
 			distances.add(editDistance);
 		}
 		return distances;
 	}
 
-	public Pair<Formatter,Float> validate(String fileToExclude, boolean collectAnalysis, boolean saveOutput)
+	public Pair<Formatter,Float> validate(List<InputDocument> documents, String fileToExclude, boolean collectAnalysis, boolean saveOutput)
 		throws Exception
 	{
-		List<InputDocument> others = filter(documents, d -> !d.fileName.endsWith(fileToExclude));
-		List<InputDocument> excluded = filter(documents, d -> d.fileName.endsWith(fileToExclude));
+		final String path = new File(fileToExclude).getCanonicalPath();
+		List<InputDocument> others = filter(documents, d -> !d.fileName.equals(path));
+		List<InputDocument> excluded = filter(documents, d -> d.fileName.equals(path));
+		assert others.size() == documents.size() - 1;
 		kNNClassifier.resetCache();
 		InputDocument testDoc = excluded.get(0);
 		Corpus corpus = new Corpus(others, language);
@@ -159,8 +158,8 @@ public class LeaveOneOutValidator {
 //			ANTLR4_DESCR,
 			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
-			TSQL_NOISY_DESCR,
 			TSQL_CLEAN_DESCR,
+			TSQL_NOISY_DESCR,
 		};
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);
 		String[] dirs = corpusDirs.toArray(new String[languages.length]);

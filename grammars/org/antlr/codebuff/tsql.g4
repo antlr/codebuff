@@ -764,7 +764,7 @@ column_alias
     : id
     | STRING
     ;
-    
+
 
 expression_list
     : expression (',' expression)*
@@ -1121,7 +1121,7 @@ BY:                                    B Y;
 CASCADE:                               C A S C A D E;
 CASE:                                  C A S E;
 CHANGETABLE:                           C H A N G E T A B L E;
-CHANGES:                               C H A N G E S; 
+CHANGES:                               C H A N G E S;
 CHECK:                                 C H E C K;
 CHECKPOINT:                            C H E C K P O I N T;
 CLOSE:                                 C L O S E;
@@ -1419,7 +1419,7 @@ XMLNAMESPACES:                         X M L N A M E S P A C E S;
 
 DOLLAR_ACTION:                         '$' A C T I O N;
 
-SPACE:              [ \t\r\n]+    -> skip;
+SPACE:              [ \t\r\n]+    -> channel(HIDDEN);
 COMMENT:            '/*' .*? '*/' -> channel(HIDDEN);
 LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
 

@@ -118,7 +118,7 @@ public class Tool {
 			start = System.nanoTime();
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpusDir, lang);
 			Pair<Formatter,Float> val = validator.validateOneDocument(testFilename, true, true);
-			testDoc = load(testFilename, lang);
+			testDoc = parse(testFilename, lang);
 			stop = System.nanoTime();
 			Formatter formatter = val.a;
 			output = formatter.getOutput();
@@ -132,7 +132,7 @@ public class Tool {
 		else if ( lang!=null ) {
 			Corpus corpus = new Corpus(corpusDir, lang);
 			corpus.train();
-			testDoc = load(testFilename, lang);
+			testDoc = parse(testFilename, lang);
 			start = System.nanoTime();
 			Formatter formatter = new Formatter(corpus);
 			output = formatter.format(testDoc, collectAnalysis);
@@ -268,14 +268,51 @@ public class Tool {
 		return tokens;
 	}
 
+	public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+		Constructor<? extends Parser> parserCtor =
+			parserClass.getConstructor(TokenStream.class);
+		return parserCtor.newInstance(tokens);
+	}
+
+	public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
+		Constructor<? extends Lexer> lexerCtor =
+			lexerClass.getConstructor(CharStream.class);
+		return lexerCtor.newInstance(input);
+	}
+
+	/** Get all file contents into input doc list */
+	public static List<InputDocument> load(List<String> fileNames, LangDescriptor language)
+		throws Exception
+	{
+		List<InputDocument> documents = new ArrayList<>();
+		for (String fileName : fileNames) {
+			documents.add( parse(fileName, language) );
+		}
+		return documents;
+	}
+
+	public static String load(String fileName, int tabSize)
+		throws Exception
+	{
+		Path path = FileSystems.getDefault().getPath(fileName);
+		byte[] filearray = Files.readAllBytes(path);
+		String content = new String(filearray);
+		String notabs = expandTabs(content, tabSize);
+		return notabs;
+	}
+
 	/**
 	 * Parse doc and fill tree and tokens fields
 	 */
-	public static void parse(InputDocument doc, LangDescriptor language)
-		throws Exception {
-		ANTLRInputStream input = new ANTLRInputStream(doc.content);
+	public static InputDocument parse(String fileName, LangDescriptor language)
+		throws Exception
+	{
+		String content = load(fileName, language.tabSize);
+		ANTLRInputStream input = new ANTLRInputStream(content);
 		Lexer lexer = getLexer(language.lexerClass, input);
-		input.name = doc.fileName;
+		input.name = fileName;
+
+		InputDocument doc = new InputDocument(fileName, content);
 
 		doc.tokens = new CodeBuffTokenStream(lexer);
 
@@ -310,63 +347,9 @@ public class Tool {
 			});
 		Method startRule = language.parserClass.getMethod(language.startRuleName);
 		doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
-	}
 
-	public static Parser getParser(Class<? extends Parser> parserClass, CommonTokenStream tokens) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
-		Constructor<? extends Parser> parserCtor =
-			parserClass.getConstructor(TokenStream.class);
-		return parserCtor.newInstance(tokens);
+		return doc;
 	}
-
-	public static Lexer getLexer(Class<? extends Lexer> lexerClass, ANTLRInputStream input) throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
-		Constructor<? extends Lexer> lexerCtor =
-			lexerClass.getConstructor(CharStream.class);
-		return lexerCtor.newInstance(input);
-	}
-
-	public static List<InputDocument> load(List<String> fileNames, LangDescriptor language)
-		throws Exception
-	{
-		List<InputDocument> documents = load(fileNames, language.tabSize);
-		for (InputDocument doc : documents) {
-			parse(doc, language);
-		}
-		return documents;
-	}
-
-	/** Get all file contents into input doc list */
-	public static List<InputDocument> load(List<String> fileNames, int tabSize)
-		throws Exception
-	{
-		List<InputDocument> input = new ArrayList<>(fileNames.size());
-		int i = 0;
-		for (String f : fileNames) {
-			InputDocument doc = load(f, tabSize);
-			doc.index = i++;
-			input.add(doc);
-		}
-		System.out.println(input.size()+" files");
-		return input;
-	}
-
-	public static InputDocument load(String fileName, LangDescriptor language)
-		throws Exception
-	{
-		InputDocument document = load(fileName, language.tabSize);
-		parse(document, language);
-		return document;
-	}
-
-	public static InputDocument load(String fileName, int tabSize)
-		throws Exception
-	{
-		Path path = FileSystems.getDefault().getPath(fileName);
-		byte[] filearray = Files.readAllBytes(path);
-		String content = new String(filearray);
-		String notabs = expandTabs(content, tabSize);
-		return new InputDocument(fileName, notabs);
-	}
-
 
 	public static List<String> getFilenames(File f, String inputFilePattern) throws Exception {
 		List<String> files = new ArrayList<>();

@@ -24,7 +24,7 @@ public class TestSQLiteCapture extends BaseTest {
 	public void testCapture() throws Exception {
 		Corpus corpus = new Corpus(fileName, Tool.SQLITE_CLEAN_DESCR);
 		corpus.train();
-		InputDocument testDoc = Tool.load(fileName, corpus.language);
+		InputDocument testDoc = Tool.parse(fileName, corpus.language);
 		Formatter formatter = new Formatter(corpus);
 		String output = formatter.format(testDoc, false);
 		float editDistance = levenshteinDistance(testDoc.content, output);

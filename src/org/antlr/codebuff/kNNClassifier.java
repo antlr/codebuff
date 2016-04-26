@@ -44,6 +44,7 @@ public abstract class kNNClassifier {
 
 	public static void resetCache() {
 		classifyCache.clear();
+		neighborCache.clear();
 		nClassifyCacheHits = 0;
 		nClassifyCalls=0;
 		nClassifyCacheHits=0;
