@@ -1,4 +1,4 @@
-package org.antlr.codebuff;
+package org.antlr.codebuff.validation;
 
 import org.antlr.v4.runtime.Token;
 

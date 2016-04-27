@@ -3,7 +3,9 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.gui.GUIController;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.LangDescriptor;
+import org.antlr.codebuff.validation.ClassificationAnalysis;
 import org.antlr.codebuff.validation.LeaveOneOutValidator;
+import org.antlr.codebuff.validation.TokenPositionAnalysis;
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -123,11 +125,22 @@ public class Tool {
 			Formatter formatter = val.a;
 			output = formatter.getOutput();
 			float editDistance = val.b;
-			analysisPerToken = formatter.getAnalysisPerToken();
 			System.out.println("Levenshtein distance: "+editDistance);
 			analysisPerToken = formatter.getAnalysisPerToken();
 
-			dumpAccuracy(testDoc, analysisPerToken);
+			CommonTokenStream original_tokens = tokenize(testDoc.content, lang.lexerClass);
+			List<Token> wsTokens = filter(original_tokens.getTokens(),
+			                              t -> t.getText().matches("\\s+"));
+			String originalWS = tokenText(wsTokens);
+			CommonTokenStream formatted_tokens = tokenize(output, lang.lexerClass);
+			wsTokens = filter(formatted_tokens.getTokens(),
+			                  t -> t.getText().matches("\\s+"));
+			String formattedWS = tokenText(wsTokens);
+			editDistance = levenshteinDistance(originalWS, formattedWS);
+			System.out.println("Levenshtein distance of ws: "+editDistance);
+
+			ClassificationAnalysis analysis = new ClassificationAnalysis(testDoc, analysisPerToken);
+			System.out.println(analysis);
 		}
 		else if ( lang!=null ) {
 			Corpus corpus = new Corpus(corpusDir, lang);
@@ -139,7 +152,8 @@ public class Tool {
 			stop = System.nanoTime();
 			analysisPerToken = formatter.getAnalysisPerToken();
 
-			dumpAccuracy(testDoc, analysisPerToken);
+			ClassificationAnalysis analysis = new ClassificationAnalysis(testDoc, analysisPerToken);
+			System.out.println(analysis);
 
 			CommonTokenStream original_tokens = tokenize(testDoc.content, corpus.language.lexerClass);
 			List<Token> wsTokens = filter(original_tokens.getTokens(),
@@ -168,94 +182,13 @@ public class Tool {
 			controller.show();
 //			System.out.println(output);
 			System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
-			System.out.printf("classify calls %d, hits %d rate %f\n",
-			                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
-			                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
-			System.out.printf("kNN calls %d, hits %d rate %f\n",
-			                  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
-			                  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
+//			System.out.printf("classify calls %d, hits %d rate %f\n",
+//			                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
+//			                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
+//			System.out.printf("kNN calls %d, hits %d rate %f\n",
+//			                  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
+//			                  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
 		}
-	}
-
-	public static void dumpAccuracy(InputDocument testDoc, List<TokenPositionAnalysis> analysisPerToken) {
-		System.out.println("num real tokens from 1: "+getNumberRealTokens(testDoc.tokens, 1, testDoc.tokens.size()-2)); // don't include first token nor EOF
-		int n = 0; // should be number of real tokens - 1 (we don't process 1st token)
-		int n_align_compares = 0;
-		int correct_ws = 0;
-		int n_none = 0;
-		int n_nl = 0;
-		int n_sp = 0;
-		int correct_none = 0;
-		int correct_nl = 0;
-		int correct_sp = 0;
-		int correct_align = 0;
-		/*
-		 predicted  |   actual  |   match
-		 ---------  -   ------  -   ------
-		            |           |     x
-		            |   ' '     |
-		            |   '\n'    |
-		    '\n'    |           |
-		    '\n'    |   ' '     |
-		    '\n'    |   '\n'    |     x
-		    ' '     |           |
-		    ' '     |   ' '     |     x
-		    ' '     |   '\n'    |
-		 */
-		for (TokenPositionAnalysis a : analysisPerToken) {
-			if ( a==null ) continue;
-			n++;
-			if ( a.actualWS==0 ) {
-				n_none++;
-			}
-			else if ( (a.actualWS&0xFF)==Trainer.CAT_INJECT_NL ) {
-				n_nl++;
-			}
-			else if ( (a.actualWS&0xFF)==Trainer.CAT_INJECT_WS ) {
-				n_sp++;
-			}
-
-			if ( a.wsPrediction==0 && a.wsPrediction==a.actualWS ) {
-				correct_none++;
-			}
-			else if ( (a.wsPrediction&0xFF)==Trainer.CAT_INJECT_NL && a.wsPrediction==a.actualWS ) {
-				correct_nl++;
-			}
-			else if ( (a.wsPrediction&0xFF)==Trainer.CAT_INJECT_WS && a.wsPrediction==a.actualWS ) {
-				correct_sp++;
-			}
-			if ( a.wsPrediction==a.actualWS ) {
-				correct_ws++;
-			}
-
-			if ( (a.wsPrediction&0xFF)==Trainer.CAT_INJECT_NL ) {
-				n_align_compares++;
-				// if we predicted newline *and* actual was newline, check alignment misclassification
-				// Can't compare if both aren't supposed to align. If we predict '\n' but actual is ' ',
-				// alignment will always fail to match. Similarly, if we predict no-'\n' but actual is '\n',
-				// we didn't compute align so can't compare.
-				if ( a.alignPrediction==a.actualAlign ) {
-					correct_align++;
-				}
-			}
-		}
-		float none_accuracy = correct_none/(float) n_none;
-		System.out.printf("correct none / num none = %d/%d, %4.3f%%\n",
-		                  correct_none, n_none, none_accuracy*100);
-		float nl_accuracy = correct_nl/(float) n_nl;
-		System.out.printf("correct nl / num nl = %d/%d, %4.3f%%\n",
-		                  correct_nl, n_nl, nl_accuracy*100);
-		float sp_accuracy = correct_sp/(float) n_sp;
-		System.out.printf("correct sp / num ws = %d/%d, %4.3f%%\n",
-		                  correct_sp, n_sp, sp_accuracy*100);
-
-		double overall_ws_accuracy = correct_ws/(float) n;
-		System.out.printf("overall ws correct = %d/%d %4.3f%%\n",
-		                  correct_ws, n, overall_ws_accuracy*100);
-
-		double align_accuracy = correct_align/(float) n_align_compares;
-		System.out.printf("align correct = %d/%d %4.3f%%\n",
-		                  correct_align, n_align_compares, align_accuracy*100.0);
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
@@ -509,6 +442,7 @@ public class Tool {
 //		int min = Math.abs(s.length()-t.length());
 		int max = Math.max(s.length(), t.length());
 		return d / (float)max;
+//		return d;
 	}
 
 	/* Compare whitespace and give an approximate Levenshtein distance /

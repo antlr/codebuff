@@ -72,11 +72,7 @@ FROM
         ON src.allocation_unit_id = b.allocation_unit_id
 WHERE
     b.database_id = DB_ID()
-GROUP BY
-    src.[Object],
-    src.[Type],
-    src.[Index],
-    src.Index_Type
+GROUP BY src.[Object], src.[Type], src.[Index], src.Index_Type
 ORDER BY
     buffer_pages
     DESC;

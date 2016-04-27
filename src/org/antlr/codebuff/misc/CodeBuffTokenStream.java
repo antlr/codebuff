@@ -40,6 +40,10 @@ public class CodeBuffTokenStream extends CommonTokenStream {
 		return tokens.get(i);
 	}
 
+	public List<Token> getRealTokens() {
+		return getRealTokens(0, size()-1);
+	}
+
 	public List<Token> getRealTokens(int from, int to) {
 		List<Token> real = new ArrayList<Token>();
 		for (int i=from; i<=to; i++) {

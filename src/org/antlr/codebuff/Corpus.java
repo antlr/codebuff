@@ -150,17 +150,6 @@ public class Corpus {
 				align.add(al.get(i));
 				featureVectors.add(featureVec);
 			}
-
-/*
-			featureVectors.addAll(doc.featureVectors);
-			injectWhitespace.addAll(doc.injectWhitespace);
-			align.addAll(doc.align);
-
-			// replicate doc ptr for each feature vector we just added
-			for (int i=0; i<doc.featureVectors.size(); i++) {
-				documentsPerExemplar.add(doc);
-			}
-			 */
 		}
 		System.out.printf("%d feature vectors\n", featureVectors.size());
 	}
@@ -174,7 +163,7 @@ public class Corpus {
 			new Triple<>(trainer.getFeatureVectors(),
 						 trainer.getInjectWhitespace(),
 						 trainer.getAlign());
-		System.out.println(results.a.size()+" "+doc.tokens.size()+" tokens "+doc.fileName);
+//		System.out.println(results.a.size()+" "+doc.tokens.size()+" tokens "+doc.fileName);
 		return results;
 	}
 

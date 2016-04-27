@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
@@ -24,6 +27,7 @@ import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
+import static org.antlr.codebuff.Tool.parse;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 
@@ -78,6 +82,13 @@ public class LeaveOneOutValidator {
 		corpus.train();
 		Formatter formatter = new Formatter(corpus);
 		String output = formatter.format(testDoc, collectAnalysis);
+		// doc.tokens is now corrupt, find test doc in list and freshen (yuck)
+		for (int i = 0; i<documents.size(); i++) {
+			if ( documents.get(i)==testDoc ) {
+				documents.set(i, parse(testDoc.fileName, language));
+				break;
+			}
+		}
 		float editDistance = levenshteinDistance(testDoc.content, output);
 		System.out.println(testDoc.fileName+": "+editDistance);
 		if ( saveOutput ) {
@@ -153,13 +164,13 @@ public class LeaveOneOutValidator {
 
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-//			JAVA_DESCR,
-//			JAVA8_DESCR,
-//			ANTLR4_DESCR,
+			JAVA_DESCR,
+			JAVA8_DESCR,
+			ANTLR4_DESCR,
 			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
-			TSQL_CLEAN_DESCR,
 			TSQL_NOISY_DESCR,
+			TSQL_CLEAN_DESCR,
 		};
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);
 		String[] dirs = corpusDirs.toArray(new String[languages.length]);

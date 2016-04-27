@@ -1,6 +1,7 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
+import org.antlr.codebuff.validation.TokenPositionAnalysis;
 import org.antlr.codebuff.walkers.IdentifyOversizeLists;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;

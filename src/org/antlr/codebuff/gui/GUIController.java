@@ -1,9 +1,9 @@
 package org.antlr.codebuff.gui;
 
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.TokenPositionAnalysis;
 import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
+import org.antlr.codebuff.validation.TokenPositionAnalysis;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
