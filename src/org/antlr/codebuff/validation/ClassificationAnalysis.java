@@ -39,19 +39,6 @@ public class ClassificationAnalysis {
 	}
 
 	public void computeAccuracy() {
-		/*
-		 predicted  |   actual  |   match
-		 ---------  -   ------  -   ------
-		            |           |     x
-		            |   ' '     |
-		            |   '\n'    |
-		    '\n'    |           |
-		    '\n'    |   ' '     |
-		    '\n'    |   '\n'    |     x
-		    ' '     |           |
-		    ' '     |   ' '     |     x
-		    ' '     |   '\n'    |
-		 */
 		for (TokenPositionAnalysis a : analysisPerToken) {
 			if ( a==null ) continue;
 			n_ws_decisions++;
@@ -186,7 +173,11 @@ public class ClassificationAnalysis {
 			correct_indent, n_actual_indent, indent_accuracy*100,
 			overall_align_accuracy*100,
 			n_align_errors, n_align_decisions,
-			n_ws_errors+n_align_errors, n_ws_decisions+n_align_decisions, (n_ws_errors+n_align_errors)*100.0 / (n_ws_decisions+n_align_decisions)
+			n_ws_errors+n_align_errors, n_ws_decisions+n_align_decisions, getErrorRate()*100.0
         );
+	}
+
+	public float getErrorRate() {
+		return ((float)n_ws_errors+n_align_errors) / (n_ws_decisions+n_align_decisions);
 	}
 }

@@ -7,11 +7,13 @@ import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.misc.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +51,7 @@ public class LeaveOneOutValidator {
 		random.setSeed(DOCLIST_RANDOM_SEED);
 	}
 
-	public Pair<Formatter,Float> validateOneDocument(String fileToExclude, boolean collectAnalysis, boolean saveOutput)
+	public Triple<Formatter,Float,Float> validateOneDocument(String fileToExclude, boolean collectAnalysis, boolean saveOutput)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
@@ -57,19 +59,22 @@ public class LeaveOneOutValidator {
 		return validate(documents, fileToExclude, collectAnalysis, saveOutput);
 	}
 
-	public List<Float> validateDocuments(boolean saveOutput) throws Exception {
+	public Pair<List<Float>,List<Float>> validateDocuments(boolean saveOutput) throws Exception {
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
 		List<Float> distances = new ArrayList<>();
+		List<Float> errors = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
-			Pair<Formatter,Float> results = validate(documents, documents.get(i).fileName, false, saveOutput);
+			Triple<Formatter,Float,Float> results = validate(documents, documents.get(i).fileName, false, saveOutput);
 			float editDistance = results.b;
 			distances.add(editDistance);
+			Float errorRate = results.c;
+			errors.add(errorRate);
 		}
-		return distances;
+		return new Pair<>(distances,errors);
 	}
 
-	public Pair<Formatter,Float> validate(List<InputDocument> documents, String fileToExclude, boolean collectAnalysis, boolean saveOutput)
+	public Triple<Formatter,Float,Float> validate(List<InputDocument> documents, String fileToExclude, boolean collectAnalysis, boolean saveOutput)
 		throws Exception
 	{
 		final String path = new File(fileToExclude).getCanonicalPath();
@@ -81,7 +86,8 @@ public class LeaveOneOutValidator {
 		Corpus corpus = new Corpus(others, language);
 		corpus.train();
 		Formatter formatter = new Formatter(corpus);
-		String output = formatter.format(testDoc, collectAnalysis);
+		InputDocument originalDoc = testDoc;
+		String output = formatter.format(testDoc, false);
 		// doc.tokens is now corrupt, find test doc in list and freshen (yuck)
 		for (int i = 0; i<documents.size(); i++) {
 			if ( documents.get(i)==testDoc ) {
@@ -91,6 +97,8 @@ public class LeaveOneOutValidator {
 		}
 		float editDistance = levenshteinDistance(testDoc.content, output);
 		System.out.println(testDoc.fileName+": "+editDistance);
+		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
+		System.out.println("error rate "+analysis.getErrorRate());
 		if ( saveOutput ) {
 			File dir = new File(outputDir+"/"+language.name);
 			if ( saveOutput ) {
@@ -99,7 +107,7 @@ public class LeaveOneOutValidator {
 			}
 			Utils.writeFile(dir.getPath()+"/"+new File(testDoc.fileName).getName(), output);
 		}
-		return new Pair<>(formatter, editDistance);
+		return new Triple<>(formatter, editDistance, analysis.getErrorRate());
 	}
 
 	/** From input documents, grab n in random order w/o replacement */
@@ -124,7 +132,9 @@ public class LeaveOneOutValidator {
 	}
 
 	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs) throws Exception {
-		List<String> languageNames = map(languages, l -> l.name);
+		List<String> languageNames = map(languages, l -> l.name+"_dist");
+		languageNames.addAll(map(languages, l -> l.name+"_err"));
+		Collections.sort(languageNames);
 		Map<String, Integer> corpusSizes = new HashMap<>();
 		for (int i = 0; i<languages.length; i++) {
 			LangDescriptor language = languages[i];
@@ -132,18 +142,26 @@ public class LeaveOneOutValidator {
 			corpusSizes.put(language.name, filenames.size());
 		}
 		List<String> languageNamesAsStr = map(languages, l -> '"'+l.name+"\\nn="+corpusSizes.get(l.name)+'"');
+		languageNamesAsStr.addAll(map(languages, l -> '"'+l.name+"_err\\nn="+corpusSizes.get(l.name)+'"'));
+		Collections.sort(languageNamesAsStr);
 
 		StringBuilder data = new StringBuilder();
 		for (int i = 0; i<languages.length; i++) {
 			LangDescriptor language = languages[i];
 			String corpus = corpusDirs[i];
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpus, language);
-			List<Float> distances = validator.validateDocuments(true);
-			data.append(language.name+" = "+distances+"\n");
+			Pair<List<Float>,List<Float>> results = validator.validateDocuments(true);
+			List<Float> distances = results.a;
+			List<Float> errors = results.b;
+			data.append(language.name+"_dist = "+distances+"\n");
+			data.append(language.name+"_err = "+errors+"\n");
 		}
 
 		String python =
-			"# CodeBuff AUTO-GENERATED FILE. DO NOT EDIT\n"+
+			"#\n"+
+			"# AUTO-GENERATED FILE. DO NOT EDIT\n" +
+			"# CodeBuff %s '%s'" +
+			"#\n"+
 			"import numpy as np\n"+
 			"import matplotlib.pyplot as plt\n\n" +
 			"%s\n" +
@@ -159,7 +177,7 @@ public class LeaveOneOutValidator {
 			"ax.set_ylabel(\"Edit distance / size of file\")\n" +
 			"ax.set_title(\"Leave-one-out Validation Using Edit Distance\\nBetween Formatted and Original File\")\n"+
 			"plt.show()\n";
-		return String.format(python, data, languageNames, languageNamesAsStr);
+		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -175,6 +193,8 @@ public class LeaveOneOutValidator {
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);
 		String[] dirs = corpusDirs.toArray(new String[languages.length]);
 		String python = testAllLanguages(languages, dirs);
-		System.out.println(python);
+		String fileName = "python/src/leave_one_out.py";
+		Utils.writeFile(fileName, python);
+		System.out.println("wrote python code to "+fileName);
 	}
 }

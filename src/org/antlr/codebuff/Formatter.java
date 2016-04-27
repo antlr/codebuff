@@ -208,10 +208,9 @@ public class Formatter {
 		curToken.setLine(line);
 		curToken.setCharPositionInLine(charPosInLine);
 
-		TokenPositionAnalysis tokenPositionAnalysis = new TokenPositionAnalysis(curToken, -1, "", alignOrIndent, "");
-		if ( collectAnalysis ) {
-			tokenPositionAnalysis = getTokenAnalysis(doc, features, featuresForAlign, tokenIndexInStream, injectNL_WS, alignOrIndent);
-		}
+		TokenPositionAnalysis tokenPositionAnalysis =
+			getTokenAnalysis(doc, features, featuresForAlign, tokenIndexInStream, injectNL_WS, alignOrIndent, collectAnalysis);
+
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
 		int n = tokText.length();
@@ -374,7 +373,8 @@ public class Formatter {
 	public TokenPositionAnalysis getTokenAnalysis(InputDocument doc,
 	                                              int[] features, int[] featuresForAlign,
 	                                              int tokenIndexInStream,
-	                                              int injectNL_WS, int alignOrIndent)
+	                                              int injectNL_WS, int alignOrIndent,
+	                                              boolean collectAnalysis)
 	{
 		CommonToken curToken = (CommonToken)doc.tokens.get(tokenIndexInStream);
 		TerminalNode node = tokenToNodeMap.get(curToken);
@@ -397,15 +397,18 @@ public class Formatter {
 			              alignDisplay,
 			              actualAlignDisplay);
 
-		String newlineAnalysis = newlinePredictionString+"\n"+
-			nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
-			                                     MAX_WS_CONTEXT_DIFF_THRESHOLD);
+		String newlineAnalysis = "";
 		String alignAnalysis = "";
-		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
-			alignAnalysis =
-				alignPredictionString+"\n"+
-				alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
-				                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+		if ( collectAnalysis ) { // this can be slow
+			newlineAnalysis = newlinePredictionString+"\n"+
+				nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
+				                                     MAX_WS_CONTEXT_DIFF_THRESHOLD);
+			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
+				alignAnalysis =
+					alignPredictionString+"\n"+
+						alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
+						                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+			}
 		}
 		TokenPositionAnalysis a = new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);
 		a.actualWS = Trainer.getInjectWSCategory(originalTokens, tokenIndexInStream);

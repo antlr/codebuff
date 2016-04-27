@@ -22,8 +22,11 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.Triple;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
@@ -32,6 +35,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Properties;
 
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
@@ -43,7 +47,6 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Tool  -dbg  -leave-one-out -antlr     corpus/antlr4/training      corpus/antlr4/training/C.g4
  * Tool  -dbg  -sqlite    corpus/sql/training      corpus/sql/training/dmart_bits.sql
  * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
- * Tool  -dbg  -plsql     corpus/plsql/training       corpus/plsql/testing/condition15.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -dbg  -java      corpus/java/training/antlr4-tool     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
  * Tool  -dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
@@ -69,9 +72,6 @@ public class Tool {
 	public static final LangDescriptor TSQL_CLEAN_DESCR =
 		new LangDescriptor("tsql", "corpus/sql2/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
 
-	public static final LangDescriptor PLSQL_DESCR =
-		new LangDescriptor("plsql", "corpus/sql/training", ".*\\.sql", plsqlLexer.class, plsqlParser.class, "compilation_unit", 4);
-
 	public static LangDescriptor[] languages = new LangDescriptor[] {
 		JAVA_DESCR,
 		JAVA8_DESCR,
@@ -80,14 +80,25 @@ public class Tool {
 		SQLITE_CLEAN_DESCR,
 		TSQL_NOISY_DESCR,
 		TSQL_CLEAN_DESCR,
-//		PLSQL_DESCR, // doesn't parse the same sql corpus
 	};
 
-	public static void main(String[] args)
-		throws Exception {
-		if ( args.length<2 ) {
-			System.err.println("ExtractFeatures [-dbg] [-leave-one-out] [-java|-java8|-antlr|-sqlite|-tsql|-plsql] root-dir-of-samples test-file");
+	public static String version;
+	static {
+		try {
+			setToolVersion();
 		}
+		catch (IOException ioe) {
+			ioe.printStackTrace(System.err);
+		}
+	}
+
+	public static void main(String[] args)
+		throws Exception
+	{
+		if ( args.length<2 ) {
+			System.err.println("ExtractFeatures [-dbg] [-leave-one-out] [-java|-java8|-antlr|-sqlite|-tsql] root-dir-of-samples test-file");
+		}
+
 		int arg = 0;
 		boolean leaveOneOut = false;
 		boolean collectAnalysis = false;
@@ -119,7 +130,7 @@ public class Tool {
 		if ( lang!=null && leaveOneOut ) {
 			start = System.nanoTime();
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpusDir, lang);
-			Pair<Formatter,Float> val = validator.validateOneDocument(testFilename, true, true);
+			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, true, true);
 			testDoc = parse(testFilename, lang);
 			stop = System.nanoTime();
 			Formatter formatter = val.a;
@@ -189,6 +200,14 @@ public class Tool {
 //			                  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
 //			                  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
 		}
+	}
+
+	public static void setToolVersion() throws IOException {
+		InputStream propsStream = Tool.class.getClassLoader().getResourceAsStream("codebuff.properties");
+		Properties prop = new Properties();
+		prop.load(propsStream);
+		Tool.version = (String)prop.get("version");
+		propsStream.close();
 	}
 
 	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
