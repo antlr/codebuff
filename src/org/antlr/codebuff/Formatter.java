@@ -47,6 +47,7 @@ public class Formatter {
 	public static final int INDENT_LEVEL = 4;
 	public static final int WIDE_LIST_THRESHOLD = 120; // anything this big is definitely "oversize list"
 	public static final int COL_ALARM_THRESHOLD = 80;
+	public static final int DEFAULT_K = 11;
 
 	protected final Corpus corpus;
 
@@ -75,11 +76,16 @@ public class Formatter {
 	protected int line = 1;
 	protected int charPosInLine = 0;
 
+	public Formatter(Corpus corpus, int k) {
+		this(corpus);
+		this.k = k;
+	}
+
 	public Formatter(Corpus corpus) {
 		this.corpus = corpus;
 //		k = (int)Math.sqrt(corpus.X.size());
 //		k = 7;
-		k = 11;
+		k = DEFAULT_K;
 //		k = 29;
 	}
 

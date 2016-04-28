@@ -65,4 +65,40 @@ public class BuffUtils {
 		}
 		return output;
 	}
+
+	public static double variance(List<Integer> data) {
+		int n = data.size();
+		double sum = 0;
+		double avg = sum(data) / ((double)n);
+		for (int d : data) {
+			sum += (d-avg)*(d-avg);
+		}
+		return sum / n;
+	}
+
+	public static double varianceFloats(List<Float> data) {
+		int n = data.size();
+		double sum = 0;
+		double avg = sumFloats(data) / ((double)n);
+		for (float d : data) {
+			sum += (d-avg)*(d-avg);
+		}
+		return sum / n;
+	}
+
+	public static int sum(List<Integer> data) {
+		int sum = 0;
+		for (int d : data) {
+			sum += d;
+		}
+		return sum;
+	}
+
+	public static float sumFloats(List<Float> data) {
+		float sum = 0;
+		for (float d : data) {
+			sum += d;
+		}
+		return sum;
+	}
 }

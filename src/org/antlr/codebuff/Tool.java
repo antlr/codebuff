@@ -130,7 +130,7 @@ public class Tool {
 		if ( lang!=null && leaveOneOut ) {
 			start = System.nanoTime();
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpusDir, lang);
-			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, true, true);
+			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, true);
 			testDoc = parse(testFilename, lang);
 			stop = System.nanoTime();
 			Formatter formatter = val.a;

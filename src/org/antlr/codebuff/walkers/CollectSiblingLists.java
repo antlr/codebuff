@@ -4,6 +4,7 @@ import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.VisitSiblingLists;
 import org.antlr.codebuff.kNNClassifier;
+import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
@@ -143,7 +144,7 @@ public class CollectSiblingLists extends VisitSiblingLists {
 			Integer min = lens.get(0);
 			Integer median = lens.get(n/2);
 			Integer max = lens.get(n-1);
-			double var = variance(lens);
+			double var = BuffUtils.variance(lens);
 			listSizes.put(pair, new SiblingListStats(n, min, median, var, max));
 		}
 		return listSizes;
@@ -151,24 +152,6 @@ public class CollectSiblingLists extends VisitSiblingLists {
 
 	public Map<Token, Pair<Boolean, Integer>> getTokenToListInfo() {
 		return tokenToListInfo;
-	}
-
-	public static int sum(List<Integer> data) {
-		int sum = 0;
-		for (int d : data) {
-			sum += d;
-		}
-		return sum;
-	}
-
-	public static double variance(List<Integer> data) {
-		int n = data.size();
-		double sum = 0;
-		double avg = sum(data) / ((double)n);
-		for (int d : data) {
-			sum += (d-avg)*(d-avg);
-		}
-		return sum / n;
 	}
 
 	@Override

@@ -40,10 +40,9 @@ public class LeaveOneOutValidator {
 
 	final Random random = new Random();
 
+
 	public String rootDir;
 	public LangDescriptor language;
-
-//	public List<InputDocument> documents;
 
 	public LeaveOneOutValidator(String rootDir, LangDescriptor language) {
 		this.rootDir = rootDir;
@@ -51,12 +50,12 @@ public class LeaveOneOutValidator {
 		random.setSeed(DOCLIST_RANDOM_SEED);
 	}
 
-	public Triple<Formatter,Float,Float> validateOneDocument(String fileToExclude, boolean collectAnalysis, boolean saveOutput)
+	public Triple<Formatter,Float,Float> validateOneDocument(String fileToExclude, boolean saveOutput)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
-		return validate(documents, fileToExclude, collectAnalysis, saveOutput);
+		return validate(documents, fileToExclude, Formatter.DEFAULT_K, saveOutput, true);
 	}
 
 	public Pair<List<Float>,List<Float>> validateDocuments(boolean saveOutput) throws Exception {
@@ -65,7 +64,7 @@ public class LeaveOneOutValidator {
 		List<Float> distances = new ArrayList<>();
 		List<Float> errors = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
-			Triple<Formatter,Float,Float> results = validate(documents, documents.get(i).fileName, false, saveOutput);
+			Triple<Formatter,Float,Float> results = validate(documents, documents.get(i).fileName, Formatter.DEFAULT_K, saveOutput, true);
 			float editDistance = results.b;
 			distances.add(editDistance);
 			Float errorRate = results.c;
@@ -74,7 +73,11 @@ public class LeaveOneOutValidator {
 		return new Pair<>(distances,errors);
 	}
 
-	public Triple<Formatter,Float,Float> validate(List<InputDocument> documents, String fileToExclude, boolean collectAnalysis, boolean saveOutput)
+	public Triple<Formatter,Float,Float> validate(List<InputDocument> documents,
+	                                              String fileToExclude,
+	                                              int k,
+	                                              boolean saveOutput,
+	                                              boolean computeEditDistance)
 		throws Exception
 	{
 		final String path = new File(fileToExclude).getCanonicalPath();
@@ -85,7 +88,7 @@ public class LeaveOneOutValidator {
 		InputDocument testDoc = excluded.get(0);
 		Corpus corpus = new Corpus(others, language);
 		corpus.train();
-		Formatter formatter = new Formatter(corpus);
+		Formatter formatter = new Formatter(corpus, k);
 		InputDocument originalDoc = testDoc;
 		String output = formatter.format(testDoc, false);
 		// doc.tokens is now corrupt, find test doc in list and freshen (yuck)
@@ -95,10 +98,12 @@ public class LeaveOneOutValidator {
 				break;
 			}
 		}
-		float editDistance = levenshteinDistance(testDoc.content, output);
-		System.out.println(testDoc.fileName+": "+editDistance);
+		float editDistance = 0;
+		if ( computeEditDistance ) {
+			editDistance = levenshteinDistance(testDoc.content, output);
+		}
 		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
-		System.out.println("error rate "+analysis.getErrorRate());
+		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
 		if ( saveOutput ) {
 			File dir = new File(outputDir+"/"+language.name);
 			if ( saveOutput ) {
