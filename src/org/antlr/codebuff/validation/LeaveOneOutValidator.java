@@ -165,7 +165,7 @@ public class LeaveOneOutValidator {
 		String python =
 			"#\n"+
 			"# AUTO-GENERATED FILE. DO NOT EDIT\n" +
-			"# CodeBuff %s '%s'" +
+			"# CodeBuff %s '%s'\n" +
 			"#\n"+
 			"import numpy as np\n"+
 			"import matplotlib.pyplot as plt\n\n" +
@@ -180,7 +180,7 @@ public class LeaveOneOutValidator {
 			"           labels=labels)\n"+
 			"ax.set_xlabel(\"Grammar and corpus size\")\n"+
 			"ax.set_ylabel(\"Edit distance / size of file\")\n" +
-			"ax.set_title(\"Leave-one-out Validation Using Edit Distance\\nBetween Formatted and Original File\")\n"+
+			"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
 			"plt.show()\n";
 		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr);
 	}
