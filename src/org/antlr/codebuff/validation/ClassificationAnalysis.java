@@ -62,10 +62,10 @@ public class ClassificationAnalysis {
 			if ( predict_ws_none && actual_ws_none ) {
 				correct_none++;
 			}
-			else if ( predict_nl &&	actual_nl )	{
+			else if ( predict_nl &&	a.wsPrediction==a.actualWS ) {
 				correct_nl++;
 			}
-			else if ( predict_sp && actual_ws ) {
+			else if ( predict_sp && a.wsPrediction==a.actualWS ) {
 				correct_sp++;
 			}
 			else {
@@ -101,17 +101,17 @@ public class ClassificationAnalysis {
 				// to match. Similarly, if we predict no-'\n' but actual is '\n',
 				// we didn't compute align so can't compare.
 				n_align_decisions++;
-				if ( predict_align_child && actual_align_child ) {
+				if ( predict_align_none && actual_align_none ) {
+					correct_align_none++;
+				}
+				else if ( predict_align_child && a.alignPrediction==a.actualAlign ) {
 					correct_align_child++;
 				}
-				else if ( predict_indent_child && actual_indent_child ) {
+				else if ( predict_indent_child && a.alignPrediction==a.actualAlign ) {
 					correct_indent_child++;
 				}
-				else if ( predict_indent && actual_indent ) {
+				else if ( predict_indent && a.alignPrediction==a.actualAlign ) {
 					correct_indent++;
-				}
-				else if ( predict_align_none && actual_align_none ) {
-					correct_align_none++;
 				}
 				else {
 					n_align_errors++;
