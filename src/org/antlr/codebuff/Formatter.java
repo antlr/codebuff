@@ -53,8 +53,9 @@ public class Formatter {
 
 	protected StringBuilder output;
 	protected CodeBuffTokenStream originalTokens; // copy of tokens with line/col info
-	protected List<Token> realTokens;           // just the real tokens from tokens
+	protected List<Token> realTokens;             // just the real tokens from tokens
 
+	/** A map from real token to node in the parse tree */
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	/** analysis[i] is info about what we decided for token index i from
@@ -95,14 +96,11 @@ public class Formatter {
 		return analysis;
 	}
 
-	/** Format the document.
-	 *
-	 *  As we need to wack info in doc.tokens, I reload/reparse at end of this.
-	 *
-	 *  WARNING: destructive to the doc.tokens list
-	 */
+	/** Format the document. Does not affect/alter doc. */
 	public String format(InputDocument doc, boolean collectAnalysis) throws Exception {
+		doc = InputDocument.dup(doc);
 		output = new StringBuilder();
+		this.realTokens = getRealTokens(doc.tokens);
 		// make a complete copy of token stream and token objects
 		this.originalTokens = new CodeBuffTokenStream(doc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake

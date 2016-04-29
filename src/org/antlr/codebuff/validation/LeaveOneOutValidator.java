@@ -29,7 +29,6 @@ import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
-import static org.antlr.codebuff.Tool.parse;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 
@@ -50,12 +49,15 @@ public class LeaveOneOutValidator {
 		random.setSeed(DOCLIST_RANDOM_SEED);
 	}
 
-	public Triple<Formatter,Float,Float> validateOneDocument(String fileToExclude, boolean saveOutput)
+	public Triple<Formatter,Float,Float> validateOneDocument(String fileToExclude,
+	                                                         boolean saveOutput,
+	                                                         boolean collectAnalysis)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
-		return validate(language, documents, fileToExclude, Formatter.DEFAULT_K, saveOutput, true);
+		return validate(language, documents, fileToExclude,
+		                Formatter.DEFAULT_K, saveOutput, true, collectAnalysis);
 	}
 
 	public Pair<List<Float>,List<Float>> validateDocuments(boolean saveOutput) throws Exception {
@@ -66,7 +68,7 @@ public class LeaveOneOutValidator {
 		for (int i = 0; i<documents.size(); i++) {
 			Triple<Formatter,Float,Float> results =
 				validate(language, documents, documents.get(i).fileName,
-				         Formatter.DEFAULT_K, saveOutput, true);
+				         Formatter.DEFAULT_K, saveOutput, true, false);
 			float editDistance = results.b;
 			distances.add(editDistance);
 			Float errorRate = results.c;
@@ -80,7 +82,8 @@ public class LeaveOneOutValidator {
 	                                                     String fileToExclude,
 	                                                     int k,
 	                                                     boolean saveOutput,
-	                                                     boolean computeEditDistance)
+	                                                     boolean computeEditDistance,
+	                                                     boolean collectAnalysis)
 		throws Exception
 	{
 		final String path = new File(fileToExclude).getCanonicalPath();
@@ -93,14 +96,7 @@ public class LeaveOneOutValidator {
 		corpus.train();
 		Formatter formatter = new Formatter(corpus, k);
 		InputDocument originalDoc = testDoc;
-		String output = formatter.format(testDoc, false);
-		// doc.tokens is now corrupt, find test doc in list and freshen (yuck)
-		for (int i = 0; i<documents.size(); i++) {
-			if ( documents.get(i)==testDoc ) {
-				documents.set(i, parse(testDoc.fileName, language));
-				break;
-			}
-		}
+		String output = formatter.format(testDoc, collectAnalysis);
 		float editDistance = 0;
 		if ( computeEditDistance ) {
 			editDistance = levenshteinDistance(testDoc.content, output);

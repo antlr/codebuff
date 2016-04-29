@@ -107,7 +107,6 @@ public class SubsetValidator {
 		List<InputDocument> documents = load(validator.allFiles, language);
 		float[] medians = new float[maxNumFiles+1];
 		for (int i = 1; i<=Math.min(validator.allFiles.size(), maxNumFiles); i++) { // i is corpus subset size
-			documents = load(validator.allFiles, language);
 			List<Float> errorRates = new ArrayList<>();
 			for (int trial = 1; trial<=trials; trial++) { // multiple trials per subset size
 				Pair<InputDocument, List<InputDocument>> sample = validator.selectSample(documents, i);
