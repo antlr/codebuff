@@ -55,7 +55,7 @@ public class LeaveOneOutValidator {
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
-		return validate(documents, fileToExclude, Formatter.DEFAULT_K, saveOutput, true);
+		return validate(language, documents, fileToExclude, Formatter.DEFAULT_K, saveOutput, true);
 	}
 
 	public Pair<List<Float>,List<Float>> validateDocuments(boolean saveOutput) throws Exception {
@@ -64,7 +64,9 @@ public class LeaveOneOutValidator {
 		List<Float> distances = new ArrayList<>();
 		List<Float> errors = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
-			Triple<Formatter,Float,Float> results = validate(documents, documents.get(i).fileName, Formatter.DEFAULT_K, saveOutput, true);
+			Triple<Formatter,Float,Float> results =
+				validate(language, documents, documents.get(i).fileName,
+				         Formatter.DEFAULT_K, saveOutput, true);
 			float editDistance = results.b;
 			distances.add(editDistance);
 			Float errorRate = results.c;
@@ -73,11 +75,12 @@ public class LeaveOneOutValidator {
 		return new Pair<>(distances,errors);
 	}
 
-	public Triple<Formatter,Float,Float> validate(List<InputDocument> documents,
-	                                              String fileToExclude,
-	                                              int k,
-	                                              boolean saveOutput,
-	                                              boolean computeEditDistance)
+	public static Triple<Formatter,Float,Float> validate(LangDescriptor language,
+	                                                     List<InputDocument> documents,
+	                                                     String fileToExclude,
+	                                                     int k,
+	                                                     boolean saveOutput,
+	                                                     boolean computeEditDistance)
 		throws Exception
 	{
 		final String path = new File(fileToExclude).getCanonicalPath();
@@ -115,27 +118,6 @@ public class LeaveOneOutValidator {
 		return new Triple<>(formatter, editDistance, analysis.getErrorRate());
 	}
 
-	/** From input documents, grab n in random order w/o replacement */
-	public List<InputDocument> getRandomDocuments(List<InputDocument> documents, int n) {
-		List<InputDocument> documents_ = new ArrayList<>(documents);
-		Collections.shuffle(documents_, random);
-		List<InputDocument> contentList = new ArrayList<>(n);
-		for (int i=0; i<n; i++) { // get first n files from shuffle and set file index for it
-			contentList.add(documents.get(i));
-		}
-		return contentList;
-	}
-
-	/** From input documents, grab n in random order w replacement */
-	public List<InputDocument> getRandomDocumentsWithRepl(List<InputDocument> documents, int n) {
-		List<InputDocument> contentList = new ArrayList<>(n);
-		for (int i=1; i<=n; i++) {
-			int r = random.nextInt(documents.size()); // get random index from 0..|inputfiles|-1
-			contentList.add(documents.get(r));
-		}
-		return contentList;
-	}
-
 	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs) throws Exception {
 		List<String> languageNames = map(languages, l -> l.name+"_dist");
 		languageNames.addAll(map(languages, l -> l.name+"_err"));
@@ -164,24 +146,24 @@ public class LeaveOneOutValidator {
 
 		String python =
 			"#\n"+
-			"# AUTO-GENERATED FILE. DO NOT EDIT\n" +
-			"# CodeBuff %s '%s'\n" +
-			"#\n"+
-			"import numpy as np\n"+
-			"import matplotlib.pyplot as plt\n\n" +
-			"%s\n" +
-			"language_data = %s\n"+
-			"labels = %s\n"+
-			"fig = plt.figure()\n"+
-			"ax = plt.subplot(111)\n"+
-			"ax.boxplot(language_data,\n"+
-			"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
-			"           widths=.35,\n"+
-			"           labels=labels)\n"+
-			"ax.set_xlabel(\"Grammar and corpus size\")\n"+
-			"ax.set_ylabel(\"Edit distance / size of file\")\n" +
-			"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
-			"plt.show()\n";
+				"# AUTO-GENERATED FILE. DO NOT EDIT\n" +
+				"# CodeBuff %s '%s'\n" +
+				"#\n"+
+				"import numpy as np\n"+
+				"import matplotlib.pyplot as plt\n\n" +
+				"%s\n" +
+				"language_data = %s\n"+
+				"labels = %s\n"+
+				"fig = plt.figure()\n"+
+				"ax = plt.subplot(111)\n"+
+				"ax.boxplot(language_data,\n"+
+				"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
+				"           widths=.35,\n"+
+				"           labels=labels)\n"+
+				"ax.set_xlabel(\"Grammar and corpus size\")\n"+
+				"ax.set_ylabel(\"Edit distance / size of file\")\n" +
+				"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
+				"plt.show()\n";
 		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr);
 	}
 

@@ -36,62 +36,12 @@ public class TestK extends LeaveOneOutValidator {
 		List<InputDocument> documents = load(allFiles, language);
 		List<Float> errors = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
-			Triple<Formatter,Float,Float> results = validate(documents, documents.get(i).fileName, k, false, false);
+			Triple<Formatter,Float,Float> results =
+				validate(language, documents, documents.get(i).fileName, k, false, false);
 			Float errorRate = results.c;
 			errors.add(errorRate);
 		}
 		return errors;
-	}
-
-	public void foo() {
-		/*
-		List<String> languageNames = map(languages, l -> l.name+"_dist");
-		languageNames.addAll(map(languages, l -> l.name+"_err"));
-		Collections.sort(languageNames);
-		Map<String, Integer> corpusSizes = new HashMap<>();
-		for (int i = 0; i<languages.length; i++) {
-			LangDescriptor language = languages[i];
-			List<String> filenames = Tool.getFilenames(new File(corpusDirs[i]), language.fileRegex);
-			corpusSizes.put(language.name, filenames.size());
-		}
-		List<String> languageNamesAsStr = map(languages, l -> '"'+l.name+"\\nn="+corpusSizes.get(l.name)+'"');
-		languageNamesAsStr.addAll(map(languages, l -> '"'+l.name+"_err\\nn="+corpusSizes.get(l.name)+'"'));
-		Collections.sort(languageNamesAsStr);
-
-		StringBuilder data = new StringBuilder();
-		for (int i = 0; i<languages.length; i++) {
-			LangDescriptor language = languages[i];
-			String corpus = corpusDirs[i];
-			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpus, language);
-			Pair<List<Float>,List<Float>> results = validator.validateDocuments(true);
-			List<Float> distances = results.a;
-			List<Float> errors = results.b;
-			data.append(language.name+"_dist = "+distances+"\n");
-			data.append(language.name+"_err = "+errors+"\n");
-		}
-
-		String python =
-			"#\n"+
-			"# AUTO-GENERATED FILE. DO NOT EDIT\n" +
-			"# CodeBuff %s '%s'" +
-			"#\n"+
-			"import numpy as np\n"+
-			"import matplotlib.pyplot as plt\n\n" +
-			"%s\n" +
-			"language_data = %s\n"+
-			"labels = %s\n"+
-			"fig = plt.figure()\n"+
-			"ax = plt.subplot(111)\n"+
-			"ax.boxplot(language_data,\n"+
-			"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
-			"           widths=.35,\n"+
-			"           labels=labels)\n"+
-			"ax.set_xlabel(\"Grammar and corpus size\")\n"+
-			"ax.set_ylabel(\"Edit distance / size of file\")\n" +
-			"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
-			"plt.show()\n";
-		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr);
-		*/
 	}
 
 	public static void main(String[] args) throws Exception {

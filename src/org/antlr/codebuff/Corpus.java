@@ -33,10 +33,10 @@ public class Corpus {
 
 	List<InputDocument> documents; // A list of all input docs to train on
 
-	List<InputDocument> documentsPerExemplar; // an entry for each featureVector
-	List<int[]> featureVectors;
-	List<Integer> injectWhitespace;
-	List<Integer> align;
+	public List<InputDocument> documentsPerExemplar; // an entry for each featureVector
+	public List<int[]> featureVectors;
+	public List<Integer> injectWhitespace;
+	public List<Integer> align;
 
 	public String rootDir;
 	public LangDescriptor language;
@@ -151,7 +151,6 @@ public class Corpus {
 				featureVectors.add(featureVec);
 			}
 		}
-		System.out.printf("%d feature vectors\n", featureVectors.size());
 	}
 
 	/** Parse document, save feature vectors to the doc */

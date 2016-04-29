@@ -44,7 +44,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Testing:
  *
  * Tool  -dbg  -antlr     corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
- * Tool  -dbg  -leave-one-out -antlr     corpus/antlr4/training      corpus/antlr4/training/C.g4
+ * Tool  -dbg  -leave-one-out -antlr     corpus/antlr4/training      corpus/antlr4/training/MASM.g4
  * Tool  -dbg  -sqlite    corpus/sql/training      corpus/sql/training/dmart_bits.sql
  * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
