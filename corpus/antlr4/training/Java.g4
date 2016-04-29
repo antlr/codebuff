@@ -40,6 +40,10 @@
  */
 grammar Java;
 
+@header { }
+@parser::members { }
+@members { }
+
 // starting point for parsing a java file
 compilationUnit
     :   packageDeclaration? importDeclaration* typeDeclaration* EOF
