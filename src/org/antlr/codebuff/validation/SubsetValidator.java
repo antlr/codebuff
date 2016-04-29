@@ -13,6 +13,7 @@ import org.stringtemplate.v4.ST;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
+import static org.antlr.codebuff.Tool.version;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 
@@ -70,7 +72,7 @@ public class SubsetValidator {
 		String python =
 			"#\n"+
 			"# AUTO-GENERATED FILE. DO NOT EDIT\n" +
-			"# CodeBuff %s '%s'\n" +
+			"# CodeBuff <version>'<date>'\n" +
 			"#\n"+
 			"import numpy as np\n"+
 			"import matplotlib.pyplot as plt\n\n" +
@@ -89,6 +91,8 @@ public class SubsetValidator {
 			"plt.show()\n";
 		ST pythonST = new ST(python);
 		pythonST.add("results", results);
+		pythonST.add("version", version);
+		pythonST.add("date", new Date());
 		pythonST.add("trials", trials);
 		pythonST.add("maxNumFiles", maxNumFiles);
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);

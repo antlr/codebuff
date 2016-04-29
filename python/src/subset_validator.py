@@ -1,6 +1,6 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff %s '%s'
+# CodeBuff 1.4.1 '%s'
 #
 import matplotlib.pyplot as plt
 
