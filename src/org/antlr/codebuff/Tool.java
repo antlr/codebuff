@@ -130,7 +130,7 @@ public class Tool {
 		if ( lang!=null && leaveOneOut ) {
 			start = System.nanoTime();
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpusDir, lang);
-			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, true);
+			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, true, collectAnalysis);
 			testDoc = parse(testFilename, lang);
 			stop = System.nanoTime();
 			Formatter formatter = val.a;
@@ -260,11 +260,17 @@ public class Tool {
 		throws Exception
 	{
 		String content = load(fileName, language.tabSize);
+		return parse(fileName, content, language);
+	}
+
+	public static InputDocument parse(String fileName, String content, LangDescriptor language)
+		throws Exception
+	{
 		ANTLRInputStream input = new ANTLRInputStream(content);
 		Lexer lexer = getLexer(language.lexerClass, input);
 		input.name = fileName;
 
-		InputDocument doc = new InputDocument(fileName, content);
+		InputDocument doc = new InputDocument(fileName, content, language);
 
 		doc.tokens = new CodeBuffTokenStream(lexer);
 

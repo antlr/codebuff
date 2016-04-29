@@ -37,7 +37,7 @@ public class TestK extends LeaveOneOutValidator {
 		List<Float> errors = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
 			Triple<Formatter,Float,Float> results =
-				validate(language, documents, documents.get(i).fileName, k, false, false);
+				validate(language, documents, documents.get(i).fileName, k, false, false, false);
 			Float errorRate = results.c;
 			errors.add(errorRate);
 		}
