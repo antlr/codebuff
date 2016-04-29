@@ -1,9 +1,11 @@
 package org.antlr.codebuff.validation;
 
 import org.antlr.codebuff.Corpus;
+import org.antlr.codebuff.FeatureMetaData;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.Tool;
+import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Pair;
@@ -60,7 +62,20 @@ public class LeaveOneOutValidator {
 		                Formatter.DEFAULT_K, saveOutput, true, collectAnalysis);
 	}
 
-	public Pair<List<Float>,List<Float>> validateDocuments(boolean saveOutput) throws Exception {
+	public Pair<List<Float>,List<Float>> validateDocuments(boolean computeEditDistance,
+	                                                       boolean saveOutput)
+		throws Exception
+	{
+		return validateDocuments(Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_ALIGN,
+		                         computeEditDistance, saveOutput);
+	}
+
+	public Pair<List<Float>,List<Float>> validateDocuments(FeatureMetaData[] injectWSFeatures,
+	                                                       FeatureMetaData[] alignmentFeatures,
+	                                                       boolean computeEditDistance,
+	                                                       boolean saveOutput)
+		throws Exception
+	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
 		List<Float> distances = new ArrayList<>();
@@ -68,7 +83,8 @@ public class LeaveOneOutValidator {
 		for (int i = 0; i<documents.size(); i++) {
 			Triple<Formatter,Float,Float> results =
 				validate(language, documents, documents.get(i).fileName,
-				         Formatter.DEFAULT_K, saveOutput, true, false);
+				         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
+				         saveOutput, computeEditDistance, false);
 			float editDistance = results.b;
 			distances.add(editDistance);
 			Float errorRate = results.c;
@@ -86,6 +102,22 @@ public class LeaveOneOutValidator {
 	                                                     boolean collectAnalysis)
 		throws Exception
 	{
+		return validate(language, documents, fileToExclude,
+		                k, Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_ALIGN,
+		                saveOutput, computeEditDistance, collectAnalysis);
+	}
+
+	public static Triple<Formatter,Float,Float> validate(LangDescriptor language,
+	                                                     List<InputDocument> documents,
+	                                                     String fileToExclude,
+	                                                     int k,
+	                                                     FeatureMetaData[] injectWSFeatures,
+	                                                     FeatureMetaData[] alignmentFeatures,
+	                                                     boolean saveOutput,
+	                                                     boolean computeEditDistance,
+	                                                     boolean collectAnalysis)
+		throws Exception
+	{
 		final String path = new File(fileToExclude).getCanonicalPath();
 		List<InputDocument> others = filter(documents, d -> !d.fileName.equals(path));
 		List<InputDocument> excluded = filter(documents, d -> d.fileName.equals(path));
@@ -94,7 +126,7 @@ public class LeaveOneOutValidator {
 		InputDocument testDoc = excluded.get(0);
 		Corpus corpus = new Corpus(others, language);
 		corpus.train();
-		Formatter formatter = new Formatter(corpus, k);
+		Formatter formatter = new Formatter(corpus, k, injectWSFeatures, alignmentFeatures);
 		InputDocument originalDoc = testDoc;
 		String output = formatter.format(testDoc, collectAnalysis);
 		float editDistance = 0;
@@ -102,7 +134,7 @@ public class LeaveOneOutValidator {
 			editDistance = levenshteinDistance(testDoc.content, output);
 		}
 		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
-		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
+//		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
 		if ( saveOutput ) {
 			File dir = new File(outputDir+"/"+language.name);
 			if ( saveOutput ) {
@@ -133,7 +165,7 @@ public class LeaveOneOutValidator {
 			LangDescriptor language = languages[i];
 			String corpus = corpusDirs[i];
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpus, language);
-			Pair<List<Float>,List<Float>> results = validator.validateDocuments(true);
+			Pair<List<Float>,List<Float>> results = validator.validateDocuments(true, true);
 			List<Float> distances = results.a;
 			List<Float> errors = results.b;
 			data.append(language.name+"_dist = "+distances+"\n");
@@ -156,6 +188,7 @@ public class LeaveOneOutValidator {
 				"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
 				"           widths=.35,\n"+
 				"           labels=labels)\n"+
+				"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
 				"ax.set_xlabel(\"Grammar and corpus size\")\n"+
 				"ax.set_ylabel(\"Edit distance / size of file\")\n" +
 				"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+

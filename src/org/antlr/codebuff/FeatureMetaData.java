@@ -6,6 +6,12 @@ public class FeatureMetaData {
 	public FeatureType type;
 	public double mismatchCost;
 
+	public FeatureMetaData(FeatureMetaData old) {
+		this.abbrevHeaderRows = old.abbrevHeaderRows;
+		this.type = old.type;
+		this.mismatchCost = old.mismatchCost;
+	}
+
 	public FeatureMetaData(FeatureType type, String[] abbrevHeaderRows, int mismatchCost) {
 		this.abbrevHeaderRows = abbrevHeaderRows;
 		this.mismatchCost = mismatchCost;

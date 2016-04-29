@@ -73,13 +73,17 @@ public class Formatter {
 	protected CodekNNClassifier nlwsClassifier;
 	protected CodekNNClassifier alignClassifier;
 	protected int k;
+	protected FeatureMetaData[] injectWSFeatures = FEATURES_INJECT_WS;
+	protected FeatureMetaData[] alignmentFeatures = FEATURES_ALIGN;
 
 	protected int line = 1;
 	protected int charPosInLine = 0;
 
-	public Formatter(Corpus corpus, int k) {
+	public Formatter(Corpus corpus, int k, FeatureMetaData[] injectWSFeatures, FeatureMetaData[] alignmentFeatures) {
 		this(corpus);
 		this.k = k;
+		this.injectWSFeatures = injectWSFeatures;
+		this.alignmentFeatures = alignmentFeatures;
 	}
 
 	public Formatter(Corpus corpus) {
@@ -105,8 +109,8 @@ public class Formatter {
 		this.originalTokens = new CodeBuffTokenStream(doc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
 		wipeCharPositionInfoAndWhitespaceTokens(doc.tokens); // all except for first token
-		nlwsClassifier = new CodekNNClassifier(corpus, FEATURES_INJECT_WS);
-		alignClassifier = new CodekNNClassifier(corpus, FEATURES_ALIGN);
+		nlwsClassifier = new CodekNNClassifier(corpus, injectWSFeatures);
+		alignClassifier = new CodekNNClassifier(corpus, alignmentFeatures);
 
 		analysis = new Vector<>(doc.tokens.size());
 		analysis.setSize(doc.tokens.size());

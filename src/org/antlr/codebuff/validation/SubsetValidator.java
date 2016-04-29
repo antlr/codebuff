@@ -72,7 +72,7 @@ public class SubsetValidator {
 		String python =
 			"#\n"+
 			"# AUTO-GENERATED FILE. DO NOT EDIT\n" +
-			"# CodeBuff <version>'<date>'\n" +
+			"# CodeBuff <version> '<date>'\n" +
 			"#\n"+
 			"import numpy as np\n"+
 			"import matplotlib.pyplot as plt\n\n" +
@@ -84,6 +84,7 @@ public class SubsetValidator {
 			"<r> = [<rest(results.(r)); separator={,}>]\n"+
 			"ax.plot(sizes, <r>, label=\"<r>\", marker='o')\n" +
 			"}>\n" +
+			"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
 			"ax.set_xlabel(\"Number n of training files in sample subset corpus\")\n"+
 			"ax.set_ylabel(\"Median Error rate for <trials> trials\")\n" +
 			"ax.set_title(\"Effect of Corpus size on Median Leave-one-out Validation Error Rate\")\n"+
