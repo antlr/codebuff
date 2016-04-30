@@ -16,26 +16,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.version;
 import static org.antlr.codebuff.Trainer.FEATURES_ALIGN;
 import static org.antlr.codebuff.Trainer.FEATURES_ALL;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 
-public class DropWSFeatures {
+// hideous cut/paste from WS version
+public class DropAlignFeatures {
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
 			JAVA_DESCR,
-			JAVA8_DESCR,
-			ANTLR4_DESCR,
+//			JAVA8_DESCR,
+//			ANTLR4_DESCR,
 //			SQLITE_NOISY_DESCR,
-			SQLITE_CLEAN_DESCR,
+//			SQLITE_CLEAN_DESCR,
 //			TSQL_NOISY_DESCR,
-			TSQL_CLEAN_DESCR,
+//			TSQL_CLEAN_DESCR,
 		};
 		testFeatures(languages, false);
 	}
@@ -43,7 +40,7 @@ public class DropWSFeatures {
 	public static void testFeatures(LangDescriptor[] languages, boolean includeAllFeatures) throws Exception {
 		Map<String,Map<String, Float>> langToFeatureMedians = new HashMap<>();
 
-		FeatureMetaData[] whichFeatures = FEATURES_INJECT_WS;
+		FeatureMetaData[] whichFeatures = FEATURES_ALIGN;
 		if ( includeAllFeatures ) {
 			whichFeatures = FEATURES_ALL;
 		}
@@ -62,10 +59,10 @@ public class DropWSFeatures {
 			System.out.println("###### "+language.name);
 			Map<String, Float> featureToErrors = new LinkedHashMap<>();
 
-			FeatureMetaData[] injectWSFeatures = deepCopy(whichFeatures);
+			FeatureMetaData[] alignFeatures = deepCopy(whichFeatures);
 
 			// do it first to get answer with curated features
-			List<Float> errors = getWSErrorRates(language, injectWSFeatures, FEATURES_ALIGN);
+			List<Float> errors = getAlignmentErrorRates(language, FEATURES_INJECT_WS, alignFeatures);
 			Collections.sort(errors);
 			int n = errors.size();
 			float quart = errors.get((int)(0.27*n));
@@ -76,7 +73,7 @@ public class DropWSFeatures {
 
 			// do it again to get answer with all features if they want
 			if ( includeAllFeatures ) {
-				errors = getWSErrorRates(language, FEATURES_ALL, FEATURES_ALIGN);
+				errors = getAlignmentErrorRates(language, FEATURES_INJECT_WS, FEATURES_ALL);
 				Collections.sort(errors);
 				n = errors.size();
 				median = errors.get(n/2);
@@ -84,7 +81,7 @@ public class DropWSFeatures {
 				featureToErrors.put("all-in", median);
 			}
 
-			for (FeatureMetaData feature : injectWSFeatures) {
+			for (FeatureMetaData feature : alignFeatures) {
 				if ( feature==FeatureMetaData.UNUSED || feature.type.toString().startsWith("INFO_") )
 					continue;
 				String name = Utils.join(feature.abbrevHeaderRows, " ");
@@ -93,7 +90,7 @@ public class DropWSFeatures {
 				double saveCost = feature.mismatchCost;
 				feature.mismatchCost = 0; // wack this feature
 
-				errors = getWSErrorRates(language, injectWSFeatures, FEATURES_ALIGN);
+				errors = getAlignmentErrorRates(language, FEATURES_INJECT_WS, alignFeatures);
 				Collections.sort(errors);
 				n = errors.size();
 				median = errors.get(n/2);
@@ -126,9 +123,9 @@ public class DropWSFeatures {
 			"ax.set_xticklabels(labels, rotation=60, fontsize=8)\n"+
 			"plt.xticks(featureIndexes, labels, rotation=60)\n" +
 			"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n\n" +
-			"ax.set_xlabel(\"Inject Whitespace Feature\")\n"+
+			"ax.set_xlabel(\"Alignment Feature\")\n"+
 			"ax.set_ylabel(\"Median Error rate\")\n" +
-			"ax.set_title(\"Effect of Dropping One Feature on Whitespace Decision\\nMedian Leave-one-out Validation Error Rate\")\n"+
+			"ax.set_title(\"Effect of Dropping One Feature on Alignment Decision\\nMedian Leave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
 			"plt.tight_layout()\n" +
 			"plt.show()\n";
@@ -148,33 +145,33 @@ public class DropWSFeatures {
 
 		String code = pythonST.render();
 
-		String fileName = "python/src/drop_one_ws_feature.py";
+		String fileName = "python/src/drop_one_align_feature.py";
 		if ( includeAllFeatures ) {
-			fileName = "python/src/drop_one_ws_feature_from_all.py";
+			fileName = "python/src/drop_one_align_feature_from_all.py";
 		}
 		Utils.writeFile(fileName, code);
 		System.out.println("wrote python code to "+fileName);
 	}
 
-	public static List<Float> getWSErrorRates(LangDescriptor language,
-	                                          FeatureMetaData[] injectWSFeatures,
-	                                          FeatureMetaData[] alignmentFeatures)
+	public static List<Float> getAlignmentErrorRates(LangDescriptor language,
+	                                                 FeatureMetaData[] injectWSFeatures,
+	                                                 FeatureMetaData[] alignmentFeatures)
 		throws Exception
 	{
 		LeaveOneOutValidator validator = new LeaveOneOutValidator(language.corpusDir, language);
 		Triple<List<Formatter>,List<Float>,List<Float>> results =
 			validator.validateDocuments(injectWSFeatures, alignmentFeatures, false, true);
 		List<Formatter> formatters = results.a;
-		List<Float> wsErrorRates = new ArrayList<>(); // don't include align errors
+		List<Float> alignErrorRates = new ArrayList<>(); // don't include align errors
 		for (Formatter formatter : formatters) {
 			ClassificationAnalysis analysis =
 				new ClassificationAnalysis(formatter.testDoc, formatter.getAnalysisPerToken());
-			wsErrorRates.add(analysis.getWSErrorRate());
+			alignErrorRates.add(analysis.getAlignmentErrorRate());
 		}
 //		System.out.println(results.c);
 //		System.out.println("vs");
-//		System.out.println(wsErrorRates);
-		return wsErrorRates;
+//		System.out.println(alignErrorRates);
+		return alignErrorRates;
 	}
 
 	public static FeatureMetaData[] deepCopy(FeatureMetaData[] features) {
