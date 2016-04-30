@@ -16,7 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.version;
 import static org.antlr.codebuff.Trainer.FEATURES_ALIGN;
 import static org.antlr.codebuff.Trainer.FEATURES_ALL;
@@ -27,12 +31,12 @@ public class DropAlignFeatures {
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
 			JAVA_DESCR,
-//			JAVA8_DESCR,
-//			ANTLR4_DESCR,
+			JAVA8_DESCR,
+			ANTLR4_DESCR,
 //			SQLITE_NOISY_DESCR,
-//			SQLITE_CLEAN_DESCR,
+			SQLITE_CLEAN_DESCR,
 //			TSQL_NOISY_DESCR,
-//			TSQL_CLEAN_DESCR,
+			TSQL_CLEAN_DESCR,
 		};
 		testFeatures(languages, false);
 	}

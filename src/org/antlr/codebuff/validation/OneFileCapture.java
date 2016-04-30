@@ -7,39 +7,55 @@ import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.misc.LangDescriptor;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static org.antlr.codebuff.Tool.languages;
+import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
-import static org.antlr.codebuff.misc.BuffUtils.map;
 
 public class OneFileCapture {
-
-	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs) throws Exception {
-		List<String> languageNames = map(languages, l -> l.name);
-		Map<String, Integer> corpusSizes = new HashMap<>();
+	public static void main(String[] args) throws Exception {
+		LangDescriptor[] languages = new LangDescriptor[] {
+			JAVA_DESCR,
+//			JAVA8_DESCR,
+//			ANTLR4_DESCR,
+//			SQLITE_NOISY_DESCR,
+			SQLITE_CLEAN_DESCR,
+//			TSQL_NOISY_DESCR,
+//			TSQL_CLEAN_DESCR,
+		};
 		for (int i = 0; i<languages.length; i++) {
 			LangDescriptor language = languages[i];
-			List<String> filenames = Tool.getFilenames(new File(corpusDirs[i]), language.fileRegex);
+			List<String> filenames = Tool.getFilenames(new File(language.corpusDir), language.fileRegex);
+			List<Float> selfEditDistances = new ArrayList<>();
 			for (String fileName : filenames) {
-				corpusSizes.put(language.name, filenames.size());
-				Corpus corpus = new Corpus(fileName, Tool.ANTLR4_DESCR);
+				Corpus corpus = new Corpus(fileName, language);
 				corpus.train();
 				InputDocument testDoc = Tool.parse(fileName, corpus.language);
 				Formatter formatter = new Formatter(corpus);
 				String output = formatter.format(testDoc, false);
+				//		System.out.println(output);
 				float editDistance = levenshteinDistance(testDoc.content, output);
-				System.out.println("edit distance "+editDistance);
+				System.out.println(fileName+" edit distance "+editDistance);
+				selfEditDistances.add(editDistance);
 			}
-		}
-		return "";
-	}
 
-	public static void main(String[] args) throws Exception {
-		List<String> corpusDirs = map(languages, l -> l.corpusDir);
-		String[] dirs = corpusDirs.toArray(new String[languages.length]);
-		testAllLanguages(languages, dirs);
+			List<Float> corpusEditDistances = new ArrayList<>();
+			for (String fileName : filenames) {
+				Corpus corpus = new Corpus(language.corpusDir, language);
+				corpus.train();
+				InputDocument testDoc = Tool.parse(fileName, corpus.language);
+				Formatter formatter = new Formatter(corpus);
+				String output = formatter.format(testDoc, false);
+				//		System.out.println(output);
+				float editDistance = levenshteinDistance(testDoc.content, output);
+				System.out.println(fileName+"+corpus edit distance "+editDistance);
+				corpusEditDistances.add(editDistance);
+			}
+			// heh this gives info on within-corpus variability. i.e., how good/consistent is my corpus?
+			// those files with big difference are candidates for dropping from corpus or for cleanup.
+			System.out.println(selfEditDistances+"\nvs\n"+corpusEditDistances);
+		}
 	}
 }
