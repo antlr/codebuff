@@ -131,7 +131,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 2),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,

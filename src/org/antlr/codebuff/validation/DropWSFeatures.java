@@ -1,8 +1,9 @@
 package org.antlr.codebuff.validation;
 
 import org.antlr.codebuff.FeatureMetaData;
+import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.misc.LangDescriptor;
-import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.misc.Utils;
 import org.stringtemplate.v4.ST;
 
@@ -33,12 +34,24 @@ public class DropWSFeatures {
 //			TSQL_NOISY_DESCR,
 //			TSQL_CLEAN_DESCR,
 		};
+		testFeatures(languages, false);
+	}
+
+	public static void testFeatures(LangDescriptor[] languages, boolean includeAllFeatures) throws Exception {
 		Map<String,Map<String, Float>> langToFeatureMedians = new HashMap<>();
+
+		FeatureMetaData[] whichFeatures = FEATURES_INJECT_WS;
+		if ( includeAllFeatures ) {
+			whichFeatures = FEATURES_ALL;
+		}
 
 		List<String> labels = new ArrayList<>();
 		labels.add("curated");
-		labels.add("all-in");
-		for (FeatureMetaData f : FEATURES_ALL) {
+		if ( includeAllFeatures ) {
+			labels.add("all-in");
+		}
+		for (FeatureMetaData f : whichFeatures) {
+			if ( f==FeatureMetaData.UNUSED || f.type.toString().startsWith("INFO_") ) continue;
 			labels.add(Utils.join(f.abbrevHeaderRows, " "));
 		}
 
@@ -46,11 +59,10 @@ public class DropWSFeatures {
 			System.out.println("###### "+language.name);
 			Map<String, Float> featureToErrors = new LinkedHashMap<>();
 
-			FeatureMetaData[] injectWSFeatures = deepCopy(FEATURES_ALL);
-			FeatureMetaData[] alignmentFeatures = deepCopy(FEATURES_ALIGN);
+			FeatureMetaData[] injectWSFeatures = deepCopy(whichFeatures);
 
 			// do it first to get answer with curated features
-			List<Float> errors = getErrorRates(language, FEATURES_INJECT_WS, alignmentFeatures);
+			List<Float> errors = getWSErrorRates(language, injectWSFeatures, FEATURES_ALIGN);
 			Collections.sort(errors);
 			int n = errors.size();
 			float quart = errors.get((int)(0.27*n));
@@ -59,13 +71,15 @@ public class DropWSFeatures {
 			System.out.println("curated error median "+median);
 			featureToErrors.put("curated", median);
 
-			// do it again to get answer with all features
-			errors = getErrorRates(language, FEATURES_ALL, alignmentFeatures);
-			Collections.sort(errors);
-			n = errors.size();
-			median = errors.get(n/2);
-			System.out.println("all-in error median "+median);
-			featureToErrors.put("all-in", median);
+			// do it again to get answer with all features if they want
+			if ( includeAllFeatures ) {
+				errors = getWSErrorRates(language, FEATURES_ALL, FEATURES_ALIGN);
+				Collections.sort(errors);
+				n = errors.size();
+				median = errors.get(n/2);
+				System.out.println("all-in error median "+median);
+				featureToErrors.put("all-in", median);
+			}
 
 			for (FeatureMetaData feature : injectWSFeatures) {
 				if ( feature==FeatureMetaData.UNUSED || feature.type.toString().startsWith("INFO_") )
@@ -76,7 +90,7 @@ public class DropWSFeatures {
 				double saveCost = feature.mismatchCost;
 				feature.mismatchCost = 0; // wack this feature
 
-				errors = getErrorRates(language, injectWSFeatures, alignmentFeatures);
+				errors = getWSErrorRates(language, injectWSFeatures, FEATURES_ALIGN);
 				Collections.sort(errors);
 				n = errors.size();
 				median = errors.get(n/2);
@@ -132,21 +146,32 @@ public class DropWSFeatures {
 		String code = pythonST.render();
 
 		String fileName = "python/src/drop_one_feature.py";
+		if ( includeAllFeatures ) {
+			fileName = "python/src/drop_one_feature_from_all.py";
+		}
 		Utils.writeFile(fileName, code);
 		System.out.println("wrote python code to "+fileName);
 	}
 
-	public static List<Float> getErrorRates(LangDescriptor language,
-	                                        FeatureMetaData[] injectWSFeatures,
-	                                        FeatureMetaData[] alignmentFeatures)
+	public static List<Float> getWSErrorRates(LangDescriptor language,
+	                                          FeatureMetaData[] injectWSFeatures,
+	                                          FeatureMetaData[] alignmentFeatures)
 		throws Exception
 	{
 		LeaveOneOutValidator validator = new LeaveOneOutValidator(language.corpusDir, language);
-		Pair<List<Float>,List<Float>> results =
+		Triple<List<Formatter>,List<Float>,List<Float>> results =
 			validator.validateDocuments(injectWSFeatures, alignmentFeatures, false, true);
-		List<Float> errorRates = results.b;
-//		System.out.println(errorRates);
-		return errorRates;
+		List<Formatter> formatters = results.a;
+		List<Float> wsErrorRates = new ArrayList<>(); // don't include align errors
+		for (Formatter formatter : formatters) {
+			ClassificationAnalysis analysis =
+				new ClassificationAnalysis(formatter.testDoc, formatter.getAnalysisPerToken());
+			wsErrorRates.add(analysis.getWSErrorRate());
+		}
+		System.out.println(results.c);
+		System.out.println("vs");
+		System.out.println(wsErrorRates);
+		return wsErrorRates;
 	}
 
 	public static FeatureMetaData[] deepCopy(FeatureMetaData[] features) {

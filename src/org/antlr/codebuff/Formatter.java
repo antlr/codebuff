@@ -49,35 +49,37 @@ public class Formatter {
 	public static final int COL_ALARM_THRESHOLD = 80;
 	public static final int DEFAULT_K = 23;
 
-	protected final Corpus corpus;
+	public final Corpus corpus;
 
-	protected StringBuilder output;
-	protected CodeBuffTokenStream originalTokens; // copy of tokens with line/col info
-	protected List<Token> realTokens;             // just the real tokens from tokens
+	public StringBuilder output;
+	public CodeBuffTokenStream originalTokens; // copy of tokens with line/col info
+	public List<Token> realTokens;             // just the real tokens from tokens
 
 	/** A map from real token to node in the parse tree */
-	protected Map<Token, TerminalNode> tokenToNodeMap = null;
+	public Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	/** analysis[i] is info about what we decided for token index i from
 	 *  original stream (not index into real token list)
 	 */
-	protected Vector<TokenPositionAnalysis> analysis;
+	public Vector<TokenPositionAnalysis> analysis;
 
 	/** Collected for formatting (not training) by SplitOversizeLists.
 	 *  Training finds split lists and normal lists. This uses list len
 	 *  (in char units) to decide split or not.  If size is closest to split median,
 	 *  we claim oversize list.
 	 */
-	protected Map<Token,Pair<Boolean,Integer>> tokenToListInfo;
+	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo;
 
-	protected CodekNNClassifier nlwsClassifier;
-	protected CodekNNClassifier alignClassifier;
-	protected int k;
-	protected FeatureMetaData[] injectWSFeatures = FEATURES_INJECT_WS;
-	protected FeatureMetaData[] alignmentFeatures = FEATURES_ALIGN;
+	public CodekNNClassifier nlwsClassifier;
+	public CodekNNClassifier alignClassifier;
+	public int k;
+	public FeatureMetaData[] injectWSFeatures = FEATURES_INJECT_WS;
+	public FeatureMetaData[] alignmentFeatures = FEATURES_ALIGN;
 
-	protected int line = 1;
-	protected int charPosInLine = 0;
+	public InputDocument testDoc;
+
+	public int line = 1;
+	public int charPosInLine = 0;
 
 	public Formatter(Corpus corpus, int k, FeatureMetaData[] injectWSFeatures, FeatureMetaData[] alignmentFeatures) {
 		this(corpus);
@@ -102,39 +104,39 @@ public class Formatter {
 
 	/** Format the document. Does not affect/alter doc. */
 	public String format(InputDocument doc, boolean collectAnalysis) throws Exception {
-		doc = InputDocument.dup(doc);
+		this.testDoc = InputDocument.dup(doc);
 		output = new StringBuilder();
-		this.realTokens = getRealTokens(doc.tokens);
+		this.realTokens = getRealTokens(testDoc.tokens);
 		// make a complete copy of token stream and token objects
-		this.originalTokens = new CodeBuffTokenStream(doc.tokens);
+		this.originalTokens = new CodeBuffTokenStream(testDoc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
-		wipeCharPositionInfoAndWhitespaceTokens(doc.tokens); // all except for first token
+		wipeCharPositionInfoAndWhitespaceTokens(testDoc.tokens); // all except for first token
 		nlwsClassifier = new CodekNNClassifier(corpus, injectWSFeatures);
 		alignClassifier = new CodekNNClassifier(corpus, alignmentFeatures);
 
-		analysis = new Vector<>(doc.tokens.size());
-		analysis.setSize(doc.tokens.size());
+		analysis = new Vector<>(testDoc.tokens.size());
+		analysis.setSize(testDoc.tokens.size());
 
 		if ( tokenToNodeMap == null ) {
-			tokenToNodeMap = indexTree(doc.tree);
+			tokenToNodeMap = indexTree(testDoc.tree);
 		}
 
-		doc.tokens.seek(0);
-		WritableToken firstToken = (WritableToken)doc.tokens.LT(1);
+		testDoc.tokens.seek(0);
+		WritableToken firstToken = (WritableToken)testDoc.tokens.LT(1);
 		String prefix = originalTokens.getText(Interval.of(0, firstToken.getTokenIndex())); // gets any comments in front + first real token
 		charPosInLine = firstToken.getCharPositionInLine()+firstToken.getText().length()+1; // start where first token left off
 		line = Tool.count(prefix, '\n') + 1;
 		output.append(prefix);
 
 		// first identify oversize lists with separators
-		IdentifyOversizeLists splitter = new IdentifyOversizeLists(corpus, doc.tokens, tokenToNodeMap);
-		ParseTreeWalker.DEFAULT.walk(splitter, doc.tree);
+		IdentifyOversizeLists splitter = new IdentifyOversizeLists(corpus, testDoc.tokens, tokenToNodeMap);
+		ParseTreeWalker.DEFAULT.walk(splitter, testDoc.tree);
 		tokenToListInfo = splitter.tokenToListInfo;
 
-		realTokens = getRealTokens(doc.tokens);
+		realTokens = getRealTokens(testDoc.tokens);
 		for (int i = Trainer.ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
-			processToken(doc, i, tokenIndexInStream, collectAnalysis);
+			processToken(i, tokenIndexInStream, collectAnalysis);
 		}
 
 		return output.toString();
@@ -155,14 +157,14 @@ public class Formatter {
 		return editDistance;
 	}
 
-	public void processToken(InputDocument doc, int indexIntoRealTokens, int tokenIndexInStream, boolean collectAnalysis) {
-		CommonToken curToken = (CommonToken)doc.tokens.get(tokenIndexInStream);
+	public void processToken(int indexIntoRealTokens, int tokenIndexInStream, boolean collectAnalysis) {
+		CommonToken curToken = (CommonToken)testDoc.tokens.get(tokenIndexInStream);
 		String tokText = curToken.getText();
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
 		emitCommentsToTheLeft(tokenIndexInStream);
 
-		int[] features = getFeatures(doc, tokenIndexInStream);
+		int[] features = getFeatures(testDoc, tokenIndexInStream);
 		int[] featuresForAlign = new int[features.length];
 		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
@@ -192,7 +194,7 @@ public class Formatter {
 			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
 			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
-			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(corpus, doc, node, line);
+			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(corpus, testDoc, node, line);
 
 			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.align, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
@@ -200,7 +202,7 @@ public class Formatter {
 				align(alignOrIndent, node);
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
-				indent(doc, alignOrIndent, node);
+				indent(alignOrIndent, node);
 			}
 		}
 		else {
@@ -215,7 +217,7 @@ public class Formatter {
 		curToken.setCharPositionInLine(charPosInLine);
 
 		TokenPositionAnalysis tokenPositionAnalysis =
-			getTokenAnalysis(doc, features, featuresForAlign, tokenIndexInStream, injectNL_WS, alignOrIndent, collectAnalysis);
+			getTokenAnalysis(features, featuresForAlign, tokenIndexInStream, injectNL_WS, alignOrIndent, collectAnalysis);
 
 		analysis.set(tokenIndexInStream, tokenPositionAnalysis);
 
@@ -228,9 +230,9 @@ public class Formatter {
 		charPosInLine += n;
 	}
 
-	public void indent(InputDocument doc, int alignOrIndent, TerminalNode node) {
+	public void indent(int alignOrIndent, TerminalNode node) {
 		int tokenIndexInStream = node.getSymbol().getTokenIndex();
-		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(doc.tokens, tokenIndexInStream, line);
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(testDoc.tokens, tokenIndexInStream, line);
 		Token firstTokenOnPrevLine = null;
 		if ( tokensOnPreviousLine.size()>0 ) {
 			firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
@@ -376,13 +378,12 @@ public class Formatter {
 		}
 	}
 
-	public TokenPositionAnalysis getTokenAnalysis(InputDocument doc,
-	                                              int[] features, int[] featuresForAlign,
+	public TokenPositionAnalysis getTokenAnalysis(int[] features, int[] featuresForAlign,
 	                                              int tokenIndexInStream,
 	                                              int injectNL_WS, int alignOrIndent,
 	                                              boolean collectAnalysis)
 	{
-		CommonToken curToken = (CommonToken)doc.tokens.get(tokenIndexInStream);
+		CommonToken curToken = (CommonToken)testDoc.tokens.get(tokenIndexInStream);
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
 		int actualWS = Trainer.getInjectWSCategory(originalTokens, tokenIndexInStream);
@@ -407,12 +408,12 @@ public class Formatter {
 		String alignAnalysis = "";
 		if ( collectAnalysis ) { // this can be slow
 			newlineAnalysis = newlinePredictionString+"\n"+
-				nlwsClassifier.getPredictionAnalysis(doc, k, features, corpus.injectWhitespace,
+				nlwsClassifier.getPredictionAnalysis(testDoc, k, features, corpus.injectWhitespace,
 				                                     MAX_WS_CONTEXT_DIFF_THRESHOLD);
 			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 				alignAnalysis =
 					alignPredictionString+"\n"+
-						alignClassifier.getPredictionAnalysis(doc, k, featuresForAlign, corpus.align,
+						alignClassifier.getPredictionAnalysis(testDoc, k, featuresForAlign, corpus.align,
 						                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 			}
 		}

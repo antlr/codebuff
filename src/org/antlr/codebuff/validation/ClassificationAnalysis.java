@@ -180,4 +180,12 @@ public class ClassificationAnalysis {
 	public float getErrorRate() {
 		return ((float)n_ws_errors+n_align_errors) / (n_ws_decisions+n_align_decisions);
 	}
+
+	public float getWSErrorRate() {
+		return ((float)n_ws_errors)/n_ws_decisions;
+	}
+
+	public float getAlignmentErrorRate() {
+		return ((float)n_align_errors)/n_align_decisions;
+	}
 }

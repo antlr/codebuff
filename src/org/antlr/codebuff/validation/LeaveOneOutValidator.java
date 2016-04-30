@@ -8,7 +8,6 @@ import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.LangDescriptor;
-import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.misc.Utils;
 
@@ -62,7 +61,7 @@ public class LeaveOneOutValidator {
 		                Formatter.DEFAULT_K, saveOutput, true, collectAnalysis);
 	}
 
-	public Pair<List<Float>,List<Float>> validateDocuments(boolean computeEditDistance,
+	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(boolean computeEditDistance,
 	                                                       boolean saveOutput)
 		throws Exception
 	{
@@ -70,7 +69,7 @@ public class LeaveOneOutValidator {
 		                         computeEditDistance, saveOutput);
 	}
 
-	public Pair<List<Float>,List<Float>> validateDocuments(FeatureMetaData[] injectWSFeatures,
+	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(FeatureMetaData[] injectWSFeatures,
 	                                                       FeatureMetaData[] alignmentFeatures,
 	                                                       boolean computeEditDistance,
 	                                                       boolean saveOutput)
@@ -78,6 +77,7 @@ public class LeaveOneOutValidator {
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
+		List<Formatter> formatters = new ArrayList<>();
 		List<Float> distances = new ArrayList<>();
 		List<Float> errors = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
@@ -85,12 +85,13 @@ public class LeaveOneOutValidator {
 				validate(language, documents, documents.get(i).fileName,
 				         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
 				         saveOutput, computeEditDistance, false);
+			formatters.add(results.a);
 			float editDistance = results.b;
 			distances.add(editDistance);
 			Float errorRate = results.c;
 			errors.add(errorRate);
 		}
-		return new Pair<>(distances,errors);
+		return new Triple<>(formatters,distances,errors);
 	}
 
 	public static Triple<Formatter,Float,Float> validate(LangDescriptor language,
@@ -165,9 +166,10 @@ public class LeaveOneOutValidator {
 			LangDescriptor language = languages[i];
 			String corpus = corpusDirs[i];
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpus, language);
-			Pair<List<Float>,List<Float>> results = validator.validateDocuments(true, true);
-			List<Float> distances = results.a;
-			List<Float> errors = results.b;
+			Triple<List<Formatter>,List<Float>,List<Float>> results = validator.validateDocuments(true, true);
+			List<Formatter> formatters = results.a;
+			List<Float> distances = results.b;
+			List<Float> errors = results.c;
 			data.append(language.name+"_dist = "+distances+"\n");
 			data.append(language.name+"_err = "+errors+"\n");
 		}
