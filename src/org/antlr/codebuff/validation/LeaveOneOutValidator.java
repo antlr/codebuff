@@ -70,9 +70,9 @@ public class LeaveOneOutValidator {
 	}
 
 	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(FeatureMetaData[] injectWSFeatures,
-	                                                       FeatureMetaData[] alignmentFeatures,
-	                                                       boolean computeEditDistance,
-	                                                       boolean saveOutput)
+	                                                                         FeatureMetaData[] alignmentFeatures,
+	                                                                         boolean computeEditDistance,
+	                                                                         boolean saveOutput)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
