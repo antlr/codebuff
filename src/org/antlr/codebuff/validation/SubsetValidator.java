@@ -62,8 +62,8 @@ public class SubsetValidator {
 			TSQL_CLEAN_DESCR,
 		};
 
-		int maxNumFiles = 14;
-		int trials = 30;
+		int maxNumFiles = 20;
+		int trials = 50;
 		Map<String,float[]> results = new HashMap<>();
 		for (LangDescriptor language : languages) {
 			float[] medians = getMedianErrorRates(language, maxNumFiles, trials);
