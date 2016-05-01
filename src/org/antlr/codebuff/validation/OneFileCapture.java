@@ -4,23 +4,25 @@ import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.Tool;
+import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 
 public class OneFileCapture {
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-			JAVA_DESCR,
+//			JAVA_DESCR,
 //			JAVA8_DESCR,
 //			ANTLR4_DESCR,
-//			SQLITE_NOISY_DESCR,
+			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
 //			TSQL_NOISY_DESCR,
 //			TSQL_CLEAN_DESCR,
@@ -56,6 +58,13 @@ public class OneFileCapture {
 			// heh this gives info on within-corpus variability. i.e., how good/consistent is my corpus?
 			// those files with big difference are candidates for dropping from corpus or for cleanup.
 			System.out.println(selfEditDistances+"\nvs\n"+corpusEditDistances);
+			List<Double> diffs = BuffUtils.diffFloats(corpusEditDistances, selfEditDistances);
+			System.out.println(diffs);
+			Collections.sort(selfEditDistances);
+			Collections.sort(corpusEditDistances);
+			float selfMedian = selfEditDistances.get(selfEditDistances.size()/2);
+			float corpusMedian = corpusEditDistances.get(corpusEditDistances.size()/2);
+			System.out.println(selfMedian+", "+corpusMedian);
 		}
 	}
 }

@@ -89,6 +89,7 @@ public class SubsetValidator {
 			"ax.set_ylabel(\"Median Error rate for <trials> trials\")\n" +
 			"ax.set_title(\"Effect of Corpus size on Median Leave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
+			"plt.tight_layout()\n" +
 			"fig.savefig('images/subset_validator.pdf', format='pdf')\n"+
 			"plt.show()\n";
 		ST pythonST = new ST(python);

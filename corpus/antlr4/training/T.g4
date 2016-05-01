@@ -1,0 +1,3 @@
+grammar T;
+
+a : X ;

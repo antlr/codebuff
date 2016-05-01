@@ -190,10 +190,13 @@ public class LeaveOneOutValidator {
 				"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
 				"           widths=.35,\n"+
 				"           labels=labels)\n"+
+				"ax.set_xticklabels(labels, rotation=60, fontsize=8)\n"+
+				"plt.xticks(range(1,len(labels)+1), labels, rotation=60)\n" +
 				"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
 				"ax.set_xlabel(\"Grammar and corpus size\")\n"+
 				"ax.set_ylabel(\"Edit distance / size of file\")\n" +
 				"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
+				"plt.tight_layout()\n" +
 				"fig.savefig('images/leave_one_out.pdf', format='pdf')\n"+
 				"plt.show()\n";
 		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr);

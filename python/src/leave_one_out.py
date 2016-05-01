@@ -27,8 +27,13 @@ ax.boxplot(language_data,
            whis=[10, 90], # 10 and 90 % whiskers
            widths=.35,
            labels=labels)
+
+ax.set_xticklabels(labels, rotation=60, fontsize=8)
+plt.xticks(range(1,len(labels)+1), labels, rotation=60)
+
 ax.set_xlabel("Grammar and corpus size")
 ax.set_ylabel("Edit distance / size of file")
 ax.set_title("Leave-one-out Validation Using Edit Distance / Error Rate\nBetween Formatted and Original File")
-fig.savefig("leave_one_out.pdf", format='pdf')
+plt.tight_layout()
+fig.savefig("images/leave_one_out.pdf", format='pdf')
 plt.show()
