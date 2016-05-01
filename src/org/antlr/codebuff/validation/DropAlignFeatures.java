@@ -132,7 +132,12 @@ public class DropAlignFeatures {
 			"ax.set_title(\"Effect of Dropping One Feature on Alignment Decision\\nMedian Leave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
 			"plt.tight_layout()\n" +
+			"fig.savefig(\"images/drop_one_align_feature"+(includeAllFeatures?"_from_all":"")+".pdf\", format='pdf')\n" +
 			"plt.show()\n";
+		String fileName = "python/src/drop_one_align_feature.py";
+		if ( includeAllFeatures ) {
+			fileName = "python/src/drop_one_align_feature_from_all.py";
+		}
 		ST pythonST = new ST(python);
 		Map<String,Collection<Float>> langToMedians = new HashMap<>();
 		int numFeatures = 0;
@@ -149,10 +154,6 @@ public class DropAlignFeatures {
 
 		String code = pythonST.render();
 
-		String fileName = "python/src/drop_one_align_feature.py";
-		if ( includeAllFeatures ) {
-			fileName = "python/src/drop_one_align_feature_from_all.py";
-		}
 		Utils.writeFile(fileName, code);
 		System.out.println("wrote python code to "+fileName);
 	}

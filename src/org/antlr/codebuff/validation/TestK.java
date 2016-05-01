@@ -108,6 +108,7 @@ public class TestK extends LeaveOneOutValidator {
 			"ax.set_ylabel(\"Error rate\")\n" +
 			"ax.set_title(\"k Nearest Neighbors vs\\nLeave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
+			"fig.savefig('images/vary_k.pdf', format='pdf')\n"+
 			"plt.show()\n";
 		String code = String.format(python, Tool.version, new Date(), data, ks, plot);
 

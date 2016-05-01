@@ -30,4 +30,5 @@ ax.boxplot(language_data,
 ax.set_xlabel("Grammar and corpus size")
 ax.set_ylabel("Edit distance / size of file")
 ax.set_title("Leave-one-out Validation Using Edit Distance / Error Rate\nBetween Formatted and Original File")
+fig.savefig("leave_one_out.pdf", format='pdf')
 plt.show()

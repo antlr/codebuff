@@ -131,6 +131,7 @@ public class DropWSFeatures {
 			"ax.set_title(\"Effect of Dropping One Feature on Whitespace Decision\\nMedian Leave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
 			"plt.tight_layout()\n" +
+			"fig.savefig(\"images/drop_one_ws_feature"+(includeAllFeatures?"_from_all":"")+".pdf\", format='pdf')\n" +
 			"plt.show()\n";
 		ST pythonST = new ST(python);
 		Map<String,Collection<Float>> langToMedians = new HashMap<>();

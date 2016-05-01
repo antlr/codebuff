@@ -101,4 +101,13 @@ public class BuffUtils {
 		}
 		return sum;
 	}
+
+	public static List<Double> diffFloats(List<Float> a, List<Float> b) {
+		List<Double> diffs = new ArrayList<>();
+		for (int i = 0; i<a.size(); i++) {
+			diffs.add((double)a.get(i) - b.get(i));
+		}
+		return diffs;
+	}
+
 }

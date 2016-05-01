@@ -194,6 +194,7 @@ public class LeaveOneOutValidator {
 				"ax.set_xlabel(\"Grammar and corpus size\")\n"+
 				"ax.set_ylabel(\"Edit distance / size of file\")\n" +
 				"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
+				"fig.savefig('images/leave_one_out.pdf', format='pdf')\n"+
 				"plt.show()\n";
 		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr);
 	}
