@@ -158,7 +158,7 @@ public class Tool {
 			corpus.train();
 			testDoc = parse(testFilename, lang);
 			start = System.nanoTime();
-			Formatter formatter = new Formatter(corpus);
+			Formatter formatter = new Formatter(corpus,lang.indentSize);
 			output = formatter.format(testDoc, collectAnalysis);
 			stop = System.nanoTime();
 			analysisPerToken = formatter.getAnalysisPerToken();
@@ -259,7 +259,7 @@ public class Tool {
 	public static InputDocument parse(String fileName, LangDescriptor language)
 		throws Exception
 	{
-		String content = load(fileName, language.tabSize);
+		String content = load(fileName, language.indentSize);
 		return parse(fileName, content, language);
 	}
 

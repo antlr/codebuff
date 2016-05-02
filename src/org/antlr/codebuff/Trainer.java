@@ -200,6 +200,7 @@ public class Trainer {
 	protected InputDocument doc;
 	protected ParserRuleContext root;
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
+	protected int indentSize;
 
 	// training results:
 	protected Vector<int[]> featureVectors;
@@ -209,11 +210,12 @@ public class Trainer {
 	/** Make it fast to get a node for a specific token */
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
-	public Trainer(Corpus corpus, InputDocument doc) {
+	public Trainer(Corpus corpus, InputDocument doc, int indentSize) {
 		this.corpus = corpus;
 		this.doc = doc;
 		this.root = doc.tree;
 		this.tokens = doc.tokens;
+		this.indentSize = indentSize;
 	}
 
 	public void computeFeatureVectors() {
@@ -251,7 +253,7 @@ public class Trainer {
 		int aligned = CAT_NO_ALIGNMENT ;
 		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 			TerminalNode node = tokenToNodeMap.get(curToken);
-			aligned = getAlignmentCategory(tokens, node);
+			aligned = getAlignmentCategory(tokens, node, indentSize);
 		}
 
 		// track feature -> injectws, align decisions for token i
@@ -285,7 +287,7 @@ public class Trainer {
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
-	public static int getAlignmentCategory(CommonTokenStream tokens, TerminalNode node) {
+	public static int getAlignmentCategory(CommonTokenStream tokens, TerminalNode node, int indentSize) {
 		Pair<Integer,Integer> alignInfo = null;
 		Pair<Integer,Integer> indentInfo = null;
 
@@ -310,7 +312,7 @@ public class Trainer {
 
 		// perhaps we are indented as well?
 		if ( columnDelta!=0 ) {
-			int indentedFromPos = curToken.getCharPositionInLine()-Formatter.INDENT_LEVEL;
+			int indentedFromPos = curToken.getCharPositionInLine()-indentSize;
 			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
 			if ( pair!=null ) {
 //				System.out.printf("INDENT %s %s i=%d %x %s\n",

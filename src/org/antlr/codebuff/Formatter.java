@@ -44,7 +44,6 @@ import static org.antlr.codebuff.Trainer.setListInfoFeatures;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 public class Formatter {
-	public static final int INDENT_LEVEL = 4;
 	public static final int WIDE_LIST_THRESHOLD = 120; // anything this big is definitely "oversize list"
 	public static final int COL_ALARM_THRESHOLD = 80;
 	public static final int DEFAULT_K = 23;
@@ -78,20 +77,25 @@ public class Formatter {
 
 	public InputDocument testDoc;
 
+	public int indentSize; // size in spaces of an indentation
+
 	public int line = 1;
 	public int charPosInLine = 0;
 
-	public Formatter(Corpus corpus, int k, FeatureMetaData[] injectWSFeatures, FeatureMetaData[] alignmentFeatures) {
-		this(corpus);
+	public Formatter(Corpus corpus, int indentSize, int k,
+	                 FeatureMetaData[] injectWSFeatures, FeatureMetaData[] alignmentFeatures)
+	{
+		this(corpus, indentSize);
 		this.k = k;
 		this.injectWSFeatures = injectWSFeatures;
 		this.alignmentFeatures = alignmentFeatures;
 	}
 
-	public Formatter(Corpus corpus) {
+	public Formatter(Corpus corpus, int indentSize) {
 		this.corpus = corpus;
 //		k = (int)Math.sqrt(corpus.X.size());
 		k = DEFAULT_K;
+		this.indentSize = indentSize;
 	}
 
 	public String getOutput() {
@@ -240,7 +244,7 @@ public class Formatter {
 
 		if ( alignOrIndent==CAT_INDENT ) {
 			if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
-				int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+INDENT_LEVEL;
+				int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+indentSize;
 				charPosInLine = indentedCol;
 				output.append(Tool.spaces(indentedCol));
 			}
@@ -268,7 +272,7 @@ public class Formatter {
 			}
 		}
 		if ( start!=null ) {
-			int indentCol = start.getCharPositionInLine()+INDENT_LEVEL;
+			int indentCol = start.getCharPositionInLine()+indentSize;
 			charPosInLine = indentCol;
 			output.append(Tool.spaces(indentCol));
 		}
@@ -395,7 +399,7 @@ public class Formatter {
 			String.format("### line %d: predicted %s actual %s",
 			              curToken.getLine(), wsDisplay, actualWSNL);
 
-		int actualAlignCategory = Trainer.getAlignmentCategory(originalTokens, node);
+		int actualAlignCategory = Trainer.getAlignmentCategory(originalTokens, node, indentSize);
 		String actualAlignDisplay = getAlignCategoryStr(actualAlignCategory);
 
 		String alignPredictionString =

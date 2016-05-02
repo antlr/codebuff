@@ -127,7 +127,7 @@ public class LeaveOneOutValidator {
 		InputDocument testDoc = excluded.get(0);
 		Corpus corpus = new Corpus(others, language);
 		corpus.train();
-		Formatter formatter = new Formatter(corpus, k, injectWSFeatures, alignmentFeatures);
+		Formatter formatter = new Formatter(corpus, language.indentSize, k, injectWSFeatures, alignmentFeatures);
 		InputDocument originalDoc = testDoc;
 		String output = formatter.format(testDoc, collectAnalysis);
 		float editDistance = 0;

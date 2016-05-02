@@ -151,7 +151,7 @@ public class SubsetValidator {
 		Corpus corpus = new Corpus(documents, language);
 		corpus.train();
 //		System.out.printf("%d feature vectors\n", corpus.featureVectors.size());
-		Formatter formatter = new Formatter(corpus);
+		Formatter formatter = new Formatter(corpus, language.indentSize);
 		String output = formatter.format(testDoc, false);
 		float editDistance = 0;
 		if ( computeEditDistance ) {

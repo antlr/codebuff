@@ -35,7 +35,7 @@ public class OneFileCapture {
 				Corpus corpus = new Corpus(fileName, language);
 				corpus.train();
 				InputDocument testDoc = Tool.parse(fileName, corpus.language);
-				Formatter formatter = new Formatter(corpus);
+				Formatter formatter = new Formatter(corpus, language.indentSize);
 				String output = formatter.format(testDoc, false);
 				//		System.out.println(output);
 				float editDistance = levenshteinDistance(testDoc.content, output);
@@ -48,7 +48,7 @@ public class OneFileCapture {
 				Corpus corpus = new Corpus(language.corpusDir, language);
 				corpus.train();
 				InputDocument testDoc = Tool.parse(fileName, corpus.language);
-				Formatter formatter = new Formatter(corpus);
+				Formatter formatter = new Formatter(corpus, language.indentSize);
 				String output = formatter.format(testDoc, false);
 				//		System.out.println(output);
 				float editDistance = levenshteinDistance(testDoc.content, output);

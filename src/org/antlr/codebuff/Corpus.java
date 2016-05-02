@@ -72,7 +72,7 @@ public class Corpus {
 	public void train(boolean shuffleFeatureVectors) throws Exception {
 		collectTokenPairsAndSplitListInfo();
 
-		processSampleDocs();
+		trainOnSampleDocs();
 
 		if ( shuffleFeatureVectors ) randomShuffleInPlace();
 
@@ -130,7 +130,7 @@ public class Corpus {
 		}
 	}
 
-	public void processSampleDocs() throws Exception {
+	public void trainOnSampleDocs() throws Exception {
 		documentsPerExemplar = new ArrayList<>();
 		featureVectors = new ArrayList<>();
 		injectWhitespace = new ArrayList<>();
@@ -155,7 +155,7 @@ public class Corpus {
 
 	/** Parse document, save feature vectors to the doc */
 	public Triple<List<int[]>,List<Integer>,List<Integer>> process(InputDocument doc) {
-		Trainer trainer = new Trainer(this, doc);
+		Trainer trainer = new Trainer(this, doc, language.indentSize);
 		trainer.computeFeatureVectors();
 
 		Triple<List<int[]>,List<Integer>,List<Integer>> results =

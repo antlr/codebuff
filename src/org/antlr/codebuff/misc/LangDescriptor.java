@@ -10,7 +10,7 @@ public class LangDescriptor {
 	public Class<? extends Lexer> lexerClass;
 	public Class<? extends Parser> parserClass;
 	public String startRuleName;
-	public int tabSize;
+	public int indentSize;
 
 	public LangDescriptor(String name,
 	                      String corpusDir,
@@ -18,7 +18,7 @@ public class LangDescriptor {
 	                      Class<? extends Lexer> lexerClass,
 	                      Class<? extends Parser> parserClass,
 	                      String startRuleName,
-	                      int tabSize)
+	                      int indentSize)
 	{
 		this.name = name;
 		this.corpusDir = corpusDir;
@@ -26,6 +26,6 @@ public class LangDescriptor {
 		this.lexerClass = lexerClass;
 		this.parserClass = parserClass;
 		this.startRuleName = startRuleName;
-		this.tabSize = tabSize;
+		this.indentSize = indentSize;
 	}
 }
