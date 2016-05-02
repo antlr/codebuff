@@ -1,7 +1,8 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.2 'Sat Apr 30 15:33:33 PDT 2016'
+# CodeBuff 1.4.2 'Mon May 02 11:38:25 PDT 2016'
 #
+import numpy as np
 import matplotlib.pyplot as plt
 
 fig = plt.figure()
@@ -25,5 +26,5 @@ ax.set_ylabel("Median Error rate for 50 trials")
 ax.set_title("Effect of Corpus size on Median Leave-one-out Validation Error Rate")
 plt.legend()
 plt.tight_layout()
-fig.savefig("subset_validator.pdf", format='pdf')
+fig.savefig('images/subset_validator.pdf', format='pdf')
 plt.show()

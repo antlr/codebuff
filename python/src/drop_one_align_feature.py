@@ -1,7 +1,8 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.2 'Sat Apr 30 12:46:41 PDT 2016'
+# CodeBuff 1.4.2 'Mon May 02 12:11:25 PDT 2016'
 #
+import numpy as np
 import matplotlib.pyplot as plt
 
 fig = plt.figure()
@@ -29,5 +30,5 @@ ax.set_ylabel("Median Error rate")
 ax.set_title("Effect of Dropping One Feature on Alignment Decision\nMedian Leave-one-out Validation Error Rate")
 plt.legend()
 plt.tight_layout()
-fig.savefig("drop_one_align_feature.pdf", format='pdf')
+fig.savefig("images/drop_one_align_feature.pdf", format='pdf')
 plt.show()
