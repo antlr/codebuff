@@ -65,7 +65,7 @@ public class LeaveOneOutValidator {
 	                                                       boolean saveOutput)
 		throws Exception
 	{
-		return validateDocuments(Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_ALIGN,
+		return validateDocuments(Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_HPOS,
 		                         computeEditDistance, saveOutput);
 	}
 
@@ -104,7 +104,7 @@ public class LeaveOneOutValidator {
 		throws Exception
 	{
 		return validate(language, documents, fileToExclude,
-		                k, Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_ALIGN,
+		                k, Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_HPOS,
 		                saveOutput, computeEditDistance, collectAnalysis);
 	}
 

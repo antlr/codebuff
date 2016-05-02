@@ -22,7 +22,7 @@ import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.version;
-import static org.antlr.codebuff.Trainer.FEATURES_ALIGN;
+import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_ALL;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 
@@ -44,7 +44,7 @@ public class DropAlignFeatures {
 	public static void testFeatures(LangDescriptor[] languages, boolean includeAllFeatures) throws Exception {
 		Map<String,Map<String, Float>> langToFeatureMedians = new HashMap<>();
 
-		FeatureMetaData[] whichFeatures = FEATURES_ALIGN;
+		FeatureMetaData[] whichFeatures = FEATURES_HPOS;
 		if ( includeAllFeatures ) {
 			whichFeatures = FEATURES_ALL;
 		}

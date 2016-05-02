@@ -27,7 +27,7 @@ import static org.antlr.codebuff.Trainer.CAT_INDENT_FROM_ANCESTOR_CHILD;
 import static org.antlr.codebuff.Trainer.CAT_INJECT_NL;
 import static org.antlr.codebuff.Trainer.CAT_INJECT_WS;
 import static org.antlr.codebuff.Trainer.CAT_NO_ALIGNMENT;
-import static org.antlr.codebuff.Trainer.FEATURES_ALIGN;
+import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.Trainer.INDEX_FIRST_ON_LINE;
 import static org.antlr.codebuff.Trainer.INDEX_MATCHING_TOKEN_DIFF_LINE;
@@ -73,7 +73,7 @@ public class Formatter {
 	public CodekNNClassifier alignClassifier;
 	public int k;
 	public FeatureMetaData[] injectWSFeatures = FEATURES_INJECT_WS;
-	public FeatureMetaData[] alignmentFeatures = FEATURES_ALIGN;
+	public FeatureMetaData[] alignmentFeatures = FEATURES_HPOS;
 
 	public InputDocument testDoc;
 
@@ -200,7 +200,7 @@ public class Formatter {
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(corpus, testDoc, node, line);
 
-			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.align, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.hpos, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
 			if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
 				align(alignOrIndent, node);
@@ -417,7 +417,7 @@ public class Formatter {
 			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 				alignAnalysis =
 					alignPredictionString+"\n"+
-						alignClassifier.getPredictionAnalysis(testDoc, k, featuresForAlign, corpus.align,
+						alignClassifier.getPredictionAnalysis(testDoc, k, featuresForAlign, corpus.hpos,
 						                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 			}
 		}

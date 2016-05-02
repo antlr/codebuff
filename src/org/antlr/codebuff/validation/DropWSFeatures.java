@@ -22,7 +22,7 @@ import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.version;
-import static org.antlr.codebuff.Trainer.FEATURES_ALIGN;
+import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_ALL;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 
@@ -65,7 +65,7 @@ public class DropWSFeatures {
 			FeatureMetaData[] injectWSFeatures = deepCopy(whichFeatures);
 
 			// do it first to get answer with curated features
-			List<Float> errors = getWSErrorRates(language, injectWSFeatures, FEATURES_ALIGN);
+			List<Float> errors = getWSErrorRates(language, injectWSFeatures, FEATURES_HPOS);
 			Collections.sort(errors);
 			int n = errors.size();
 			float quart = errors.get((int)(0.27*n));
@@ -76,7 +76,7 @@ public class DropWSFeatures {
 
 			// do it again to get answer with all features if they want
 			if ( includeAllFeatures ) {
-				errors = getWSErrorRates(language, FEATURES_ALL, FEATURES_ALIGN);
+				errors = getWSErrorRates(language, FEATURES_ALL, FEATURES_HPOS);
 				Collections.sort(errors);
 				n = errors.size();
 				median = errors.get(n/2);
@@ -93,7 +93,7 @@ public class DropWSFeatures {
 				double saveCost = feature.mismatchCost;
 				feature.mismatchCost = 0; // wack this feature
 
-				errors = getWSErrorRates(language, injectWSFeatures, FEATURES_ALIGN);
+				errors = getWSErrorRates(language, injectWSFeatures, FEATURES_HPOS);
 				Collections.sort(errors);
 				n = errors.size();
 				median = errors.get(n/2);

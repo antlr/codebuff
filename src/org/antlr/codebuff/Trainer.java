@@ -148,7 +148,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
-	public static FeatureMetaData[] FEATURES_ALIGN = {
+	public static FeatureMetaData[] FEATURES_HPOS = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
@@ -205,7 +205,7 @@ public class Trainer {
 	// training results:
 	protected Vector<int[]> featureVectors;
 	protected Vector<Integer> injectWhitespace;
-	protected Vector<Integer> align;
+	protected Vector<Integer> hpos;
 
 	/** Make it fast to get a node for a specific token */
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
@@ -233,8 +233,8 @@ public class Trainer {
 		featureVectors.setSize(n);
 		injectWhitespace = new Vector<>(n);
 		injectWhitespace.setSize(n);
-		align = new Vector<>(n);
-		align.setSize(n);
+		hpos = new Vector<>(n);
+		hpos.setSize(n);
 
 		for (int i = ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
@@ -259,7 +259,7 @@ public class Trainer {
 		// track feature -> injectws, align decisions for token i
 		featureVectors.set(i, features);
 		injectWhitespace.set(i, injectNL_WS);
-		align.set(i, aligned);
+		hpos.set(i, aligned);
 	}
 
 	public static int getInjectWSCategory(CommonTokenStream tokens, int i) {
@@ -814,8 +814,8 @@ public class Trainer {
 		return BuffUtils.filter(injectWhitespace, v -> v!=null);
 	}
 
-	public List<Integer> getAlign() {
-		return BuffUtils.filter(align, v -> v!=null);
+	public List<Integer> getHPos() {
+		return BuffUtils.filter(hpos, v -> v!=null);
 	}
 
 	public List<int[]> getTokenToFeatureVectors() {
@@ -827,7 +827,7 @@ public class Trainer {
 	}
 
 	public List<Integer> getTokenAlign() {
-		return align;
+		return hpos;
 	}
 
 	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {

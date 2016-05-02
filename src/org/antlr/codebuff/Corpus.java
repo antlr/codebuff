@@ -36,7 +36,7 @@ public class Corpus {
 	public List<InputDocument> documentsPerExemplar; // an entry for each featureVector
 	public List<int[]> featureVectors;
 	public List<Integer> injectWhitespace;
-	public List<Integer> align;
+	public List<Integer> hpos;
 
 	public String rootDir;
 	public LangDescriptor language;
@@ -134,7 +134,7 @@ public class Corpus {
 		documentsPerExemplar = new ArrayList<>();
 		featureVectors = new ArrayList<>();
 		injectWhitespace = new ArrayList<>();
-		align = new ArrayList<>();
+		hpos = new ArrayList<>();
 
 		for (InputDocument doc : documents) {
 			if ( showFileNames ) System.out.println(doc);
@@ -147,7 +147,7 @@ public class Corpus {
 				documentsPerExemplar.add(doc);
 				int[] featureVec = features.get(i);
 				injectWhitespace.add(ws.get(i));
-				align.add(al.get(i));
+				hpos.add(al.get(i));
 				featureVectors.add(featureVec);
 			}
 		}
@@ -161,7 +161,7 @@ public class Corpus {
 		Triple<List<int[]>,List<Integer>,List<Integer>> results =
 			new Triple<>(trainer.getFeatureVectors(),
 						 trainer.getInjectWhitespace(),
-						 trainer.getAlign());
+						 trainer.getHPos());
 //		System.out.println(results.a.size()+" "+doc.tokens.size()+" tokens "+doc.fileName);
 		return results;
 	}
@@ -193,9 +193,9 @@ public class Corpus {
 			Integer tmpI = injectWhitespace.get(i);
 			injectWhitespace.set(i, injectWhitespace.get(j));
 			injectWhitespace.set(j, tmpI);
-			tmpI = align.get(i);
-			align.set(i, align.get(j));
-			align.set(j, tmpI);
+			tmpI = hpos.get(i);
+			hpos.set(i, hpos.get(j));
+			hpos.set(j, tmpI);
 			// Finally, swap documents
 			InputDocument tmpD = documentsPerExemplar.get(i);
 			documentsPerExemplar.set(i, documentsPerExemplar.get(j));
