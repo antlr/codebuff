@@ -37,6 +37,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Properties;
 
+import static jdk.nashorn.internal.runtime.regexp.joni.Syntax.Java;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 /** Grammar must have WS/comments on hidden channel
@@ -58,7 +59,7 @@ public class Tool {
 	public static final LangDescriptor JAVA_DESCR =
 		new LangDescriptor("java", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 	public static final LangDescriptor JAVA8_DESCR =
-		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", Java8Lexer.class, Java8Parser.class, "compilationUnit", 4);
 	public static final LangDescriptor ANTLR4_DESCR =
 		new LangDescriptor("antlr", "corpus/antlr4/training", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
 
