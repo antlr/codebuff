@@ -39,7 +39,7 @@ import java.util.Vector;
  */
 public class Trainer {
 	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 1.0/7; // 7 features; allow one fault
-	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 2.0/17; // allow two faults out of 17 (.1176)
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
@@ -107,7 +107,7 @@ public class Trainer {
 	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6; // -1 if we don't know; false means list but not big list
 	public static final int INDEX_LIST_ELEMENT_TYPE             = 7; // see LIST_PREFIX, etc...
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9; // left ancestor
+	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9;
 	public static final int INDEX_ANCESTORS_PARENT_RULE         = 10;
 	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 11;
 	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 12;
@@ -253,7 +253,7 @@ public class Trainer {
 		int aligned = CAT_NO_ALIGNMENT ;
 		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 			TerminalNode node = tokenToNodeMap.get(curToken);
-			aligned = getAlignmentCategory(doc, node, indentSize);
+			aligned = getAlignmentCategory(tokens, node, indentSize);
 		}
 
 		// track feature -> injectws, align decisions for token i
@@ -287,50 +287,40 @@ public class Trainer {
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
-	public static int getAlignmentCategory(InputDocument doc, TerminalNode node, int indentSize) {
+	public static int getAlignmentCategory(CommonTokenStream tokens, TerminalNode node, int indentSize) {
 		Pair<Integer,Integer> alignInfo = null;
 		Pair<Integer,Integer> indentInfo = null;
 
 		Token curToken = node.getSymbol();
-		doc.tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
-		Token prevToken = doc.tokens.LT(-1);
+		tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
+		Token prevToken = tokens.LT(-1);
+
+		int columnDelta = curToken.getCharPositionInLine() - prevToken.getCharPositionInLine();
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 		Pair<ParserRuleContext, Integer> pair =
 			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, curToken.getCharPositionInLine());
-		String[] ruleNames = doc.parser.getRuleNames();
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 			alignInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
-//			int ruleIndex = pair.a.getRuleIndex();
-//			System.out.printf("ALIGN %s %s i=%d %s %s\n",
+//			System.out.printf("ALIGN %s %s i=%d %x %s\n",
 //			                  curToken,
-//			                  ruleNames[ruleIndex],
-//			                  pair.b, alignInfo, doc.fileName);
+//			                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
+//			                  pair.b, aligned, doc.fileName);
  		}
 
 		// perhaps we are indented as well?
-		int tokenIndexInStream = node.getSymbol().getTokenIndex();
-		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(doc.tokens, tokenIndexInStream, curToken.getLine());
-		Token firstTokenOnPrevLine = null;
-		int columnDelta = 0;
-		if ( tokensOnPreviousLine.size()>0 ) {
-			firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
-			columnDelta = curToken.getCharPositionInLine() - firstTokenOnPrevLine.getCharPositionInLine();
-		}
-
 		if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-indentSize;
 			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
 			if ( pair!=null ) {
+//				System.out.printf("INDENT %s %s i=%d %x %s\n",
+//				                  curToken,
+//				                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
+//				                  pair.b, aligned, doc.fileName);
 				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 				indentInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
-//				int ruleIndex = pair.a.getRuleIndex();
-//				System.out.printf("INDENT %s %s i=%d %s %s\n",
-//				                  curToken,
-//				                  ruleNames[ruleIndex],
-//				                  pair.b, indentInfo, doc.fileName);
 			}
 		}
 
@@ -590,16 +580,12 @@ public class Trainer {
 
 		// Get context information for current token
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
-
 		ParserRuleContext earliestLeftAncestorParent  =
 			earliestLeftAncestor!=null ? getParentClosure(earliestLeftAncestor).getParent() : null;
-
 		ParserRuleContext earliestLeftAncestorParent2 =
 			earliestLeftAncestorParent!=null ? getParentClosure(earliestLeftAncestorParent).getParent() : null;
-
 		ParserRuleContext earliestLeftAncestorParent3 =
 			earliestLeftAncestorParent2!=null ? getParentClosure(earliestLeftAncestorParent2).getParent() : null;
-
 		ParserRuleContext earliestLeftAncestorParent4 =
 			earliestLeftAncestorParent3!=null ? getParentClosure(earliestLeftAncestorParent3).getParent() : null;
 
@@ -1009,11 +995,8 @@ public class Trainer {
 
 	/** Return the index 0..n-1 of t as child of t.parent.
 	 *  If t is index 0, always return 0.
-	 *  If t is a repeated subtree root and index within
-	 *  sibling list > 0, return CHILD_INDEX_LIST_ELEMENT.
-	 *  In all other cases, return the actual index of t. That means for a
-	 *  sibling list starting at child index 5, the first sibling will return
-	 *  5 but 2nd and beyond in list will return CHILD_INDEX_LIST_ELEMENT.
+	 *  If t is a repeated subtree root and index>0, return CHILD_INDEX_LIST_ELEMENT.
+	 *  In all other cases, return the actual index of t.
 	 */
 	public static int getChildIndexOrListMembership(ParseTree t) {
 		if ( t==null ) return -1;
