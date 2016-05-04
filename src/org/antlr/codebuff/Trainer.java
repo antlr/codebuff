@@ -39,7 +39,7 @@ import java.util.Vector;
  */
 public class Trainer {
 	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 1.0/7; // 7 features; allow one fault
-	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 1.0/17; // allow one fault
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
