@@ -46,7 +46,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
 public class Formatter {
 	public static final int WIDE_LIST_THRESHOLD = 120; // anything this big is definitely "oversize list"
 	public static final int COL_ALARM_THRESHOLD = 80;
-	public static final int DEFAULT_K = 23;
+	public static final int DEFAULT_K = 11;
 
 	public final Corpus corpus;
 

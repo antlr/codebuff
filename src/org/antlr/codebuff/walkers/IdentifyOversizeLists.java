@@ -66,10 +66,16 @@ public class IdentifyOversizeLists extends VisitSiblingLists {
 		if ( stats!=null && splitStats==null && len>=WIDE_LIST_THRESHOLD ) {
 			oversize = true; // fail-safe if we have never seen an oversize list for this pair in corpus
 		}
-		else if ( stats!=null&&splitStats!=null &&
-			Math.abs(splitStats.median-len) < Math.abs(stats.median-len) )
-		{
-			oversize = true;
+		else {
+			if ( stats!=null&&splitStats!=null ) {
+				// compare distance in units of standard deviations to regular or split means
+				// like a one-dimensional Mahalanobis distance
+				double d1 = Math.abs(splitStats.median-len) / Math.sqrt(splitStats.variance);
+				double d2 = Math.abs(stats.median-len) / Math.sqrt(stats.variance);
+				if ( d1<d2 ) {
+					oversize = true;
+				}
+			}
 		}
 		return oversize;
 	}
