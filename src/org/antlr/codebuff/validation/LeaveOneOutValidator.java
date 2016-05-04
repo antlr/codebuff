@@ -137,9 +137,9 @@ public class LeaveOneOutValidator {
 		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
 //		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
 		if ( saveOutput ) {
-			File dir = new File(outputDir+"/"+Tool.version+"/"+language.name);
+			File dir = new File(outputDir+"/"+language.name+"/"+Tool.version);
 			if ( !dir.exists() ) {
-				dir.mkdir();
+				dir.mkdirs();
 			}
 			Utils.writeFile(dir.getPath()+"/"+new File(testDoc.fileName).getName(), output);
 		}
