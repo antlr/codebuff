@@ -580,12 +580,16 @@ public class Trainer {
 
 		// Get context information for current token
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
+
 		ParserRuleContext earliestLeftAncestorParent  =
 			earliestLeftAncestor!=null ? getParentClosure(earliestLeftAncestor).getParent() : null;
+
 		ParserRuleContext earliestLeftAncestorParent2 =
 			earliestLeftAncestorParent!=null ? getParentClosure(earliestLeftAncestorParent).getParent() : null;
+
 		ParserRuleContext earliestLeftAncestorParent3 =
 			earliestLeftAncestorParent2!=null ? getParentClosure(earliestLeftAncestorParent2).getParent() : null;
+
 		ParserRuleContext earliestLeftAncestorParent4 =
 			earliestLeftAncestorParent3!=null ? getParentClosure(earliestLeftAncestorParent3).getParent() : null;
 
