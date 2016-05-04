@@ -408,7 +408,7 @@ public class Formatter {
 			String.format("### line %d: predicted %s actual %s",
 			              curToken.getLine(), wsDisplay, actualWSNL);
 
-		int actualAlignCategory = Trainer.getAlignmentCategory(originalTokens, node, indentSize);
+		int actualAlignCategory = Trainer.getAlignmentCategory(testDoc, originalTokens, node, indentSize);
 		String actualAlignDisplay = getAlignCategoryStr(actualAlignCategory);
 
 		String alignPredictionString =

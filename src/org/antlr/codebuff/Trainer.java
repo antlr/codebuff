@@ -253,7 +253,7 @@ public class Trainer {
 		int aligned = CAT_NO_ALIGNMENT ;
 		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 			TerminalNode node = tokenToNodeMap.get(curToken);
-			aligned = getAlignmentCategory(tokens, node, indentSize);
+			aligned = getAlignmentCategory(doc, tokens, node, indentSize);
 		}
 
 		// track feature -> injectws, align decisions for token i
@@ -287,7 +287,7 @@ public class Trainer {
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
-	public static int getAlignmentCategory(CommonTokenStream tokens, TerminalNode node, int indentSize) {
+	public static int getAlignmentCategory(InputDocument doc, CommonTokenStream tokens, TerminalNode node, int indentSize) {
 		Pair<Integer,Integer> alignInfo = null;
 		Pair<Integer,Integer> indentInfo = null;
 
@@ -295,32 +295,42 @@ public class Trainer {
 		tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
 		Token prevToken = tokens.LT(-1);
 
-		int columnDelta = curToken.getCharPositionInLine() - prevToken.getCharPositionInLine();
-
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 		Pair<ParserRuleContext, Integer> pair =
 			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, curToken.getCharPositionInLine());
+		String[] ruleNames = doc.parser.getRuleNames();
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 			alignInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
-//			System.out.printf("ALIGN %s %s i=%d %x %s\n",
+//			int ruleIndex = pair.a.getRuleIndex();
+//			System.out.printf("ALIGN %s %s i=%d %s %s\n",
 //			                  curToken,
-//			                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
-//			                  pair.b, aligned, doc.fileName);
+//			                  ruleNames[ruleIndex],
+//			                  pair.b, alignInfo, doc.fileName);
  		}
 
 		// perhaps we are indented as well?
+		int tokenIndexInStream = node.getSymbol().getTokenIndex();
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokenIndexInStream, curToken.getLine());
+		Token firstTokenOnPrevLine = null;
+		int columnDelta = 0;
+		if ( tokensOnPreviousLine.size()>0 ) {
+			firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
+			columnDelta = curToken.getCharPositionInLine() - firstTokenOnPrevLine.getCharPositionInLine();
+		}
+
 		if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-indentSize;
 			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
 			if ( pair!=null ) {
-//				System.out.printf("INDENT %s %s i=%d %x %s\n",
-//				                  curToken,
-//				                  doc.parser.getRuleNames()[pair.a.getRuleIndex()],
-//				                  pair.b, aligned, doc.fileName);
 				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 				indentInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
+//				int ruleIndex = pair.a.getRuleIndex();
+//				System.out.printf("INDENT %s %s i=%d %s %s\n",
+//				                  curToken,
+//				                  ruleNames[ruleIndex],
+//				                  pair.b, indentInfo, doc.fileName);
 			}
 		}
 
@@ -979,8 +989,11 @@ public class Trainer {
 
 	/** Return the index 0..n-1 of t as child of t.parent.
 	 *  If t is index 0, always return 0.
-	 *  If t is a repeated subtree root and index>0, return CHILD_INDEX_LIST_ELEMENT.
-	 *  In all other cases, return the actual index of t.
+	 *  If t is a repeated subtree root and index within
+	 *  sibling list > 0, return CHILD_INDEX_LIST_ELEMENT.
+	 *  In all other cases, return the actual index of t. That means for a
+	 *  sibling list starting at child index 5, the first sibling will return
+	 *  5 but 2nd and beyond in list will return CHILD_INDEX_LIST_ELEMENT.
 	 */
 	public static int getChildIndexOrListMembership(ParseTree t) {
 		if ( t==null ) return -1;
