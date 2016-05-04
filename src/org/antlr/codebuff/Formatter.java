@@ -208,6 +208,9 @@ public class Formatter {
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
 				indent(alignOrIndent, node);
 			}
+			else if ( (alignOrIndent&0xFF)==CAT_INDENT ) {
+				indent(alignOrIndent, node);
+			}
 		}
 		else {
 			// inject whitespace instead of \n?
@@ -234,7 +237,7 @@ public class Formatter {
 		charPosInLine += n;
 	}
 
-	public void indent(int alignOrIndent, TerminalNode node) {
+	public void indent(int indentCat, TerminalNode node) {
 		int tokenIndexInStream = node.getSymbol().getTokenIndex();
 		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(testDoc.tokens, tokenIndexInStream, line);
 		Token firstTokenOnPrevLine = null;
@@ -242,14 +245,20 @@ public class Formatter {
 			firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
 		}
 
-		if ( alignOrIndent==CAT_INDENT ) {
+		if ( indentCat==CAT_INDENT ) {
 			if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
 				int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+indentSize;
 				charPosInLine = indentedCol;
 				output.append(Tool.spaces(indentedCol));
 			}
+			else {
+				// no prev token? ok, just indent from left edge
+				charPosInLine = indentSize;
+				output.append(Tool.spaces(indentSize));
+			}
+			return;
 		}
-		int[] deltaChild = Trainer.unindentcat(alignOrIndent);
+		int[] deltaChild = Trainer.unindentcat(indentCat);
 		int deltaFromAncestor = deltaChild[0];
 		int childIndex = deltaChild[1];
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
