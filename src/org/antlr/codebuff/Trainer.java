@@ -39,7 +39,7 @@ import java.util.Vector;
  */
 public class Trainer {
 	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 1.0/7; // 7 features; allow one fault
-	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 2.0/17; // allow two faults out of 17 (.1176)
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
@@ -399,6 +399,19 @@ public class Trainer {
 		return hasComment;
 	}
 
+	/** Return first ancestor of p that is not an only child including p.
+	 *  So if p.getParent().getChildCount()>1, this returns p.  If we
+	 *  have found a chain rule at p's parent (p is its only child), then
+	 *  move p to its parent and try again.
+	 */
+	public static ParserRuleContext getParentClosure(ParserRuleContext p) {
+		if ( p==null ) return null;
+		// if p not an only child, return p
+		if ( p.getParent()==null || p.getParent().getChildCount()>1 ) return p;
+		// we found a chain rule node
+		return getParentClosure(p.getParent());
+	}
+
 	/** Walk upwards from node while p.start == token; return null if there is
 	 *  no ancestor starting at token.
 	 */
@@ -577,11 +590,18 @@ public class Trainer {
 
 		// Get context information for current token
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
-		ParserRuleContext earliestLeftAncestorParent = earliestLeftAncestor.getParent();
 
-		ParserRuleContext earliestLeftAncestorParent2 = earliestLeftAncestorParent!=null ? earliestLeftAncestorParent.getParent() : null;
-		ParserRuleContext earliestLeftAncestorParent3 = earliestLeftAncestorParent2!=null ? earliestLeftAncestorParent2.getParent() : null;
-		ParserRuleContext earliestLeftAncestorParent4 = earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3.getParent() : null;
+		ParserRuleContext earliestLeftAncestorParent  =
+			earliestLeftAncestor!=null ? getParentClosure(earliestLeftAncestor).getParent() : null;
+
+		ParserRuleContext earliestLeftAncestorParent2 =
+			earliestLeftAncestorParent!=null ? getParentClosure(earliestLeftAncestorParent).getParent() : null;
+
+		ParserRuleContext earliestLeftAncestorParent3 =
+			earliestLeftAncestorParent2!=null ? getParentClosure(earliestLeftAncestorParent2).getParent() : null;
+
+		ParserRuleContext earliestLeftAncestorParent4 =
+			earliestLeftAncestorParent3!=null ? getParentClosure(earliestLeftAncestorParent3).getParent() : null;
 
 		features[INDEX_PREV_TYPE]                     = prevToken.getType();
 		features[INDEX_PREV_EARLIEST_RIGHT_ANCESTOR]  = rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum);

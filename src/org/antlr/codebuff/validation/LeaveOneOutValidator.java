@@ -124,6 +124,10 @@ public class LeaveOneOutValidator {
 		List<InputDocument> excluded = filter(documents, d -> d.fileName.equals(path));
 		assert others.size() == documents.size() - 1;
 		kNNClassifier.resetCache();
+		if ( excluded.size()==0 ) {
+			System.err.println("Doc not in corpus: "+path);
+			return null;
+		}
 		InputDocument testDoc = excluded.get(0);
 		Corpus corpus = new Corpus(others, language);
 		corpus.train();
