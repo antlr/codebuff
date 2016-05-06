@@ -70,9 +70,15 @@ public class IdentifyOversizeLists extends VisitSiblingLists {
 			if ( stats!=null&&splitStats!=null ) {
 				// compare distance in units of standard deviations to regular or split means
 				// like a one-dimensional Mahalanobis distance
-				double d1 = Math.abs(splitStats.median-len) / Math.sqrt(splitStats.variance);
-				double d2 = Math.abs(stats.median-len) / Math.sqrt(stats.variance);
-				if ( d1<d2 ) {
+				double distToSplit = Math.abs(splitStats.median-len) / Math.sqrt(splitStats.variance);
+				double distToRegular = Math.abs(stats.median-len) / Math.sqrt(stats.variance);
+				// consider a priori probabilities as well.
+				float n = splitStats.numSamples+stats.numSamples;
+				float probSplit = splitStats.numSamples/n;
+				float probRegular = stats.numSamples/n;
+				distToSplit   *= (1 - probSplit);   // make distance smaller if probSplit is high
+				distToRegular *= (1 - probRegular);
+				if ( distToSplit<distToRegular ) {
 					oversize = true;
 				}
 			}
