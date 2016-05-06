@@ -107,7 +107,7 @@ public class Trainer {
 	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6; // -1 if we don't know; false means list but not big list
 	public static final int INDEX_LIST_ELEMENT_TYPE             = 7; // see LIST_PREFIX, etc...
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9; // left ancestor
 	public static final int INDEX_ANCESTORS_PARENT_RULE         = 10;
 	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 11;
 	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 12;
@@ -253,7 +253,7 @@ public class Trainer {
 		int aligned = CAT_NO_ALIGNMENT ;
 		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 			TerminalNode node = tokenToNodeMap.get(curToken);
-			aligned = getAlignmentCategory(doc, tokens, node, indentSize);
+			aligned = getAlignmentCategory(doc, node, indentSize);
 		}
 
 		// track feature -> injectws, align decisions for token i
@@ -287,13 +287,13 @@ public class Trainer {
 	}
 
 	// at a newline, are we aligned with a prior sibling (in a list) etc...
-	public static int getAlignmentCategory(InputDocument doc, CommonTokenStream tokens, TerminalNode node, int indentSize) {
+	public static int getAlignmentCategory(InputDocument doc, TerminalNode node, int indentSize) {
 		Pair<Integer,Integer> alignInfo = null;
 		Pair<Integer,Integer> indentInfo = null;
 
 		Token curToken = node.getSymbol();
-		tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
-		Token prevToken = tokens.LT(-1);
+		doc.tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
+		Token prevToken = doc.tokens.LT(-1);
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
@@ -312,7 +312,7 @@ public class Trainer {
 
 		// perhaps we are indented as well?
 		int tokenIndexInStream = node.getSymbol().getTokenIndex();
-		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(tokens, tokenIndexInStream, curToken.getLine());
+		List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(doc.tokens, tokenIndexInStream, curToken.getLine());
 		Token firstTokenOnPrevLine = null;
 		int columnDelta = 0;
 		if ( tokensOnPreviousLine.size()>0 ) {

@@ -56,6 +56,7 @@ public class Formatter {
 
 	/** A map from real token to node in the parse tree */
 	public Map<Token, TerminalNode> tokenToNodeMap = null;
+	public Map<Token, TerminalNode> originalTokenToNodeMap = null; // for debugging purposes only
 
 	/** analysis[i] is info about what we decided for token index i from
 	 *  original stream (not index into real token list)
@@ -75,6 +76,7 @@ public class Formatter {
 	public FeatureMetaData[] injectWSFeatures = FEATURES_INJECT_WS;
 	public FeatureMetaData[] alignmentFeatures = FEATURES_HPOS;
 
+	public InputDocument originalDoc; // used only for debugging
 	public InputDocument testDoc;
 
 	public int indentSize; // size in spaces of an indentation
@@ -108,11 +110,14 @@ public class Formatter {
 
 	/** Format the document. Does not affect/alter doc. */
 	public String format(InputDocument doc, boolean collectAnalysis) throws Exception {
-		this.testDoc = InputDocument.dup(doc);
+		// for debugging we need a map from original token with actual line:col to tree node. used by token analysis
+		originalDoc = doc;
+		originalTokenToNodeMap = indexTree(doc.tree);
+		originalTokens = doc.tokens;
+
+		this.testDoc = InputDocument.dup(doc); // make copy of doc, getting new tokens, tree
 		output = new StringBuilder();
 		this.realTokens = getRealTokens(testDoc.tokens);
-		// make a complete copy of token stream and token objects
-		this.originalTokens = new CodeBuffTokenStream(testDoc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
 		wipeCharPositionInfoAndWhitespaceTokens(testDoc.tokens); // all except for first token
 		nlwsClassifier = new CodekNNClassifier(corpus, injectWSFeatures);
@@ -121,6 +126,7 @@ public class Formatter {
 		analysis = new Vector<>(testDoc.tokens.size());
 		analysis.setSize(testDoc.tokens.size());
 
+		// make an index on the duplicated doc tree with tokens missing line:col info
 		if ( tokenToNodeMap == null ) {
 			tokenToNodeMap = indexTree(testDoc.tree);
 		}
@@ -396,8 +402,8 @@ public class Formatter {
 	                                              int injectNL_WS, int alignOrIndent,
 	                                              boolean collectAnalysis)
 	{
-		CommonToken curToken = (CommonToken)testDoc.tokens.get(tokenIndexInStream);
-		TerminalNode node = tokenToNodeMap.get(curToken);
+		CommonToken curToken = (CommonToken)originalDoc.tokens.get(tokenIndexInStream);
+		TerminalNode nodeWithOriginalToken = originalTokenToNodeMap.get(curToken);
 
 		int actualWS = Trainer.getInjectWSCategory(originalTokens, tokenIndexInStream);
 		String actualWSNL = getWSCategoryStr(actualWS);
@@ -408,7 +414,7 @@ public class Formatter {
 			String.format("### line %d: predicted %s actual %s",
 			              curToken.getLine(), wsDisplay, actualWSNL);
 
-		int actualAlignCategory = Trainer.getAlignmentCategory(testDoc, originalTokens, node, indentSize);
+		int actualAlignCategory = Trainer.getAlignmentCategory(originalDoc, nodeWithOriginalToken, indentSize);
 		String actualAlignDisplay = getAlignCategoryStr(actualAlignCategory);
 
 		String alignPredictionString =
