@@ -9,7 +9,7 @@ import static org.antlr.codebuff.Tool.JAVA_DESCR;
 
 public class JavaLeaveOneOut {
 	public static void main(String[] args) throws Exception {
-		LeaveOneOutValidator validator = new LeaveOneOutValidator("corpus/java/training/antlr4-tool", JAVA_DESCR);
+		LeaveOneOutValidator validator = new LeaveOneOutValidator("corpus/java/training/stringtemplate4", JAVA_DESCR);
 		Triple<List<Formatter>,List<Float>,List<Float>> results = validator.validateDocuments(true, true);
 		System.out.println(results.b);
 		System.out.println(results.c);

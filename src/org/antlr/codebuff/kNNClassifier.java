@@ -221,6 +221,7 @@ public abstract class kNNClassifier {
 		if ( distanceThreshold==MAX_CONTEXT_DIFF_THRESHOLD2 ) { // couldn't find anything, open it all up.
 			vectorIndexesMatchingTokenContext = null;
 		}
+		vectorIndexesMatchingTokenContext = null;
 		List<Neighbor> distances = new ArrayList<>();
 		if ( vectorIndexesMatchingTokenContext==null ) {
 			// no matching contexts for this feature, must rely on full training set

@@ -39,7 +39,7 @@ import java.util.Vector;
  */
 public class Trainer {
 	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 1.0/7; // 7 features; allow one fault
-	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 2.0/17; // allow two faults out of 17 (.1176)
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 2/17.0; // allow 2 faults out of 17 (.1176)
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
@@ -109,19 +109,23 @@ public class Trainer {
 	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
 	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9;
 	public static final int INDEX_ANCESTORS_PARENT_RULE         = 10;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 11;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 12;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 13;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 14;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 15;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 16;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 17;
+	public static final int INDEX_ANCESTORS_PARENT_HEIR_INDEX   = 11; // index of parent's child to descend to eventually reach token (not index of parent in its parent's child list)
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 12; // child index of parent among its siblings
+	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 13;
+	public static final int INDEX_ANCESTORS_PARENT2_HEIR_INDEX  = 14;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 15;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 16;
+	public static final int INDEX_ANCESTORS_PARENT3_HEIR_INDEX  = 17;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 18;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 19;
+	public static final int INDEX_ANCESTORS_PARENT4_HEIR_INDEX  = 20;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 21;
 
-	public static final int INDEX_INFO_FILE                     = 18;
-	public static final int INDEX_INFO_LINE                     = 19;
-	public static final int INDEX_INFO_CHARPOS                  = 20;
+	public static final int INDEX_INFO_FILE                     = 22;
+	public static final int INDEX_INFO_LINE                     = 23;
+	public static final int INDEX_INFO_CHARPOS                  = 24;
 
-	public static final int NUM_FEATURES                        = 21;
+	public static final int NUM_FEATURES                        = 25;
 	public static final int ANALYSIS_START_TOKEN_INDEX          = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
@@ -134,6 +138,10 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 2),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
+		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -160,12 +168,16 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^3"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -184,12 +196,16 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "heir index"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "heir index"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^3"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "heir index"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "heir index"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
 		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
 		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
@@ -579,32 +595,64 @@ public class Trainer {
 		int prevEarliestAncestorRuleAltNum = prevEarliestRightAncestor.getAltNumber();
 
 		// Get context information for current token
+
+		// We need context information about the current leaf's ancestors.
+		// One of the most important is the earliest left ancestor. From there,
+		// we need relevant nodes up the parse tree. Also we need to know
+		// something about the shape of the subtrees as we walk upwards.
+		// For example, in an ANTLR grammar the prefix of "fragment" is
+		// relevant. To capture this, we track not the size of lists, but
+		// the child index of nodes as we pass upwards. To skip through
+		// nodes associated with chain roles, we start by computing the parent
+		// closure and then ask for the parent node. Would like to know which child
+		// we passed through to get to that parent, so that is the pair
+		// we compute: (node, child index to descend on path to current node).
+		// I'm not sure what to call that child index so I leave it as the
+		// generic child index. We need to compute the child index on the child
+		// of the parent nodes, so the getChildIndexOrListMembership() look
+		// like they are one off but are correct. We are not computing the child index
+		// of the parent.
+		// The one caveat is that we compute the child index of the earliest left ancestor
+
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 
+		ParserRuleContext earliestLeftAncestorClosure = getParentClosure(earliestLeftAncestor);
 		ParserRuleContext earliestLeftAncestorParent  =
-			earliestLeftAncestor!=null ? getParentClosure(earliestLeftAncestor).getParent() : null;
+			earliestLeftAncestor!=null ? earliestLeftAncestorClosure.getParent() : null;
 
+		ParserRuleContext earliestLeftAncestorParentClosure = getParentClosure(earliestLeftAncestorParent);
 		ParserRuleContext earliestLeftAncestorParent2 =
-			earliestLeftAncestorParent!=null ? getParentClosure(earliestLeftAncestorParent).getParent() : null;
+			earliestLeftAncestorParent!=null ? earliestLeftAncestorParentClosure.getParent() : null;
 
+		ParserRuleContext earliestLeftAncestorParent2Closure = getParentClosure(earliestLeftAncestorParent2);
 		ParserRuleContext earliestLeftAncestorParent3 =
-			earliestLeftAncestorParent2!=null ? getParentClosure(earliestLeftAncestorParent2).getParent() : null;
+			earliestLeftAncestorParent2!=null ? earliestLeftAncestorParent2Closure.getParent() : null;
 
+		ParserRuleContext earliestLeftAncestorParent3Closure = getParentClosure(earliestLeftAncestorParent3);
 		ParserRuleContext earliestLeftAncestorParent4 =
-			earliestLeftAncestorParent3!=null ? getParentClosure(earliestLeftAncestorParent3).getParent() : null;
+			earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3Closure.getParent() : null;
 
 		features[INDEX_PREV_TYPE]                     = prevToken.getType();
 		features[INDEX_PREV_EARLIEST_RIGHT_ANCESTOR]  = rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum);
 		features[INDEX_CUR_TYPE]                      = curToken.getType();
+
 		features[INDEX_EARLIEST_LEFT_ANCESTOR]        = rulealt(earliestLeftAncestor);
 		features[INDEX_ANCESTORS_CHILD_INDEX]         = getChildIndexOrListMembership(earliestLeftAncestor);
+
 		features[INDEX_ANCESTORS_PARENT_RULE]         = earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent) : -1;
+		features[INDEX_ANCESTORS_PARENT_HEIR_INDEX]   = getChildIndexOrListMembership(earliestLeftAncestorClosure);
 		features[INDEX_ANCESTORS_PARENT_CHILD_INDEX]  = getChildIndexOrListMembership(earliestLeftAncestorParent);
+
 		features[INDEX_ANCESTORS_PARENT2_RULE]        = earliestLeftAncestorParent2!=null ? rulealt(earliestLeftAncestorParent2) : -1;
+		features[INDEX_ANCESTORS_PARENT2_HEIR_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParentClosure);
 		features[INDEX_ANCESTORS_PARENT2_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent2);
+
 		features[INDEX_ANCESTORS_PARENT3_RULE]        = earliestLeftAncestorParent3!=null ? rulealt(earliestLeftAncestorParent3) : -1;
+		features[INDEX_ANCESTORS_PARENT3_HEIR_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent2Closure);
 		features[INDEX_ANCESTORS_PARENT3_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent3);
+
 		features[INDEX_ANCESTORS_PARENT4_RULE]        = earliestLeftAncestorParent4!=null ? rulealt(earliestLeftAncestorParent4) : -1;
+		features[INDEX_ANCESTORS_PARENT4_HEIR_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent3Closure);
 		features[INDEX_ANCESTORS_PARENT4_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent4);
 
 		features[INDEX_INFO_FILE]    = 0; // dummy; _toString() dumps filename w/o this value; placeholder for col in printout

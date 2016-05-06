@@ -7,7 +7,6 @@ import org.antlr.codebuff.validation.ClassificationAnalysis;
 import org.antlr.codebuff.validation.LeaveOneOutValidator;
 import org.antlr.codebuff.validation.TokenPositionAnalysis;
 import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonToken;
@@ -185,8 +184,8 @@ public class Tool {
 
 			float editDistance = levenshteinDistance(originalWS, formattedWS);
 			System.out.println("Levenshtein distance of ws: "+editDistance);
-			editDistance = levenshteinDistance(testDoc.content, output);
-			System.out.println("Levenshtein distance: "+editDistance);
+//			editDistance = levenshteinDistance(testDoc.content, output);
+//			System.out.println("Levenshtein distance: "+editDistance);
 		}
 
 		if ( lang!=null ) {
@@ -267,6 +266,9 @@ public class Tool {
 	public static InputDocument parse(String fileName, String content, LangDescriptor language)
 		throws Exception
 	{
+		if ( content.indexOf('\t')>=0 ) {
+			System.err.println("Input still has tabs!");
+		}
 		ANTLRInputStream input = new ANTLRInputStream(content);
 		Lexer lexer = getLexer(language.lexerClass, input);
 		input.name = fileName;
@@ -706,11 +708,26 @@ public class Tool {
 
 	public static class Foo {
 		public static void main(String[] args) throws Exception {
-			ANTLRv4Lexer lexer = new ANTLRv4Lexer(new ANTLRFileStream("grammars/org/antlr/codebuff/ANTLRv4Lexer.g4"));
-			CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
-			ANTLRv4Parser parser = new ANTLRv4Parser(tokens);
-			ANTLRv4Parser.GrammarSpecContext tree = parser.grammarSpec();
-			System.out.println(tree.toStringTree(parser));
+			Path path = FileSystems.getDefault().getPath("/tmp/T2.java");
+			byte[] filearray = Files.readAllBytes(path);
+			String code = new String(filearray);
+			String notabs = expandTabs(code, 4);
+			System.out.println(code);
+
+			String s =
+				"                        switch (opcode) {\n"+
+				"                                case Bytecode.INSTR_LOAD_STR :\n"+
+				"                                        // just testing...\n"+
+				"                                        load_str(self,ip);\n"+
+				"                                        ip += Bytecode.OPND_SIZE_IN_BYTES;\n"+
+				"                                        break;\n";
+			String t = expandTabs(s, 4);
+			System.out.println(t);
+//			ANTLRv4Lexer lexer = new ANTLRv4Lexer(new ANTLRFileStream("grammars/org/antlr/codebuff/ANTLRv4Lexer.g4"));
+//			CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
+//			ANTLRv4Parser parser = new ANTLRv4Parser(tokens);
+//			ANTLRv4Parser.GrammarSpecContext tree = parser.grammarSpec();
+//			System.out.println(tree.toStringTree(parser));
 		}
 	}
 }
