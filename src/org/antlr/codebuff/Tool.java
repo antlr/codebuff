@@ -37,7 +37,6 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Properties;
 
-import static jdk.nashorn.internal.runtime.regexp.joni.Syntax.Java;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 /** Grammar must have WS/comments on hidden channel
@@ -181,7 +180,8 @@ public class Tool {
 			String formattedWS = tokenText(wsTokens);
 //			Utils.writeFile("/tmp/spaces2", formattedWS);
 
-			System.out.println("ws len orig="+originalWS.length()+", "+formattedWS.length());
+			System.out.println("len orig, formatted="+testDoc.content.length()+", "+output.length());
+			System.out.println("ws len orig, formatted="+originalWS.length()+", "+formattedWS.length());
 
 			float editDistance = levenshteinDistance(originalWS, formattedWS);
 			System.out.println("Levenshtein distance of ws: "+editDistance);
