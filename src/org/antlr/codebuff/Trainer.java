@@ -592,16 +592,16 @@ public class Trainer {
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 
 		ParserRuleContext earliestLeftAncestorParent  =
-			earliestLeftAncestor!=null ? getParentClosure(earliestLeftAncestor).getParent() : null;
+			earliestLeftAncestor!=null ? earliestLeftAncestor.getParent() : null;
 
 		ParserRuleContext earliestLeftAncestorParent2 =
-			earliestLeftAncestorParent!=null ? getParentClosure(earliestLeftAncestorParent).getParent() : null;
+			earliestLeftAncestorParent!=null ? earliestLeftAncestorParent.getParent() : null;
 
 		ParserRuleContext earliestLeftAncestorParent3 =
-			earliestLeftAncestorParent2!=null ? getParentClosure(earliestLeftAncestorParent2).getParent() : null;
+			earliestLeftAncestorParent2!=null ? earliestLeftAncestorParent2.getParent() : null;
 
 		ParserRuleContext earliestLeftAncestorParent4 =
-			earliestLeftAncestorParent3!=null ? getParentClosure(earliestLeftAncestorParent3).getParent() : null;
+			earliestLeftAncestorParent3!=null ? earliestLeftAncestorParent3.getParent() : null;
 
 		features[INDEX_PREV_TYPE]                     = prevToken.getType();
 		features[INDEX_PREV_EARLIEST_RIGHT_ANCESTOR]  = rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum);
