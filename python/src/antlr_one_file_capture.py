@@ -1,6 +1,6 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.4 'Thu May 05 10:06:10 PDT 2016'
+# CodeBuff 1.4.7 'Fri May 06 18:06:57 PDT 2016'
 #
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,13 +11,20 @@ labels = ["C.g4", "Clojure.g4", "Java.g4", "Java8.g4", "JSON.g4", "MASM.g4", "Sm
 N = len(labels)
 
 featureIndexes = range(0,N)
-antlr_self = [0.032107882, 0.11701346, 0.040242016, 0.022305975, 0.029411765, 0.031887088, 0.0151011, 0.097505875, 0.05, 0.096088246, 0.061298076, 0.014465703]
-antlr_corpus = [0.06858336, 0.1283673, 0.29567, 0.05208625, 0.17884405, 0.13199164, 0.17451772, 0.3909937, 0.37931034, 0.1368976, 0.12259615, 0.0658418]
+antlr_self = [0.028172765, 0.08945455, 0.034707565, 0.02126827, 0.02508179, 0.031887088, 0.02532274, 0.08664244, 0.05, 0.09073774, 0.058894232, 0.014465703]
+antlr_corpus = [0.036551576, 0.10244233, 0.074480556, 0.031339988, 0.087241, 0.09940756, 0.130425, 0.14491574, 0.37931034, 0.13312672, 0.12920673, 0.025056947]
 antlr_diff = np.abs(np.subtract(antlr_self, antlr_corpus))
 
 all = zip(antlr_self, antlr_corpus, antlr_diff, labels)
+print 'BEFORE'
+for t in all:
+	print t
 all = sorted(all, key=lambda x : x[2], reverse=True)
 antlr_self, antlr_corpus, antlr_diff, labels = zip(*all)
+
+print 'AFTER'
+for t in zip(*all):
+	print t
 
 ax.plot(featureIndexes, antlr_self, label="antlr_self")
 #ax.plot(featureIndexes, antlr_corpus, label="antlr_corpus")
