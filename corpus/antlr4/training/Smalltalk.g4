@@ -16,15 +16,17 @@ sequence
     ;
 
 ws
-    :   ( SEPARATOR | COMMENT )*
+    :   (SEPARATOR | COMMENT)*
     ;
 
 temps
-    :   PIPE ( ws IDENTIFIER )+ ws PIPE
+    :   PIPE (ws IDENTIFIER)+ ws PIPE
     ;
 
 statements
-    :   answer ws # StatementAnswer | expressions ws PERIOD ws answer # StatementExpressionsAnswer | expressions PERIOD? ws # StatementExpressions
+    :   answer ws 						# StatementAnswer
+    |	expressions ws PERIOD ws answer # StatementExpressionsAnswer
+    |	expressions PERIOD? ws 			# StatementExpressions
     ;
 
 answer
@@ -32,7 +34,11 @@ answer
     ;
 
 expression
-    :   assignment | cascade | keywordSend | binarySend | primitive
+    :   assignment
+    |	cascade
+    |	keywordSend
+    |	binarySend
+    |	primitive
     ;
 
 expressions
@@ -44,7 +50,7 @@ expressionList
     ;
 
 cascade
-    :   ( keywordSend | binarySend ) ( ws SEMI_COLON ws message )+
+    :   (keywordSend | binarySend) (ws SEMI_COLON ws message)+
     ;
 
 message
@@ -72,7 +78,7 @@ keywordSend
     ;
 
 keywordMessage
-    :   ws ( keywordPair ws )+
+    :   ws (keywordPair ws)+
     ;
 
 keywordPair
@@ -80,7 +86,9 @@ keywordPair
     ;
 
 operand
-    :   literal | reference | subexpression
+    :   literal
+    |	reference
+    |	subexpression
     ;
 
 subexpression
@@ -88,11 +96,14 @@ subexpression
     ;
 
 literal
-    :   runtimeLiteral | parsetimeLiteral
+    :   runtimeLiteral
+    |	parsetimeLiteral
     ;
 
 runtimeLiteral
-    :   dynamicDictionary | dynamicArray | block
+    :   dynamicDictionary
+    |	dynamicArray
+    |	block
     ;
 
 block
@@ -100,7 +111,7 @@ block
     ;
 
 blockParamList
-    :   ( ws BLOCK_PARAM )+
+    :   (ws BLOCK_PARAM)+
     ;
 
 dynamicDictionary
@@ -112,15 +123,23 @@ dynamicArray
     ;
 
 parsetimeLiteral
-    :   pseudoVariable | number | charConstant | literalArray | string | symbol
+    :   pseudoVariable
+    |	number
+    |	charConstant
+    |	literalArray
+    |	string
+    |	symbol
     ;
 
 number
-    :   numberExp | hex | stFloat | stInteger
+    :   numberExp
+    |	hex
+    |	stFloat
+    |	stInteger
     ;
 
 numberExp
-    :   ( stFloat | stInteger ) EXP stInteger
+    :   (stFloat | stInteger) EXP stInteger
     ;
 
 charConstant
@@ -156,7 +175,7 @@ primitive
     ;
 
 bareSymbol
-    :   ( IDENTIFIER | BINARY_SELECTOR ) | KEYWORD+ | string
+    :   (IDENTIFIER | BINARY_SELECTOR) | KEYWORD+ | string
     ;
 
 literalArray
@@ -164,7 +183,7 @@ literalArray
     ;
 
 literalArrayRest
-    :   ws ( ( parsetimeLiteral | bareLiteralArray | bareSymbol ) ws )* CLOSE_PAREN
+    :   ws ((parsetimeLiteral | bareLiteralArray | bareSymbol) ws)* CLOSE_PAREN
     ;
 
 bareLiteralArray
@@ -196,7 +215,7 @@ binaryTail
     ;
 
 binaryMessage
-    :   ws BINARY_SELECTOR ws ( unarySend | operand )
+    :   ws BINARY_SELECTOR ws (unarySend | operand)
     ;
 
 SEPARATOR
@@ -212,7 +231,7 @@ COMMENT
     ;
 
 BINARY_SELECTOR
-    :   ( '\\' | '+' | '*' | '/' | '=' | '>' | '<' | ',' | '@' | '%' | '~' | PIPE | '&' | '-' | '?' )+
+    :   ('\\' | '+' | '*' | '/' | '=' | '>' | '<' | ',' | '@' | '%' | '~' | PIPE | '&' | '-' | '?')+
     ;
 
 RESERVED_WORD
