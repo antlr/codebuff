@@ -101,27 +101,28 @@ public class Trainer {
 	public static final int INDEX_PREV_TYPE                     = 0;
 	public static final int INDEX_PREV_FIRST_ON_LINE            = 1; // a \n right before this token?
 	public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR  = 2;
-	public static final int INDEX_CUR_TYPE                      = 3;
+	public static final int INDEX_CUR_TOKEN_TYPE                = 3;
 	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
 	public static final int INDEX_FIRST_ON_LINE		            = 5; // a \n right before this token?
 	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6; // -1 if we don't know; false means list but not big list
 	public static final int INDEX_LIST_ELEMENT_TYPE             = 7; // see LIST_PREFIX, etc...
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 8;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 9; // left ancestor
-	public static final int INDEX_ANCESTORS_PARENT_RULE         = 10;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 11;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 12;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 13;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 14;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 15;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 16;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 17;
+	public static final int INDEX_CUR_TOKEN_CHILD_INDEX         = 8; // left ancestor
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 9;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 19; // left ancestor
+	public static final int INDEX_ANCESTORS_PARENT_RULE         = 11;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 12;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 13;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 14;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 15;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 16;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 17;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 18;
 
-	public static final int INDEX_INFO_FILE                     = 18;
-	public static final int INDEX_INFO_LINE                     = 19;
-	public static final int INDEX_INFO_CHARPOS                  = 20;
+	public static final int INDEX_INFO_FILE                     = 19;
+	public static final int INDEX_INFO_LINE                     = 20;
+	public static final int INDEX_INFO_CHARPOS                  = 21;
 
-	public static final int NUM_FEATURES                        = 21;
+	public static final int NUM_FEATURES                        = 22;
 	public static final int ANALYSIS_START_TOKEN_INDEX          = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
@@ -133,6 +134,7 @@ public class Trainer {
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 2),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -157,6 +159,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 2),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"token", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -181,6 +184,7 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
+		new FeatureMetaData(FeatureType.INT,   new String[] {"token", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
@@ -605,7 +609,8 @@ public class Trainer {
 
 		features[INDEX_PREV_TYPE]                     = prevToken.getType();
 		features[INDEX_PREV_EARLIEST_RIGHT_ANCESTOR]  = rulealt(prevEarliestAncestorRuleIndex,prevEarliestAncestorRuleAltNum);
-		features[INDEX_CUR_TYPE]                      = curToken.getType();
+		features[INDEX_CUR_TOKEN_TYPE]                = curToken.getType();
+		features[INDEX_CUR_TOKEN_CHILD_INDEX]         = getChildIndexOrListMembership(node);
 		features[INDEX_EARLIEST_LEFT_ANCESTOR]        = rulealt(earliestLeftAncestor);
 		features[INDEX_ANCESTORS_CHILD_INDEX]         = getChildIndexOrListMembership(earliestLeftAncestor);
 		features[INDEX_ANCESTORS_PARENT_RULE]         = earliestLeftAncestorParent!=null ? rulealt(earliestLeftAncestorParent) : -1;
@@ -867,7 +872,7 @@ public class Trainer {
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
-			if ( i==INDEX_CUR_TYPE ) {
+			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
@@ -926,7 +931,7 @@ public class Trainer {
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
-			if ( i==INDEX_CUR_TYPE ) {
+			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
@@ -936,7 +941,7 @@ public class Trainer {
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
-			if ( i==INDEX_CUR_TYPE ) {
+			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
@@ -946,7 +951,7 @@ public class Trainer {
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
-			if ( i==INDEX_CUR_TYPE ) {
+			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
@@ -956,7 +961,7 @@ public class Trainer {
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
-			if ( i==INDEX_CUR_TYPE ) {
+			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
