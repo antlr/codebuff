@@ -7,7 +7,7 @@ import org.antlr.codebuff.validation.SubsetValidator;
 import org.antlr.codebuff.validation.TestK;
 import org.junit.Test;
 
-public class GeneratePythonForGraphs {
+public class TestGeneratePythonForGraphs {
 	@Test
 	public void genLeaveOneOutValidation() throws Exception {
 		LeaveOneOutValidator.main(null);
