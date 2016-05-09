@@ -26,6 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import static org.antlr.codebuff.FeatureType.BOOL;
+import static org.antlr.codebuff.FeatureType.INFO_CHARPOS;
+import static org.antlr.codebuff.FeatureType.INFO_FILE;
+import static org.antlr.codebuff.FeatureType.INFO_LINE;
+
 /** Collect feature vectors trained on a single file.
  *
  *  The primary results are: (X, Y1, Y2)
@@ -127,12 +132,12 @@ public class Trainer {
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 2),
+		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 2),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
@@ -145,8 +150,8 @@ public class Trainer {
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
-		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
+		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
@@ -156,8 +161,8 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 4),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 4),
+		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 2),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"token", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
@@ -170,19 +175,19 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
-		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
-		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
+		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
 	public static FeatureMetaData[] FEATURES_ALL = {
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(FeatureType.BOOL,  new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"token", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
@@ -195,8 +200,8 @@ public class Trainer {
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "child index"}, 1),
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
-		new FeatureMetaData(FeatureType.INFO_FILE,    new String[] {"", "file"}, 0),
-		new FeatureMetaData(FeatureType.INFO_LINE,    new String[] {"", "line"}, 0),
+		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
+		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
 		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
@@ -866,6 +871,11 @@ public class Trainer {
 	}
 
 	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {
+		return _toString(FEATURES, doc, features, true);
+	}
+
+	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features,
+	                               boolean showInfo) {
 		Vocabulary v = doc.parser.getVocabulary();
 		String[] ruleNames = doc.parser.getRuleNames();
 		StringBuilder buf = new StringBuilder();
@@ -899,8 +909,53 @@ public class Trainer {
 				case COLWIDTH:
 				case INFO_LINE:
 				case INFO_CHARPOS:
+					if ( showInfo ) {
+						if ( features[i]>=0 ) {
+							buf.append(String.format("%"+displayWidth+"s", StringUtils.center(String.valueOf(features[i]), displayWidth)));
+						}
+						else {
+							buf.append(Tool.sequence(displayWidth, " "));
+						}
+					}
+					break;
+				case INFO_FILE:
+					if ( showInfo ) {
+						String fname = new File(doc.fileName).getName();
+						fname = StringUtils.abbreviate(fname, displayWidth);
+						buf.append(String.format("%"+displayWidth+"s", fname));
+					}
+					break;
+				case BOOL :
+					if ( features[i]!=-1 ) {
+						buf.append(features[i] == 1 ? "true " : "false");
+					}
+					else {
+						buf.append(Tool.sequence(displayWidth, " "));
+					}
+					break;
+				default :
+					System.err.println("NO STRING FOR FEATURE TYPE: "+ FEATURES[i].type);
+			}
+		}
+		return buf.toString();
+	}
+
+	public static String _toFileInfoString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {
+		StringBuilder buf = new StringBuilder();
+		for (int i=0; i<FEATURES.length; i++) {
+			if ( FEATURES[i].type!=INFO_FILE &&
+				 FEATURES[i].type!=INFO_LINE &&
+				 FEATURES[i].type!=INFO_CHARPOS )
+			{
+				continue;
+			}
+			if ( i>0 ) buf.append(" ");
+			int displayWidth = FEATURES[i].type.displayWidth;
+			switch ( FEATURES[i].type ) {
+				case INFO_LINE:
+				case INFO_CHARPOS:
 					if ( features[i]>=0 ) {
-						buf.append(String.format("%"+displayWidth+"s", StringUtils.center(String.valueOf(features[i]),displayWidth)));
+						buf.append(String.format("%"+displayWidth+"s", StringUtils.center(String.valueOf(features[i]), displayWidth)));
 					}
 					else {
 						buf.append(Tool.sequence(displayWidth, " "));
@@ -910,14 +965,6 @@ public class Trainer {
 					String fname = new File(doc.fileName).getName();
 					fname = StringUtils.abbreviate(fname, displayWidth);
 					buf.append(String.format("%"+displayWidth+"s", fname));
-					break;
-				case BOOL :
-					if ( features[i]!=-1 ) {
-						buf.append(features[i] == 1 ? "true " : "false");
-					}
-					else {
-						buf.append(Tool.sequence(displayWidth, " "));
-					}
 					break;
 				default :
 					System.err.println("NO STRING FOR FEATURE TYPE: "+ FEATURES[i].type);
