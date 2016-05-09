@@ -77,6 +77,6 @@ public class CorpusConsistency {
 //		String display = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
 		String displayCat = Formatter.getWSCategoryStr(cat);
 
-		return String.format("%s %8s %s", features, displayCat, lineText);
+		return String.format("%s %9s %s", features, displayCat, lineText);
 	}
 }
