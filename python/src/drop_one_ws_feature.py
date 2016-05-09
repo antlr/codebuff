@@ -1,23 +1,22 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.3 'Tue May 03 23:16:10 PDT 2016'
+# CodeBuff 1.4.7 'Fri May 06 18:38:19 PDT 2016'
 #
-import numpy as np
 import matplotlib.pyplot as plt
 
 fig = plt.figure()
 ax = plt.subplot(111)
 N = 8
 featureIndexes = range(0,N)
-java = [0.05541237, 0.06451613, 0.05541237, 0.054545455, 0.05757576, 0.04, 0.05541237, 0.057843138]
+java = [0.04255319, 0.05462185, 0.04255319, 0.042071197, 0.04675964, 0.04, 0.04255319, 0.04255319]
 ax.plot(featureIndexes, java, label="java")
-sqlite = [0.10169491, 0.11640212, 0.10152284, 0.107344635, 0.121212125, 0.08571429, 0.10897436, 0.10186757]
+sqlite = [0.08, 0.09378186, 0.07979626, 0.08787129, 0.09633028, 0.08571429, 0.08791209, 0.08516484]
 ax.plot(featureIndexes, sqlite, label="sqlite")
-java8 = [0.042056076, 0.04699739, 0.042056076, 0.042056076, 0.042821158, 0.039719626, 0.042056076, 0.042821158]
+java8 = [0.037549406, 0.04255319, 0.037815128, 0.037549406, 0.036465637, 0.039719626, 0.037549406, 0.04]
 ax.plot(featureIndexes, java8, label="java8")
-antlr = [0.29331046, 0.27444252, 0.3053173, 0.29331046, 0.29331046, 0.27916196, 0.29331046, 0.29331046]
+antlr = [0.23849206, 0.2212693, 0.23670635, 0.2359127, 0.22302158, 0.23021583, 0.23888889, 0.23869048]
 ax.plot(featureIndexes, antlr, label="antlr")
-tsql = [0.08450704, 0.08203125, 0.0859375, 0.08857143, 0.09859155, 0.077922076, 0.08450704, 0.088607594]
+tsql = [0.08450704, 0.08203125, 0.0859375, 0.084745765, 0.094915256, 0.077922076, 0.08450704, 0.088607594]
 ax.plot(featureIndexes, tsql, label="tsql")
 
 labels = ['curated', ' LT(-1)', 'Strt line', 'LT(-1) right ancestor', ' LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor']
