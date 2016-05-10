@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -13,7 +14,7 @@ public class BuffUtils {
 
 	public static int indexOf(ParserRuleContext parent, ParseTree child) {
 		for (int i = 0; i<parent.getChildCount(); i++) {
-			if ( parent.getChild(i)==child) {
+			if ( parent.getChild(i)==child ) {
 				return i;
 			}
 		}
@@ -50,7 +51,7 @@ public class BuffUtils {
 		return output;
 	}
 
-	public static <T,R> List<R> map(Collection<T> data, Function<T,R> getter) {
+	public static <T, R> List<R> map(Collection<T> data, Function<T, R> getter) {
 		List<R> output = new ArrayList<>();
 		if ( data!=null ) for (T x : data) {
 			output.add(getter.apply(x));
@@ -58,7 +59,7 @@ public class BuffUtils {
 		return output;
 	}
 
-	public static <T,R> List<R> map(T[] data, Function<T,R> getter) {
+	public static <T, R> List<R> map(T[] data, Function<T, R> getter) {
 		List<R> output = new ArrayList<>();
 		if ( data!=null ) for (T x : data) {
 			output.add(getter.apply(x));
@@ -69,24 +70,24 @@ public class BuffUtils {
 	public static double variance(List<Integer> data) {
 		int n = data.size();
 		double sum = 0;
-		double avg = sum(data) / ((double)n);
+		double avg = sum(data)/((double) n);
 		for (int d : data) {
 			sum += (d-avg)*(d-avg);
 		}
-		return sum / n;
+		return sum/n;
 	}
 
 	public static double varianceFloats(List<Float> data) {
 		int n = data.size();
 		double sum = 0;
-		double avg = sumFloats(data) / ((double)n);
+		double avg = sumFloats(data)/((double) n);
 		for (float d : data) {
 			sum += (d-avg)*(d-avg);
 		}
-		return sum / n;
+		return sum/n;
 	}
 
-	public static int sum(List<Integer> data) {
+	public static int sum(Collection<Integer> data) {
 		int sum = 0;
 		for (int d : data) {
 			sum += d;
@@ -94,7 +95,7 @@ public class BuffUtils {
 		return sum;
 	}
 
-	public static float sumFloats(List<Float> data) {
+	public static float sumFloats(Collection<Float> data) {
 		float sum = 0;
 		for (float d : data) {
 			sum += d;
@@ -105,9 +106,22 @@ public class BuffUtils {
 	public static List<Double> diffFloats(List<Float> a, List<Float> b) {
 		List<Double> diffs = new ArrayList<>();
 		for (int i = 0; i<a.size(); i++) {
-			diffs.add((double)a.get(i) - b.get(i));
+			diffs.add((double) a.get(i)-b.get(i));
 		}
 		return diffs;
 	}
 
+	public static Double median(List<Double> data) {
+		Collections.sort(data);
+		int n = data.size();
+		return data.get(n/2);
+	}
+
+	public static Double mean(Collection<Double> data) {
+		double sum = 0.0;
+		for (Double d : data) {
+			sum += d;
+		}
+		return sum / data.size();
+	}
 }
