@@ -16,6 +16,8 @@ import java.util.List;
 import static org.antlr.codebuff.misc.BuffUtils.mean;
 import static org.antlr.codebuff.misc.BuffUtils.median;
 import static org.antlr.codebuff.misc.BuffUtils.sumDoubles;
+import static org.antlr.codebuff.validation.Entropy.getCategoryRatios;
+import static org.antlr.codebuff.validation.Entropy.getNormalizedCategoryEntropy;
 
 public class CorpusConsistency {
 	public static void main(String[] args) throws Exception {
@@ -54,7 +56,7 @@ public class CorpusConsistency {
 			if ( wsCatToIndexes.size()==1 ) continue;
 			if ( report ) System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
 			List<Integer> catCounts = BuffUtils.map(wsCatToIndexes.values(), List::size);
-			double wsEntropy = Entropy.getCategoryEntropy(Entropy.getCategoryRatios(catCounts));
+			double wsEntropy = getNormalizedCategoryEntropy(getCategoryRatios(catCounts));
 			wsEntropy *= exemplarIndexes.size();
 			if ( report ) System.out.printf("entropy=%5.4f\n", wsEntropy);
 			ws_entropies.add(wsEntropy);
@@ -86,7 +88,7 @@ public class CorpusConsistency {
 			if ( hposCatToIndexes.size()==1 ) continue;
 			if ( report ) System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
 			List<Integer> catCounts = BuffUtils.map(hposCatToIndexes.values(), List::size);
-			double hposEntropy = Entropy.getCategoryEntropy(Entropy.getCategoryRatios(catCounts));
+			double hposEntropy = getNormalizedCategoryEntropy(getCategoryRatios(catCounts));
 			hposEntropy *= exemplarIndexes.size();
 			if ( report ) System.out.printf("entropy=%5.4f\n", hposEntropy);
 			hpos_entropies.add(hposEntropy);
@@ -114,12 +116,10 @@ public class CorpusConsistency {
 //		Collections.sort(ws_entropies);
 //		System.out.println("ws_entropies="+ws_entropies);
 		System.out.println("ws median,mean = "+median(ws_entropies)+","+mean(ws_entropies));
-//		double expected_ws_entropy = mean(ws_entropies)*prob_ws_ambiguous;
 		double expected_ws_entropy = (sumDoubles(ws_entropies)/num_ambiguous_ws_vectors) * prob_ws_ambiguous;
 		System.out.println("expected_ws_entropy="+expected_ws_entropy);
 
 		System.out.println("hpos median,mean = "+median(hpos_entropies)+","+mean(hpos_entropies));
-//		double expected_hpos_entropy = mean(hpos_entropies)*prob_hpos_ambiguous;
 		double expected_hpos_entropy = (sumDoubles(hpos_entropies)/num_ambiguous_hpos_vectors) * prob_hpos_ambiguous;
 		System.out.println("expected_hpos_entropy="+expected_hpos_entropy);
 	}

@@ -173,8 +173,8 @@ public class Entropy {
 			List<Integer> cats2 = hposByFeatureVectorGroup.get(x);
 			HashBag<Integer> wsCats = getCategoriesBag(cats);
 			HashBag<Integer> hposCats = getCategoriesBag(cats2);
-			double wsEntropy = getCategoryEntropy(getCategoryRatios(wsCats.values()));
-			double hposEntropy = getCategoryEntropy(getCategoryRatios(hposCats.values()));
+			double wsEntropy = getNormalizedCategoryEntropy(getCategoryRatios(wsCats.values()));
+			double hposEntropy = getNormalizedCategoryEntropy(getCategoryRatios(hposCats.values()));
 			wsEntropies.add(wsEntropy);
 			hposEntropies.add(hposEntropy);
 			System.out.printf("%130s : %s,%s %s,%s\n", x,
@@ -192,10 +192,14 @@ public class Entropy {
 	 *  https://en.wikipedia.org/wiki/Diversity_index
 	 *  "Shannon entropy is the logarithm of 1D, the true diversity
 	 *   index with parameter equal to 1."
-	public static double getCategoryDiversityIndex(Collection<Float> ratios) {
-		return Math.exp(getCategoryEntropy(ratios));
-	}
 	 */
+	public static double getCategoryDiversityIndex(Collection<Float> ratios) {
+		return Math.exp(getNormalizedCategoryEntropy(ratios));
+	}
+
+//	public static double getCategoryDiversityIndex(double entropy) {
+//		return Math.exp(entropy);
+//	}
 
 	/** Return Shannon's diversity index (entropy) normalized to 0..1
 	 *  https://en.wikipedia.org/wiki/Diversity_index
@@ -209,7 +213,7 @@ public class Entropy {
 	 *   So, normalize to 0..1 by dividing by log(R). R here is the number
 	 *   of different categories.
 	 */
-	public static double getCategoryEntropy(Collection<Float> ratios) {
+	public static double getNormalizedCategoryEntropy(Collection<Float> ratios) {
 		double entropy = 0.0;
 		int R = ratios.size();
 		for (Float r : ratios) {
@@ -217,6 +221,7 @@ public class Entropy {
 		}
 		entropy = -entropy;
 		return R==1 ? 0.0 : entropy / log(R);
+//		return R==1 ? 0.0 : entropy;
 	}
 
 	public static List<Float> getCategoryRatios(Collection<Integer> catCounts) {
