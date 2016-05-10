@@ -409,13 +409,13 @@ public class Formatter {
 		String actualWSNL = getWSCategoryStr(actualWS);
 
 		String wsDisplay = getWSCategoryStr(injectNL_WS);
-		String alignDisplay = getAlignCategoryStr(alignOrIndent);
+		String alignDisplay = getHPosCategoryStr(alignOrIndent);
 		String newlinePredictionString =
 			String.format("### line %d: predicted %s actual %s",
 			              curToken.getLine(), wsDisplay, actualWSNL);
 
 		int actualAlignCategory = Trainer.getAlignmentCategory(originalDoc, nodeWithOriginalToken, indentSize);
-		String actualAlignDisplay = getAlignCategoryStr(actualAlignCategory);
+		String actualAlignDisplay = getHPosCategoryStr(actualAlignCategory);
 
 		String alignPredictionString =
 			String.format("### line %d: predicted %s actual %s",
@@ -451,7 +451,7 @@ public class Formatter {
 		return String.format("%s|%d|%d", catS, elements[0], elements[1]);
 	}
 
-	public static String getAlignCategoryStr(int alignOrIndent) {
+	public static String getHPosCategoryStr(int alignOrIndent) {
 		int[] elements = Trainer.triple(alignOrIndent);
 		int cat = alignOrIndent&0xFF;
 		String catS = "none";

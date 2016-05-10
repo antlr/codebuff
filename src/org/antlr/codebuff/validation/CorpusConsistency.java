@@ -13,10 +13,10 @@ import java.util.List;
 
 public class CorpusConsistency {
 	public static void main(String[] args) throws Exception {
-		foo(Tool.ANTLR4_DESCR);
+		dumpConsistencyReport(Tool.ANTLR4_DESCR);
 	}
 
-	public static void foo(LangDescriptor language) throws Exception {
+	public static void dumpConsistencyReport(LangDescriptor language) throws Exception {
 		Corpus corpus = new Corpus(language.corpusDir, language);
 		corpus.train();
 		// a map of feature vector to list of exemplar indexes of that feature
@@ -28,30 +28,26 @@ public class CorpusConsistency {
 			groupByFeatures.map(new FeatureVectorAsObject(features), i);
 		}
 
-		// Dump output grouped by feature vector then category
+		int num_ambiguous_ws_vectors = 0;
+		int num_ambiguous_hpos_vectors = 0;
+
+		// Dump output grouped by ws vs hpos then feature vector then category
+		System.out.println(" --- INJECT WS ---");
 		for (FeatureVectorAsObject fo : groupByFeatures.keySet()) {
 			List<Integer> exemplarIndexes = groupByFeatures.get(fo);
 
-			// we have group by feature vector, now group by cat with that set for ws, hpos
+			// we have group by feature vector, now group by cat with that set for ws
 			MultiMap<Integer,Integer> wsCatToIndexes = new MultiMap<>();
-			MultiMap<Integer,Integer> hposCatToIndexes = new MultiMap<>();
 			for (Integer i : exemplarIndexes) {
 				wsCatToIndexes.map(corpus.injectWhitespace.get(i), i);
-				hposCatToIndexes.map(corpus.hpos.get(i), i);
 			}
 			if ( wsCatToIndexes.size()==1 ) continue;
-
-			System.out.println();
+			System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
+			num_ambiguous_ws_vectors += exemplarIndexes.size();
 			System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_INJECT_WS));
 
 			for (Integer cat : wsCatToIndexes.keySet()) {
 				List<Integer> indexes = wsCatToIndexes.get(cat);
-				String displayCat = Formatter.getWSCategoryStr(cat);
-				Integer corpusVectorIndex = indexes.get(0);
-				InputDocument doc = corpus.documentsPerExemplar.get(corpusVectorIndex);
-				String features = Trainer._toString(Trainer.FEATURES_INJECT_WS, doc, fo.features, false);
-//				System.out.println();
-//				System.out.println(features+" -> "+displayCat);
 				for (Integer i : indexes) {
 					String display = getExemplarDisplay(Trainer.FEATURES_INJECT_WS, corpus, corpus.injectWhitespace, i);
 					System.out.println(display);
@@ -59,6 +55,32 @@ public class CorpusConsistency {
 				System.out.println();
 			}
 		}
+
+		System.out.println(" --- HPOS ---");
+		for (FeatureVectorAsObject fo : groupByFeatures.keySet()) {
+			List<Integer> exemplarIndexes = groupByFeatures.get(fo);
+
+			// we have group by feature vector, now group by cat with that set for hpos
+			MultiMap<Integer,Integer> hposCatToIndexes = new MultiMap<>();
+			for (Integer i : exemplarIndexes) {
+				hposCatToIndexes.map(corpus.hpos.get(i), i);
+			}
+			if ( hposCatToIndexes.size()==1 ) continue;
+			System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
+			num_ambiguous_hpos_vectors += exemplarIndexes.size();
+			System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_HPOS));
+
+			for (Integer cat : hposCatToIndexes.keySet()) {
+				List<Integer> indexes = hposCatToIndexes.get(cat);
+				for (Integer i : indexes) {
+					String display = getExemplarDisplay(Trainer.FEATURES_HPOS, corpus, corpus.hpos, i);
+					System.out.println(display);
+				}
+				System.out.println();
+			}
+		}
+		System.out.println("There are "+groupByFeatures.size()+" unique feature vectors out of "+corpus.featureVectors.size());
+		System.out.println("num_ambiguous_ws_vectors="+num_ambiguous_ws_vectors);
 	}
 
 	public static String getExemplarDisplay(FeatureMetaData[] FEATURES, Corpus corpus, List<Integer> Y, int corpusVectorIndex) {
@@ -73,9 +95,13 @@ public class CorpusConsistency {
 			lineText = lineText.substring(0, col)+'\u00B7'+lineText.substring(col, lineText.length());
 		}
 		int cat = Y.get(corpusVectorIndex);
-		int[] elements = Trainer.triple(cat);
-//		String display = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
-		String displayCat = Formatter.getWSCategoryStr(cat);
+		String displayCat;
+		if ( (cat&0xFF) == Trainer.CAT_INJECT_WS || (cat&0xFF) == Trainer.CAT_INJECT_NL) {
+			displayCat = Formatter.getWSCategoryStr(cat);
+		}
+		else {
+			displayCat = Formatter.getHPosCategoryStr(cat);
+		}
 
 		return String.format("%s %9s %s", features, displayCat, lineText);
 	}

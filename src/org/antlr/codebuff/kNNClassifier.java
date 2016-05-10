@@ -187,7 +187,7 @@ public abstract class kNNClassifier {
 			displayCat = Formatter.getWSCategoryStr(cat);
 		}
 		else {
-			displayCat = Formatter.getAlignCategoryStr(cat);
+			displayCat = Formatter.getHPosCategoryStr(cat);
 		}
 
 		StringBuilder buf = new StringBuilder();
