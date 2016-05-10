@@ -1,6 +1,6 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.7 'Fri May 06 17:43:46 PDT 2016'
+# CodeBuff 1.4.7 'Mon May 09 17:58:59 PDT 2016'
 #
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,11 +26,10 @@ ax.set_xticklabels(labels, rotation=60, fontsize=8)
 plt.xticks(featureIndexes, labels, rotation=60)
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
 
-ax.text(1, .25, 'median $f$ self distance = %5.3f, corpus+$f$ distance = %5.3f' % (np.median(sqlite_noisy_self),np.median(sqlite_noisy_corpus)))
-
+ax.text(1, .25, 'median $f$ self distance = %5.3f, corpus+$f$ distance = %5.3f' %    (np.median(sqlite_noisy_self),np.median(sqlite_noisy_corpus)))
 ax.set_xlabel("File Name")
 ax.set_ylabel("Edit Distance")
-ax.set_title("Difference between Formatting File $f$ with Training=$f$ and Training=$f$+Corpus")
+ax.set_title("Difference between Formatting File sqlite_noisy $f$\nwith Training=$f$ and Training=$f$+Corpus")
 plt.legend()
 plt.tight_layout()
 fig.savefig("images/sqlite_noisy_one_file_capture.pdf", format='pdf')
