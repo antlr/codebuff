@@ -66,8 +66,8 @@ public class CorpusConsistency {
 			if ( report ) System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
 			List<Integer> catCounts = BuffUtils.map(wsCatToIndexes.values(), List::size);
 			double wsEntropy = getNormalizedCategoryEntropy(getCategoryRatios(catCounts));
-			wsEntropy *= exemplarIndexes.size();
 			if ( report ) System.out.printf("entropy=%5.4f\n", wsEntropy);
+			wsEntropy *= exemplarIndexes.size();
 			ws_entropies.add(wsEntropy);
 			num_ambiguous_ws_vectors += exemplarIndexes.size();
 			if ( report ) System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_INJECT_WS));
@@ -98,8 +98,8 @@ public class CorpusConsistency {
 			if ( report ) System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
 			List<Integer> catCounts = BuffUtils.map(hposCatToIndexes.values(), List::size);
 			double hposEntropy = getNormalizedCategoryEntropy(getCategoryRatios(catCounts));
-			hposEntropy *= exemplarIndexes.size();
 			if ( report ) System.out.printf("entropy=%5.4f\n", hposEntropy);
+			hposEntropy *= exemplarIndexes.size();
 			hpos_entropies.add(hposEntropy);
 			num_ambiguous_hpos_vectors += exemplarIndexes.size();
 			if ( report ) System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_HPOS));

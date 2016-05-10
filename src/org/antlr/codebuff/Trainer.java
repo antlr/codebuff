@@ -1,6 +1,5 @@
 package org.antlr.codebuff;
 
-import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.walkers.CollectTokenDependencies;
@@ -30,6 +29,7 @@ import static org.antlr.codebuff.FeatureType.BOOL;
 import static org.antlr.codebuff.FeatureType.INFO_CHARPOS;
 import static org.antlr.codebuff.FeatureType.INFO_FILE;
 import static org.antlr.codebuff.FeatureType.INFO_LINE;
+import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 /** Collect feature vectors trained on a single file.
  *
@@ -377,23 +377,24 @@ public class Trainer {
 		return precedingNL;
 	}
 
-	// if we have non-ws tokens like comments, we only count ws after last comment
+	// if we have non-ws tokens like comments, we only count ws not in comments
 	public static List<Token> getPreviousWS(CommonTokenStream tokens, int i) {
 		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(i);
 		if ( hiddenTokensToLeft==null ) return null;
-		if ( hasCommentToken(hiddenTokensToLeft) ) {
-			for (int j = hiddenTokensToLeft.size()-1; j>=0; j--) {
-				Token hidden = hiddenTokensToLeft.get(j);
-				String hiddenText = hidden.getText();
-				if ( !hiddenText.matches("\\s+") ) {
-					return hiddenTokensToLeft.subList(j+1, hiddenTokensToLeft.size());
-				}
-			}
-			return null;
-		}
-		else {
-			return hiddenTokensToLeft;
-		}
+		return filter(hiddenTokensToLeft, t -> t.getText().matches("\\s+"));
+//		if ( hasCommentToken(hiddenTokensToLeft) ) {
+//			for (int j = hiddenTokensToLeft.size()-1; j>=0; j--) {
+//				Token hidden = hiddenTokensToLeft.get(j);
+//				String hiddenText = hidden.getText();
+//				if ( !hiddenText.matches("\\s+") ) {
+//					return hiddenTokensToLeft.subList(j+1, hiddenTokensToLeft.size());
+//				}
+//			}
+//			return null;
+//		}
+//		else {
+//			return hiddenTokensToLeft;
+//		}
 	}
 
 	public static boolean hasCommentToken(List<Token> hiddenTokensToLeft) {
@@ -791,7 +792,7 @@ public class Trainer {
 					List<TerminalNode> matchingLeftNodes = parent.getTokens(matchingLeftTokenType);
 					// get matching left node by getting last node to left of current token
 					List<TerminalNode> nodesToLeftOfCurrentToken =
-						BuffUtils.filter(matchingLeftNodes, n -> n.getSymbol().getTokenIndex()<curToken.getTokenIndex());
+						filter(matchingLeftNodes, n -> n.getSymbol().getTokenIndex()<curToken.getTokenIndex());
 					TerminalNode matchingLeftNode = nodesToLeftOfCurrentToken.get(nodesToLeftOfCurrentToken.size()-1);
 					if (matchingLeftNode == null) {
 						System.err.println("can't find matching node for "+node.getSymbol());
@@ -847,15 +848,15 @@ public class Trainer {
 	}
 
 	public List<int[]> getFeatureVectors() {
-		return BuffUtils.filter(featureVectors, v -> v!=null);
+		return filter(featureVectors, v -> v!=null);
 	}
 
 	public List<Integer> getInjectWhitespace() {
-		return BuffUtils.filter(injectWhitespace, v -> v!=null);
+		return filter(injectWhitespace, v -> v!=null);
 	}
 
 	public List<Integer> getHPos() {
-		return BuffUtils.filter(hpos, v -> v!=null);
+		return filter(hpos, v -> v!=null);
 	}
 
 	public List<int[]> getTokenToFeatureVectors() {
