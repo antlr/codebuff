@@ -97,9 +97,11 @@ public class OneFileCapture {
 				"ax.set_xticklabels(labels, rotation=60, fontsize=8)\n"+
 				"plt.xticks(featureIndexes, labels, rotation=60)\n" +
 				"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n\n" +
+				"ax.text(1, .25, 'median $f$ self distance = %5.3f, corpus+$f$ distance = %5.3f' %" +
+				"    (np.median(<lang>_self),np.median(<lang>_corpus)))\n" +
 				"ax.set_xlabel(\"File Name\")\n"+
 				"ax.set_ylabel(\"Edit Distance\")\n"+
-				"ax.set_title(\"Difference between Formatting File $f$ with Training=$f$ and Training=$f$+Corpus\")\n"+
+				"ax.set_title(\"Difference between Formatting File <lang> $f$\\nwith Training=$f$ and Training=$f$+Corpus\")\n"+
 				"plt.legend()\n" +
 				"plt.tight_layout()\n" +
 				"fig.savefig(\"images/"+language.name+"_one_file_capture.pdf\", format='pdf')\n" +

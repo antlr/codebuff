@@ -26,6 +26,8 @@ ax.set_xticklabels(labels, rotation=60, fontsize=8)
 plt.xticks(featureIndexes, labels, rotation=60)
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
 
+ax.text(1, .25, 'median $f$ self edit-distance = %5.3f' % np.median(java8_self))
+
 ax.set_xlabel("File Name")
 ax.set_ylabel("Edit Distance")
 ax.set_title("Difference between Formatting File $f$ with Training=$f$ and Training=$f$+Corpus")
