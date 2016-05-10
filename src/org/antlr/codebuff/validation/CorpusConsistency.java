@@ -6,36 +6,45 @@ import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
+import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.MultiMap;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.antlr.codebuff.misc.BuffUtils.mean;
+import static org.antlr.codebuff.misc.BuffUtils.median;
+import static org.antlr.codebuff.misc.BuffUtils.sumDoubles;
 
 public class CorpusConsistency {
 	public static void main(String[] args) throws Exception {
-		dumpConsistencyReport(Tool.SQLITE_NOISY_DESCR);
+		for (LangDescriptor language : Tool.languages) {
+			computeConsistency(language, false);
+		}
 	}
 
-	public static void dumpConsistencyReport(LangDescriptor language) throws Exception {
+	public static void computeConsistency(LangDescriptor language, boolean report) throws Exception {
 		Corpus corpus = new Corpus(language.corpusDir, language);
 		corpus.train();
 		// a map of feature vector to list of exemplar indexes of that feature
-		MultiMap<FeatureVectorAsObject,Integer> groupByFeatures = new MultiMap<>();
+		MultiMap<FeatureVectorAsObject,Integer> contextToIndex = new MultiMap<>();
 		MultiMap<FeatureVectorAsObject,Integer> featuresToHPosCat = new MultiMap<>();
 
 		int n = corpus.featureVectors.size();
 		for (int i = 0; i<n; i++) {
 			int[] features = corpus.featureVectors.get(i);
-			groupByFeatures.map(new FeatureVectorAsObject(features), i);
+			contextToIndex.map(new FeatureVectorAsObject(features), i);
 		}
 
 		int num_ambiguous_ws_vectors = 0;
 		int num_ambiguous_hpos_vectors = 0;
 
 		// Dump output grouped by ws vs hpos then feature vector then category
-		System.out.println(" --- INJECT WS ---");
-		for (FeatureVectorAsObject fo : groupByFeatures.keySet()) {
-			List<Integer> exemplarIndexes = groupByFeatures.get(fo);
+		if ( report ) System.out.println(" --- INJECT WS ---");
+		List<Double> ws_entropies = new ArrayList<>();
+		for (FeatureVectorAsObject fo : contextToIndex.keySet()) {
+			List<Integer> exemplarIndexes = contextToIndex.get(fo);
 
 			// we have group by feature vector, now group by cat with that set for ws
 			MultiMap<Integer,Integer> wsCatToIndexes = new MultiMap<>();
@@ -43,23 +52,31 @@ public class CorpusConsistency {
 				wsCatToIndexes.map(corpus.injectWhitespace.get(i), i);
 			}
 			if ( wsCatToIndexes.size()==1 ) continue;
-			System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
+			if ( report ) System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
+			List<Integer> catCounts = BuffUtils.map(wsCatToIndexes.values(), List::size);
+			double wsEntropy = Entropy.getCategoryEntropy(Entropy.getCategoryRatios(catCounts));
+			wsEntropy *= exemplarIndexes.size();
+			if ( report ) System.out.printf("entropy=%5.4f\n", wsEntropy);
+			ws_entropies.add(wsEntropy);
 			num_ambiguous_ws_vectors += exemplarIndexes.size();
-			System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_INJECT_WS));
+			if ( report ) System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_INJECT_WS));
 
-			for (Integer cat : wsCatToIndexes.keySet()) {
-				List<Integer> indexes = wsCatToIndexes.get(cat);
-				for (Integer i : indexes) {
-					String display = getExemplarDisplay(Trainer.FEATURES_INJECT_WS, corpus, corpus.injectWhitespace, i);
-					System.out.println(display);
+			if ( report ) {
+				for (Integer cat : wsCatToIndexes.keySet()) {
+					List<Integer> indexes = wsCatToIndexes.get(cat);
+					for (Integer i : indexes) {
+						String display = getExemplarDisplay(Trainer.FEATURES_INJECT_WS, corpus, corpus.injectWhitespace, i);
+						System.out.println(display);
+					}
+					System.out.println();
 				}
-				System.out.println();
 			}
 		}
 
-		System.out.println(" --- HPOS ---");
-		for (FeatureVectorAsObject fo : groupByFeatures.keySet()) {
-			List<Integer> exemplarIndexes = groupByFeatures.get(fo);
+		if ( report ) System.out.println(" --- HPOS ---");
+		List<Double> hpos_entropies = new ArrayList<>();
+		for (FeatureVectorAsObject fo : contextToIndex.keySet()) {
+			List<Integer> exemplarIndexes = contextToIndex.get(fo);
 
 			// we have group by feature vector, now group by cat with that set for hpos
 			MultiMap<Integer,Integer> hposCatToIndexes = new MultiMap<>();
@@ -67,22 +84,44 @@ public class CorpusConsistency {
 				hposCatToIndexes.map(corpus.hpos.get(i), i);
 			}
 			if ( hposCatToIndexes.size()==1 ) continue;
-			System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
+			if ( report ) System.out.println("Feature vector has "+exemplarIndexes.size()+" exemplars");
+			List<Integer> catCounts = BuffUtils.map(hposCatToIndexes.values(), List::size);
+			double hposEntropy = Entropy.getCategoryEntropy(Entropy.getCategoryRatios(catCounts));
+			hposEntropy *= exemplarIndexes.size();
+			if ( report ) System.out.printf("entropy=%5.4f\n", hposEntropy);
+			hpos_entropies.add(hposEntropy);
 			num_ambiguous_hpos_vectors += exemplarIndexes.size();
-			System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_HPOS));
+			if ( report ) System.out.print(Trainer.featureNameHeader(Trainer.FEATURES_HPOS));
 
-			for (Integer cat : hposCatToIndexes.keySet()) {
-				List<Integer> indexes = hposCatToIndexes.get(cat);
-				for (Integer i : indexes) {
-					String display = getExemplarDisplay(Trainer.FEATURES_HPOS, corpus, corpus.hpos, i);
-					System.out.println(display);
+			if ( report ) {
+				for (Integer cat : hposCatToIndexes.keySet()) {
+					List<Integer> indexes = hposCatToIndexes.get(cat);
+					for (Integer i : indexes) {
+						String display = getExemplarDisplay(Trainer.FEATURES_HPOS, corpus, corpus.hpos, i);
+						System.out.println(display);
+					}
+					System.out.println();
 				}
-				System.out.println();
 			}
 		}
-		System.out.println("There are "+groupByFeatures.size()+" unique feature vectors out of "+n);
-		System.out.printf("num_ambiguous_ws_vectors   = %5d/%5d = %5.3f\n", num_ambiguous_ws_vectors, n, num_ambiguous_ws_vectors/(float)n);
-		System.out.printf("num_ambiguous_hpos_vectors = %5d/%5d = %5.3f\n", num_ambiguous_hpos_vectors, n, num_ambiguous_hpos_vectors/(float)n);
+		System.out.println();
+		System.out.println(language.name);
+		System.out.println("There are "+contextToIndex.size()+" unique feature vectors out of "+n);
+		float prob_ws_ambiguous = num_ambiguous_ws_vectors/(float) n;
+		System.out.printf("num_ambiguous_ws_vectors   = %5d/%5d = %5.3f\n", num_ambiguous_ws_vectors, n, prob_ws_ambiguous);
+		float prob_hpos_ambiguous = num_ambiguous_hpos_vectors/(float) n;
+		System.out.printf("num_ambiguous_hpos_vectors = %5d/%5d = %5.3f\n", num_ambiguous_hpos_vectors, n, prob_hpos_ambiguous);
+//		Collections.sort(ws_entropies);
+//		System.out.println("ws_entropies="+ws_entropies);
+		System.out.println("ws median,mean = "+median(ws_entropies)+","+mean(ws_entropies));
+//		double expected_ws_entropy = mean(ws_entropies)*prob_ws_ambiguous;
+		double expected_ws_entropy = (sumDoubles(ws_entropies)/num_ambiguous_ws_vectors) * prob_ws_ambiguous;
+		System.out.println("expected_ws_entropy="+expected_ws_entropy);
+
+		System.out.println("hpos median,mean = "+median(hpos_entropies)+","+mean(hpos_entropies));
+//		double expected_hpos_entropy = mean(hpos_entropies)*prob_hpos_ambiguous;
+		double expected_hpos_entropy = (sumDoubles(hpos_entropies)/num_ambiguous_hpos_vectors) * prob_hpos_ambiguous;
+		System.out.println("expected_hpos_entropy="+expected_hpos_entropy);
 	}
 
 	public static String getExemplarDisplay(FeatureMetaData[] FEATURES, Corpus corpus, List<Integer> Y, int corpusVectorIndex) {

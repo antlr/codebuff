@@ -86,7 +86,7 @@ import static org.antlr.codebuff.misc.BuffUtils.mean;
  or rich enough. Low diversity just says we'll be able to pick what the
  formatting model thinks is correct.
  */
-public class MeasureEntropy {
+public class Entropy {
 
 	public static void main(String[] args) throws Exception {
 		runCaptureForOneLanguage(Tool.ANTLR4_DESCR);

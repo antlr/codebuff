@@ -103,6 +103,14 @@ public class BuffUtils {
 		return sum;
 	}
 
+	public static float sumDoubles(Collection<Double> data) {
+		float sum = 0;
+		for (double d : data) {
+			sum += d;
+		}
+		return sum;
+	}
+
 	public static List<Double> diffFloats(List<Float> a, List<Float> b) {
 		List<Double> diffs = new ArrayList<>();
 		for (int i = 0; i<a.size(); i++) {
