@@ -1,6 +1,6 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.7 'Fri May 06 18:06:57 PDT 2016'
+# CodeBuff 1.4.7 'Mon May 09 17:43:59 PDT 2016'
 #
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,15 +16,8 @@ antlr_corpus = [0.036551576, 0.10244233, 0.074480556, 0.031339988, 0.087241, 0.0
 antlr_diff = np.abs(np.subtract(antlr_self, antlr_corpus))
 
 all = zip(antlr_self, antlr_corpus, antlr_diff, labels)
-print 'BEFORE'
-for t in all:
-	print t
 all = sorted(all, key=lambda x : x[2], reverse=True)
 antlr_self, antlr_corpus, antlr_diff, labels = zip(*all)
-
-print 'AFTER'
-for t in zip(*all):
-	print t
 
 ax.plot(featureIndexes, antlr_self, label="antlr_self")
 #ax.plot(featureIndexes, antlr_corpus, label="antlr_corpus")

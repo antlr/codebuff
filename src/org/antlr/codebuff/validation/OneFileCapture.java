@@ -56,10 +56,11 @@ public class OneFileCapture {
 			selfEditDistances.add(editDistance);
 		}
 
+		Corpus corpus = new Corpus(language.corpusDir, language);
+		corpus.train();
+
 		List<Float> corpusEditDistances = new ArrayList<>();
 		for (String fileName : filenames) {
-			Corpus corpus = new Corpus(language.corpusDir, language);
-			corpus.train();
 			InputDocument testDoc = Tool.parse(fileName, corpus.language);
 			Formatter formatter = new Formatter(corpus, language.indentSize);
 			String output = formatter.format(testDoc, false);
