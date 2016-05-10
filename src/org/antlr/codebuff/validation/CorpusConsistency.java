@@ -13,7 +13,7 @@ import java.util.List;
 
 public class CorpusConsistency {
 	public static void main(String[] args) throws Exception {
-		dumpConsistencyReport(Tool.ANTLR4_DESCR);
+		dumpConsistencyReport(Tool.SQLITE_NOISY_DESCR);
 	}
 
 	public static void dumpConsistencyReport(LangDescriptor language) throws Exception {
@@ -23,7 +23,8 @@ public class CorpusConsistency {
 		MultiMap<FeatureVectorAsObject,Integer> groupByFeatures = new MultiMap<>();
 		MultiMap<FeatureVectorAsObject,Integer> featuresToHPosCat = new MultiMap<>();
 
-		for (int i = 0; i<corpus.featureVectors.size(); i++) {
+		int n = corpus.featureVectors.size();
+		for (int i = 0; i<n; i++) {
 			int[] features = corpus.featureVectors.get(i);
 			groupByFeatures.map(new FeatureVectorAsObject(features), i);
 		}
@@ -79,8 +80,9 @@ public class CorpusConsistency {
 				System.out.println();
 			}
 		}
-		System.out.println("There are "+groupByFeatures.size()+" unique feature vectors out of "+corpus.featureVectors.size());
-		System.out.println("num_ambiguous_ws_vectors="+num_ambiguous_ws_vectors);
+		System.out.println("There are "+groupByFeatures.size()+" unique feature vectors out of "+n);
+		System.out.printf("num_ambiguous_ws_vectors   = %5d/%5d = %5.3f\n", num_ambiguous_ws_vectors, n, num_ambiguous_ws_vectors/(float)n);
+		System.out.printf("num_ambiguous_hpos_vectors = %5d/%5d = %5.3f\n", num_ambiguous_hpos_vectors, n, num_ambiguous_hpos_vectors/(float)n);
 	}
 
 	public static String getExemplarDisplay(FeatureMetaData[] FEATURES, Corpus corpus, List<Integer> Y, int corpusVectorIndex) {
