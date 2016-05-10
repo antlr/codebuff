@@ -21,12 +21,21 @@ import static org.antlr.codebuff.validation.Entropy.getNormalizedCategoryEntropy
 
 public class CorpusConsistency {
 	public static void main(String[] args) throws Exception {
+		boolean report = false;
+		if ( args.length>0 && args[0].equals("-report") ) {
+			report = true;
+		}
 		for (LangDescriptor language : Tool.languages) {
-			computeConsistency(language, false);
+			computeConsistency(language, report);
 		}
 	}
 
 	public static void computeConsistency(LangDescriptor language, boolean report) throws Exception {
+		if ( report ) {
+			System.out.println("-----------------------------------");
+			System.out.println(language.name);
+			System.out.println("-----------------------------------");
+		}
 		Corpus corpus = new Corpus(language.corpusDir, language);
 		corpus.train();
 		// a map of feature vector to list of exemplar indexes of that feature
