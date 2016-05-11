@@ -164,7 +164,7 @@ public class Trainer {
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
+		FeatureMetaData.UNUSED,
 		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 4),
 		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 2),
