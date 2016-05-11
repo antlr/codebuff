@@ -29,6 +29,10 @@ import static org.antlr.codebuff.FeatureType.BOOL;
 import static org.antlr.codebuff.FeatureType.INFO_CHARPOS;
 import static org.antlr.codebuff.FeatureType.INFO_FILE;
 import static org.antlr.codebuff.FeatureType.INFO_LINE;
+import static org.antlr.codebuff.FeatureType.INT;
+import static org.antlr.codebuff.FeatureType.RULE;
+import static org.antlr.codebuff.FeatureType.TOKEN;
+import static org.antlr.codebuff.FeatureType.UNUSED;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 /** Collect feature vectors trained on a single file.
@@ -133,16 +137,16 @@ public class Trainer {
 	public static final int ANALYSIS_START_TOKEN_INDEX          = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
-		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
+		new FeatureMetaData(TOKEN, new String[] {"", "LT(-1)"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
+		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED, // can't use "paired token on diff line as we are computing '\n' here
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 2),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Big", "list"}, 2),
+		new FeatureMetaData(INT,   new String[] {"List", "elem."}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -156,61 +160,61 @@ public class Trainer {
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
 		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
-		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
 	public static FeatureMetaData[] FEATURES_HPOS = {
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
+		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 4),
-		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 2),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"token", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^3"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 4),
+		new FeatureMetaData(BOOL,  new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(INT,   new String[] {"List", "elem."}, 2),
+		new FeatureMetaData(INT,   new String[] {"token", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		new FeatureMetaData(INT,   new String[] {"ancestor", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^2"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent^2", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^3"}, 1),
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^5"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^5", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^4"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent^4", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^5"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent^5", "child index"}, 1),
 		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
 		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
-		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
 	public static FeatureMetaData[] FEATURES_ALL = {
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
+		new FeatureMetaData(TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"Pair", "dif\\n"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
+		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
+		new FeatureMetaData(INT,   new String[] {"Pair", "dif\\n"}, 1),
 		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"List", "elem."}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"token", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"ancestor", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^2"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^2", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^3"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^3", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^4"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^4", "child index"}, 1),
-		new FeatureMetaData(FeatureType.RULE,  new String[] {"", "parent^5"}, 1),
-		new FeatureMetaData(FeatureType.INT,   new String[] {"parent^5", "child index"}, 1),
+		new FeatureMetaData(INT,   new String[] {"List", "elem."}, 1),
+		new FeatureMetaData(INT,   new String[] {"token", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
+		new FeatureMetaData(INT,   new String[] {"ancestor", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^2"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent^2", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^3"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent^3", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^4"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent^4", "child index"}, 1),
+		new FeatureMetaData(RULE,  new String[] {"", "parent^5"}, 1),
+		new FeatureMetaData(INT,   new String[] {"parent^5", "child index"}, 1),
 		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
 		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
-		new FeatureMetaData(FeatureType.INFO_CHARPOS, new String[] {"char", "pos"}, 0)
+		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
 	protected Corpus corpus;
@@ -894,7 +898,7 @@ public class Trainer {
 		String[] ruleNames = doc.parser.getRuleNames();
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
-			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
+			if ( FEATURES[i].type.equals(UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
@@ -990,7 +994,7 @@ public class Trainer {
 	public static String featureNameHeader(FeatureMetaData[] FEATURES) {
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
-			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
+			if ( FEATURES[i].type.equals(UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
@@ -1000,7 +1004,7 @@ public class Trainer {
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {
-			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
+			if ( FEATURES[i].type.equals(UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
@@ -1010,7 +1014,7 @@ public class Trainer {
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {
-			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
+			if ( FEATURES[i].type.equals(UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
@@ -1020,7 +1024,7 @@ public class Trainer {
 		}
 		buf.append("\n");
 		for (int i=0; i<FEATURES.length; i++) {
-			if ( FEATURES[i].type.equals(FeatureType.UNUSED) ) continue;
+			if ( FEATURES[i].type.equals(UNUSED) ) continue;
 			if ( i>0 ) buf.append(" ");
 			if ( i==INDEX_CUR_TOKEN_TYPE ) {
 				buf.append("| "); // separate prev from current tokens
