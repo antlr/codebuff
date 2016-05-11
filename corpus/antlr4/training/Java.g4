@@ -167,7 +167,7 @@ memberDeclaration
    for invalid return type after parsing.
  */
 methodDeclaration
-    :   (typeSpec|'void') Identifier formalParameters ('[' ']')*
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
         ('throws' qualifiedNameList)?
         (   methodBody
         |   ';'
@@ -925,53 +925,53 @@ NullLiteral
 
 // §3.11 Separators
 
-LPAREN          : '(';
-RPAREN          : ')';
-LBRACE          : '{';
-RBRACE          : '}';
-LBRACK          : '[';
-RBRACK          : ']';
-SEMI            : ';';
-COMMA           : ',';
-DOT             : '.';
+LPAREN          : '(' ;
+RPAREN          : ')' ;
+LBRACE          : '{' ;
+RBRACE          : '}' ;
+LBRACK          : '[' ;
+RBRACK          : ']' ;
+SEMI            : ';' ;
+COMMA           : ',' ;
+DOT             : '.' ;
 
 // §3.12 Operators
 
-ASSIGN          : '=';
-GT              : '>';
-LT              : '<';
-BANG            : '!';
-TILDE           : '~';
-QUESTION        : '?';
-COLON           : ':';
-EQUAL           : '==';
-LE              : '<=';
-GE              : '>=';
-NOTEQUAL        : '!=';
-AND             : '&&';
-OR              : '||';
-INC             : '++';
-DEC             : '--';
-ADD             : '+';
-SUB             : '-';
-MUL             : '*';
-DIV             : '/';
-BITAND          : '&';
-BITOR           : '|';
-CARET           : '^';
-MOD             : '%';
+ASSIGN          : '=' ;
+GT              : '>' ;
+LT              : '<' ;
+BANG            : '!' ;
+TILDE           : '~' ;
+QUESTION        : '?' ;
+COLON           : ':' ;
+EQUAL           : '==' ;
+LE              : '<=' ;
+GE              : '>=' ;
+NOTEQUAL        : '!=' ;
+AND             : '&&' ;
+OR              : '||' ;
+INC             : '++' ;
+DEC             : '--' ;
+ADD             : '+' ;
+SUB             : '-' ;
+MUL             : '*' ;
+DIV             : '/' ;
+BITAND          : '&' ;
+BITOR           : '|' ;
+CARET           : '^' ;
+MOD             : '%' ;
 
-ADD_ASSIGN      : '+=';
-SUB_ASSIGN      : '-=';
-MUL_ASSIGN      : '*=';
-DIV_ASSIGN      : '/=';
-AND_ASSIGN      : '&=';
-OR_ASSIGN       : '|=';
-XOR_ASSIGN      : '^=';
-MOD_ASSIGN      : '%=';
-LSHIFT_ASSIGN   : '<<=';
-RSHIFT_ASSIGN   : '>>=';
-URSHIFT_ASSIGN  : '>>>=';
+ADD_ASSIGN      : '+=' ;
+SUB_ASSIGN      : '-=' ;
+MUL_ASSIGN      : '*=' ;
+DIV_ASSIGN      : '/=' ;
+AND_ASSIGN      : '&=' ;
+OR_ASSIGN       : '|=' ;
+XOR_ASSIGN      : '^=' ;
+MOD_ASSIGN      : '%=' ;
+LSHIFT_ASSIGN   : '<<=' ;
+RSHIFT_ASSIGN   : '>>=' ;
+URSHIFT_ASSIGN  : '>>>=' ;
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
 
@@ -1009,8 +1009,8 @@ JavaLetterOrDigit
 // Additional symbols not defined in the lexical specification
 //
 
-AT : '@';
-ELLIPSIS : '...';
+AT : '@' ;
+ELLIPSIS : '...' ;
 
 //
 // Whitespace and comments

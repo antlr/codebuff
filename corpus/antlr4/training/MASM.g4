@@ -1,7 +1,7 @@
 
-/** 
+/**
 This grammar is generated with antlrworks in order to parse an asm source
-code.First of all the lexical rules established here do not replace the ones 
+code.First of all the lexical rules established here do not replace the ones
 generated in JFlex we used in EditorASM to color the tokens, instead they are used
 to provide the necessary tokens for the parser.
 **/
@@ -11,7 +11,7 @@ to provide the necessary tokens for the parser.
 */
 grammar MASM;
 
-@header{ 
+@header {
  	 package com.Ostermiller.Syntax;
 }
 
@@ -463,29 +463,21 @@ time
 	:	TIMES
 	;
 
-
 Identifier
 	:	Letter ('_' | Letter | Digit)*
 	;
 
-
 DS : 'ds' ;
-
 
 ES : 'es' ;
 
-
 CS : 'cs' ;
-
 
 SS : 'ss' ;
 
-
 GS : 'gs' ;
 
-
 FS : 'fs' ;
-
 
 AH : 'ah' ;
 
@@ -493,556 +485,543 @@ AL : 'al' ;
 
 AX : 'ax' ;
 
-BH : 'bh' ; 
+BH : 'bh' ;
 
-BL : 'bl' ; 
+BL : 'bl' ;
 
-BX : 'bx' ; 
+BX : 'bx' ;
 
-CH : 'ch' ; 
+CH : 'ch' ;
 
-CL : 'cl' ; 
+CL : 'cl' ;
 
-CX : 'cx' ; 
+CX : 'cx' ;
 
-DH : 'dh' ; 
+DH : 'dh' ;
 
 DL : 'dl' ;
 
-
 DX : 'dx' ;
-
 
 SI : 'si' ;
 
-
 DI : 'di' ;
-
 
 SP : 'sp' ;
 
-
 BP : 'bp' ;
 
-EAX : 'eax' ; 
+EAX : 'eax' ;
 
-EBX : 'ebx' ; 
+EBX : 'ebx' ;
 
-ECX : 'ecx' ; 
+ECX : 'ecx' ;
 
-EDX : 'edx' ; 
+EDX : 'edx' ;
 
-ESI : 'esi' ; 
+ESI : 'esi' ;
 
-EDI : 'edi' ; 
+EDI : 'edi' ;
 
-ESP : 'esp' ; 
+ESP : 'esp' ;
 
-EBP : 'ebp' ; 
+EBP : 'ebp' ;
 
-MOV : 'mov' ; 
+MOV : 'mov' ;
 
-CMP : 'cmp' ; 
+CMP : 'cmp' ;
 
-TEST : 'test' ; 
+TEST : 'test' ;
 
-PUSH : 'push' ; 
+PUSH : 'push' ;
 
-POP : 'pop' ; 
+POP : 'pop' ;
 
-IDIV : 'idiv' ; 
+IDIV : 'idiv' ;
 
-INC : 'inc' ; 
+INC : 'inc' ;
 
-DEC : 'dec' ; 
+DEC : 'dec' ;
 
-NEG : 'neg' ; 
+NEG : 'neg' ;
 
-MUL : 'mul' ; 
+MUL : 'mul' ;
 
-DIV : 'div' ; 
+DIV : 'div' ;
 
-IMUL : 'imul' ; 
+IMUL : 'imul' ;
 
-NOT : 'not' ; 
+NOT : 'not' ;
 
-SETPO : 'setpo' ; 
+SETPO : 'setpo' ;
 
-SETAE : 'setae' ; 
+SETAE : 'setae' ;
 
-SETNLE : 'setnle' ; 
+SETNLE : 'setnle' ;
 
-SETC : 'setc' ; 
+SETC : 'setc' ;
 
-SETNO : 'setno' ; 
+SETNO : 'setno' ;
 
-SETNB : 'setnb' ; 
+SETNB : 'setnb' ;
 
-SETP : 'setp' ; 
+SETP : 'setp' ;
 
-SETNGE : 'setnge' ; 
+SETNGE : 'setnge' ;
 
-SETL : 'setl' ; 
+SETL : 'setl' ;
 
-SETGE : 'setge' ; 
+SETGE : 'setge' ;
 
-SETPE : 'setpe' ; 
+SETPE : 'setpe' ;
 
-SETNL : 'setnl' ; 
+SETNL : 'setnl' ;
 
-SETNZ : 'setnz' ; 
+SETNZ : 'setnz' ;
 
-SETNE : 'setne' ; 
+SETNE : 'setne' ;
 
-SETNC : 'setnc' ; 
+SETNC : 'setnc' ;
 
-SETBE : 'setbe' ; 
+SETBE : 'setbe' ;
 
-SETNP : 'setnp' ; 
+SETNP : 'setnp' ;
 
-SETNS : 'setns' ; 
+SETNS : 'setns' ;
 
-SETO : 'seto' ; 
+SETO : 'seto' ;
 
-SETNA : 'setna' ; 
+SETNA : 'setna' ;
 
-SETNAE : 'setnae' ; 
+SETNAE : 'setnae' ;
 
-SETZ : 'setz' ; 
+SETZ : 'setz' ;
 
-SETLE : 'setle' ; 
+SETLE : 'setle' ;
 
-SETNBE : 'setnbe' ; 
+SETNBE : 'setnbe' ;
 
-SETS : 'sets' ; 
+SETS : 'sets' ;
 
-SETE : 'sete' ; 
+SETE : 'sete' ;
 
-SETB : 'setb' ; 
+SETB : 'setb' ;
 
-SETA : 'seta' ; 
+SETA : 'seta' ;
 
-SETG : 'setg' ; 
+SETG : 'setg' ;
 
-SETNG : 'setng' ; 
+SETNG : 'setng' ;
 
-XCHG : 'xchg' ; 
+XCHG : 'xchg' ;
 
-POPAD : 'popad' ; 
+POPAD : 'popad' ;
 
-AAA : 'aaa' ; 
+AAA : 'aaa' ;
 
-POPA : 'popa' ; 
+POPA : 'popa' ;
 
-POPFD : 'popfd' ; 
+POPFD : 'popfd' ;
 
-CWD : 'cwd' ; 
+CWD : 'cwd' ;
 
-LAHF : 'lahf' ; 
+LAHF : 'lahf' ;
 
-PUSHAD : 'pushad' ; 
+PUSHAD : 'pushad' ;
 
-PUSHF : 'pushf' ; 
+PUSHF : 'pushf' ;
 
-AAS : 'aas' ; 
+AAS : 'aas' ;
 
-BSWAP : 'bswap' ; 
+BSWAP : 'bswap' ;
 
-PUSHFD : 'pushfd' ; 
+PUSHFD : 'pushfd' ;
 
-CBW : 'cbw' ; 
+CBW : 'cbw' ;
 
-CWDE : 'cwde' ; 
+CWDE : 'cwde' ;
 
-XLAT : 'xlat' ; 
+XLAT : 'xlat' ;
 
-AAM : 'aam' ; 
+AAM : 'aam' ;
 
-AAD : 'aad' ; 
+AAD : 'aad' ;
 
-CDQ : 'cdq' ; 
+CDQ : 'cdq' ;
 
-DAA : 'daa' ; 
+DAA : 'daa' ;
 
-SAHF : 'sahf' ; 
+SAHF : 'sahf' ;
 
-DAS : 'das' ; 
+DAS : 'das' ;
 
-INTO : 'into' ; 
+INTO : 'into' ;
 
-IRET : 'iret' ; 
+IRET : 'iret' ;
 
-CLC : 'clc' ; 
+CLC : 'clc' ;
 
-STC : 'stc' ; 
+STC : 'stc' ;
 
-CMC : 'cmc' ; 
+CMC : 'cmc' ;
 
-CLD : 'cld' ; 
+CLD : 'cld' ;
 
-STD : 'std' ; 
+STD : 'std' ;
 
-CLI : 'cli' ; 
+CLI : 'cli' ;
 
-STI : 'sti' ; 
+STI : 'sti' ;
 
-MOVSB : 'movsb' ; 
+MOVSB : 'movsb' ;
 
-MOVSW : 'movsw' ; 
+MOVSW : 'movsw' ;
 
-MOVSD : 'movsd' ; 
+MOVSD : 'movsd' ;
 
-LODS : 'lods' ; 
+LODS : 'lods' ;
 
-LODSB : 'lodsb' ; 
+LODSB : 'lodsb' ;
 
-LODSW : 'lodsw' ; 
+LODSW : 'lodsw' ;
 
-LODSD : 'lodsd' ; 
+LODSD : 'lodsd' ;
 
-STOS : 'stos' ; 
+STOS : 'stos' ;
 
-STOSB : 'stosb' ; 
+STOSB : 'stosb' ;
 
-STOSW : 'stosw' ; 
+STOSW : 'stosw' ;
 
-SOTSD : 'sotsd' ; 
+SOTSD : 'sotsd' ;
 
-SCAS : 'scas' ; 
+SCAS : 'scas' ;
 
-SCASB : 'scasb' ; 
+SCASB : 'scasb' ;
 
-SCASW : 'scasw' ; 
+SCASW : 'scasw' ;
 
-SCASD : 'scasd' ; 
+SCASD : 'scasd' ;
 
-CMPS : 'cmps' ; 
+CMPS : 'cmps' ;
 
-CMPSB : 'cmpsb' ; 
+CMPSB : 'cmpsb' ;
 
-CMPSW : 'cmpsw' ; 
+CMPSW : 'cmpsw' ;
 
-CMPSD : 'cmpsd' ; 
+CMPSD : 'cmpsd' ;
 
-INSB : 'insb' ; 
+INSB : 'insb' ;
 
-INSW : 'insw' ; 
+INSW : 'insw' ;
 
-INSD : 'insd' ; 
+INSD : 'insd' ;
 
-OUTSB : 'outsb' ; 
+OUTSB : 'outsb' ;
 
-OUTSW : 'outsw' ; 
+OUTSW : 'outsw' ;
 
-OUTSD : 'outsd' ; 
+OUTSD : 'outsd' ;
 
-ADC : 'adc' ; 
+ADC : 'adc' ;
 
-ADD : 'add' ; 
+ADD : 'add' ;
 
-SUB : 'sub' ; 
+SUB : 'sub' ;
 
-CBB : 'cbb' ; 
+CBB : 'cbb' ;
 
-XOR : 'xor' ; 
+XOR : 'xor' ;
 
-OR : 'or' ; 
+OR : 'or' ;
 
-JNBE : 'jnbe' ; 
+JNBE : 'jnbe' ;
 
-JNZ : 'jnz' ; 
+JNZ : 'jnz' ;
 
-JPO : 'jpo' ; 
+JPO : 'jpo' ;
 
-JZ : 'jz' ; 
+JZ : 'jz' ;
 
-JS : 'js' ; 
+JS : 'js' ;
 
-LOOPNZ : 'loopnz' ; 
+LOOPNZ : 'loopnz' ;
 
-JGE : 'jge' ; 
+JGE : 'jge' ;
 
-JB : 'jb' ; 
+JB : 'jb' ;
 
-JNB : 'jnb' ; 
+JNB : 'jnb' ;
 
-JO : 'jo' ; 
+JO : 'jo' ;
 
-JP : 'jp' ; 
+JP : 'jp' ;
 
-JNO : 'jno' ; 
+JNO : 'jno' ;
 
-JNL : 'jnl' ; 
+JNL : 'jnl' ;
 
-JNAE : 'jnae' ; 
+JNAE : 'jnae' ;
 
-LOOPZ : 'loopz' ; 
+LOOPZ : 'loopz' ;
 
-JMP : 'jmp' ; 
+JMP : 'jmp' ;
 
-JNP : 'jnp' ; 
+JNP : 'jnp' ;
 
-LOOP : 'loop' ; 
+LOOP : 'loop' ;
 
-JL : 'jl' ; 
+JL : 'jl' ;
 
-JCXZ : 'jcxz' ; 
+JCXZ : 'jcxz' ;
 
-JAE : 'jae' ; 
+JAE : 'jae' ;
 
-JNGE : 'jnge' ; 
+JNGE : 'jnge' ;
 
-JA : 'ja' ; 
+JA : 'ja' ;
 
-LOOPNE : 'loopne' ; 
+LOOPNE : 'loopne' ;
 
-LOOPE : 'loope' ; 
+LOOPE : 'loope' ;
 
-JG : 'jg' ; 
+JG : 'jg' ;
 
-JNLE : 'jnle' ; 
+JNLE : 'jnle' ;
 
-JE : 'je' ; 
+JE : 'je' ;
 
-JNC : 'jnc' ; 
+JNC : 'jnc' ;
 
-JC : 'jc' ; 
+JC : 'jc' ;
 
-JNA : 'jna' ; 
+JNA : 'jna' ;
 
-JBE : 'jbe' ; 
+JBE : 'jbe' ;
 
-JLE : 'jle' ; 
+JLE : 'jle' ;
 
-JPE : 'jpe' ; 
+JPE : 'jpe' ;
 
-JNS : 'jns' ; 
+JNS : 'jns' ;
 
-JECXZ : 'jecxz' ; 
+JECXZ : 'jecxz' ;
 
-JNG : 'jng' ; 
+JNG : 'jng' ;
 
-MOVZX : 'movzx' ; 
+MOVZX : 'movzx' ;
 
-BSF : 'bsf' ; 
+BSF : 'bsf' ;
 
-BSR : 'bsr' ; 
+BSR : 'bsr' ;
 
-LES : 'les' ; 
+LES : 'les' ;
 
-LEA : 'lea' ; 
+LEA : 'lea' ;
 
-LDS : 'lds' ; 
+LDS : 'lds' ;
 
-INS : 'ins' ; 
+INS : 'ins' ;
 
-OUTS : 'outs' ; 
+OUTS : 'outs' ;
 
-XADD : 'xadd' ; 
+XADD : 'xadd' ;
 
-CMPXCHG : 'cmpxchg' ; 
+CMPXCHG : 'cmpxchg' ;
 
-SHL : 'shl' ; 
+SHL : 'shl' ;
 
-SHR : 'shr' ; 
+SHR : 'shr' ;
 
-ROR : 'ror' ; 
+ROR : 'ror' ;
 
-ROL : 'rol' ; 
+ROL : 'rol' ;
 
-RCL : 'rcl' ; 
+RCL : 'rcl' ;
 
-SAL : 'sal' ; 
+SAL : 'sal' ;
 
-RCR : 'rcr' ; 
+RCR : 'rcr' ;
 
-SAR : 'sar' ; 
+SAR : 'sar' ;
 
-SHRD : 'shrd' ; 
+SHRD : 'shrd' ;
 
-SHLD : 'shld' ; 
+SHLD : 'shld' ;
 
-BTR : 'btr' ; 
+BTR : 'btr' ;
 
-BT : 'bt' ; 
+BT : 'bt' ;
 
-BTC : 'btc' ; 
+BTC : 'btc' ;
 
-CALL : 'call' ; 
+CALL : 'call' ;
 
-INT : 'int' ; 
+INT : 'int' ;
 
-RETN : 'retn' ; 
+RETN : 'retn' ;
 
-RET : 'ret' ; 
+RET : 'ret' ;
 
-RETF : 'retf' ; 
+RETF : 'retf' ;
 
-IN : 'in' ; 
+IN : 'in' ;
 
-OUT : 'out' ; 
+OUT : 'out' ;
 
-REP : 'rep' ; 
+REP : 'rep' ;
 
-REPE : 'repe' ; 
+REPE : 'repe' ;
 
-REPZ : 'repz' ; 
+REPZ : 'repz' ;
 
-REPNE : 'repne' ; 
+REPNE : 'repne' ;
 
-REPNZ : 'repnz' ; 
+REPNZ : 'repnz' ;
 
-ALPHA : '.alpha' ; 
+ALPHA : '.alpha' ;
 
-CONST : '.const' ; 
+CONST : '.const' ;
 
-CREF : '.cref' ; 
+CREF : '.cref' ;
 
-XCREF : '.xcref' ; 
+XCREF : '.xcref' ;
 
-DATA : 'data' ; 
+DATA : 'data' ;
 
-DATA2 : 'data?' ; 
+DATA2 : 'data?' ;
 
-DOSSEG : 'dosseg' ; 
+DOSSEG : 'dosseg' ;
 
-ERR : '.err' ; 
+ERR : '.err' ;
 
-ERR1 : '.err1' ; 
+ERR1 : '.err1' ;
 
-ERR2 : '.err2' ; 
+ERR2 : '.err2' ;
 
-ERRE : '.erre' ; 
+ERRE : '.erre' ;
 
-ERRNZ : '.errnz' ; 
+ERRNZ : '.errnz' ;
 
-ERRDEF : '.errdef' ; 
+ERRDEF : '.errdef' ;
 
-ERRNDEF : '.errndef' ; 
+ERRNDEF : '.errndef' ;
 
-ERRB : '.errb' ; 
+ERRB : '.errb' ;
 
-ERRNB : '.errnb' ; 
+ERRNB : '.errnb' ;
 
-ERRIDN : '.erridn[i]' ; 
+ERRIDN : '.erridn[i]' ;
 
-ERRDIF : '.errdif[i]' ; 
+ERRDIF : '.errdif[i]' ;
 
-EVEN : 'even' ; 
+EVEN : 'even' ;
 
-LIST : '.list' ; 
+LIST : '.list' ;
 
-WIDTH : 'width' ; 
+WIDTH : 'width' ;
 
-MASK : 'mask' ; 
+MASK : 'mask' ;
 
-SEQ : '.seq' ; 
+SEQ : '.seq' ;
 
-XLIST : '.xlist' ; 
+XLIST : '.xlist' ;
 
-EXIT : '.exit' ; 
+EXIT : '.exit' ;
 
-MODEL : '.model' ; 
+MODEL : '.model' ;
 
-BYTE : 'byte' ; 
+BYTE : 'byte' ;
 
-SBYTE : 'sbyte' ; 
+SBYTE : 'sbyte' ;
 
-DB : 'db' ; 
+DB : 'db' ;
 
-WORD : 'word' ; 
+WORD : 'word' ;
 
-SWORD : 'sword' ; 
+SWORD : 'sword' ;
 
-DW : 'dw' ; 
+DW : 'dw' ;
 
-DWORD : 'dword' ; 
+DWORD : 'dword' ;
 
-SDWORD : 'sdword' ; 
+SDWORD : 'sdword' ;
 
-DD : 'dd' ; 
+DD : 'dd' ;
 
-FWORD : 'fword' ; 
+FWORD : 'fword' ;
 
-DF : 'df' ; 
+DF : 'df' ;
 
-QWORD : 'qword' ; 
+QWORD : 'qword' ;
 
-DQ : 'dq' ; 
+DQ : 'dq' ;
 
-TBYTE : 'tbyte' ; 
+TBYTE : 'tbyte' ;
 
-DT : 'dt' ; 
+DT : 'dt' ;
 
-REAL4 : 'real4' ; 
+REAL4 : 'real4' ;
 
-REAL8 : 'real8' ; 
+REAL8 : 'real8' ;
 
-REAL : 'real' ; 
+REAL : 'real' ;
 
-FAR : 'far' ; 
+FAR : 'far' ;
 
-NEAR : 'near' ; 
+NEAR : 'near' ;
 
-PROC : 'proc' ; 
+PROC : 'proc' ;
 
-QUESTION : '?' ; 
+QUESTION : '?' ;
 
-TIMES : 'times' ; 
+TIMES : 'times' ;
 
-Hexnum : HexDigit+ ('h' | 'H') ; 
+Hexnum : HexDigit+ ('h' | 'H') ;
 
-Integer : Digit+ ; 
+Integer : Digit+ ;
 
 Octalnum
-	:	('0' .. '7')+ ('o' | 'O')
+	:	('0'..'7')+ ('o' | 'O')
 	;
-
 
 fragment HexDigit
-	:	('0' .. '9' | 'a' .. 'f' | 'A' .. 'F')
+	:	('0'..'9' | 'a'..'f' | 'A'..'F')
 	;
-
 
 FloatingPointLiteral
-	:	('0' .. '9')+ '.' ('0' .. '9')* Exponent? | '.' ('0' .. '9')+ Exponent? | ('0' .. '9')+ Exponent
+	:	('0'..'9')+ '.' ('0'..'9')* Exponent?
+	|	'.' ('0'..'9')+ Exponent?
+	|	('0'..'9')+ Exponent
 	;
-
 
 fragment Exponent
-	:	('e' | 'E') ('+' | '-')? ('0' .. '9')+
+	:	('e' | 'E') ('+' | '-')? ('0'..'9')+
 	;
-
 
 String
-	:	' \'' ('\\' . | ~ ('\\' | '\''))* '\''
+	:	' \'' ('\\' . | ~('\\' | '\''))* '\''
 	;
-
 
 fragment Letter
-	:	('a' .. 'z' | 'A' .. 'Z')
+	:	('a'..'z' | 'A'..'Z')
 	;
-
 
 fragment Digit
-	:	'0' .. '9'
+	:	'0'..'9'
 	;
-
 
 Etiqueta
 	:	Identifier (':')
 	;
 
-
 Separator
 	:	','
 	;
 
-
 WS
 	:	(' ' | '\t' | '\n' | '\r') -> skip
 	;
-
 
 LINE_COMMENT
 	:	';' ~ ('\n' | '\r')* '\r'? '\n' -> skip

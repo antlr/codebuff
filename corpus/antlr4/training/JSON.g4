@@ -52,7 +52,7 @@ fragment HEX
 
 
 NUMBER
-    :   '-'? INT '.' [0-9] + EXP?
+    :   '-'? INT '.' [0-9]+ EXP?
     |	'-'? INT EXP
     |	'-'? INT
     ;
@@ -71,5 +71,5 @@ fragment EXP
 // \- since - means "range" inside [...]
 
 WS
-    :   [ \t\n\r] + -> skip
+    :   [ \t\n\r]+ -> skip
     ;

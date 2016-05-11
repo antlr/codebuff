@@ -1087,18 +1087,15 @@ arrayAccess
 	;
 
 arrayAccess_lf_primary
-	:	(	primaryNoNewArray_lf_primary_lfno_arrayAccess_lf_primary '[' expression ']'
-		)
-		(	primaryNoNewArray_lf_primary_lf_arrayAccess_lf_primary '[' expression ']'
-		)*
+	:	primaryNoNewArray_lf_primary_lfno_arrayAccess_lf_primary '[' expression ']'
+		(primaryNoNewArray_lf_primary_lf_arrayAccess_lf_primary '[' expression ']')*
 	;
 
 arrayAccess_lfno_primary
 	:	(	expressionName '[' expression ']'
 		|	primaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary '[' expression ']'
 		)
-		(	primaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary '[' expression ']'
-		)*
+		(primaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary '[' expression ']')*
 	;
 
 methodInvocation
@@ -1678,55 +1675,55 @@ NullLiteral
 
 // §3.11 Separators
 
-LPAREN : '(';
-RPAREN : ')';
-LBRACE : '{';
-RBRACE : '}';
-LBRACK : '[';
-RBRACK : ']';
-SEMI : ';';
-COMMA : ',';
-DOT : '.';
+LPAREN : '(' ;
+RPAREN : ')' ;
+LBRACE : '{' ;
+RBRACE : '}' ;
+LBRACK : '[' ;
+RBRACK : ']' ;
+SEMI : ';' ;
+COMMA : ',' ;
+DOT : '.' ;
 
 // §3.12 Operators
 
-ASSIGN : '=';
-GT : '>';
-LT : '<';
-BANG : '!';
-TILDE : '~';
-QUESTION : '?';
-COLON : ':';
-EQUAL : '==';
-LE : '<=';
-GE : '>=';
-NOTEQUAL : '!=';
-AND : '&&';
-OR : '||';
-INC : '++';
-DEC : '--';
-ADD : '+';
-SUB : '-';
-MUL : '*';
-DIV : '/';
-BITAND : '&';
-BITOR : '|';
-CARET : '^';
-MOD : '%';
-ARROW : '->';
-COLONCOLON : '::';
+ASSIGN : '=' ;
+GT : '>' ;
+LT : '<' ;
+BANG : '!' ;
+TILDE : '~' ;
+QUESTION : '?' ;
+COLON : ':' ;
+EQUAL : '==' ;
+LE : '<=' ;
+GE : '>=' ;
+NOTEQUAL : '!=' ;
+AND : '&&' ;
+OR : '||' ;
+INC : '++' ;
+DEC : '--' ;
+ADD : '+' ;
+SUB : '-' ;
+MUL : '*' ;
+DIV : '/' ;
+BITAND : '&' ;
+BITOR : '|' ;
+CARET : '^' ;
+MOD : '%' ;
+ARROW : '->' ;
+COLONCOLON : '::' ;
 
-ADD_ASSIGN : '+=';
-SUB_ASSIGN : '-=';
-MUL_ASSIGN : '*=';
-DIV_ASSIGN : '/=';
-AND_ASSIGN : '&=';
-OR_ASSIGN : '|=';
-XOR_ASSIGN : '^=';
-MOD_ASSIGN : '%=';
-LSHIFT_ASSIGN : '<<=';
-RSHIFT_ASSIGN : '>>=';
-URSHIFT_ASSIGN : '>>>=';
+ADD_ASSIGN : '+=' ;
+SUB_ASSIGN : '-=' ;
+MUL_ASSIGN : '*=' ;
+DIV_ASSIGN : '/=' ;
+AND_ASSIGN : '&=' ;
+OR_ASSIGN : '|=' ;
+XOR_ASSIGN : '^=' ;
+MOD_ASSIGN : '%=' ;
+LSHIFT_ASSIGN : '<<=' ;
+RSHIFT_ASSIGN : '>>=' ;
+URSHIFT_ASSIGN : '>>>=' ;
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
 
@@ -1760,14 +1757,15 @@ JavaLetterOrDigit
 // Additional symbols not defined in the lexical specification
 //
 
-AT : '@';
-ELLIPSIS : '...';
+AT : '@' ;
+ELLIPSIS : '...' ;
 
 //
 // Whitespace and comments
 //
 
-WS  :  [ \t\r\n\u000C]+ -> skip
+WS
+  	:	[ \t\r\n\u000C]+ -> skip
     ;
 
 COMMENT

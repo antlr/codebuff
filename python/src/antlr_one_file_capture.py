@@ -1,6 +1,6 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.7 'Mon May 09 17:58:29 PDT 2016'
+# CodeBuff 1.4.7 'Tue May 10 17:15:32 PDT 2016'
 #
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,8 +11,8 @@ labels = ["C.g4", "Clojure.g4", "Java.g4", "Java8.g4", "JSON.g4", "MASM.g4", "Sm
 N = len(labels)
 
 featureIndexes = range(0,N)
-antlr_self = [0.028172765, 0.08945455, 0.034707565, 0.02126827, 0.02508179, 0.031887088, 0.02532274, 0.08664244, 0.05, 0.09073774, 0.058894232, 0.014465703]
-antlr_corpus = [0.036551576, 0.10244233, 0.074480556, 0.031339988, 0.087241, 0.09940756, 0.130425, 0.14491574, 0.37931034, 0.13312672, 0.12920673, 0.025056947]
+antlr_self = [0.028906908, 0.09132311, 0.036081992, 0.022612715, 0.025136612, 0.011341311, 0.025335321, 0.085544124, 0.05, 0.08412166, 0.03434022, 0.014465703]
+antlr_corpus = [0.03515293, 0.09713124, 0.0759079, 0.03202946, 0.073224045, 0.05322379, 0.12447022, 0.1260913, 0.37931034, 0.12515883, 0.072704084, 0.026387624]
 antlr_diff = np.abs(np.subtract(antlr_self, antlr_corpus))
 
 all = zip(antlr_self, antlr_corpus, antlr_diff, labels)

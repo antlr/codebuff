@@ -130,10 +130,10 @@ literal
     |   param_name
     ;
 
-string : STRING;
-hex : HEX;
-bin : BIN;
-bign : BIGN;
+string : STRING ;
+hex : HEX ;
+bin : BIN ;
+bign : BIGN ;
 
 number
     :   FLOAT
@@ -153,22 +153,22 @@ named_char : CHAR_NAMED ;
 any_char : CHAR_ANY ;
 u_hex_quad : CHAR_U ;
 
-nil : NIL;
+nil : NIL ;
 
-keyword : macro_keyword | simple_keyword;
-simple_keyword : ':' symbol;
-macro_keyword : ':' ':' symbol;
+keyword : macro_keyword | simple_keyword ;
+simple_keyword : ':' symbol ;
+macro_keyword : ':' ':' symbol ;
 
-symbol : ns_symbol | simple_sym;
-simple_sym : SYMBOL;
-ns_symbol : NS_SYMBOL;
+symbol : ns_symbol | simple_sym ;
+simple_sym : SYMBOL ;
+ns_symbol : NS_SYMBOL ;
 
-param_name : PARAM_NAME;
+param_name : PARAM_NAME ;
 
 // Lexers
 //--------------------------------------------------------------------
 
-STRING : '"' ( ~'"' | '\\' '"' )* '"' ;
+STRING : '"' (~'"' | '\\' '"')* '"' ;
 
 // FIXME: Doesn't deal with arbitrary read radixes, BigNums
 FLOAT
@@ -191,13 +191,14 @@ fragment
 FLOAT_EXP : [eE] '-'? [0-9]+ ;
 
 fragment
-HEXD: [0-9a-fA-F] ;
-HEX: '0' [xX] HEXD+ ;
-BIN: '0' [bB] [10]+ ;
-LONG: '-'? [0-9]+[lL]?;
-BIGN: '-'? [0-9]+[nN];
+HEXD : [0-9a-fA-F] ;
+HEX  : '0' [xX] HEXD+ ;
+BIN  : '0' [bB] [10]+ ;
+LONG : '-'? [0-9]+ [lL]? ;
+BIGN : '-'? [0-9]+ [nN] ;
 
-CHAR_U : '\\' 'u'[0-9D-Fd-f] HEXD HEXD HEXD ;
+CHAR_U : '\\' 'u' [0-9D-Fd-f] HEXD HEXD HEXD ;
+
 CHAR_NAMED
     :	'\\'
 		(	'newline'
@@ -207,13 +208,18 @@ CHAR_NAMED
 		|	'formfeed'
 		|	'backspace'
 		)
-   ;
+  	;
+
 CHAR_ANY
-    : '\\' . ;
+	:	'\\' .
+	;
 
-NIL : 'nil';
+NIL : 'nil' ;
 
-BOOLEAN : 'true' | 'false' ;
+BOOLEAN
+	:	'true'
+	|	'false'
+	;
 
 SYMBOL
     :   '.'
@@ -225,7 +231,7 @@ NS_SYMBOL
     :	NAME '/' SYMBOL
     ;
 
-PARAM_NAME : '%' ([1-9][0-9]*|'&')? ;
+PARAM_NAME : '%' ([1-9][0-9]* | '&')? ;
 
 // Fragments
 //--------------------------------------------------------------------
@@ -253,4 +259,4 @@ WS : [ \n\r\t\,] ;
 fragment
 COMMENT : ';' ~[\r\n]* ;
 
-TRASH : ( WS | COMMENT ) -> channel(HIDDEN) ;
+TRASH : (WS | COMMENT) -> channel(HIDDEN) ;

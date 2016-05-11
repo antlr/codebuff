@@ -215,20 +215,21 @@ storageClassSpecifier
     ;
 
 typeSpecifier
-    :   ('void'
-    |   'char'
-    |   'short'
-    |   'int'
-    |   'long'
-    |   'float'
-    |   'double'
-    |   'signed'
-    |   'unsigned'
-    |   '_Bool'
-    |   '_Complex'
-    |   '__m128'
-    |   '__m128d'
-    |   '__m128i')
+    :   (	'void'
+		|   'char'
+		|   'short'
+		|   'int'
+		|   'long'
+		|   'float'
+		|   'double'
+		|   'signed'
+		|   'unsigned'
+		|   '_Bool'
+		|   '_Complex'
+		|   '__m128'
+		|   '__m128d'
+		|   '__m128i'
+    	)
     |   '__extension__' '(' ('__m128' | '__m128d' | '__m128i') ')'
     |   atomicTypeSpecifier
     |   structOrUnionSpecifier
@@ -524,106 +525,106 @@ declarationList
     |   declarationList declaration
     ;
 
-Auto : 'auto';
-Break : 'break';
-Case : 'case';
-Char : 'char';
-Const : 'const';
-Continue : 'continue';
-Default : 'default';
-Do : 'do';
-Double : 'double';
-Else : 'else';
-Enum : 'enum';
-Extern : 'extern';
-Float : 'float';
-For : 'for';
-Goto : 'goto';
-If : 'if';
-Inline : 'inline';
-Int : 'int';
-Long : 'long';
-Register : 'register';
-Restrict : 'restrict';
-Return : 'return';
-Short : 'short';
-Signed : 'signed';
-Sizeof : 'sizeof';
-Static : 'static';
-Struct : 'struct';
-Switch : 'switch';
-Typedef : 'typedef';
-Union : 'union';
-Unsigned : 'unsigned';
-Void : 'void';
-Volatile : 'volatile';
-While : 'while';
+Auto : 'auto' ;
+Break : 'break' ;
+Case : 'case' ;
+Char : 'char' ;
+Const : 'const' ;
+Continue : 'continue' ;
+Default : 'default' ;
+Do : 'do' ;
+Double : 'double' ;
+Else : 'else' ;
+Enum : 'enum' ;
+Extern : 'extern' ;
+Float : 'float' ;
+For : 'for' ;
+Goto : 'goto' ;
+If : 'if' ;
+Inline : 'inline' ;
+Int : 'int' ;
+Long : 'long' ;
+Register : 'register' ;
+Restrict : 'restrict' ;
+Return : 'return' ;
+Short : 'short' ;
+Signed : 'signed' ;
+Sizeof : 'sizeof' ;
+Static : 'static' ;
+Struct : 'struct' ;
+Switch : 'switch' ;
+Typedef : 'typedef' ;
+Union : 'union' ;
+Unsigned : 'unsigned' ;
+Void : 'void' ;
+Volatile : 'volatile' ;
+While : 'while' ;
 
-Alignas : '_Alignas';
-Alignof : '_Alignof';
-Atomic : '_Atomic';
-Bool : '_Bool';
-Complex : '_Complex';
-Generic : '_Generic';
-Imaginary : '_Imaginary';
-Noreturn : '_Noreturn';
-StaticAssert : '_Static_assert';
-ThreadLocal : '_Thread_local';
+Alignas : '_Alignas' ;
+Alignof : '_Alignof' ;
+Atomic : '_Atomic' ;
+Bool : '_Bool' ;
+Complex : '_Complex' ;
+Generic : '_Generic' ;
+Imaginary : '_Imaginary' ;
+Noreturn : '_Noreturn' ;
+StaticAssert : '_Static_assert' ;
+ThreadLocal : '_Thread_local' ;
 
-LeftParen : '(';
-RightParen : ')';
-LeftBracket : '[';
-RightBracket : ']';
-LeftBrace : '{';
-RightBrace : '}';
+LeftParen : '(' ;
+RightParen : ')' ;
+LeftBracket : '[' ;
+RightBracket : ']' ;
+LeftBrace : '{' ;
+RightBrace : '}' ;
 
-Less : '<';
-LessEqual : '<=';
-Greater : '>';
-GreaterEqual : '>=';
-LeftShift : '<<';
-RightShift : '>>';
+Less : '<' ;
+LessEqual : '<=' ;
+Greater : '>' ;
+GreaterEqual : '>=' ;
+LeftShift : '<<' ;
+RightShift : '>>' ;
 
-Plus : '+';
-PlusPlus : '++';
-Minus : '-';
-MinusMinus : '--';
-Star : '*';
-Div : '/';
-Mod : '%';
+Plus : '+' ;
+PlusPlus : '++' ;
+Minus : '-' ;
+MinusMinus : '--' ;
+Star : '*' ;
+Div : '/' ;
+Mod : '%' ;
 
-And : '&';
-Or : '|';
-AndAnd : '&&';
-OrOr : '||';
-Caret : '^';
-Not : '!';
-Tilde : '~';
+And : '&' ;
+Or : '|' ;
+AndAnd : '&&' ;
+OrOr : '||' ;
+Caret : '^' ;
+Not : '!' ;
+Tilde : '~' ;
 
-Question : '?';
-Colon : ':';
-Semi : ';';
-Comma : ',';
+Question : '?' ;
+Colon : ':' ;
+Semi : ';' ;
+Comma : ',' ;
 
-Assign : '=';
+Assign : '=' ;
 // '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='
-StarAssign : '*=';
-DivAssign : '/=';
-ModAssign : '%=';
-PlusAssign : '+=';
-MinusAssign : '-=';
-LeftShiftAssign : '<<=';
-RightShiftAssign : '>>=';
-AndAssign : '&=';
-XorAssign : '^=';
-OrAssign : '|=';
+StarAssign : '*=' ;
+DivAssign : '/=' ;
+ModAssign : '%=' ;
+PlusAssign : '+=' ;
+MinusAssign : '-=' ;
+LeftShiftAssign : '<<=' ;
+RightShiftAssign : '>>=' ;
+AndAssign : '&=' ;
+XorAssign : '^=' ;
+OrAssign : '|=' ;
 
-Equal : '==';
-NotEqual : '!=';
+Equal : '==' ;
+NotEqual : '!=' ;
 
-Arrow : '->';
-Dot : '.';
-Ellipsis : '...';
+Arrow : '->' ;
+Dot : '.' ;
+Ellipsis : '...' ;
 
 Identifier
     :   IdentifierNondigit
