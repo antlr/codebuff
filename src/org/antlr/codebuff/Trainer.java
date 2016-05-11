@@ -160,7 +160,7 @@ public class Trainer {
 	};
 
 	public static FeatureMetaData[] FEATURES_HPOS = {
-		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(-1)"}, 1),
+		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(FeatureType.RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
 		new FeatureMetaData(FeatureType.TOKEN, new String[] {"", "LT(1)"}, 1),
