@@ -559,29 +559,45 @@ implicitCallStmt_InStmt
 	|   iCS_S_DictionaryCall
 	;
 
-iCS_S_VariableOrProcedureCall : ambiguousIdentifier typeHint? dictionaryCallStmt? ;
+iCS_S_VariableOrProcedureCall
+ 	:	ambiguousIdentifier typeHint? dictionaryCallStmt?
+ 	;
 
-iCS_S_ProcedureOrArrayCall : (ambiguousIdentifier | baseType) typeHint? WS? LPAREN WS? (argsCall WS?)? RPAREN dictionaryCallStmt? ;
+iCS_S_ProcedureOrArrayCall
+ 	:	(ambiguousIdentifier | baseType) typeHint? WS? LPAREN WS? (argsCall WS?)? RPAREN dictionaryCallStmt?
+ 	;
 
-iCS_S_MembersCall : (iCS_S_VariableOrProcedureCall | iCS_S_ProcedureOrArrayCall)? iCS_S_MemberCall+ dictionaryCallStmt? ;
+iCS_S_MembersCall
+	:	(iCS_S_VariableOrProcedureCall | iCS_S_ProcedureOrArrayCall)? iCS_S_MemberCall+ dictionaryCallStmt?
+	;
 
-iCS_S_MemberCall : DOT (iCS_S_VariableOrProcedureCall | iCS_S_ProcedureOrArrayCall) ;
+iCS_S_MemberCall
+	:	DOT (iCS_S_VariableOrProcedureCall | iCS_S_ProcedureOrArrayCall)
+	;
 
 iCS_S_DictionaryCall : dictionaryCallStmt ;
 
 
 // atomic call statements ----------------------------------
 
-argsCall : (argCall? WS? (COMMA | SEMICOLON) WS?)* argCall (WS? (COMMA | SEMICOLON) WS? argCall?)* ;
+argsCall
+ 	:	(argCall? WS? (COMMA | SEMICOLON) WS?)* argCall (WS? (COMMA | SEMICOLON) WS? argCall?)*
+ 	;
 
-argCall : ((BYVAL | BYREF | PARAMARRAY) WS)? valueStmt ;
+argCall
+	:	((BYVAL | BYREF | PARAMARRAY) WS)? valueStmt
+	;
 
-dictionaryCallStmt : EXCLAMATIONMARK ambiguousIdentifier typeHint? ;
+dictionaryCallStmt
+	:	EXCLAMATIONMARK ambiguousIdentifier typeHint?
+	;
 
 
 // atomic rules for statements
 
-argList : LPAREN (WS? arg (WS? COMMA WS? arg)*)? WS? RPAREN ;
+argList
+	:	LPAREN (WS? arg (WS? COMMA WS? arg)*)? WS? RPAREN
+	;
 
 arg
 	:	(OPTIONAL WS)? ((BYVAL | BYREF) WS)? (PARAMARRAY WS)?
