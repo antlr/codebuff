@@ -1,0 +1,38 @@
+package Libraries.Accessibility
+
+/*
+    The PropertyObserver class provides functionality to output any property change 
+    event from the system. An example of a property event would be a change in the
+    graphic for the cursor.
+
+    Attribute: Example
+
+    AccessibilityManager manager
+    PropertyObserver observer
+    manager:Add(observer)
+
+    manager:Start()
+    manager:Stop()
+
+*/
+
+
+class PropertyObserver 
+
+    /*
+        This action is a blueprint function that receives an event from the system
+        for the programmer to use.
+
+        Attribute: Parameter event The event from the system.
+
+        Attribute: Example
+
+        PropertyObserver observer
+        SystemEvent event
+        observer:ReceiveEvent(event)
+    */
+
+
+    blueprint action ReceiveEvent(PropertyEvent event)
+
+end

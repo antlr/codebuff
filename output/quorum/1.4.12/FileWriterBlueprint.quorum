@@ -1,0 +1,34 @@
+package Libraries.System.Blueprints
+
+use Libraries.System.File
+use Libraries.Containers.Blueprints.Indexed
+
+/*
+Inheriting from FileWriterBlueprint provides a standard interface for writing
+files in sequential order.
+
+See the FileWriter class for the standard Quorum implementation of this blueprint.
+*/
+
+
+class FileWriterBlueprint
+
+
+    blueprint action OpenForWrite(File file)
+
+
+    blueprint action OpenForWriteAppend(File file)
+
+
+    blueprint action Close()
+
+
+    blueprint action Write(text textToWrite)
+
+
+    blueprint action WriteLine(text textToWrite)
+
+
+    blueprint action PushToDisk()
+
+end

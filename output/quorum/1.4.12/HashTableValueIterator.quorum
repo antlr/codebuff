@@ -1,0 +1,32 @@
+package Libraries.Containers.Support
+
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Support.HashNode
+use Libraries.Containers.Support.HashTableIterator
+use Libraries.Containers.Array
+
+
+class HashTableValueIterator<Key, Value> is Iterator<Value>
+    public HashTableIterator<Key, Value> iterator = undefined
+
+
+    action GetCurrent returns Key
+        return iterator:GetCurrent()
+    end
+
+
+    action HasNext returns boolean
+        return iterator:HasNext()
+    end
+
+
+    action Next returns Value
+        HashNode<Key, Value> node = iterator:Next()
+        return node:value
+    end
+
+
+    action Rewind
+        iterator:Rewind()
+    end
+end

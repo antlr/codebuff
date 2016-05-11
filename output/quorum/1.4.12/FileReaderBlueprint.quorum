@@ -1,0 +1,34 @@
+package Libraries.System.Blueprints
+
+use Libraries.System.File
+use Libraries.Containers.Blueprints.Indexed
+
+/*
+Inheriting from FileReaderBlueprint provides a standard interface for reading
+files in sequential order.
+
+See the FileReader class for the standard Quorum implementation of this blueprint.
+*/
+
+
+class FileReaderBlueprint
+
+
+    blueprint action OpenForRead(File file)
+
+    blueprint action Close()
+
+    blueprint action Read() returns text
+
+
+    blueprint action Read(integer numberOfBytes) returns text
+
+
+    blueprint action ReadLine() returns text
+
+
+    blueprint action ReadLines() returns Indexed<text>
+
+
+    blueprint action IsAtEndOfFile() returns boolean
+end

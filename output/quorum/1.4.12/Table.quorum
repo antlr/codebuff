@@ -1,0 +1,806 @@
+package Libraries.Containers
+
+use Libraries.Containers.Blueprints.TableBlueprint
+use Libraries.Containers.Array
+use Libraries.Language.Errors.InvalidLocationError
+use Libraries.Containers.Blueprints.Iterator
+
+/*
+The Table class is a data structure that stores items in contiguous memory. An
+item is typically stored and accessed through an index or location(row 
+and column). This location always starts at 0, this means the first item in the 
+table is at location 0, 0. The default maximum size is set to 10, but can be
+changed by using the SetSize(row, column) method or the array will automatically
+make itself large when the space is needed (note: it is possible to turn the 
+resizing off with the SetAutoResize(false) method).
+
+Attribute: Example
+
+use Libraries.Containers.Table
+class Main
+   action Main
+      //make the table
+      Table<integer> myTable
+      //add a value
+      myTable:AddToRow(0, 12)
+      //get it back
+      integer value = myTable:Get(0,0)
+   end
+end
+*/
+
+
+class Table<Type> is TableBlueprint<Type>
+    Array<Array<Type>> table = undefined
+    integer columnSize = 10
+
+                  on create
+                      Array<Array<Type>> a
+                      table = a
+                  end
+
+    /*
+        This action sets the item at a given location in the indexed object to a new item. 
+
+        Attribute: Parameter row The row the value will be stored at.
+
+        Attribute: Parameter column The column the value will be stored at.
+
+        Attribute: Parameter value The item to be added to the indexed object. 
+        
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10, 10)
+        myTable:Set(0, 0, 22)
+    */
+
+
+           action Set(integer row, integer column, Type value)
+               integer size = table:GetSize()
+               if row < size and row >= 0
+                   Array<Type> rowArray = table:Get(row)
+                   size = rowArray:GetSize()
+                   if column < size and column >= 0
+                       rowArray:Set(column, value)
+                   else
+                       InvalidLocationError error
+                       error:SetErrorMessage("Invalid Location Error: the column location is invalid.")
+                       alert(error)
+                   end
+               else
+                   InvalidLocationError error
+                   error:SetErrorMessage("Invalid Location Error: the row location is invalid.")
+                   alert(error)
+               end
+           end
+
+    /*
+        This action gets the item at a given location in an table.
+
+
+        Attribute: Parameter row The row the value is located at. 
+
+        Attribute: Parameter column The column the value is located at. 
+
+        Attribute: Returns The item at the given location.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10,10)
+        myTable:Set(0,0,22)
+        integer result = myTable:Get(0,0)
+    */
+
+
+           action Get(integer row, integer column) returns Type
+               integer size = table:GetSize()
+               if row < size and row >= 0
+                   Array<Type> rowArray = table:Get(row)
+                   size = rowArray:GetSize()
+                   if column < size and column >= 0
+                       return rowArray:Get(column)
+                   else
+                       InvalidLocationError error
+                       error:SetErrorMessage("Invalid Location Error: the column location is invalid.")
+                       alert(error)
+                   end
+               else
+                   InvalidLocationError error
+                   error:SetErrorMessage("Invalid Location Error: the row location is invalid.")
+                   alert(error)
+               end
+               return undefined
+           end
+
+    /*
+        This action gets the capacity of rows in the table(max size of rows).
+
+        Attribute: Return The capacity of table for rows. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        integer maxSize = myTable:GetMaxNumberOfRows()
+    */
+
+
+           action GetMaxNumberOfRows returns integer
+               return table:GetMaxSize()
+           end
+
+    /*
+        This action gets the capacity of columns in the table(max size of columns).
+
+        Attribute: Return The capacity of table for columns. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        integer maxSize = myTable:GetMaxNumberOfColumns()
+    */
+
+
+           action GetMaxNumberOfColumns returns integer
+               return columnSize
+           end
+
+    /*
+        This action sets the number of items that can be stored in the 
+        table(max rows and columns). The max size can only be increased, any value that is
+        lower will leave the array with the same max size it had.
+
+        Attribute: Parameter row The max number of rows in the table. 
+
+        Attribute: Parameter column The max number of columns in the table. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetMaxSize(10, 10)
+    */
+
+
+           action SetMaxSize(integer row, integer column)
+               table:SetMaxSize(row)
+
+               if table:IsEmpty()
+                   columnSize = column
+               else
+                   columnSize = column
+
+                   integer actualSize = column
+                   Iterator<Array<Type>> it = table:GetIterator()
+                   repeat while it:HasNext()
+                       Array<Type> rowArray = it:Next()
+                       rowArray:SetMaxSize(column)
+
+integer temp = rowArray:GetMaxSize()
+                       if temp > actualSize
+                           actualSize = temp
+                       end
+                   end
+
+                   if columnSize not= actualSize
+                       columnSize = actualSize
+                       Iterator<Array<Type>> secondIt = table:GetIterator()
+                       repeat while secondIt:HasNext()
+                           Array<Type> rowArray = secondIt:Next()
+                           rowArray:SetMaxSize(columnSize)
+                       end
+                   end
+               end
+           end
+
+    /*
+        This action sets the size of the table and fills it with undefined items.
+        Changing the size of the table means any items already in the table 
+        must be copied over.
+
+        Attribute: Parameter row The number of rows. 
+
+        Attribute: Parameter column The number of columns.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10,10)
+    */
+
+
+           action SetSize(integer row, integer column)
+               if row < 0 or column < 0
+                   InvalidLocationError error
+                   alert(error)
+               else
+                   table:SetSize(row)
+
+                   integer size = table:GetSize()
+                   integer counter = 0
+                   repeat while counter < size
+                       Array<Type> newArray
+                       newArray:SetSize(column)
+                       table:Set(counter, newArray)
+
+                       counter = counter + 1
+                   end
+               end
+           end
+
+    /*
+        This action gets the size of the rows in the table.
+
+        Attribute: Return The number of rows in the table. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        integer size = myTable:GetNumberOfRows()
+    */
+
+
+           action GetNumberOfRows returns integer
+               return table:GetSize()
+           end
+
+    /*
+        This action gets the size of the row in the table.
+
+        Attribute: Return The number of items in a row. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        integer size = myTable:GetSizeOfRow(0)
+    */
+
+
+           action GetSizeOfRow(integer row) returns integer
+               integer size = table:GetSize()
+               if row >= 0 or row < size
+                   Array<Type> rowArray = table:Get(row)
+                   return rowArray:GetSize()
+               else
+                   InvalidLocationError error
+                   error:SetErrorMessage("Invalid Location Error: the row location is invalid.")
+                   alert(error)
+               end
+           end
+
+    /*
+        This action returns true if the table is dynamic(resizable) or false
+        if the table does not automatically resize.
+
+        Attribute: Returns True if the table is resizable and false if it is not.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        boolean result = myTable:GetAutoResize()
+    */
+
+
+           action GetAutoResize returns boolean
+               return table:GetAutoResize()
+           end
+
+    /*
+        This action changes the flag that tells the structure if it is a dynamic
+        table or not. If it is dynamic then resizable is true and
+        if it is not dynamic then resizable is false. 
+
+        Attribute: Parameter resizable The value to set the resizable flag to.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetAutoResize(false)
+        myTable:SetSize(10, 10)
+    */
+
+
+           action SetAutoResize(boolean resizable)
+               table:SetAutoResize(resizable)
+
+               integer rows = table:GetSize()
+               integer counter = 0
+               repeat while counter < rows
+                   Array<Type> row = table:Get(counter)
+                   row:SetAutoResize(resizable)
+
+                   counter = counter + 1
+               end
+           end
+
+    /*
+        This action adds a value at a location in the table. 
+
+        Attribute: Parameter row The row to store the value at.
+
+        Attribute: Parameter column The column to store the value at.
+
+        Attribute: Parameter value The item to be added to the indexed object.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:Add(0, 0, 22) 
+    */
+
+
+           action Add(integer row, integer column, Type value)
+               integer size = table:GetSize()
+               integer capacity = table:GetMaxSize()
+               if not table:GetAutoResize() and size = capacity
+                   InvalidLocationError error
+                   error:SetErrorMessage("Invalid Location Error: cannot add to the table because the row size has been reached")
+                   alert(error)
+               end
+
+               if row <= size and row >= 0
+                   if row = size
+                       Array<Type> newArray
+                       newArray:SetMaxSize(columnSize)
+                       newArray:SetAutoResize(table:GetAutoResize())
+                       table:Add(newArray)
+                   end
+
+                   Array<Type> rowArray = table:Get(row)
+                   if rowArray = undefined
+                       Array<Type> newArray
+                       newArray:SetMaxSize(columnSize)
+                       newArray:SetAutoResize(table:GetAutoResize())
+                       table:Set(row, newArray)
+
+                       rowArray = table:Get(row)
+                   end
+
+                   size = rowArray:GetSize()
+                   capacity = rowArray:GetMaxSize()
+                   if not rowArray:GetAutoResize() and size = capacity
+                       InvalidLocationError error
+                       error:SetErrorMessage("Invalid Location Error: cannot add to the table because the column size has been reached")
+                       alert(error)
+                   end
+
+                   if column <= size and column >= 0
+                       rowArray:Add(column, value)
+                   else
+                       InvalidLocationError error
+                       error:SetErrorMessage("Invalid Location Error: cannot add to the table because the column location is invalid.")
+                       alert(error)
+                   end
+               else
+                   InvalidLocationError error
+                   error:SetErrorMessage("Invalid Location Error: cannot add to the table because the row location is invalid.")
+                   alert(error)
+               end
+           end
+
+    /*
+        This action adds a row to the table. 
+
+        Attribute: Parameter row A row (array) of values to add to the table.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        use Libraries.Containers.Array
+        Table<integer> myTable
+        Array<integer> row
+        myTable:AddRow(row) 
+    */
+
+
+           action AddRow(Array<Type> row)
+               table:Add(row)
+           end
+
+    /*
+        This action gets a row from the table at a given location.
+
+        Attribute: Parameter row The location to find the row
+
+        Attribute: Returns The array or row at the given location
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        use Libraries.Containers.Array
+        Table<integer> myTable
+        myTable:SetSize(1,4)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(0, 1, 33)
+        myTable:Set(0, 2, 45)
+        myTable:Set(0, 3, 22)
+        Array<integer> row = myTable:GetRow(0)
+    */
+
+
+           action GetRow(integer row) returns Array<Type>
+               return table:Get(row)
+           end
+
+    /*
+        This action adds an item to the end of a row in the table. If the max size has
+        been reached an the table is not re-sizable an InvalidLocationError
+        will be alerted.
+
+        Attribute: Parameter row The row to add the value to the end of.
+
+        Attribute: Parameter value The item to be added to the table. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        use Libraries.Containers.Array
+        Table<integer> myTable
+        myTable:AddToEndOfRow(0,12)
+    */
+
+
+           action AddToEndOfRow(integer row, Type value)
+               integer size = table:GetSize()
+               if row < size and row >= 0
+                   Array<Type> rowArray = table:Get(row)
+                   if rowArray = undefined
+                       me:Add(row, 0, value)
+                   else
+                       me:Add(row, rowArray:GetSize(), value)
+                   end
+               else
+                   me:Add(row, 0, value)
+               end
+           end
+
+    /*
+        This action adds an item to the front of the table's row at index 0. Then moves
+        all other items down one index. If the max size is already reached and
+        the array is not re-sizable an InvalidLocationError will be alerted.
+
+        Attribute: Parameter row The row to add the value to the end of.
+
+        Attribute: Parameter value The item to be added to the array.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:AddToFrontOfRow(0, 12)
+    */
+
+
+           action AddToFrontOfRow(integer row, Type value)
+               me:Add(row, 0, value)
+           end
+
+    /*
+        This blueprint action copies an object and returns the copy. 
+
+        Attribute: Returns Returns a copy of this object. This copy is not guaranteed
+        to be a deep copy.
+        
+        Attribute: Example
+        use Libraries.Containers.Table
+        //the array class is Copyable
+        Table<integer> table
+        Object o = table:Copy()
+        Table<integer> copy = cast(Table<integer>, o)
+    */
+
+
+           action Copy returns Object
+               Table<Type> newTable
+
+               integer count = 0
+               integer size = GetNumberOfRows()
+               repeat until count = size
+                   Array<Type> row = table:Get(count)
+                   Array<Type> result = cast(Array<Type>, row:Copy())
+                   newTable:AddRow(result)
+
+                   count = count + 1
+               end
+
+               return newTable
+           end
+
+    /*
+        This action gets the item at the front of the specified row in the table(the item will remain in the table). 
+
+        Attribute: Parameter row The row in the table.
+
+        Attribute: Returns The item at the front of the array.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:AddToEndOfRow(0,4)
+        myTable:AddToEndOfRow(0,13)
+        myTable:AddToEndOfRow(0,12)
+        integer value = myTable:GetFromFrontOfRow(0)
+    */
+
+
+           action GetFromFrontOfRow(integer row) returns Type
+               Array<Type> rowArray = table:Get(row)
+               if rowArray not= undefined
+                   return rowArray:Get(0)
+               else
+                   return undefined
+               end
+           end
+
+    /*
+        This action gets the item at the end of the row in the table(the item will remain in the table). 
+
+        Attribute: Parameter row The row in the table.
+
+        Attribute: Returns The item at the end of the row in the table.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:AddToEndOfRow(0, 4)
+        myTable:AddToEndOfRow(0, 13)
+        myTable:AddToEndOfRow(0, 12)
+        integer value = myTable:GetFromEndOfRow(0)
+    */
+
+
+           action GetFromEndOfRow(integer row) returns Type
+               Array<Type> rowArray = table:Get(row)
+               if rowArray not= undefined
+                   return rowArray:Get(rowArray:GetSize() - 1)
+               else
+                   return undefined
+               end
+           end
+
+    /*
+        This action removes an item from an indexed object and returns that item. 
+
+        Attribute: Parameter row The row in the table.
+
+        Attribute: Parameter column The column in the table.  
+
+        Attribute: Returns The item that was removed from the indexed object. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        use Libraries.Containers.Array
+        Table<integer> myTable
+        myTable:SetSize(10,10)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(0, 1, 33)
+        myTable:Set(0, 2, 45)
+        myTable:Set(0, 3, 22)
+        integer item = myTable:RemoveAt(0, 2)
+    */
+
+
+           action RemoveAt(integer row, integer column) returns Type
+               integer size = table:GetSize()
+               if row < size and row >= 0
+                   Array<Type> rowArray = table:Get(row)
+                   if rowArray not= undefined
+                       size = rowArray:GetSize()
+                       if column < size and column >= 0
+                           return rowArray:RemoveAt(column)
+                       else
+                           InvalidLocationError error
+                           alert(error)
+                       end
+                   end
+               else
+                   InvalidLocationError error
+                   alert(error)
+               end
+               return undefined
+           end
+
+    /*
+        This action gets an iterator for the object and returns that iterator. 
+
+        Attribute: Returns Returns the iterator for an object. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+
+        Table<integer> myTable
+        myTable:SetSize(4,4)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(0, 1, 33)
+        myTable:Set(0, 2, 45)
+        myTable:Set(0, 3, 22)
+        Iterator<Array<integer>> it = myTable:GetRowIterator()
+    */
+
+
+           action GetRowIterator() returns Iterator<Array<Type>>
+               return table:GetIterator()
+           end
+
+    /*
+        This action determines if an addable object contains a certain item. 
+
+        Attribute: Parameter value The item to find in the Addable object.
+
+        Attribute: Returns Returns true if the item was in the Addable object and false if it was not. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10, 10)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(0, 1, 33)
+        myTable:Set(0, 2, 45)
+        myTable:Set(0, 3, 22)
+        boolean result = myTable:Has(33)
+    */
+
+
+           action Has(Type value) returns boolean
+               integer count = 0
+               integer size = table:GetSize()
+               repeat while count < size
+                   Array<Type> item = table:Get(count)
+                   if item:Has(value)
+                       return true
+                   end
+
+                   count = count + 1
+               end
+
+               return false
+           end
+
+    /*
+        This action removes the first occurrence of an item that is found in the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10,10)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(0, 1, 33)
+        myTable:Set(0, 2, 45)
+        myTable:Set(0, 3, 22)
+        boolean result = myTable:Remove(22)
+    */
+
+
+           action Remove(Type value) returns boolean
+               integer count = 0
+               integer size = table:GetSize()
+               repeat while count < size
+                   Array<Type> item = table:Get(count)
+                   boolean removedItem = item:Remove(value)
+                   if removedItem
+                       return true
+                   end
+
+                   count = count + 1
+               end
+
+               return false
+           end
+
+    /*
+        This action removes all occurrences of an item from the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed.
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10,10)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(0, 1, 33)
+        myTable:Set(0, 2, 45)
+        myTable:Set(0, 3, 22)
+        boolean result = myTable:RemoveAll(22) 
+    */
+
+
+           action RemoveAll(Type value) returns boolean
+               boolean hasRemoved = false
+               integer count = 0
+               integer size = table:GetSize()
+               repeat while count < size
+                   Array<Type> item = table:Get(count)
+                   if item:RemoveAll(value)
+                       hasRemoved = true
+                       size = size - 1
+                   else
+                       count = count + 1
+                   end
+               end
+
+               return hasRemoved
+           end
+
+    /*
+        This action removes the item at the end of the table. 
+
+        Attribute: Returns The item at the end of the table. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:AddToEndOfRow(0, 33)
+        myTable:AddToEndOfRow(0, 13)
+        myTable:AddToEndOfRow(0, 43)
+        integer removed = myTable:RemoveFromEndOfRow(0)
+    */
+
+
+           action RemoveFromEndOfRow(integer row) returns Type
+               Array<Type> rowArray = table:Get(row)
+               return RemoveAt(row, rowArray:GetSize() - 1)
+           end
+
+    /*
+        This action removes the item at the front of the table. 
+
+        Attribute: Returns The item at the front of the table. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:Add(0,0,33)
+        myTable:Add(0,1,13)
+        myTable:Add(0,2,43)
+        integer removed = myTable:RemoveFromFrontOfRow(0)
+    */
+
+
+           action RemoveFromFrontOfRow(integer row) returns Type
+               return RemoveAt(row, 0)
+           end
+
+    /*
+        This action empty's the table, clearing out all of the items contained within it. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10,10)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(1, 0, 33)
+        myTable:Set(2, 0, 45)
+        myTable:Set(3, 0, 22)
+        myTable:Empty()
+    */
+
+
+           action Empty
+               table:Empty()
+           end
+
+    /*
+        This action returns a boolean value, true if the container is empty and false if it contains any items. 
+
+        Attribute: Returns Returns true when the container is empty and false when it is not. 
+
+        Attribute: Example
+        use Libraries.Containers.Table
+        Table<integer> myTable
+        myTable:SetSize(10, 10)
+        myTable:Set(0, 0, 22) 
+        myTable:Set(0, 1, 33)
+        myTable:Set(0, 2, 45)
+        myTable:Set(0, 3, 22)
+        boolean result = myTable:IsEmpty()
+    */
+
+
+           action IsEmpty returns boolean
+               return table:IsEmpty()
+           end
+end

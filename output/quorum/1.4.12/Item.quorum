@@ -1,0 +1,786 @@
+package Libraries.Interface
+
+use Libraries.Containers.Array
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Interface.Events.MouseListener
+use Libraries.Interface.Events.MouseMovementListener
+use Libraries.Interface.Events.MouseWheelListener
+use Libraries.Interface.Events.MouseEvent
+use Libraries.Interface.Events.TouchListener
+use Libraries.Interface.Events.TouchEvent
+use Libraries.Game.Graphics.Drawable
+use Libraries.Game.Shapes.Rectangle
+use Libraries.Compute.Math
+
+
+/*
+    The Item class represents any object that has a position on the screen.
+    They have X and Y coordinates, representing their horizontal and vertical
+    position in 2D space, respectively. They also have corresponding width and
+    height, which combine with the x, y coordinates to make a rectangle. Note
+    that Items on their own can't be seen on the screen. To make an Item that
+    can be drawn directly on the screen, use a Libraries.Game.Graphics.Drawable
+    instead.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        Item myItem
+        
+        myItem:SetPosition(20, 60)
+        myItem:SetWidth(50)
+        myItem:SetHeight(15)
+*/
+
+
+class Item
+    text name = "Unnamed"
+text description = ""
+boolean visible = true
+Array<MouseListener> mouseListeners
+Array<MouseMovementListener> mouseMoveListeners
+Array<MouseWheelListener> mouseWheelListeners
+Array<TouchListener> touchListeners
+
+    /*
+    This action is used internally to allow the Item class to pass actions to
+    children.
+    */
+private blueprint action GetChildAsItem(integer index) returns Item
+
+    /*
+    This action will return the total number of children this Item has.
+    */
+
+
+blueprint action GetItemCount returns integer
+
+    /*
+    This action will remove all Items from this Item's children hierarchy. Note
+    that this will not empty the hierarchies of the contained Items.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item parentItem
+        Item child1
+        Item child2
+        Item grandchild
+        parentItem:Add(child1)
+        parentItem:Add(child2)
+        child1:Add(grandChild)
+        parentItem:Empty()
+    */
+
+
+blueprint action Empty
+
+    /*
+    FIX ME: Needs comments
+    */
+
+
+blueprint action ProcessTouchEvent(TouchEvent event)
+
+    /*  
+    This action takes a mouse event and handles it. It will first test to 
+    see if the mouse event took place within the bounds of this Item. If so, it
+    will notify any MouseListeners of the event. If the event was not contained
+    within this Item, or if there are no MouseListeners on this Item, the Item
+    will ask its parent Item to process the mouse event, if there is a parent.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+        use Libraries.Interface.Events.MouseEvent
+        use Libraries.Interface.Events.MouseListener
+        Item2D myItem
+        MouseListener listener
+        myItem:AddMouseListener(listener)
+        MouseEvent event
+        event:eventType = event:CLICKED_MOUSE
+        myItem:ProcessMouseEvent(event)
+    
+    */
+
+blueprint action ProcessMouseEvent(MouseEvent event)
+    
+    /*
+    This action sets the X coordinate of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+        Item2D myItem
+        myItem:SetX(35.0)
+    */
+
+blueprint action SetX(number setX)
+
+    /*
+    This action sets the Y coordinate of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+        Item2D myItem
+        myItem:SetY(210.0)
+    */
+
+blueprint action SetY(number setY)
+
+    /*
+    This action sets the Z coordinate of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item3D
+        Item3D myItem
+        myItem:SetZ(180.0)
+    */
+
+blueprint action SetZ(number setZ)
+
+    /*
+    This action returns the currently set X coordinate of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+        Item2D myItem
+        number value = myItem:GetX()
+    */
+
+blueprint action GetX returns number
+
+    /*
+    This action returns the currently set Y coordinate of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+        Item2D myItem
+        number value = myItem:GetY()
+    */
+
+blueprint action GetY returns number
+
+    /*
+    This action returns the currently set Z coordinate of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item3D
+        Item3D myItem
+        number value = myItem:GetZ()
+    */
+
+blueprint action GetZ returns number
+
+    /*
+    This action will set both the X, Y, and Z coordinates of the Item,
+    in that order.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item3D
+        Item3D myItem
+        myItem:SetPosition(30, 70, 45)
+    */
+
+blueprint action SetPosition(number newX, number newY, number newZ)
+
+    /* 
+    This action returns the Item's global x coordinate. This is the actual world
+    coordinate that the item exists at after it has been offset by its parent's
+    position. If this Item doesn't have a parent, and the offset hasn't been set
+    manually, this is the same as GetX().
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+        Item2D myItem
+        myItem:SetOffsetX(100)
+        myItem:SetX(30)
+        number globalX = myItem:GetGlobalX()
+    */
+
+blueprint action GetGlobalX returns number
+
+    /*
+    This action returns the Item's global y coordinate. This is the actual world
+    coordinate that the item exists at after it has been offset by its parent's
+    position. If this Item doesn't have a parent, and the offset hasn't been set
+    manually, this is the same as GetY().
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+        Item2D myItem
+        myItem:SetOffsetY(60)
+        myItem:SetX(90)
+        number globalY = myItem:GetGlobalY()
+    */
+
+blueprint action GetGlobalY returns number
+
+    /*
+    This action returns the Item's global z coordinate. This is the actual world
+    coordinate that the item exists at after it has been offset by its parent's
+    position. If this Item doesn't have a parent, and the offset hasn't been set
+    manually, this is the same as GetZ().
+
+    Attribute: Example
+
+        use Libraries.Interface.Item3D
+        Item3D myItem
+        myItem:SetOffsetZ(40)
+        myItem:SetX(50)
+        number globalZ = myItem:GetGlobalZ()
+    */
+
+blueprint action GetGlobalZ returns number
+
+    /* This action adds a MouseListener to the Item. If the Item ever receives
+    a MouseEvent due to a mouse click, the mouse listener will be notified.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.MouseListener
+        Item myItem
+        MouseListener listener
+        myItem:AddMouseListener(listener)
+    */
+
+
+action AddMouseListener(MouseListener listener)
+   mouseListeners:Add(listener)
+end
+
+    /* This action removes a MouseListener from the Item. The listener will no
+    longer receive notification if the Item gets a mouse click event.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.MouseListener
+        Item myItem
+        MouseListener listener
+        myItem:AddMouseListener(listener)
+        myItem:RemoveMouseListener(listener)
+    */
+
+
+action RemoveMouseListener(MouseListener listener)
+   mouseListeners:Remove(listener)
+end
+
+    /*
+    FIX ME: Add comments
+    */
+
+
+action GetMouseListeners returns Iterator<MouseListener>
+   return mouseListeners:GetIterator()
+end
+
+    /* This action adds a MouseMovementListener to the Item. If the Item ever 
+    receives a MouseEvent due to mouse movement, the listener will be notified.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.MouseMovementListener
+        Item myItem
+        MouseMovementListener listener
+        myItem:AddMouseMovementListener(listener)
+    */
+
+
+action AddMouseMovementListener(MouseMovementListener listener)
+   mouseMoveListeners:Add(listener)
+end
+
+    /* This action removes a MouseMovementListener from the Item. The listener 
+    will no longer receive notification if the Item gets a mouse movement event.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.MouseMovementListener
+        Item myItem
+        MouseMovementListener listener
+        myItem:AddMouseMovementListener(listener)
+        myItem:RemoveMouseMovementListener(listener)
+    */
+
+
+action RemoveMouseMovementListener(MouseMovementListener listener)
+   mouseMoveListeners:Remove(listener)
+end
+
+    /*
+    FIX ME: Add comments
+    */
+
+
+action GetMouseMovementListeners returns Iterator<MouseMovementListener>
+   return mouseMoveListeners:GetIterator()
+end
+
+    /* This action adds a MouseWheelListener to the Item. If the Item ever 
+    receives a MouseEvent due to the mouse wheel being scrolled, the listener
+    will be notified.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.MouseWheelListener
+        Item myItem
+        MouseWheelListener listener
+        myItem:AddMouseWheelListener(listener)
+    */
+
+
+action AddMouseWheelListener(MouseWheelListener listener)
+   mouseWheelListeners:Add(listener)
+end
+
+    /* This action removes a MouseWheelListener from the Item. The listener 
+    will no longer receive notification if the Item gets a mouse wheel event.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.MouseWheelListener
+        Item myItem
+        MouseWheelListener listener
+        myItem:AddMouseWheelListener(listener)
+        myItem:RemoveMouseWheelListener(listener)
+    */
+
+
+action RemoveMouseWheelListener(MouseWheelListener listener)
+   mouseWheelListeners:Remove(listener)
+end
+
+    /*
+    FIX ME: Add comments
+    */
+
+
+action GetMouseWheelListeners returns Iterator<MouseWheelListener>
+   return mouseWheelListeners:GetIterator()
+end
+
+    /* This action adds a TouchListener to the Item. If the Item ever receives a
+    TouchEvent, the listener will be notified.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.TouchListener
+        Item myItem
+        TouchListener listener
+        myItem:AddTouchListener(listener)
+    */
+
+
+action AddTouchListener(TouchListener listener)
+   touchListeners:Add(listener)
+end
+
+    /* This action removes a TouchListener from the Item. The listener will no
+    longer receive notification if the Item gets a TouchEvent.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.Interface.Events.TouchListener
+        Item myItem
+        TouchListener listener
+        myItem:AddTouchListener(listener)
+        myItem:RemoveTouchListener(listener)
+    */
+
+
+action RemoveTouchListener(TouchListener listener)
+   touchListeners:Remove(listener)
+end
+
+    /*
+    FIX ME: Add comments
+    */
+
+
+action GetTouchListeners returns Iterator<TouchListener>
+   return touchListeners:GetIterator()
+end
+
+    /*  This action updates the item. It takes a number parameter that should
+    indicate how many seconds have passed since the last time this action was
+    called. This action does nothing in the Item class, but any class that
+    inherits from Item may override it.
+
+    Attribute: Parameter secondsSinceUpdate The number of seconds that have passed since the last time Update was called.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        use Libraries.System.DateTime
+        
+        class Main is Item
+
+            action Main
+                // We'll use a DateTime object to count seconds.
+                DateTime time
+                number currentTime = time:GetEpochTime()
+                number newTime = 0
+
+                repeat while GetX() < 300
+                    // Check what the time is now.
+                    newTime = time:GetEpochTime()
+
+                    // Calculate how many seconds have passed, then call Update.
+                    Update( (newTime - currentTime)/1000 )
+
+                    // Store the old time.
+                    currentTime = newTime
+                end
+            end
+
+            // Our update action will move our Item to the right at 200 units a second.
+            action Update(number secondsSinceUpdate)
+                SetX(GetX() + 200 * secondsSinceUpdate)
+            end
+        end
+    
+    */
+
+
+action Update(number secondsSinceUpdate)
+
+end
+
+    /*  This action calls the Update action on this Item and all Items that have
+    been added to this item with the Add action.
+
+    Attribute: Parameter secondsSinceUpdate The number of seconds that have passed since the last time Update was called.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+        
+        Item parentItem
+        Item child1
+        Item child2
+        parentItem:Add(child1)
+        parentItem:Add(child2)
+        parentItem:UpdateAll(0)
+    */
+
+
+action UpdateAll(number secondsSinceUpdate)
+   Update(secondsSinceUpdate)
+   integer counter = 0
+   repeat GetItemCount() times
+       GetChildAsItem(counter):UpdateAll(secondsSinceUpdate)
+       counter = counter + 1
+   end
+end
+
+    /*  This action is used to indicate that two items have just begun colliding.
+    When two Items collide, the BeginCollision action should be called on both
+    of them, with the other item passed as a parameter to the action. Note that 
+    this action does nothing by default, but classes that inherit from Item may 
+    override it.
+
+    Attribute: Parameter item The other Item involved in the collision.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item collider1
+        Item collider2
+        collider1:BeginCollision(collider2)
+        collider2:BeginCollision(collider1)
+    */
+
+
+action BeginCollision(Item item)
+
+end
+
+    /*  This action is used to indicate that two items that were previously
+    colliding no longer are. The FinishCollision action should be called on both
+    Items involved, with the other item passed as a parameter to the action. 
+    Note that this action does nothing by default, but classes that inherit from
+    Item may override it.
+
+    Attribute: Parameter item The other Item involved in the collision.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item collider1
+        Item collider2
+        collider1:FinishCollision(collider2)
+        collider2:FinishCollision(collider1)
+    */
+
+
+action FinishCollision(Item item)
+
+end
+
+    /*  This action is used to indicate that an Item and all Items that were
+    added to it should be visible on the screen. Note that the Item class on its
+    own cannot be drawn on the screen, but classes that inherit from it such as
+    Libraries.Game.Graphics.Drawable can be. By default, Items are considered
+    visible.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item item
+        item:Show()
+    */
+
+
+action Show
+   visible = true
+end
+
+    /*  This action is used to indicate that an Item and all Items that were
+    added to it should not be visible on the screen. Note that the Item class on
+    its own cannot be drawn on the screen, but classes that inherit from it such
+    as Libraries.Game.Graphics.Drawable can be. By default, Items are considered
+    visible.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item item
+        item:Hide()
+    */
+
+
+action Hide
+   visible = false
+end
+
+    /*  This action returns whether the Item is currently set to be visible on
+    the screen.
+
+    Attribute: Returns A boolean representing whether or not the Item is currently visible.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item item
+        item:Hide()
+        boolean visible = item:IsShowing()
+    */
+
+
+action IsShowing returns boolean
+   return visible
+end
+
+    /*  This action sets the internal name of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item item
+        item:SetName("My Item")
+    */
+
+
+action SetName(text newName)
+   name = newName
+end
+
+    /*  This action returns the current internal name of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item item
+        item:SetName("My Item")
+        output "My item's name is " + item:GetName()
+    */
+
+
+action GetName returns text
+   return name
+end
+
+    /*  This action sets the internal description of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item item
+        item:SetDescription("Used for demo purposes.")
+    */
+
+
+action SetDescription(text newDescription)
+   description = newDescription
+end
+
+    /*  
+    This action returns the current internal description of the Item.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item item
+        item:SetDescription("Used for demo purposes.")
+        output "My item's description is : " + item:GetDescription()
+    */
+
+
+action GetDescription returns text
+   return description
+end
+
+//    action GetItemAt(number x, number y, number z) returns Item
+//        integer counter = children:GetSize()
+//        Item temp = undefined
+//        boolean found = false
+//        repeat while counter > 0 and not found
+//            counter = counter - 1
+//            temp = children:Get(counter)
+//            temp = temp:GetItemAt(x, y, z)
+//            if temp not= undefined
+//                found = true
+//            end
+//        end
+//
+//        if not found and Contains(x, y, z)
+//            return me
+//        else
+//            return temp
+//        end
+//    end
+
+    /*
+    This action is used to free up any additional memory that is being used by
+    this Item for purposes such as graphics. Note that the Item class doesn't
+    have any extra memory that needs to be released with this action, but some
+    classes which inherit from Item, such as Libraries.Game.Graphics.Drawable,
+    do.
+    */
+
+
+action Dispose
+
+end
+
+    /*
+    This action is used to call Dispose on the entire children hierarchy of this
+    Item. This will not call Dispose on this Item.
+    */
+
+
+action DisposeChildren
+   integer counter = 0
+   repeat GetItemCount() times
+       GetChildAsItem(counter):DisposeAll()
+       counter = counter + 1
+   end
+end
+
+    /*
+    This action is used to call Dispose on this Item and on the entire children
+    hierarchy of this Item.
+    */
+
+
+action DisposeAll
+   DisposeChildren()
+   Dispose()
+end
+
+    /*
+    This action is used to call Empty on all children contained in this item's
+    children hierarchy. This will not empty the children of this item.
+    */
+
+
+action EmptyChildren
+   integer counter = 0
+   repeat GetItemCount() times
+       GetChildAsItem(counter):EmptyAll()
+       counter = counter + 1
+   end
+end
+
+    /*
+    This action will call Empty on the entire children hierarchy of this item,
+    and then empty this item as well.
+    */
+
+
+action EmptyAll
+   EmptyChildren()
+   Empty()
+end
+
+    /*
+    This action will increase the x-coordinate of this Item by the given amount.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item
+
+        Item myItem
+        myItem:SetX(50)
+        myItem:MoveX(25)
+    */
+
+
+blueprint action MoveX(number xAmount)
+
+    /*
+    This action will increase the y-coordinate of this Item by the given amount.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item2D
+
+        Item2D myItem
+        myItem:SetY(50)
+        myItem:MoveY(25)
+    */
+
+blueprint action MoveY(number yAmount)
+
+    /*
+    This action will increase the z-coordinate of this Item by the given amount.
+
+    Attribute: Example
+
+        use Libraries.Interface.Item3D
+
+        Item3D myItem
+        myItem:SetZ(50)
+        myItem:MoveZ(25)
+    */
+
+blueprint action MoveZ(number zAmount)
+
+end

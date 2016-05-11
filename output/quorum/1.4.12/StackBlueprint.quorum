@@ -1,0 +1,55 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.Copyable
+use Libraries.Containers.Blueprints.Addable
+use Libraries.Containers.Blueprints.Iterative
+use Libraries.Containers.Blueprints.Container
+
+/*
+
+Inheriting from the StackBlueprint class provides a basic blueprint for a
+stack data structure.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.StackBlueprint
+
+class MyStack<Type> is StackBlueprint<Type>
+    action Push(Type value)
+        //implement here
+    end
+end
+*/
+
+
+class StackBlueprint<Type> is Addable<Type>, Container, Copyable, Iterative<Type>
+
+    /*
+        This action gets the item at the top of the stack(the item will remain in the stack). 
+
+        Attribute: Returns The item at the top of the stack.
+    */
+
+    blueprint action Peek() returns Type
+
+    /*
+        This action removes the item at the top of the stack. 
+
+        Attribute: Returns The item at the top of the stack. 
+    */
+
+
+                    blueprint action Pop() returns Type
+
+    /*
+        This action adds an item to the top of the stack.
+
+        Attribute: Parameter value The item to the top of the stack. 
+    */
+
+
+                    blueprint action Push(Type value)
+
+end

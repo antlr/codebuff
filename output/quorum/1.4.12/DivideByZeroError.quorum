@@ -1,0 +1,28 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The DivideByZeroError class is an error or exception that is thrown when a
+divide by zero operation is attempted.
+
+Attribute: Example
+
+use Libraries.Language.Errors.DivideByZero
+class Main
+   action Main
+      check
+        integer i = 12 / 0
+      detect e is DivideByZeroError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+
+
+class DivideByZeroError is Error
+    on create
+        SetErrorMessage("Divide By Zero Error: An error occurred while attempting to divide by zero.")
+    end
+end

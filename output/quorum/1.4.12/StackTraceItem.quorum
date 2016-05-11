@@ -1,0 +1,143 @@
+package Libraries.System
+
+/*
+The StackTraceItem is a helper class that represents an item on the call stack. It 
+is used by the Error classes to generate stack traces.
+
+Attribute: Author Melissa Stefik
+
+Attribute: Example
+
+use Libraries.System.StackTraceItem
+
+class MyCallStack<Type>
+    StackTraceItem item
+end
+
+*/
+
+
+class StackTraceItem
+    integer lineNumber = 0
+    text className = ""
+    text methodName = ""
+    text fileName = ""
+
+    /*
+    Initialize the stack trace items' class, method, file, and line number.
+
+    Attribute: Parameter clazz The name of the class on the call stack.
+    Attribute: Parameter method The name of the method (from the activation record) on the call stack.
+    Attribute: Parameter file The file path of the class on the call stack.
+    Attribute: Parameter line The line number that the activation record originates from.
+
+    Attribute: Example
+    use Libraries.System.StackTraceItem
+    StackTraceItem item
+    item:Init("MyCallStack", "Call", "Libraries.System.CallStack", 15)
+    */
+
+
+    action Init(text clazz, text method, text file, integer line)
+        className = clazz
+        methodName = method
+        fileName = file
+        lineNumber = line
+    end
+
+    /*
+    Get the name of the class that the activation record originates from.
+
+    Attribute: Returns The name of the class on the call stack.
+
+    Attribute: Example
+    use Libraries.System.StackTraceItem
+    StackTraceItem item
+    text clazz = item:GetClassName()
+    */
+
+
+    action GetClassName() returns text
+        return className
+    end
+
+    /*
+    Get the name of the method that the activation record originates from.
+
+    Attribute: Returns The name of the method on the call stack.
+
+    Attribute: Example
+    use Libraries.System.StackTraceItem
+    StackTraceItem item
+    text method = item:GetMethodName()
+    */
+
+
+    action GetMethodName() returns text
+        return methodName
+    end
+
+    /*
+    Get the name of the file that the activation record originates from.
+
+    Attribute: Returns The name of the file on the call stack.
+
+    Attribute: Example
+    use Libraries.System.StackTraceItem
+    StackTraceItem item
+    text file = item:GetFileName()
+    */
+
+
+    action GetFileName() returns text
+        return fileName
+    end
+
+    /*
+    Get the line number that the activation record originates from.
+
+    Attribute: Returns The line number of the item on the call stack.
+
+    Attribute: Example
+    use Libraries.System.StackTraceItem
+    StackTraceItem item
+    integer line = item:GetLineNumber()
+    */
+
+
+    action GetLineNumber() returns integer
+        return lineNumber
+    end
+
+    /*
+    Determines if StackTraceItem's have equivalent values(class, method, file, and line number).
+
+    Attribute: Parameter o The object to compare the StackTraceItem to.
+
+    Attribute: Returns True if the StackTraceItem's are equal and false if they are not equal.
+
+    Attribute: Example
+    use Libraries.System.StackTraceItem
+    StackTraceItem item
+    StackTraceItem item2
+    item:Equals(item2)
+    */
+
+
+    action Equals(Object o) returns boolean
+        if o is StackTraceItem
+            StackTraceItem item = cast(StackTraceItem, o)
+            text clazz = item:GetClassName()
+            text method = item:GetMethodName()
+            text file = item:GetFileName()
+            integer line = item:GetLineNumber()
+            if clazz = className and method = methodName and file = fileName and line = lineNumber
+                return true
+            else
+                return false
+            end
+        else
+            return false
+        end
+    end
+end
