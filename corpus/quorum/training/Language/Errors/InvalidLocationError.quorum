@@ -1,0 +1,34 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The InvalidLocationError class is an error or exception that is thrown when 
+an invalid memory location is accessed. For example attempting to access the
+index 21 in an array that has a size of 10.
+
+Attribute: Example
+
+use Libraries.Language.Errors.InvalidLocationError
+use Libraries.Containers.Array
+
+class Main
+   action Main
+      Array myArray
+      check
+        integer i = 0
+        repeat while i < 20
+            myArray:Get(i)
+            i = i + 1
+        end
+      detect e is InvalidLocationError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+class InvalidLocationError is Error
+    on create
+        SetErrorMessage("Location Invalid: Attempted to reference a location in a data structure that does not exist.")
+    end
+end

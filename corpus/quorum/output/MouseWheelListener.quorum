@@ -1,0 +1,22 @@
+package Libraries.Interface.Events
+
+/*
+The MouseWheelListener class is used to listen for and react to MouseEvents
+where the user has scrolled the mouse wheel. To use a MouseWheelListener in a
+program, users should make a new class that inherits from it and overrides
+ScrolledMouse.
+*/
+
+
+class MouseWheelListener
+
+    /*
+    The ScrolledMouse action is used to respond to MouseEvents created by
+    scrolling the mouse wheel.
+    */
+
+
+    action ScrolledMouse(MouseEvent event)
+
+    end
+end

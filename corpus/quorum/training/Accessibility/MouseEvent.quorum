@@ -1,0 +1,278 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.all
+
+/*
+    The MouseEvent class is used to represent an event that happened using the 
+    mouse. It has four components (category, act, position, and button) to 
+    describe the event. These components are typically used as described in the 
+    Legam Screen Reader XML documentation.
+
+    Attribute: Example
+
+    KeyboardEvent kevent
+    kevent:SetCategory("Mouse")
+    kevent:SetAction("Click")
+    kevent:SetPosition(123,456)
+    kevent:SetButton("Left")
+    say(kevent:GetDescription())
+
+*/
+class MouseEvent is AccessibilityEvent
+
+    private text category = ""
+    private text act = ""
+    private text position = ""
+    private text button = ""
+
+    constant text move = "Move"
+    constant text click = "Click"
+    constant text release = "Release"
+    constant text wheel = "Wheel"
+
+    /*
+        This action gets the category of the mouse event. The category for 
+        mouse events should be "Mouse".
+        
+        Attribute: Returns text of what the category is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text category = event:GetCategory()
+    */
+    action GetCategory() returns text
+        return category
+    end
+
+    /*
+        This action implements the inherited GetAction action from the 
+        AccessibilityEvent class. 
+
+        This action gets the act of the mouse event. The acts are used to define 
+        what mouse event happened (e.g. Move, Click, Release, Wheel).
+        
+        Attribute: Returns text of what the act is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text act = event:GetAction()
+    */
+    action GetAction() returns text
+        return act
+    end
+
+    /*
+        This action gets the positon of the mouse event. The position is the 
+        "x,y" location on the screen.
+        
+        Attribute: Returns text of the "x,y" location.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text position = event:GetPosition()
+    */
+    action GetPosition() returns text
+        return position
+    end
+
+    /*
+        This action gets the button of the mouse event. The button represents 
+        which button on the mouse was used (e.g. Left, Right, Middle, X).
+        
+        Attribute: Returns text of the button.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text button = event:GetButton()
+    */
+    action GetButton() returns text
+        return button
+    end
+
+
+    action GetKeyboardShortcut() returns text
+        return ""
+    end
+
+
+    action GetChildCount() returns integer
+        return 0
+    end
+
+
+    /*
+        This action sets the category of the mouse event. The category for 
+        mouse events should be "Mouse".
+        
+        Attribute: Parameter value The text of the category.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        event:SetCategory("Mouse")
+    */
+    action SetCategory(text newCategory)
+        category = newCategory
+    end
+
+    /*
+        This action sets the act of the mouse event. The acts are used to define 
+        what mouse event happened (e.g. Move, Click, Release, Wheel).
+        
+        Attribute: Parameter value The text of the act.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        event:SetAction("Click")
+    */
+    action SetAction(text newAct)
+        act = newAct
+    end
+
+    /*
+        This action sets the position of the mouse event. The position is the 
+        "x,y" location on the screen.
+        
+        Attribute: Parameter value The text of the position.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        event:SetAction("300 , 523")
+    */
+    action SetPosition(text newPosition)
+        position = newPosition
+    end
+
+    /*
+        This action sets the position of the mouse event. The position is the 
+        "x,y" location on the screen.
+        
+        Attribute: Parameter value The text of the position.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        event:SetAction("300 , 523")
+    */
+    action SetPosition(integer x, integer y)
+        position = "" + x + " , " + y
+    end
+
+    /*
+        This action sets the button of the mouse event. The button represents 
+        which button on the mouse was used (e.g. Left, Right, Middle, X).
+        
+        Attribute: Parameter value The text of the button.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        event:SetButton("Left")
+    */
+    action SetButton(text newButton)
+        button = newButton
+    end
+
+    /*
+        This action implements the inherited GetDescription action from the 
+        AccessibilityEvent class. 
+
+        This action gets a string to describe the event.
+        
+        Attribute: Parameter value The text of the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text result = event:GetDescription()
+    */
+    action GetDescription() returns text
+        boolean moveResult = (act = move)
+        boolean clickResult = (act = move)
+        boolean releaseResult = (act = move)
+        
+        if moveResult
+            return ("Mouse moved to " + position)
+        elseif clickResult
+            return (button + " button clicked at " + position)
+        elseif releaseResult
+            return (button + " button released at " + position)
+        else
+            return ("Mouse wheel")
+        end
+    end
+
+    /*
+        This action implements the inherited GetName action from the 
+        AccessibilityEvent class. 
+        
+        For a mouse event this returns the name of the button that was used, if 
+        no button was used then it will return an empty string.
+        
+        Attribute: Returns the text of the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text result = event:GetName()
+    */
+    action GetName() returns text
+        return GetButton()
+    end
+
+    /*
+        This action implements the inherited GetMoreActionInformation action from the 
+        AccessibilityEvent class. 
+
+        For a mouse event this returns the position on the screen of the event.
+        
+        Attribute: Returns the text of the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text result = event:GetMoreActionInformation()
+    */
+    action GetMoreActionInformation() returns text
+        return GetPosition()
+    end
+
+    action AddChild(AccessibleChild newChild)
+        
+    end
+
+    action GetChild(integer index) returns AccessibleChild
+        AccessibleChild emptyChild
+        return emptyChild
+    end
+end

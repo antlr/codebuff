@@ -1,0 +1,119 @@
+package Libraries.Accessibility
+
+/*
+    The AccessibleChild stores information about a child of an accessible event.
+
+    Attribute: Example
+
+    AccessibleChild child
+    child:SetName("Edit")
+    child:SetComponentType("MenuItem")
+    child:SetKeyboardShortcut("e")
+    output child:GetName()
+
+*/
+
+class AccessibleChild
+    private text component = ""
+    private text name = ""
+    private text keyboardShortcut = ""
+
+    /*
+        This action gets the name of the child item. 
+        
+        Attribute: Returns text of the name of the child.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        AccessibleChild child
+        text name = child:GetName()
+    */
+    action GetName() returns text
+        return name
+    end
+
+    /*
+        This action gets the component type of the child item. 
+        The component is used to define what object the event happened to 
+        (e.g. Button, Window, Toolbar...).
+        
+        Attribute: Returns text of what the component is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        AccessibleChild child
+        text componentType = child:GetComponent()
+    */
+    action GetComponentType() returns text
+        return component
+    end
+
+    /*
+        This action gets the keyboard shortcut of the child item. 
+        
+        Attribute: Returns text of the keyboard shortcut of the child.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        AccessibleChild child
+        text keyboardShortcut = child:GetKeyboardShortcut()
+    */
+    action GetKeyboardShortcut() returns text
+        return keyboardShortcut
+    end
+
+    /*
+        This action sets the name of the child item.
+        
+        Attribute: Parameter value Text of the name of the child.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        AccessibleChild child
+        child:SetName("Close")
+    */
+    action SetName(text newName)
+        name = newName
+    end
+    
+    /*
+        This action sets the component of the child item.
+        
+        Attribute: Parameter value Text of the component of the child.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        AccessibleChild child
+        child:SetComponentType("MenuItem")
+    */
+    action SetComponentType(text newComponent)
+        component = newComponent
+    end
+
+    /*
+        This action sets the keyboard shortcut of the child item.
+        
+        Attribute: Parameter value Text of the keyboard shortcut of the child.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        AccessibleChild child
+        child:SetKeyboardShortcut("Ctrl+N")
+    */
+    action SetKeyboardShortcut(text newKeyboardShortcut)
+        keyboardShortcut = newKeyboardShortcut
+    end
+
+end

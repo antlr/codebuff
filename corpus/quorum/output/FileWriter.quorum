@@ -1,0 +1,278 @@
+package Libraries.System
+
+use Libraries.System.Blueprints.FileWriterBlueprint
+use Libraries.System.File
+use Libraries.Containers.Blueprints.Indexed
+use Libraries.Language.Errors.InvalidArgumentError
+use Libraries.Language.Errors.EndOfFileError
+use Libraries.Language.Errors.InputOutputError
+use Libraries.Language.Errors.FileNotFoundError
+
+/*
+This class represents a sequential file writer. It is the standard file writer
+used in Quorum. By "sequential," we mean that it is possible to only move
+forward in the file. Once data has been written to a position, it is impossible
+to go backwards in the file and modify it. This is most commonly used for
+writing plain text files.
+
+Attribute: Example
+use Libraries.System.File
+use Libraries.System.FileWriter
+
+// Write three lines to an existing file.
+File f
+f:SetPath("anExistingFile.txt")
+FileWriter writer
+writer:OpenForWriteAppend(f)
+
+// Write 3 lines.
+writer:WriteLine("1")
+writer:WriteLine("2")
+writer:WriteLine("3")
+
+// Close.
+writer:Close()
+
+// Open a new file and write "abcdefgh" to it.
+
+f:SetPath("MySpecialDocument.dat")
+writer:OpenForWrite(f)
+
+// Write "abcdefgh" to the file in two separate writes.
+writer:Write("abcd")
+writer:Write("efgh")
+
+// Always call Close().
+writer:Close()
+
+// The file contents are now "abcdefgh".
+*/
+
+
+class FileWriter is FileWriterBlueprint
+    /*
+     * The file we have open. Upon creation, this is "undefined" and won't
+     * be set until the user calls one of the "open" methods.
+     */
+    private File file = undefined
+
+    /*
+     * The native side for opening a file. Takes a path only, not a File
+     * object.
+     */
+
+
+    private system action OpenForWriteNative(text path)
+
+    /*
+     * The native side for opening a file (in append mode). Takes a path only, not a File
+     * object.
+     */
+    private system action OpenForWriteAppendNative(text path)
+
+    /*
+     * Write data to the file on the native side.
+     */
+    private system action WriteNative(text textToWrite)
+
+    /*
+     * Write a line to the file on the native side.
+     */
+    private system action WriteLineNative(text textToWrite)
+
+    /*
+        Open a file for sequential writing. By "sequential writing," it is
+        meant that it is only possible to write forward in the file. Previously
+        written content cannot be erased, nor can it be modified. This is useful
+        for creating and modifying plain text files, but not so useful for
+        binary files. To manipulate binary files, FileRandomAccess should be
+        used.
+
+        When this action is used, any previous contents of the file will be
+        destroyed; to preserve previous contents and add on to the end of the file,
+        use OpenForWriteAppend().
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileWriter
+
+        // Open a file for writing, write a line and close it.
+        File f
+        f:SetPath("myFile.txt") // open myFile.txt for writing (myFile.txt will appear in the working directory of our program)
+        FileWriter writer
+        writer:OpenForWrite(f)
+
+        // Write two lines.
+        writer:WriteLine("first line")
+        writer:WriteLine("second line")
+
+        // Close the file.
+        writer:Close()
+     */
+
+
+    action OpenForWrite(File file)
+        OpenForWriteNative(file:GetAbsolutePath())
+    end
+
+    /*
+        Open a file for sequential writing, but preserve previous file contents.
+        This action is very similar to OpenForWrite(), in that it is only possible
+        to write in one direction, but instead of starting with a fresh file,
+        we may also start with a file that has existing contents. We will append
+        on to the end of the file when we write. If the file does not exist,
+        a new one is created and the behavior is identical to OpenForWrite().
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileWriter
+        
+        // Open a file, myFile.txt, for writing, but preserve the previous contents.
+        File f
+        f:SetPath("myFile.txt")
+        FileWriter writer
+        writer:OpenForWriteAppend(f)
+        
+        // Add a couple lines (or possibly create a new file with only these contents -- if myFile.txt doesn't exist)
+        writer:WriteLine("i added this line today")
+        writer:WriteLine("it was pretty easy to do.")
+
+        // Close the file.
+        writer:Close()
+     */
+
+
+    action OpenForWriteAppend(File file)
+        OpenForWriteAppendNative(file:GetPath())
+    end
+
+    /*
+        When we open a file for writing, the operating system marks the file
+        as unavailable for other applications. When we are finished writing
+        contents to the file, we must notify the operating system that other
+        files are free to use this file again. To do this, we muse call the
+        Close() action. It is best practice to call Close() as soon as possible
+        after all file contents have been written.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileWriter
+
+        // Open a file, write a line to it, and then close it.
+        File f
+        f:SetPath("newFile.txt")
+        FileWriter writer
+        writer:OpenForWrite(f)
+
+        // Write a line to it
+        writer:WriteLine("a line.")
+
+        // Close the file to let the operating system know the file is free.
+        writer:Close()
+     */
+
+
+                 system action Close()
+
+    /*
+        Writes the given text to the file. This text will be written immediatley
+        after any previously written data (or after any previously existing contents,
+        if the file is opened for appending). If an error occurs during the process,
+        an InputOutputError will be raised.
+
+        Attribute: Parameter textToWrite the text we wish to place in the file. Note
+        that this does not create a new line in the file; use WriteLine() for this.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileWriter
+
+        // Open a new file and write "abcdefgh" to it.
+
+        File f
+        f:SetPath("MySpecialDocument.dat")
+        FileWriter writer
+        writer:OpenForWrite(f)
+
+        // Write "abcdefgh" to the file in two separate writes.
+        writer:Write("abcd")
+        writer:Write("efgh")
+
+        // Always call Close().
+        writer:Close()
+
+        // The file contents are now "abcdefgh".
+     */
+
+
+    action Write(text textToWrite)
+        WriteNative(textToWrite)
+    end
+
+    /*
+        Writes the given text to the file, but also appends a newline character on the end, making
+        it possible to start the next writing operation on a new line. What newline character is
+        inserted depends on the operating system. In conjunction with the FileReader's ReadLine()
+        action, it is possible to quickly write and read contents to files consistently.
+
+        Attribute: Parameter textToWrite the contents of the line we wish to write to the file.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileWriter
+
+        // Write three lines to an existing file.
+        File f
+        f:SetPath("anExistingFile.txt")
+        FileWriter writer
+        writer:OpenForWriteAppend(f)
+
+        // Write 3 lines.
+        writer:WriteLine("1")
+        writer:WriteLine("2")
+        writer:WriteLine("3")
+
+        // Close.
+        writer:Close()
+     */
+
+
+    action WriteLine(text textToWrite)
+        WriteLineNative(textToWrite)
+    end
+
+    /*
+        When using FileWriter, the contents written to the file are not necessarily
+        written directly to the hard drive immediately. This is for efficiency--as
+        the hard drive (on most systems) is a physically moving platter, it is the
+        slowest component on the system. As such, to save time, file contents are
+        "buffered" and written at a later time.
+
+        Sometimes, it is necessary to ensure that the contents of our file are
+        written at an exact moment in time. To do this, use the PushToDisk()
+        action. This action should be used sparingly, as it is very inefficient.
+        Typically, file contents are written to disk upon calling Close().
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileWriter
+
+        // Write some content to a file, and call PushToDisk() for extra security.
+        File f
+        f:SetPath("mySettings.dat")
+        FileWriter writer
+        writer:OpenForWrite(f)
+        writer:WriteLine("value")
+        writer:WriteLine("anotherValue")
+        
+        // Force the operating system to push the lines we have written to disk.
+        writer:PushToDisk() // this action may be very slow, depending on how much data needs to be written.
+
+        // Always be sure to call Close(). 
+        writer:Close()
+     */
+
+
+                 system action PushToDisk()
+
+end

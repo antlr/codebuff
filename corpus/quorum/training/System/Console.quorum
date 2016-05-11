@@ -1,0 +1,84 @@
+package Libraries.System
+
+use Libraries.Containers.Array
+
+/*
+The Console is a helper class that represents printing and input windows. In 
+addition to these helper methods, the console class also allows the user to
+retrieve any console arguments (also called command line arguments) that were
+passed to the program.
+
+Attribute: Author Andreas Stefik
+
+*/
+class Console
+    /*
+    Prints a message to the sodbeans output window
+
+    Attribute: Parameter value The text to output to the output console.
+
+    Attribute: Example
+
+    Print "some message"
+    */
+    system action Print(text value)
+
+    /*
+    generates an input window and returns the text that was input.
+
+    Attribute: Return The text typed into the input window.
+
+    Attribute: Example
+
+    text value = Input()
+    */
+    system action Input returns text
+
+    /*
+    This action generates an input window and returns the text that was input.
+
+    Attribute: Parameter message The message to display in the input box.
+
+    Attribute: Return The text typed into the input window.
+
+    Attribute: Example
+
+    text value = Input("What is your favorite color?")
+    */
+    system action Input(text message) returns text
+
+    /*
+        This action retrieves a copy of the console arguments that were
+        passed to the system.
+
+        Attribute: Return the console (command line) arguments
+    */
+    action GetConsoleArguments returns Array<text>
+        Array<text> arguments
+
+        integer i = 0
+        repeat while i < GetNumberConsoleArguments()
+            text value = GetConsoleArgument(i)
+            arguments:Add(value)
+            i = i + 1
+        end
+
+        return arguments
+    end
+
+    /*
+        This private system action retrieves a single console argument.
+
+        Attribute: Parameter index A zero-indexed parameter number
+
+        Attribute: Return the parameter.
+    */
+    private system action GetConsoleArgument(integer index) returns text
+
+    /*
+        Returns the number of console arguments that have been passed.
+
+        Attribute: Return the number of console arguments.
+    */
+    private system action GetNumberConsoleArguments returns integer
+end

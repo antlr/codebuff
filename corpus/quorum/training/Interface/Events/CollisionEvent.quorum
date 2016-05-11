@@ -1,0 +1,46 @@
+package Libraries.Interface.Events
+
+use Libraries.Interface.Item2D
+
+/*
+The CollisionEvent class is used to represent a collision between a pair of
+Items. 
+*/
+class CollisionEvent
+    Item2D item1
+    Item2D item2
+
+    /*
+    This action sets the two items that are involved in this collision.
+    */
+    action SetCollision(Item2D i1, Item2D i2)
+        item1 = i1
+        item2 = i2
+    end
+
+    /*
+    This action calls each colliding Item's BeginCollision action with the
+    other Item as a parameter.
+    */
+    action BeginCollision
+        item1:BeginCollision(item2)
+        item2:BeginCollision(item1)
+    end
+
+    /*
+    This action calls each colliding Item's FinishCollision action with the
+    other Item as a parameter.
+    */
+    action FinishCollision
+        item1:FinishCollision(item2)
+        item2:FinishCollision(item1)
+    end
+
+    /*
+    This action tests if either of the Items involved in this collision are the
+    same as the given Item.
+    */
+    action Contains(Item2D item) returns boolean
+        return item1 = item or item2 = item
+    end
+end

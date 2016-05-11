@@ -1,0 +1,299 @@
+package Libraries.System
+use Libraries.System.Blueprints.FileReaderBlueprint
+use Libraries.System.File
+use Libraries.Containers.Blueprints.Indexed
+use Libraries.Containers.Array
+use Libraries.Language.Errors.InvalidArgumentError
+use Libraries.Language.Errors.EndOfFileError
+use Libraries.Language.Errors.InputOutputError
+use Libraries.Language.Errors.FileNotFoundError
+
+/*
+
+TODO: Check to make sure a file is opened.
+
+This class represents a sequential file reader. It is the standard file reader
+used in Quorum. By "sequential," we mean that it is possible to only move
+forward in the file; re-reading data is not possible. This is most commonly
+used for reading plain text files.
+
+Attribute: Example
+use Libraries.System.File
+use Libraries.System.FileReader
+
+// Open a file, read all of its contents and close it.
+File f
+f:SetPath("/hello.txt")
+FileReader reader
+reader:OpenForRead(f)
+text fileContents = reader:Read()
+output "The contents are: " + fileContents
+reader:Close()
+
+// Open a file, read the first two lines and close it.
+f:SetPath("./settings.dat")
+reader:OpenForRead(f)
+text line1 = reader:ReadLine()
+text line2 = reader:ReadLine()
+reader:Close()
+*/
+class FileReader is FileReaderBlueprint
+    /*
+     * The file we have open. Upon creation, this is "undefined" and won't
+     * be set until the user calls one of the "open" methods.
+     */
+    private File file = undefined
+
+    /*
+     * The native side for opening a file. Takes a path only, not a File
+     * object.
+     */
+    private system action OpenForReadNative(text path)
+
+    /*
+     * Read data from file on the native side.
+     */
+    private system action ReadNative() returns text
+
+    /*
+     * Read a certain amount of data from the file on the native side. This
+     * action does *not* error-check "numberOfBytes" to ensure it is greater
+     * than zero.
+     */
+    private system action ReadNative(integer numberOfBytes) returns text
+
+    /*
+     * Read a line from the file on the native side.
+     */
+    private system action ReadLineNative() returns text
+
+    /*
+     * Get the newline character(s) on the system.
+     */
+    private system action GetSystemNewline() returns text
+    /*
+     * Read lines from the file on the native side.
+     */
+    private system action ReadLinesNative() returns text
+
+    /*
+        Determine whether or not the end of the file has been reached. The
+        "end of file" signifies that no further text can be read from the file.
+
+        Attribute: Returns true if the end of the file has been detected; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileReader
+
+        // Open the file for reading.
+        File f
+        f:SetPath("names.txt")
+        FileReader reader
+        reader:OpenForRead(f)
+
+        // Read all the contents.
+        text names = reader:Read()
+
+        // We are now at the end of the file.
+        boolean eof = reader:IsAtEndOfFile()
+        if eof
+            output "End of File has been reached."
+        end
+
+        // Always close the file.
+        reader:Close()
+     */
+    system action IsAtEndOfFile() returns boolean
+
+    /*
+        Open a file for sequential reading. By "sequential reading," it is meant
+        that it is impossible to go backwards in the file--we must make progress
+        toward the end of the file with each successive read. This is extremely
+        useful for reading plain text documents, but is much less useful for
+        reading binary files. Binary files should use the FileRandomAccess class.
+
+        Attribute: Parameter File the File object representing the path we wish to open. If the specified File object represents a path that can't be opened, a FileNotFoundError or InputOutputError will be raised,
+        depending on the nature of the error.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileReader
+
+        // Open the file for reading.
+        File f
+        f:SetPath("homework.txt")
+        
+        // Read the first two lines and then be done.
+        FileReader reader
+        reader:OpenForRead(f)
+        output reader:ReadLine()
+        output reader:ReadLine()
+
+        // Always close the file.
+        reader:Close()
+     */
+    action OpenForRead(File file)
+        OpenForReadNative(file:GetAbsolutePath())
+    end
+
+    /*
+        When we open a file for reading, it is marked by the operating system as
+        being in use by our application. To make it possible for other files to
+        use this file at a later point in time, it is necessary to tell the operating
+        system when we are done with this file. To do this, we use the Close() action.
+        We should call Close() as soon as we know that a file is no longer needed.
+        If no file is open, Close() will do nothing.
+
+        After Close() is called, a FileReader object is considered invalid, and
+        no actions should be called on it, other than OpenForRead(), to open
+        the same (or different) file.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileReader
+
+        // Open a file, read all the contents and close it.
+        File f
+        f:SetPath("To Do List.txt")
+        FileReader reader
+        reader:OpenForRead(f)
+
+        output "Tim, your to do list says:"
+        output reader:Read()
+        
+        // Close the file, as we no longer need it.
+        reader:Close()
+     */
+    system action Close()
+
+    /*
+        This action reads all of the contents of our file from the current position.
+        When we open a file, we start at the beginning--so calling this action immediately
+        after opening a file will read the entire file. If we perform some other reading action,
+        such as ReadLine(), and then call this action, we will receive all file contents after
+        the point where we have read. If the end of file has already been reached before
+        calling this action, an EndOfFileError will be raised.
+
+        Attribute: Returns the file contents from our current position to the end of the file.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileReader
+
+        // Open a file, read all of its contents to a text value and then  output the text value.
+        File f
+        f:SetPath("Settings.dat")
+        FileReader reader
+        reader:OpenForRead(f)
+        text settings = reader:Read()
+
+        output "The settings are:"
+        output settings
+        reader:Close()
+     */
+    action Read() returns text
+        return ReadNative()
+    end
+    
+    /*
+        This action reads the specified number of bytes after our current position.
+        When we open a file, we start at the beginning--calling this action with a parameter of,
+        for example, 2, would read the first two bytes of the file. If we perform some other reading
+        action such as ReadLine(), and then call this action, the specified number of bytes will be
+        read after our current position. If the number of bytes specified exceeds the end of the file,
+        content up to the end of the file will be returned. If the end of the file has been reached
+        before this action is called, an EndOfFileError will be raised.
+
+        Attribute: Parameter numberOfBytes the number of bytes we wish to read after our current location in the file. This must be a positive number; if it is not, an InvalidArgumentError is raised.
+        Attribute: Returns the file contents we have read
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileReader
+
+        // Open a file, output the first four bytes.
+        File f
+        f:SetPath("Settings.dat")
+        FileReader reader
+        reader:OpenForRead(f)
+        output "The first four bytes are " + reader:Read(4)
+        reader:Close()
+
+     */
+    action Read(integer numberOfBytes) returns text
+        if numberOfBytes <= 0
+            InvalidArgumentError e
+            e:SetErrorMessage("InvalidArgumentError: The number of bytes passed to Read() must be a positive integer.")
+            alert(e)
+        end
+
+        return ReadNative(numberOfBytes)
+    end
+
+    /*
+        Read a single line from the file. What constitutes a line is dependent upon the operating
+        system. In general, a "line" is created by pressing the enter key in a text editor. Quite often,
+        file contents are delimited by separate lines. For example, a file containing a list of words
+        may have the contents,
+
+        "hello
+        textual
+        inquire
+        fizz"
+
+        which may be easily read one at a time using the ReadLine() action.
+
+        Attribute: Returns the text read from the line.
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileReader
+
+        // Open a file, read all of its contents to a text value and then output the text value.
+        File f
+        f:SetPath("words.txt")
+        FileReader reader
+        reader:OpenForRead(f)
+
+        // We will assume 'words.txt' separates words by lines. Read the first two words.
+        output reader:ReadLine()
+     */
+    action ReadLine() returns text
+        return ReadLineNative()
+    end
+
+    /*
+        This action reads all remaining lines from the file, starting from our current position and
+        moving to the end of the file.
+
+        Attribute: Returns an indexable collection of text objects, representing all read lines.
+        Attribute: Example
+        use Libraries.Containers.Blueprints.Indexed
+        use Libraries.System.File
+        use Libraries.System.FileReader
+        
+        // Read all lines into a collection and output the third line. If there is no third line, the appropriate error will be raised.
+        File f
+        f:SetPath("/Users/jeff/helloWorld.txt")
+        FileReader reader
+        reader:OpenForRead(f)
+        Indexed<text> lines = reader:ReadLines()
+
+        output "The third line is " + lines:Get(2) // indices are zero-based.
+        reader:Close()
+     */
+    action ReadLines() returns Indexed<text>
+        if me:IsAtEndOfFile()
+            EndOfFileError e
+            alert(e)
+        end
+
+        // Each line in the file is delimited by a newline
+        // character.
+        Text listingString
+        listingString:SetValue(ReadLinesNative())
+        Array<text> lines = listingString:Split(GetSystemNewline())
+
+        return lines
+    end
+end

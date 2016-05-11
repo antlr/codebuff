@@ -1,0 +1,521 @@
+package Libraries.Compute
+
+
+/*
+The Math class has a number of math actions you might find on a scientific 
+calculator. For example, this class has Sine, Tangent, and Cosine actions, as
+well as a few different round actions.
+
+Authors: Most math functions call down to Java's java.lang.math class. The 
+plugin calls and custom methods were written by Elliot Motl and Melissa Stefik.
+
+Attribute: Example
+
+    use Libraries.Compute.Math
+
+    class Main
+        action main
+            Math math
+            number result = math:Power(2, 4)
+        end
+    end
+*/
+
+
+class Math
+    public number pi = 3.14159265358979323846
+    public number e = 2.71828182845904523536
+
+
+    private system action Floor(number value) returns number
+
+
+    private system action Ceiling(number value) returns number
+
+    /*
+    This action calculates the sine of a number in radians and returns the result.
+
+    Attribute: Parameter value The value that the sine will be calculated from.
+
+    Attribute: Returns Returns the sine of the parameter value. The type returned is number.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:Sine(11.9)
+
+    */
+
+
+    system action Sine(number value) returns number
+
+    /*
+    This action calculates the cosine of a number in radians and returns the result.
+
+    Attribute: Parameter value The value that the cosine will be calculated from.
+
+    Attribute: Returns Returns the cosine of the parameter value. The type returned is number.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number cosine = math:Cosine(4.32)
+
+    */
+
+
+    system action Cosine(number value) returns number
+
+    /*
+    This action calculates the tangent of a number in radians and returns the result.
+
+    Attribute: Parameter value The value that the tangent will be calculated from.
+
+    Attribute: Returns Returns the tangent of the parameter value. The type returned is number.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number cosine = math:Tangent(11.9)
+
+    */
+
+
+    system action Tangent(number value) returns number
+
+    /*
+    This action calculates the hyperbolic sine of a number value in radians.
+
+    Attribute: Parameter value The value to take the hyperbolic sine of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:HyperbolicSine(1.3)
+
+    */
+
+
+    system action HyperbolicSine(number value) returns number
+
+    /*
+    This action calculates the hyperbolic cosine of a number value in radians.
+
+    Attribute: Parameter value The value to take the hyperbolic cosine of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:HyperbolicCosine(1.3)
+
+    */
+
+
+    system action HyperbolicCosine(number value) returns number
+
+    /*
+    This action calculates the hyperbolic tangent of a number value in radians.
+
+    Attribute: Parameter value The value to take the hyperbolic tangent of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:HyperbolicTangent(1.3)
+
+    */
+
+
+    system action HyperbolicTangent(number value) returns number
+
+    /*
+    This action calculates the inverse sine of a number value in radians.
+
+    Attribute: Parameter value The value to take the inverse sine of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:InverseSine(1.3)
+
+    */
+
+
+    system action InverseSine(number value) returns number
+
+    /*
+    This action calculates the inverse cosine of a number value in radians.
+
+    Attribute: Parameter value The value to take the inverse cosine of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:InverseCosine(1.3)
+
+    */
+
+
+    system action InverseCosine(number value) returns number
+
+    /*
+    This action calculates the inverse tangent of a number value in radians.
+
+    Attribute: Parameter value The value to take the inverse tangent of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:InverseTangent(1.3)
+
+    */
+
+
+    system action InverseTangent(number value) returns number
+
+    /*
+    This action calculates the inverse tangent of a cartesian point, where its coordinates are of the form (x, y).
+
+    Attribute: Parameter x The x value of the cartesian point.
+    Attribute: Parameter y The y value of the cartesian point.
+
+    Attribute: Returns Returns the inverse tangent of the point as a number in radians.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:InverseTangent(0.8, 2)
+
+    */
+
+
+    system action InverseTangent(number x, number y) returns number
+
+    /*
+    This action calculates the inverse hyperbolic sine of a number value in radians.
+
+    Attribute: Parameter value The value to take the inverse hyperbolic sine of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:InverseHyperbolicSine(1.3)
+
+    */
+
+
+    system action InverseHyperbolicSine(number value) returns number
+
+    /*
+    This action calculates the inverse hyperbolic cosine of a number value in radians.
+
+    Attribute: Parameter value The value to take the inverse hyperbolic cosine of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:InverseHyperbolicCosine(1.3)
+
+    */
+
+
+    system action InverseHyperbolicCosine(number value) returns number
+
+    /*
+    This action calculates the inverse hyperbolic tangent of a number value in radians.
+
+    Attribute: Parameter value The value to take the inverse hyperbolic tangent of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:InverseHyperbolicCosine(1.3)
+
+    */
+
+
+    system action InverseHyperbolicTangent(number value) returns number
+
+    /*
+    This action calculates the logarithm with base 10 of a number value.
+
+    Attribute: Parameter value The value to take the logarithm of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:Logarithm(17.2)
+
+    */
+
+
+    system action Logarithm(number value) returns number
+
+    /*
+    This action calculates the natural logarithm with base ''e'' of a number value.
+
+    Attribute: Parameter value The value to take the natural logarithm of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:NaturalLogarithm(17.2)
+
+    */
+
+
+    system action NaturalLogarithm(number value) returns number
+
+    /*
+    This action calculates the square root of a number value.
+
+    Attribute: Parameter value The value to take the square root of.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:SquareRoot(6)
+
+    */
+
+
+    system action SquareRoot(number value) returns number
+
+    /*
+    This action rounds a number to the closest integer value. A midpoint value
+    (5) will round up.
+
+    Attribute: Parameter value The value to round.
+
+    Attribute: Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:Round(11.932356)
+
+    */
+
+
+    system action Round(number value) returns number
+
+
+    /*
+    This action rounds a number to the nearest integer and will either round up or down when at a midpoint.
+
+    Attribute: Parameter value The value to round.
+    Attribute: Parameter roundUp When roundUp is true rounding from a midpoint will round up. When it is false the number will be round down.
+
+    Attribute: Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:Round(11.532356, true)
+
+    */
+
+
+    action Round(number value, boolean roundUp) returns number
+        number round = 0.0
+        if roundUp
+            return Round(value)
+        else
+            number remains = AbsoluteValue(value) mod 1.0
+            if remains > 0.5
+                return Ceiling(value)
+            else
+                return Floor(value)
+            end
+        end
+    end
+
+    /*
+    This action rounds a number to the given number of decimal places.
+
+    Attribute: Parameter value The value to round.
+    Attribute: Parameter decimalPlace The number of decimal places to round to.
+
+    Attribute: Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:Round(11.932356, 3)
+
+    */
+
+
+    action Round(number value, integer decimalPlace) returns number
+        if value = 0
+            return 0
+        end
+
+        if decimalPlace = 0
+            return cast(number, me:Round(value, true))
+        elseif decimalPlace > 15
+            decimalPlace = 15
+        end
+
+        number exponent = me:RaiseToPower(10, decimalPlace)
+        number answer = me:Round(value * exponent)
+        answer = answer / exponent
+        return answer
+    end
+
+    /*
+    This action rounds a number to the given number of decimal places and will either round up or down when at a midpoint.
+
+    Attribute: Parameter value The value to round.
+    Attribute: Parameter decimalPlace The number of decimal places to round to.
+    Attribute: Parameter roundUp When roundUp is true rounding from a midpoint will round up. When it is false the number will be round down.
+
+    Attribute: Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:Round(11.932356, 3)
+
+    */
+
+
+    action Round(number value, integer decimalPlace, boolean roundUp) returns number
+        if value = 0
+            return 0
+        end
+
+        if decimalPlace = 0
+            return cast(number, me:Round(value, true))
+        elseif decimalPlace > 15
+            decimalPlace = 15
+        end
+
+        number exponent = me:RaiseToPower(10, decimalPlace)
+        number answer = me:Round(value * exponent, roundUp)
+        answer = answer / exponent
+        return answer
+    end
+
+    /*
+     This action raises a value to the power of some number(for example "value^power").
+
+    Attribute: Parameter value The value to raise.
+    Attribute: Parameter power The power.
+
+    Attribute: Returns Returns the number result.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number result = math:RaiseToPower(13,2)
+
+    */
+
+
+    system action RaiseToPower(number value, number power) returns number
+
+    /*
+    This action calculates the absolute value of an integer and returns the result.
+
+    Attribute: Parameter value The value that the absolute value will be calculated from.
+
+    Attribute: Returns Returns the absolute value of the parameter value. The type returned is integer.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    integer absValue = math:AbsoluteValue(-2443)
+
+    */
+
+
+    action AbsoluteValue(integer value) returns integer
+        if value < 0
+            return value * -1
+        else
+            return value
+        end
+    end
+
+    /*
+    This action calculates the absolute value of a number and returns the result.
+
+    Attribute: Parameter value The value that the absolute value will be calculated from.
+
+    Attribute: Returns Returns the absolute value of the parameter value. The type returned is number.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number absValue = math:AbsoluteValue(-2443.4)
+
+    */
+
+
+    action AbsoluteValue(number value) returns number
+        if value < 0
+            return value * -1
+        else
+            return value
+        end
+    end
+
+    /*
+    This action converts a number from a value in degrees to a value in radians.
+
+    Attribute: Parameter degrees The number of degrees to convert to radians.
+
+    Attribute: Returns Returns the value of the given number as radians.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number radians = math:DegreesToRadians(75.4)
+
+    */
+
+
+    system action DegreesToRadians(number degrees) returns number
+
+    /*
+    This action converts a number from a value in radians to a value in degrees.
+
+    Attribute: Parameter degrees The number of radians to convert to degrees.
+
+    Attribute: Returns Returns the value of the given number as degrees.
+
+    Attribute: Example
+    use Libraries.Compute.Math
+    Math math
+    number degrees = math:RadiansToDegrees(2.8)
+
+    */
+
+
+    system action RadiansToDegrees(number radians) returns number
+end

@@ -1,0 +1,114 @@
+package Libraries.Containers.Support
+
+/*
+
+The KeyedNode class is a support class for keyed data structures such as the Tree.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Support.KeyedNode
+
+class Main
+    action main
+        KeyedNode<text, integer> node
+        node:Set("Melissa", 29)
+    end
+end
+*/
+
+
+class KeyedNode<Key, Value>
+    public Key key = undefined
+               public Value value = undefined
+               public KeyedNode<Key, Value> next = undefined
+
+    /*
+        This action gets the next node. 
+
+        Attribute: Returns The next node of type KeyedNode<Key, Value>
+
+        Attribute: Example
+        use Libraries.Containers.Support.KeyedNode
+        KeyedNode<text, integer> node
+        node:GetNext()
+
+    */
+
+
+               public action GetNext() returns KeyedNode<Key, Value>
+                   return next
+               end
+
+    /*
+        This action gets the value stored in the keyed node. 
+
+        Attribute: Returns The value stored in the keyed node.
+
+        Attribute: Example
+        use Libraries.Containers.Support.KeyedNode
+        KeyedNode<text, integer> node
+        integer val = node:GetValue()
+
+    */
+
+
+               public action GetValue() returns Value
+                   return value
+               end
+
+
+    /*
+        This action gets the key stored in the keyed node. 
+
+        Attribute: Returns The key stored in the keyed node.
+
+        Attribute: Example
+        use Libraries.Containers.Support.KeyedNode
+        KeyedNode<text, integer> node
+        text k = node:GetKey()
+
+    */
+
+
+               public action GetKey() returns Key
+                   return key
+               end
+
+    /*
+        This action sets the key in the keyed node. 
+
+        Attribute: Parameter key The key to be stored.
+
+        Attribute: Example
+        use Libraries.Containers.Support.KeyedNode
+        KeyedNode<text, integer> node
+        node:Set("Melissa")
+
+    */
+
+
+               public action Set(Key key)
+                   me:key = key
+               end
+
+    /*
+        This action sets the key-value pair in the keyed node. 
+
+        Attribute: Parameter key The key to be stored.
+        Attribute: Parameter value The value to be stored.
+
+        Attribute: Example
+        use Libraries.Containers.Support.KeyedNode
+        KeyedNode<text, integer> node
+        node:Set("Melissa", 29)
+
+    */
+
+
+               public action Set(Key key, Value value)
+                   me:key = key
+                   me:value = value
+               end
+end

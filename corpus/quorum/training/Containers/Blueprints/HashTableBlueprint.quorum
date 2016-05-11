@@ -1,0 +1,51 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.KeyedAddable
+use Libraries.Containers.Blueprints.Copyable
+use Libraries.Containers.Blueprints.Container
+use Libraries.Containers.Blueprints.Iterative
+use Libraries.Containers.Blueprints.KeyedIterative
+
+/*
+
+Inheriting from the HashTableBlueprint class provides a basic blueprint for a
+hash table data structure.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.HashTableBlueprint
+
+class MyHashTable<Key, Value> is HashTableBlueprint<Key, Value>
+    action GetValue(Key key) returns Value
+        //implement here
+    end
+end
+*/
+class HashTableBlueprint<Key, Value> is KeyedAddable<Key, Value>, Copyable, Container, KeyedIterative<Key, Value>
+
+    /*
+        This action gets the value from the hash table given a matching key. 
+
+        Attribute: Parameter key The key to access the matching value.
+
+        Attribute: Returns Returns the object. 
+    */
+    blueprint action GetValue(Key key) returns Value
+
+    /*
+        This action gets the key from the hash table given a matching value. Important Note:
+        this is highly inefficient and you should use GetValue(key) in most cases.
+
+        Attribute: Parameter value The value to access the matching key.
+
+        Attribute: Returns Returns the key in the key-value pair. 
+    */
+    blueprint action GetKey(Value value) returns Key
+
+
+
+
+
+end

@@ -1,0 +1,161 @@
+package Libraries.Language.Errors
+
+use Libraries.Containers.Array
+use Libraries.System.StackTraceItem
+
+/*
+The Error class is a general error or exception that has been thrown. All
+errors inherit from Error, which means error can be used as a catch all
+error used by the exception handling system.
+
+Attribute: Example
+
+use Libraries.Language.Errors.Error
+class Main
+   action Main
+      check
+        integer i = cast(integer, "1.4")
+      detect e is Error
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+
+
+class Error
+    private Array<StackTraceItem> stackTrace = undefined
+private text errorMessage = "An Error has occurred."
+
+    /*
+        This action sets the stack trace of an error. 
+
+        Attribute: Parameter trace The generated stack trace.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Language.Errors.Error
+        use Libraries.System.StackTraceItem
+        Array<StackTraceItem> callStack
+        Error error
+        error:SetStackTrace(callStack)
+    */
+
+
+    action SetStackTrace(Array<StackTraceItem> trace)
+        stackTrace = trace
+    end
+
+    /*
+        This action gets the stack trace of an object. 
+
+        Attribute: Returns The errors stack trace.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Language.Errors.Error
+        use Libraries.System.StackTraceItem
+        Array<StackTraceItem> callStack
+        Error error
+        callStack = error:GetStackTrace()
+    */
+
+
+    action GetStackTrace() returns Array<StackTraceItem>
+        return stackTrace
+    end
+
+    /*
+        This action sets the error message for the error. 
+
+        Attribute: Parameter message The error message.
+
+        Attribute: Example
+
+        use Libraries.Language.Errors.Error
+        Error error
+        error:SetErrorMessage("An error has occurred.")
+    */
+
+
+    action SetErrorMessage(text message)
+        errorMessage = message
+    end
+
+    /*
+        This action gets the error message of an object. 
+
+        Attribute: Returns The errors message.
+
+        Attribute: Example
+
+        use Libraries.Language.Errors.Error
+        Error error
+        text message = error:GetErrorMessage()
+    */
+
+
+    action GetErrorMessage() returns text
+        return errorMessage
+    end
+
+    /*
+        This action outputs the errors stack trace to the sodbeans output
+        window. 
+
+        Attribute: Example
+        class Main
+            action Main
+                check
+                    //intentionally throw an undefined error
+                    Object o = undefined
+                    o:Compare(o)
+                detect e
+                    e:OutputStackTrace()
+                end
+            end
+        end
+    */
+
+
+    action OutputStackTrace()
+        output GetStackTraceMessage()
+    end
+
+    /*
+        This action puts the error stack trace into a text value and returns it.
+
+        class Main
+            action Main
+                check
+                    //intentionally throw an undefined error
+                    Object o = undefined
+                    o:Compare(o)
+                detect e
+                    text message = e:GetStackTraceMessage()
+                    output message
+                end
+            end
+        end
+    */
+
+
+    action GetStackTraceMessage returns text
+        text str = "Error: " + errorMessage
+        str = str + str:GetLineFeed()
+        integer size = stackTrace:GetSize()
+        integer i = 0
+        repeat while i < size
+            StackTraceItem item = stackTrace:Get(i)
+            str = str + "   file: " + item:GetFileName() + ", "
+            str = str + " class: " + item:GetClassName() + ", "
+            str = str + " action: " + item:GetMethodName() + ", "
+            str = str + " line: " + item:GetLineNumber() + " "
+            i = i + 1
+            if i < size
+                str = str + str:GetLineFeed()
+            end
+        end
+        return str
+    end
+end

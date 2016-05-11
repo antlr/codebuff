@@ -1,0 +1,10 @@
+package Libraries.Containers.Support
+
+use Libraries.Containers.List
+
+
+class HashNode <Key, Value>
+    public Key key = undefined
+               public Value value = undefined
+               public HashNode<Key, Value> next = undefined
+end

@@ -1,0 +1,498 @@
+package Libraries.Data.Formats
+
+use Libraries.System.File
+use Libraries.System.FileReader
+use Libraries.Language.Errors.FileNotFoundError
+use Libraries.Containers.List
+use Libraries.Containers.Stack
+
+/*
+The ExtensibleMarkupReader class reads in data files in what is known as the 
+Extensible Markup Language (XML). This language is a standard format designed
+for processing a wide variety of types of data. There are different kinds of
+XML readers, predominately known as DOM (Document Object Model) and SAX (Simple
+API for XML). This library works like SAX, which means that users of this
+library must pass an object that will receive messages about the parse as it 
+occurs.
+
+Attribute: Example
+
+use Libraries.System.File
+use Libraries.Data.Formats.ExtensibleMarkup
+
+ExtensibleMarkupReader reader //first create the reader
+File xml //then create a file
+xml:SetPath("Data.xml") //set its path to a file we've created
+reader:Read(xml) //read the xml file
+*/
+
+
+class ExtensibleMarkupReader
+    MarkupListener listener
+    DocumentTypeDefinition dtd
+
+    /*
+        This action gets the data from the given file and parses the it as an XML document.
+        
+        Attribute: Parameter directory The file of the XML document.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.Data.Formats.ExtensibleMarkup
+        
+        ExtensibleMarkupReader reader 
+        //This file should be in the same folder as the executable for this script.
+        File xml 
+        xml:SetPath("Data.xml")
+        reader:Read(xml)
+    */
+
+
+    action Read(File file)
+        if file = undefined
+            alert("The file " + file:GetAbsolutePath() + ", could not be found.")
+        end
+
+        if not file:Exists()
+            alert("The file " + file:GetAbsolutePath() + ", does not exist.")
+        end
+
+        text result = file:Read()
+        Read(result)
+    end
+
+    /*
+        This action parses the given text as an XML document
+        
+        Attribute: Parameter xml The text representing the XML to be parsed.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.Data.Formats.ExtensibleMarkup
+        
+        DocumentTypeDefinition MyDocumentTypeDefinition
+        MyDocumentTypeDefinition:Read("<root></root>")
+    */
+
+
+    action Read(text xml)
+        size = xml:GetSize()
+        doubleQuote = xml:GetDoubleQuote()
+        inElement = false
+        inDirective = false
+        seenQuestionMark = false
+        inEndElement = false
+        inDoubleQuote = false
+        inSingleQuote = false
+        betweenElements = false
+        elementName = ""
+        value = ""
+        i = 0
+        repeat while i < size
+            char = xml:GetCharacter(i)
+            charTrimmed = char:Trim()
+            if charTrimmed:IsEmpty()
+                char = " "
+            end
+
+            if char = "<" //start a new element
+
+                betweenElements = false
+                inElement = true
+                text valueTrimmed = value:Trim()
+                if not valueTrimmed:IsEmpty()
+                    listener:Value(value)
+                    value = ""
+                end
+
+                if i + 1 < size
+                    next = xml:GetCharacter(i + 1)
+                    if next = "?" and not inDoubleQuote and not inSingleQuote
+                        inDirective = true
+                        seenQuestionMark = false
+                        i = i + 1 //skip the question mark
+
+                    elseif next = "/" and not inDoubleQuote and not inSingleQuote
+                        inEndElement = true
+                        i = i + 1 //skip the /
+
+                    elseif next = "!" and not inDoubleQuote and not inSingleQuote
+                        if i + 8 < size and xml:GetCharacter(i + 2) = "D" and xml:GetCharacter(i + 3) = "O" and xml:GetCharacter(i + 4) = "C" and xml:GetCharacter(i + 5) = "T" and xml:GetCharacter(i + 6) = "Y" and xml:GetCharacter(i + 7) = "P" and xml:GetCharacter(i + 8) = "E" // check for DTD
+
+                            inDTD = true
+                            inElement = false
+                            j = i + 9
+                            definition = xml:GetSubtext(i, i + 9)
+                            inDTDBrackets = false
+                            inDTDElement = false
+                            inDTDSingleQuote = false
+                            inDTDDoubleQuote = false
+                            repeat while inDTD and j < size
+                                nextDTD = xml:GetCharacter(j)
+                                definition = definition + nextDTD
+                                if nextDTD = doubleQuote and not inDTDSingleQuote
+                                    inDTDDoubleQuote = not inDTDDoubleQuote
+                                elseif nextDTD = "'" and not inDTDDoubleQuote
+                                    inDTDSingleQuote = not inDTDSingleQuote
+                                elseif nextDTD = "<" and not inDTDDoubleQuote and not inDTDSingleQuote
+                                    inDTDElement = true
+                                elseif nextDTD = ">" and inDTDElement and not inDTDDoubleQuote and not inDTDSingleQuote
+                                    inDTDElement = false
+                                elseif nextDTD = ">" and not inDTDElement and not inDTDDoubleQuote and not inDTDSingleQuote
+                                    inDTD = false
+                                    dtd:Read(definition)
+                                    i = j + 1
+                                end
+
+                                j = j + 1
+                            end
+                        elseif i + 3 < size and xml:GetCharacter(i + 2) = "-" and xml:GetCharacter(i + 3) = "-" // check for comment
+
+                            isComment = true
+                            inElement = false
+                            inDirective = false
+                            j = i + 4
+                            repeat while isComment and j + 2 < size
+                                if xml:GetCharacter(j) = "-" and xml:GetCharacter(j + 1) = "-" and xml:GetCharacter(j + 2) = ">"
+                                    isComment = false
+                                    i = j + 2
+                                end
+
+                                j = j + 1
+                            end
+                        end
+                    end
+                end
+            elseif char = "&" and not inElement
+                name = ""
+                isName = true
+                j = i
+                repeat while isName and (j + 1) < size
+                    j = j + 1
+                    if xml:GetCharacter(j) = ";"
+                        //figure out value to replace it with
+
+                        if name = "lt"
+                            value = value + "<"
+                        elseif name = "gt"
+                            value = value + ">"
+                        elseif name = "amp"
+                            value = value + "&"
+                        elseif name = "apos"
+                            value = value + "'"
+                        elseif name = "quot"
+                            value = value + doubleQuote
+                        elseif name:StartsWith("#x")
+                            name = name:GetSubtext(2)
+                            unicode = HexToDecimal(name)
+                            value = value + name:GetUnicodeValue(unicode)
+                        elseif name:StartsWith("#")
+                            name = name:GetSubtext(1)
+                            unicode = name:ParseInteger()
+                            value = value + name:GetUnicodeValue(unicode)
+                        else
+                            value = value + dtd:GetEntityValue(name)
+                        end
+
+                        isName = false
+                    else
+                        name = name + xml:GetCharacter(j)
+                    end
+                end
+                i = j
+            elseif inElement and char = "?" and not inDoubleQuote and not inSingleQuote //ending the declaraction soon
+
+                seenQuestionMark = true
+                if i + 1 < size
+                    next = xml:GetCharacter(i + 1)
+                    if next = ">"
+                        //inDirective = false
+
+                        seenQuestionMark = false
+                        elementName = ""
+                        inElement = false
+                    end
+
+                    i = i + 1
+                end
+            elseif inElement and char = ">" and not inDoubleQuote and not inSingleQuote //ending the element
+
+                inElement = false
+                if inDirective and seenQuestionMark // don't send notification for PI
+
+                    elementName = elementName + char
+                    inElement = true
+                    inDirective = false
+                else
+                    last = xml:GetCharacter(i -1)
+                    if last = "/" // self closing element
+
+                        elementName = elementName:Replace("/", "")
+                        Element startEl = GetElement(elementName)
+                        listener:StartElement(startEl)
+                        Element endEl = GetElement(startEl:GetName())
+                        listener:EndElement(endEl)
+                    else
+                        Element el = GetElement(elementName)
+                        if not inEndElement
+                            listener:StartElement(el)
+                            betweenElements = true
+                        else
+                            inEndElement = false
+                            listener:EndElement(el)
+                        end
+                    end
+                end
+
+                elementName = ""
+            elseif inElement
+                if char = doubleQuote and not inSingleQuote
+                    inDoubleQuote = not inDoubleQuote
+                elseif char = "'" and not inDoubleQuote
+                    inSingleQuote = not inSingleQuote
+                end
+
+                elementName = elementName + char
+            elseif not inElement
+                value = value + char
+            end
+
+            i = i + 1
+        end
+    end
+
+    /*
+        This action parses hexadecimal value and returns the integer value it represents.
+        
+        Attribute: Parameter hex The text representing a hexadecimal number.
+    */
+
+    private action HexToDecimal(text hex) returns integer
+        total = 0
+        digit = ""
+        digitValue = 0
+        multiplier = 1
+        i = hex:GetSize() -1
+        repeat while i >= 0
+            digit = hex:GetCharacter(i)
+            if digit = "F"
+                digitValue = 15
+            elseif digit = "E"
+                digitValue = 14
+            elseif digit = "D"
+                digitValue = 13
+            elseif digit = "C"
+                digitValue = 12
+            elseif digit = "B"
+                digitValue = 11
+            elseif digit = "A"
+                digitValue = 10
+            else
+                digitValue = digit:ParseInteger()
+            end
+
+            total = total + (digitValue * multiplier)
+            multiplier = multiplier * 16
+            i = i -1
+        end
+        return total
+    end
+
+    /*
+        This action parses the given text as an element start tag. It parses 
+        the name and attributes from the text and returns them as a element.
+        
+        Attribute: Parameter value The text representing the XML element start tag.
+
+        Attribute: Returns The element representation of the text given.
+    */
+
+    private action GetElement(text value) returns Element
+        //output value
+
+        ElementImplementation element
+        size = value:GetSize()
+        doubleQuote = value:GetDoubleQuote()
+        name = ""
+        attributeName = ""
+        attributeValue = ""
+        Attribute attribute
+        nameFinished = false
+        seenFirstWhiteSpace = false
+        inDoubleQuote = false
+        inSingleQuote = false
+        inAttributeName = false
+        inAttributeValue = false
+        i = 0
+        repeat while i < size
+            char = value:GetCharacter(i)
+            trimmed = char:Trim()
+            //this is white space
+
+            if trimmed:IsEmpty() and not inAttributeValue
+                if not seenFirstWhiteSpace
+                    element:SetName(name)
+                end
+
+                seenFirstWhiteSpace = true
+            elseif trimmed:IsEmpty()
+                attributeValue = attributeValue + " "
+            else
+                if not seenFirstWhiteSpace
+                    name = name + char
+                elseif char = "&"
+                    name = ""
+                    isName = true
+                    j = i
+                    repeat while isName and (j + 1) < size
+                        j = j + 1
+                        if value:GetCharacter(j) = ";"
+                            //figure out value to replace it with
+
+                            if name = "lt"
+                                attributeValue = attributeValue + "<"
+                            elseif name = "gt"
+                                attributeValue = attributeValue + ">"
+                            elseif name = "amp"
+                                attributeValue = attributeValue + "&"
+                            elseif name = "apos"
+                                attributeValue = attributeValue + "'"
+                            elseif name = "quot"
+                                attributeValue = attributeValue + doubleQuote
+                            elseif name:StartsWith("#x")
+                                name = name:GetSubtext(2)
+                                unicode = HexToDecimal(name)
+                                attributeValue = attributeValue + name:GetUnicodeValue(unicode)
+                            elseif name:StartsWith("#")
+                                name = name:GetSubtext(1)
+                                unicode = name:ParseInteger()
+                                attributeValue = attributeValue + name:GetUnicodeValue(unicode)
+                            else
+                                attributeValue = attributeValue + dtd:GetEntityValue(name)
+                            end
+
+                            isName = false
+                        else
+                            name = name + value:GetCharacter(j)
+                        end
+                    end
+                    i = j
+                elseif char = "="
+                    inAttributeName = false
+                    inAttributeValue = false
+                    attribute:name = attributeName
+                    attributeName = ""
+                elseif char = doubleQuote and not inSingleQuote
+                    inDoubleQuote = not inDoubleQuote
+                    if inAttributeValue
+                        attribute:value = attributeValue //the end so add it
+
+                        attributeValue = ""
+                        element:Add(attribute)
+                        Attribute attribute2
+                        attribute = attribute2
+                    end
+
+                    inAttributeValue = not inAttributeValue
+                elseif char = "'" and not inDoubleQuote
+                    inSingleQuote = not inSingleQuote
+                    if inAttributeValue
+                        attribute:value = attributeValue //the end so add it
+
+                        attributeValue = ""
+                        element:Add(attribute)
+                        Attribute attribute2
+                        attribute = attribute2
+                    end
+
+                    inAttributeValue = not inAttributeValue
+                else
+                    if seenFirstWhiteSpace and not inAttributeValue
+                        inAttributeName = true
+                    end
+
+                    if inAttributeName
+                        attributeName = attributeName + char
+                    elseif inAttributeValue
+                        attributeValue = attributeValue + char
+                    end
+                end
+            end
+
+            i = i + 1
+        end
+
+        if not seenFirstWhiteSpace
+            element:SetName(name)
+        end
+
+        return element
+    end
+
+    /*
+        This action gets the markup listener used durring parsing.
+
+        Attribute: Returns The MarkupListener used durring parsing.
+        
+        Attribute: Example
+        use Libraries.Data.Formats.ExtensibleMarkup
+
+        class main
+            action main
+                ExtensibleMarkupReader reader
+                MyMarkupListenerClass myListener
+                reader:SetMarkupListener(myListener)
+                MarkupListener listenter = reader:GetMarkupListener()
+            end
+        end
+
+        class MyMarkupListenerClass is MarkupListener
+            action StartElement(Element element)
+            end
+
+            action Value(text value)
+            end
+
+            action EndElement(Element element)
+            end
+        end
+    */
+
+
+    action GetMarkupListener returns MarkupListener
+        return listener
+    end
+
+    /*
+        This action sets the markup listener to be used durring parsing.
+
+        Attribute: Returns The MarkupListener to be used durring parsing.
+        
+        Attribute: Example
+        use Libraries.Data.Formats.ExtensibleMarkup
+
+        class main
+            action main
+                ExtensibleMarkupReader reader
+                MyMarkupListenerClass myListener
+                reader:SetMarkupListener(myListener)
+            end
+        end
+
+        class MyMarkupListenerClass is MarkupListener
+            action StartElement(Element element)
+            end
+
+            action Value(text value)
+            end
+
+            action EndElement(Element element)
+            end
+        end
+    */
+
+
+    action SetMarkupListener(MarkupListener listener)
+        me:listener = listener
+    end
+end

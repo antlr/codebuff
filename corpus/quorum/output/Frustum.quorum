@@ -1,0 +1,295 @@
+package Libraries.Compute
+
+use Libraries.Containers.Array
+use Libraries.Language.Object
+use Libraries.Compute.Matrix4
+use Libraries.Compute.Plane
+use Libraries.Compute.Vector3
+
+/* 
+    A Frustum is a  truncated rectangular pyramid (i.e., a pyramid with the top 
+    chopped off) used to define the viewable region and its projection onto the 
+    screen.
+*/
+
+
+class Frustum
+    constant Array<Vector3> clipSpacePlanePoints
+constant Array<number> clipSpacePlanePointsArray
+constant Vector3 temporaryVector
+    public Array<Plane> planes
+    public Array<Vector3> planePoints
+    Array<number> planePointsArray
+
+
+on create
+   Vector3 v1
+   v1:Set(- 1, - 1, - 1)
+   Vector3 v2
+   v2:Set(1, - 1, - 1)
+   Vector3 v3
+   v3:Set(1, 1, - 1)
+   Vector3 v4
+   v4:Set(- 1, 1, - 1)
+   Vector3 v5
+   v5:Set(- 1, - 1, 1)
+   Vector3 v6
+   v6:Set(1, - 1, 1)
+   Vector3 v7
+   v7:Set(1, 1, 1)
+   Vector3 v8
+   v8:Set(- 1, 1, 1)
+   clipSpacePlanePoints:Add(v1)
+   clipSpacePlanePoints:Add(v2)
+   clipSpacePlanePoints:Add(v3)
+   clipSpacePlanePoints:Add(v4)
+   clipSpacePlanePoints:Add(v5)
+   clipSpacePlanePoints:Add(v6)
+   clipSpacePlanePoints:Add(v7)
+   clipSpacePlanePoints:Add(v8)
+
+   integer i = 0
+   integer j = 0
+   repeat clipSpacePlanePoints:GetSize() times
+       clipSpacePlanePointsArray:Add(j, clipSpacePlanePoints:Get(i):GetX())
+       j = j + 1
+       clipSpacePlanePointsArray:Add(j, clipSpacePlanePoints:Get(i):GetY())
+       j = j + 1
+       clipSpacePlanePointsArray:Add(j, clipSpacePlanePoints:Get(i):GetZ())
+       j = j + 1
+       i = i + 1
+   end
+   Vector3 v9
+   Vector3 v10
+   Vector3 v11
+   Vector3 v12
+   Vector3 v13
+   Vector3 v14
+   Plane plane1
+   Plane plane2
+   Plane plane3
+   Plane plane4
+   Plane plane5
+   Plane plane6
+   plane1:Set(v9, 0)
+   plane2:Set(v10, 0)
+   plane3:Set(v11, 0)
+   plane4:Set(v12, 0)
+   plane5:Set(v13, 0)
+   plane6:Set(v14, 0)
+   planes:Add(plane1)
+   planes:Add(plane2)
+   planes:Add(plane3)
+   planes:Add(plane4)
+   planes:Add(plane5)
+   planes:Add(plane6)
+
+        // New Vector3 instances to instantiate the planePoints array.
+
+   Vector3 pp0
+   Vector3 pp1
+   Vector3 pp2
+   Vector3 pp3
+   Vector3 pp4
+   Vector3 pp5
+   Vector3 pp6
+   Vector3 pp7
+   planePoints:Add(pp0)
+   planePoints:Add(pp1)
+   planePoints:Add(pp2)
+   planePoints:Add(pp3)
+   planePoints:Add(pp4)
+   planePoints:Add(pp5)
+   planePoints:Add(pp6)
+   planePoints:Add(pp7)
+end
+
+    /*
+    This action updates the clipping planes based on the given inverse combined
+    projection and view matrix, like one gotten from an orthographic or
+    perspective camera
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter inverseProjectionView te combined projection and view matrices
+    */
+
+
+    action Update(Matrix4 inverseProjectionView)
+        Object o = clipSpacePlanePointsArray:Copy()
+        planePointsArray = cast(Array<number>, o)
+        Matrix4 temp
+        //temp:Project(inverseProjectionView:values, planePointsArray, 0, 8, 3)
+
+
+        integer i = 0
+        integer j = 0
+        repeat 8 times
+            Vector3 v = planePoints:Get(i)
+            v:SetX(planePointsArray:Get(j))
+            j = j + 1
+            v:SetY(planePointsArray:Get(j))
+            j = j + 1
+            v:SetZ(planePointsArray:Get(j))
+            j = j + 1
+            i = i + 1
+        end
+        planes:Get(0):Set(planePoints:Get(1), planePoints:Get(0), planePoints:Get(2))
+        planes:Get(1):Set(planePoints:Get(4), planePoints:Get(5), planePoints:Get(7))
+        planes:Get(2):Set(planePoints:Get(0), planePoints:Get(4), planePoints:Get(3))
+        planes:Get(3):Set(planePoints:Get(5), planePoints:Get(1), planePoints:Get(6))
+        planes:Get(4):Set(planePoints:Get(2), planePoints:Get(3), planePoints:Get(6))
+        planes:Get(5):Set(planePoints:Get(4), planePoints:Get(0), planePoints:Get(1))
+    end
+
+
+    /*
+    This action determines whether the passed point lies in the frustum.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter point The point to test
+
+    Attribute: Returns true if the point is in the frustum, false otherwise
+    */
+
+
+    action PointInFrustum(Vector3 point) returns boolean
+        return PointInFrustum(point:GetX(), point:GetY(), point:GetZ())
+    end
+
+    /*
+    This action determines wither the point with the passed x, y, and z
+    coordinates lies in the frustum.
+
+    Attribute: Parameter x The x component of the point to test
+    Attribute: Parameter y The y component of the point to test
+    Attribute: Parameter z The z component of the point to test
+
+    Attribute: Returns true if the point is in the frustum, false otherwise
+    */
+
+
+    action PointInFrustum(number x, number y, number z) returns boolean
+        Plane plane
+
+        integer i = 0
+        repeat planes:GetSize() times
+            text result = planes:Get(i):TestPoint(x, y, z)
+            if result:Equals(plane:back)
+                return false
+            end
+            i = i + 1
+        end
+
+        return true
+    end
+
+    /*
+    This action determines whether the sphere with the passed center and radius
+    lies in the frustum.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter center The center of the sphere
+    Attribute: Parameter radius The radius of the sphere
+
+    Attribute: Returns true if the sphere lies in the frustum, false otherwise
+    */
+
+
+    action SphereInFrustum(Vector3 center, number radius) returns boolean
+        return SphereInFrustum(center:GetX(), center:GetY(), center:GetZ(), radius)
+    end
+
+    /*
+    This action determines whether the sphere with its center at the passed x,
+    y, and z coordinates and radius lies in the frustum.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter x The x coordinate of the center of the sphere
+    Attribute: Parameter y The y coordinate of the center of the sphere
+    Attribute: Parameter z The z coordinate of the center of the sphere
+    Attribute: Parameter radius The radius of the sphere
+
+    Attribute: Returns true if the sphere lies in the frustum, false otherwise
+    */
+
+
+    action SphereInFrustum(number x, number y, number z, number radius) returns boolean
+        integer i = 0
+        repeat 6 times
+            Plane plane = planes:Get(i)
+            if plane:GetNormal():GetX() * x + plane:GetNormal():GetY() * y + plane:GetNormal():GetZ() * z < - 1 * radius - plane:GetDistance()
+                return false
+            end
+            i = i + 1
+        end
+
+        return true
+    end
+
+    /*
+    This action determines whether the sphere with the passed center and radius
+    lies within the frustum without checking whether it is behind the near and
+    far clipping plane.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter center The center of the sphere
+    Attribute: Parameter radius The radius of the sphere
+
+    Attribute: Returns true if the sphere is in the frustum, false otherwise
+    */
+
+
+    action SphereInFrustumWithoutNearFar(Vector3 center, number radius) returns boolean
+        return SphereInFrustumWithoutNearFar(center:GetX(), center:GetY(), center:GetZ(), radius)
+    end
+
+    /*
+    This action determines whether the sphere with the passed center and radius
+    lies within the frustum without checking whether it is behind the near and
+    far clipping plane.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter x The x coordinate of the center of the sphere
+    Attribute: Parameter y The y coordinate of the center of the sphere
+    Attribute: Parameter z The z coordinate of the center of the sphere
+    Attribute: Parameter radius The radius of the sphere
+
+    Attribute: Returns true if the sphere is in the frustum, false otherwise
+    */
+
+
+    action SphereInFrustumWithoutNearFar(number x, number y, number z, number radius) returns boolean
+        integer i = 2
+        repeat 4 times
+            Plane plane = planes:Get(i)
+            if plane:GetNormal():GetX() * x + plane:GetNormal():GetY() * y + plane:GetNormal():GetZ() * z < - 1 * radius - plane:GetDistance()
+                return false
+            end
+            i = i + 1
+        end
+
+        return true
+    end
+
+/*
+    Do we even have BoundingBoxes?
+
+    action BoundsInFrustum(BoundingBox bounds) returns boolean
+
+    end
+
+    action BoundsInFrustum(Vector3 center, Vector3 dimensions) returns boolean
+        return BoundsInFrustum(center:GetX(), center:GetY(), center:GetZ(), dimensions:GetX() / 2, dimensions:GetY() / 2, dimensions:GetZ() / 2)
+    end
+
+    action BoundsInFrustum(number x, number y, number z, number halfWidth, number halfHeight, number halfDepth) returns boolean
+
+    end
+*/
+end

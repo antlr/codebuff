@@ -1,0 +1,40 @@
+package Libraries.System.Blueprints
+use Libraries.System.File
+use Libraries.Containers.Blueprints.Indexed
+
+/*
+Inheriting from FileRandomAccessBlueprint provides a standard interface for
+reading and writing files in a "random access" order. In this context,
+"random access" implies that the reading and writing does not have to occur
+in a sequential order. It is possible to, for example, write a character to
+the beginning of a file, and then jump to the end and read the last character,
+skipping all of the characters in-between. Random access is commonly used for
+manipulating binary data.
+
+See the FileRandomAccess class for the standard Quorum implementation of this blueprint.
+*/
+class FileRandomAccessBlueprint
+    blueprint action OpenForRandomAccess(File file)
+
+    blueprint action Close()
+
+    blueprint action GetPosition() returns number
+
+    blueprint action SetPosition(number position)
+
+    blueprint action GoToBeginning()
+
+    blueprint action Read() returns text
+
+    blueprint action Read(integer numberOfBytes) returns text
+
+    blueprint action ReadLine() returns text
+
+    blueprint action ReadLines() returns Indexed<text>
+
+    blueprint action Write(text textToWrite)
+
+    blueprint action WriteLine(text textToWrite)
+
+    blueprint action IsAtEndOfFile() returns boolean
+end

@@ -1,0 +1,217 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.all
+
+/*
+    The KeyboardEvent class is used to represent an event that happened on the 
+    keyboard. It has three components (category, act, and key) to describe the 
+    event. These components are typically used as described in the Legam Screen 
+    Reader XML documentation.
+
+    Attribute: Example
+
+    KeyboardEvent kevent
+    kevent:SetCategory("Keyboard")
+    kevent:SetAction("KeyPress")
+    kevent:SetKey("Alt")
+    say(kevent:GetDescription())
+
+*/
+class KeyboardEvent is AccessibilityEvent
+
+    private text category = ""
+    private text act = ""
+    private text key = ""
+
+    constant text keyPress = "KeyPress"
+    constant text keyRelease = "KeyRelease"
+
+    /*
+        This action gets the category of the keyboard event. The category for 
+        keyboard events should be "Keyboard".
+        
+        Attribute: Returns text of what the category is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        text category = event:GetCategory()
+    */
+    action GetCategory() returns text
+        return category
+    end
+
+    /*
+        This action implements the inherited GetName action from the 
+        AccessibilityEvent class. 
+        
+        This action gets the act of the keyboard event. The acts are used to 
+        define what keyboard event happened (e.g. KeyPress, KeyRelease).
+        
+        Attribute: Returns text of what the act is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        text act = event:GetAction()
+    */
+    action GetAction() returns text
+        return act
+    end
+
+    /*
+        This action gets the key of the keyboard event. The keys are used to define 
+        what button on the keyboard was used (e.g. A, Shift, F5...).
+        
+        Attribute: Returns text of what the key is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        text key = event:GetKey()
+    */
+    action GetKey() returns text
+        return key
+    end
+
+
+    action GetKeyboardShortcut() returns text
+        return ""
+    end
+
+
+    action GetChildCount() returns integer
+        return 0
+    end
+
+
+    /*
+        This action sets the category of the keyboard event. The category for 
+        mouse events should be "Keyboard".
+        
+        Attribute: Parameter value The text of the category.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        event:SetCategory("Keyboard")
+    */
+    action SetCategory(text newCategory)
+        category = newCategory
+    end
+
+    /*
+        This action sets the act of the keyboard event. The acts are used to 
+        define what keyboard event happened (e.g. KeyPress, KeyRelease).
+        
+        Attribute: Parameter value The text of the act.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        event:SetAction("KeyPress")
+    */
+    action SetAction(text newAct)
+        act = newAct
+    end
+
+    /*
+        This action sets the key of the keyboard event. The keys are used to 
+        define what button on the keyboard was used (e.g. A, Shift, F5...).
+        
+        Attribute: Parameter value The text of the key.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        event:SetKey("Alt")
+    */
+    action SetKey(text newKey)
+        key = newKey
+    end
+
+    /*
+        This action implements the inherited GetDescription action from the 
+        AccessibilityEvent class. 
+        
+        This action gets a string to describe the event.
+        
+        Attribute: Returns the text of the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        text result = event:GetDescription()
+    */
+    action GetDescription() returns text
+        boolean pressResult = (act = keyPress)
+        
+        if pressResult
+            return(key + " Released.")
+        else
+            return (key + " Pressed.")
+        end
+    end
+
+    /*
+        This action implements the inherited GetName action from the 
+        AccessibilityEvent class. 
+        
+        For a keyboard event this returns the name of the key that was pressed.
+        
+        Attribute: Returns the text of the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        text result = event:GetName()
+    */
+    action GetName() returns text
+        return GetKey()
+    end
+
+    /*
+        This action implements the inherited GetMoreActionInformation action from the 
+        AccessibilityEvent class. 
+
+        There is no further detail available for keyboard events, so this 
+        returns an empty text object.
+        
+        Attribute: Returns the text of the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        text result = event:GetMoreActionInformation()
+    */
+    action GetMoreActionInformation() returns text
+        return ""
+    end
+
+    action AddChild(AccessibleChild newChild)
+        
+    end
+
+    action GetChild(integer index) returns AccessibleChild
+        AccessibleChild emptyChild
+        return emptyChild
+    end
+end

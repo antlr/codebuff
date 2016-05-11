@@ -1,0 +1,26 @@
+package Libraries.Interface.Events
+
+/*
+The MouseMovementListener class is used to listen for and react to MouseEvents
+where the user has moved or dragged the mouse. To use a MouseMovementListener in
+a program, users should make a new class that inherits from it and overrides
+MovedMouse and/or DraggedMouse.
+*/
+class MouseMovementListener
+
+    /*
+    This action is used to respond to a MouseEvent created by the mouse moving.
+    */
+    action MovedMouse(MouseEvent event)
+
+    end
+
+    /*
+    This action is used to respond to a MouseEvent where the mouse was dragged
+    (the mouse was moved while a button was held).
+    */
+    action DraggedMouse(MouseEvent event)
+
+    end
+
+end

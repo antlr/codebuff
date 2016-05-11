@@ -55,6 +55,9 @@ public class Tool {
 	public static boolean showFileNames = false;
 	public static boolean showTokens = false;
 
+	public static final LangDescriptor QUORUM_DESCR =
+		new LangDescriptor("quorum", "corpus/quorum/training", ".*\\.quorum", QuorumLexer.class, QuorumParser.class, "start", 4);
+
 	public static final LangDescriptor JAVA_DESCR =
 		new LangDescriptor("java", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
 	public static final LangDescriptor JAVA8_DESCR =
@@ -73,6 +76,7 @@ public class Tool {
 		new LangDescriptor("tsql", "corpus/sql2/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
 
 	public static LangDescriptor[] languages = new LangDescriptor[] {
+		QUORUM_DESCR,
 		JAVA_DESCR,
 		JAVA8_DESCR,
 		ANTLR4_DESCR,

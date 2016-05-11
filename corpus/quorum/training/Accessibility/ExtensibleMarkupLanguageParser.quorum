@@ -1,0 +1,318 @@
+package Libraries.Accessibility
+
+use Libraries.Containers.all
+use Libraries.Containers.Support.ArrayIterator
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Accessibility.all
+use Libraries.Language.Types.Text
+
+/*
+    The ExtensibleMarkupLanguageParser class is used to parse XML text that that 
+    it is given into AccessibilityEvent object. The XML is formatted to follow 
+    the XML guidlines in the Legam Screen Reader XML documentation.
+
+    Attribute: Example
+
+    ExtensibleMarkupLanguageParser parser
+    AccessibilityEvent e = parser:ParseEvent(event)
+    text type = e:GetCategory()
+
+*/
+class ExtensibleMarkupLanguageParser 
+
+    private text parsedXML = ""
+
+    /*
+        This action returns text to represent the category of the parsed XML 
+        text it was given.
+
+        Attribute: Parameter event Text in XML format to represent an event.
+
+        Attribute: Returns text to represent the category from the XML.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text parsedXML = parser:Parse(toParse)
+    */
+    system action Parse(text toParse) returns text
+
+    /*
+        This action returns the text value of the category tag from the xml it parsed.
+
+        Attribute: Returns text to represent the category of the event.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text category = parser:GetCategory()
+    */
+    system action GetCategory() returns text
+    
+    /*
+        This action returns the text value to represent what happened (or the action) 
+        of the event.
+
+        Attribute: Returns text to represent the action of the event.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text action = parser:GetAction()
+    */
+    system action GetAction() returns text
+
+    /*
+        This action returns the text value to represent what type of object created 
+        the action the event
+
+        Attribute: Returns text to represent the type of component.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text component = parser:GetComponent()
+    */
+    system action GetComponent() returns text
+
+    /*
+        This action returns the text value for the name of the object that created 
+        the action the event.
+
+        Attribute: Returns text to represent the name of the component.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text componentName = parser:GetComponentName()
+    */
+    system action GetComponentName() returns text
+
+    /*
+        This action returns the text value to represent the position on the 
+        screen a mouse event happened.
+
+        Attribute: Returns text to represent the mouse position on the screen.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text position = parser:GetPosition()
+    */
+    system action GetPosition() returns text
+
+    /*
+        This action returns the text value to represent the button clicked/released 
+        on the mouse for a mouse event.
+
+        Attribute: Returns text to represent the button clicked or released.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text button = parser:GetButton()
+    */
+    system action GetButton() returns text
+
+    /*
+        This action returns the text value to represent the key pressed/released 
+        on the keyboard for a keyboard event.
+
+        Attribute: Returns text to represent the key pressed or released.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text key = parser:GetKey()
+    */
+    system action GetKey() returns text
+
+    /*
+        This action returns the text value to represent the keyboard shortcut 
+        for the system component that triggered the event.
+
+        Attribute: Returns text to represent the keyboard shortcut for the system 
+        component that triggered the event.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text shortcut = parser:GetShortcut()
+    */
+    system action GetShortcut() returns text
+
+    /*
+        This action returns the integer value of the number of children 
+        for the system component that triggered the event.
+
+        Attribute: Returns integer for the number of children for the system 
+        component that triggered the event.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        integer childName = parser:GetChildCount(0)
+    */
+    system action GetChildCount() returns integer
+
+    /*
+        This action returns the text value of the name of the child at the 
+        parameter's index for the system component that triggered the event.
+
+        Attribute: Parameter event Integer for the index of the child to get.
+
+        Attribute: Returns text for the name of the child at the index for the system 
+        component that triggered the event.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text childName = parser:GetChildName(0)
+    */
+    system action GetChildName(integer childNum) returns text
+
+    /*
+        This action returns the text value of the component type of the child at the 
+        parameter's index for the system component that triggered the event.
+
+        Attribute: Parameter event Integer for the index of the child to get.
+
+        Attribute: Returns text for the component type of the child at the index 
+        for the system component that triggered the event.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text childComponent = parser:GetChildComponent(0)
+    */
+    system action GetChildComponent(integer childNum) returns text
+
+    /*
+        This action returns the text value of the keyboard shortcut of the child at the 
+        parameter's index for the system component that triggered the event.
+
+        Attribute: Parameter event Integer for the index of the child to get.
+
+        Attribute: Returns text for the keyboard shortcut of the child at the index 
+        for the system component that triggered the event.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        parser:Parse(toParse)
+        text childShortcut = parser:GetChildShortcut(0)
+    */
+    system action GetChildShortcut(integer childNum) returns text
+
+    /*
+        This action returns an AccessibilityEvent after parsing the XML text 
+        it was passed.
+
+        Attribute: Parameter event Text in XML format to represent an event.
+
+        Attribute: Returns an AccessibilityEvent to represent the XML text it 
+        was passed.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        AccessibilityEvent e = parser:ParseEvent(event)
+    */
+    action ParseEvent(text toParse) returns AccessibilityEvent
+        text cat = Parse(toParse)
+
+        if cat = "Keyboard"
+            KeyboardEvent event
+            event:SetCategory(cat)
+            event:SetAction(GetAction())
+            event:SetKey(GetKey())
+            return event
+        elseif cat = "Mouse"
+            MouseEvent event
+            event:SetCategory(cat)
+            event:SetAction(GetAction())
+            event:SetPosition(GetPosition())
+            event:SetButton(GetButton())  
+            return event
+        elseif cat = "Focus"
+            FocusEvent event
+            SetupSystemEvent(event, cat)
+            return event
+        elseif cat = "Menu"
+            MenuEvent event
+            SetupSystemEvent(event, cat)
+            return event
+        elseif cat = "PropertyChange"
+            PropertyEvent event
+            SetupSystemEvent(event, cat)
+            return event
+        elseif cat = "Window"
+            WindowEvent event
+            SetupSystemEvent(event, cat)
+            return event
+        else
+            SystemEvent event
+            SetupSystemEvent(event, cat)
+            return event
+        end 
+    end
+
+    /*
+        This action creates a system event object from the values from the XML parser.
+
+        Attribute: Parameter value The SystemEvent to store everything in.
+
+        Attribute: Parameter value The text value representing the category that
+        was parsed from the XML parser.
+
+        Attribute: Example
+
+        ExtensibleMarkupLanguageParser parser
+        text toParse = "<?xml version=1.0 encoding=UTF-8?>"
+        text cat = parser:Parse(toParse)
+        FocusEvent event
+        SetupSystemEvent(event, cat)
+    */
+    private action SetupSystemEvent(SystemEvent event, text category) 
+        event:SetCategory(category)
+        event:SetAction(GetAction())
+        event:SetComponent(GetComponent())
+        event:SetComponentName(GetComponentName()) 
+        event:SetKeyboardShortcut(GetShortcut())
+        event:SetChildCount(GetChildCount())
+
+        integer count = 0
+        repeat until count >= event:GetChildCount()
+            AccessibleChild child
+            child:SetName(GetChildName(count))
+            child:SetComponentType(GetChildComponent(count))
+            child:SetKeyboardShortcut(GetChildShortcut(count))
+            event:AddChild(child)
+            count = count + 1
+        end
+    end
+
+end

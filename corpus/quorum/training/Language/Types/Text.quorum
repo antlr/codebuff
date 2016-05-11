@@ -1,0 +1,628 @@
+package Libraries.Language.Types
+
+use Libraries.Language.Object
+use Libraries.Language.Support.CompareResult
+use Libraries.Containers.Array
+use Libraries.Language.Errors.InvalidLocationError
+use Libraries.Language.Errors.UndefinedObjectError
+use Libraries.Language.Errors.ParseError
+
+/*
+The Text class is the object representation of the primitive type text. 
+
+
+Attribute: Example
+
+class Main
+   action Main
+      text name = "melissa"
+      Text result = test(name)
+   end
+   action test(Text value) returns Text
+        return value
+   end
+end
+*/
+class Text is Object
+    //The value this Text class represents
+    text value = ""
+
+    private system action SetValueNative(text value)
+    private system action GetCharacterNative(integer index) returns text
+    private system action GetSubstringNative(integer startIndex, integer endIndex) returns text
+
+    /*
+        This action parses a text value and translates it into an integer if the
+        text value is a valid integer value. If the text value is not an integer
+        then the user will be alerted by an Error.
+
+        Attribute: Returns The integer value contained in the text value.
+
+        Attribute: Example
+        text a = "12"
+        integer result = a:ParseInteger()
+    */
+    system action ParseInteger returns integer
+
+    /*
+        This action parses a text value and translates it into a number if the
+        text value is a valid number value. If the text value is not a number
+        then the user will be alerted by an Error.
+
+        Attribute: Returns The number value contained in the text value.
+
+        Attribute: Example
+        text a = "12.5"
+        number result = a:ParseNumber()
+    */
+    system action ParseNumber returns number
+
+    /*
+        This action parses a text value and translates it into a boolean if the
+        text value is a valid boolean value. If the text value is not a boolean
+        then the user will be alerted by an Error.
+
+        Attribute: Returns The boolean value contained in the text value.
+
+        Attribute: Example
+        text a = "true"
+        boolean result = a:ParseBoolean()
+    */
+    system action ParseBoolean returns boolean
+
+    /*
+        This action gets the line feed text value. This allows a line feed to be
+        added to a text variable without using the literal value.
+
+        Attribute: Returns The line feed text value.
+
+        Attribute: Example
+        text a = "hello world"
+        a = a + a:GetLineFeed() + "My name is"
+        output a
+    */
+    system action GetLineFeed() returns text
+
+    /*
+        This action gets the carriage return text value. This allows a carriage return to be
+        added to a text variable without using the literal value.
+
+        Attribute: Returns The carriage return text value.
+
+        Attribute: Example
+        text a = "hello world"
+        a = a + a:GetCarriageReturn() + "My name is"
+        output a
+    */
+    system action GetCarriageReturn() returns text
+
+    /*
+        This action gets the tab text value. This allows a tab to be
+        added to a text variable without using the literal value.
+
+        Attribute: Returns The tab text value.
+
+        Attribute: Example
+        text a = "hello world"
+        a = a + a:GetTab() + "My name is"
+        output a
+    */
+    system action GetTab() returns text
+
+    /*
+        This action gets the double quote text value. This allows a double quote to be
+        added to a text variable without using the literal value.
+
+        Attribute: Returns The double quote text value.
+
+        Attribute: Example
+        text a = "hello world"
+        a = a + a:GetDoubleQuote() + "My name is" + a:GetDoubleQuote()
+        output a
+    */
+    system action GetDoubleQuote() returns text
+
+    /*
+        This action gets a unicode symbol text value. This allows any unicode symbol to be
+        added to a text variable without using the literal value.
+
+        Attribute: Parameter twosCompliment the twos compliments value associated with each unicode symbol.
+        Attribute: Returns The unicode symbols text value.
+
+        Attribute: Example
+        text a = "hello world"
+        a = a + a:GetCarriageReturn() + "My name is" + a:GetUnicodeValue(2318)
+        output a
+    */
+    system action GetUnicodeValue(integer twosCompliment) returns text
+
+    /*
+        This action returns true if the Text value contains the text from the parameter
+        or if the parameter is a substring in the text variable.
+
+        Attribute: Parameter value The value to check for a substring.
+
+        Attribute: Returns True if the text contains a substring passed to the action.
+
+        Attribute: Example
+        Text a
+        a:SetValue("hello ")
+        boolean result = a:Contains("lo")
+    */
+    action Contains(text val) returns boolean
+        return ContainsNative(value, val)
+    end
+
+    private system action ContainsNative(text lhv, text rhv) returns boolean
+
+    /*
+        This action returns true if the Text value ends with the given suffix.
+
+        Attribute: Parameter suffix The value to check for a substring.
+
+        Attribute: Returns True if the text ends with the given suffix.
+
+        Attribute: Example
+        Text a
+        a:SetValue("hello ")
+        boolean result = a:EndsWith("lo")
+    */
+    action EndsWith(text suffix) returns boolean
+        return EndsWithNative(value, suffix)
+    end
+
+    private system action EndsWithNative(text left, text suffix) returns boolean
+
+    /*
+        This action returns true if the Text value starts with the given suffix.
+
+        Attribute: Parameter prefix The value to check for a substring.
+
+        Attribute: Returns True if the text starts with a given prefix.
+
+        Attribute: Example
+        Text a
+        a:SetValue("hello ")
+        boolean result = a:StartsWith("h")
+    */
+    action StartsWith(text prefix) returns boolean
+        return StartsWithNative(value, prefix)
+    end
+
+    private system action StartsWithNative(text left, text prefix) returns boolean
+
+    /*
+        This action returns the index location of the first occurrence of the sub-text.
+
+        Attribute: Parameter subText The value to check for an index.
+
+        Attribute: Returns The index location of the sub-text.
+
+        Attribute: Example
+        Text a
+        a:SetValue("hello ")
+        integer result = a:IndexOf("o")
+    */
+    action IndexOf(text subText) returns integer
+        return IndexOfNative(value, subText)
+    end
+
+    private system action IndexOfNative(text left, text prefix) returns integer
+
+    /*
+        This action returns the index location of the first occurrence of the sub-text,
+        starting from the given index location.
+
+        Attribute: Parameter subText The value to check for an index.
+        Attribute: Parameter index The index to start searching for the sub-text
+
+        Attribute: Returns The index location of the first occurrence of the sub-text.
+
+        Attribute: Example
+        Text a
+        a:SetValue("hello ")
+        integer result = a:IndexOf("l", 3)
+    */
+    action IndexOf(text subText, integer index) returns integer
+        integer size = GetSize()
+        if index < size and index >= 0
+            return IndexOfNative(value, subText, index)
+        else
+            InvalidLocationError error
+            error:SetErrorMessage("Text index out of range, " + index)
+            alert(error)
+        end
+    end
+
+    private system action IndexOfNative(text left, text prefix, integer index) returns integer
+
+    /*
+        This action returns true if the text is empty and false if it contains any
+        value.
+
+        Attribute: Returns True if the text is empty.
+
+        Attribute: Example
+        Text a
+        a:SetValue("hello ")
+        boolean result = a:IsEmpty()
+    */
+    action IsEmpty() returns boolean
+        return IsEmptyNative(value)
+    end
+
+    private system action IsEmptyNative(text left) returns boolean
+
+    /*
+        This action replaces a specific subtext with a new value.
+
+        Attribute: Parameter old The subtext to be replaced.
+        Attribute: Parameter new The replacing subtext.
+
+        Attribute: Returns The modified text after replacing all occurrence of the old subtext.
+
+        Attribute: Example
+        Text a
+        a:SetValue("hello ")
+        text result = a:Replace("l", "z")
+    */
+    action Replace(text old, text replacement) returns text
+        return ReplaceNative(value, old, replacement)
+    end
+
+    private system action ReplaceNative(text left, text old, text replacement) returns text
+
+    /*
+        This action gets a subtext value between the given start index and the end. This includes the value at the 
+        start index.
+
+        Attribute: Parameter startIndex The start of the subtext.
+
+        Attribute: Returns The subtext from the text.
+
+        Attribute: Example
+        use Libraries.Language.Types.Text
+        Text a
+        a:SetValue("hello ")
+        text result = a:GetSubtext(1)
+    */
+    action GetSubtext(integer startIndex) returns text
+        integer size = GetSize()
+        if startIndex < size and startIndex >= 0
+            return GetSubtextNative(value, startIndex)
+        else
+            InvalidLocationError error
+            error:SetErrorMessage("Text index out of range, " + startIndex)
+            alert(error)
+        end
+    end
+
+    private system action GetSubtextNative(text left, integer start) returns text
+
+    /*
+        This action converts a text value to all lower case.
+
+        Attribute: Returns The text with all lower case characters.
+
+        Attribute: Example
+        Text a
+        a:SetValue("HeLlo ")
+        text result = a:ToLowerCase()
+    */
+    system action ToLowerCase() returns text
+
+    /*
+        This action converts a text value to all upper case.
+
+        Attribute: Returns The text with all upper case characters.
+
+        Attribute: Example
+        Text a
+        a:SetValue("HeLlo ")
+        text result = a:ToUpperCase()
+    */
+    system action ToUpperCase() returns text
+
+    /*
+        This action trims the white space from the beginning and end of the text value.
+
+        Attribute: Returns The text that has been trimmed of white space from the beginning and end of the text value.
+
+        Attribute: Example
+        Text a
+        a:SetValue(" hello  ")
+        text result = a:Trim()
+    */
+    action Trim() returns text
+        return TrimNative(value)
+    end
+
+    private system action TrimNative(text left) returns text
+
+    /*
+        This action sets the value of the text object.
+
+        Attribute: Parameter i The text value.
+
+        Attribute: Example
+
+        Text name
+        name:SetValue("Melissa")
+    */ 
+    action SetValue(text i)
+        value = i
+
+        // And also update the native side.
+        SetValueNative(i)
+    end
+
+    /*
+        This action gets the value from the text object.
+
+        Attribute: Returns The value of the object.
+
+        Attribute: Example
+
+        Text name
+        text result = name:GetValue()
+    */ 
+    action GetValue returns text
+        return value
+    end
+
+    /*
+        This action determines if two objects are equal based on their
+        values.
+
+        Attribute: Parameter object The to be compared.
+
+        Attribute: Returns True if the values are equal and false if they
+        are not equal. 
+
+        Attribute: Example
+
+        Text o
+        Text t
+        boolean result = o:Equals(t)
+    */ 
+    action Equals(Object object) returns boolean
+        text myValue = GetValue()
+
+        Text t = undefined
+        t = cast(Text, object)
+        text otherValue = t:GetValue()
+
+        return myValue = otherValue
+    end
+
+    /*
+        This action determines if two objects are equal based on their
+        values(the case is ignored).
+
+        Attribute: Parameter object The to be compared.
+
+        Attribute: Returns True if the values are equal and false if they
+        are not equal. 
+
+        Attribute: Example
+
+        Text o
+        Text t
+        boolean result = o:EqualsIgnoringCase(t)
+    */ 
+    action EqualsIgnoringCase(Object object) returns boolean
+        text myValue = GetValue()
+
+        Text t = undefined
+        t = cast(Text, object)
+        text otherValue = t:GetValue()
+
+        return EqualsIgnoringCaseNative(myValue, otherValue)
+    end
+
+    private system action EqualsIgnoringCaseNative(text left, text right) returns boolean
+    /*
+        This action compares two object values and returns a CompareResult.
+        The compare result is either larger if this hash code is larger than
+        the object passed as a parameter, smaller, or equal.
+
+        Attribute: Parameter object The object to compare to.
+        Attribute: Returns The Comprare result, Smaller, Equal, or Larger. 
+
+        Attribute: Example
+        use Libraries.Language.Support.CompareResult
+        Text o
+        Text t
+        CompareResult result = o:Compare(t)
+    */ 
+    action Compare(Object object) returns CompareResult
+        CompareResult result
+        text thisOne = me:value
+        Text b = cast(Text, object)
+        text other = b:GetValue()
+
+        integer nativeResult = CompareInt(thisOne, other, false)
+
+        if nativeResult = 0
+            result:result = result:EQUAL
+        elseif nativeResult < 0
+            result:result = result:SMALLER
+        else
+            result:result = result:LARGER
+        end
+        return result
+    end
+
+    /*
+        This action compares two object values (ignoring case) and returns a CompareResult.
+        The compare result is either larger if this hash code is larger than
+        the object passed as a parameter, smaller, or equal.
+
+        Attribute: Parameter object The object to compare to.
+        Attribute: Returns The Comprare result, Smaller, Equal, or Larger. 
+
+        Attribute: Example
+        use Libraries.Language.Support.CompareResult
+        Text o
+        Text t
+        CompareResult result = o:CompareIgnoringCase(t)
+    */ 
+    action CompareIgnoringCase(Object object) returns CompareResult
+        CompareResult result
+        text thisOne = me:value
+        Text b = cast(Text, object)
+        text other = b:GetValue()
+
+        integer nativeResult = CompareInt(thisOne, other, true)
+
+        if nativeResult = 0
+            result:result = result:EQUAL
+        elseif nativeResult < 0
+            result:result = result:SMALLER
+        else
+            result:result = result:LARGER
+        end
+        return result
+    end
+
+    private system action CompareInt(text left, text right, boolean isIgnoringCase) returns integer
+
+    /*
+        This action returns the length of the text object.
+
+        Attribute: Returns the length of the text object.
+
+        Attribute: Example
+        Text a
+        a:SetValue("X")
+        output a:GetSize()
+    */
+    system action GetSize() returns integer
+
+    /*
+        This action gets the character specified by the given index and returns it.
+        
+        Attribute: Parameter index The index to get. Must be greater than or equal to zero.
+        Attribute: Returns the character at the specified index
+
+        Attribute: Example
+        Text a
+        a:SetValue("abcd")
+        output a:GetCharacter(0)
+    */
+    action GetCharacter(integer index) returns text
+        // Index must be in the range 0 <= x < me:GetSize()
+        if index < 0 or index >= me:GetSize()
+            InvalidLocationError e
+            alert(e)
+        end
+
+        return GetCharacterNative(index)
+    end
+
+    /*
+        This action gets the hash code for an object. In this case, GetHashCode
+        is overriden to be equivalent to the hash code of its containing object,
+        value.
+
+        Attribute: Returns The integer hash code of the object.
+
+        Attribute: Example
+
+        Object o
+        integer hash = o:GetHashCode()
+    */ 
+    system action GetHashCode() returns integer
+
+    /*
+        This action returns a substring of the text object.
+
+        Attribute: Parameter startIndex The starting index
+        Attribute: Parameter endIndex The ending index
+        Attribute: Returns The substring
+        
+        Attribute: Example
+        use Libraries.Language.Types.Text
+        Text a
+        a:SetValue("hello world")
+        output a:GetSubtext(0, 5)
+    */
+    system action GetSubtext(integer startIndex, integer endIndex) returns text
+
+    /*
+        This action splits the string based on the given non-empty delimiter.
+        The delimiter can be of any length. The string will be split by the
+        given delimiter and an array of text objects will be returned, without
+        the delimiter.
+        
+        Attribute: Parameter delimiter The non-empty delimiter to use.
+        Attribute: Returns An array of text objects corresponding to the splits by the delimiter.
+
+        Attribute: Example
+        use Libraries.Language.Types.Text
+        use Libraries.Containers.Array
+        Text a
+        a:SetValue("hello world")
+        Array<Text> values = a:Split("l")
+    */
+    action Split(text delimiter) returns Array<text>
+        // TODO: Rewrite this. it is horrid. There are much more clever ways to do this.
+
+	Array<text> results
+	integer pos = 0
+	integer length = me:GetSize()
+	Text delim
+        delim:SetValue(delimiter)
+	integer delimLength = delim:GetSize()
+	text newString = ""
+        boolean afterDelim = false
+
+	repeat while pos < length
+            // If this doesn't start the delimiter, add it to the new string.
+            if me:GetCharacter(pos) not= delim:GetCharacter(0)
+                newString = newString + me:GetCharacter(pos)
+                pos = pos + 1
+                afterDelim = false
+            else
+                // Matches start of delimiter. Keep track and bail if we don't match the delimiter
+                text tmpString = ""
+                integer delimPos = 0
+                text currentChar = me:GetCharacter(pos)
+                text currentDelimChar = delim:GetCharacter(0)
+
+                // As long as the values read continue to match the delimiter...
+                repeat while delimPos < delimLength and currentChar = currentDelimChar and pos < length
+                    tmpString = tmpString + me:GetCharacter(pos)
+                    delimPos = delimPos + 1 // keep going through delimiter
+                    pos = pos + 1 // and keep moving ahead in main string
+                    
+                    if pos < length
+                        currentChar = me:GetCharacter(pos)
+                    end
+
+                    if delimPos < delimLength
+                        currentDelimChar = delim:GetCharacter(delimPos)
+                    end
+                end
+
+                if delimPos not= delimLength
+                    // We didn't reach the end of the delimiter, so add this temporary string and keep moving.
+                    tmpString = tmpString + newString
+                    afterDelim = false
+                else
+                    // Delimiter hit. Store the result.
+                    results:Add(newString)
+                    newString = ""  
+                    afterDelim = true
+                end
+            end
+	end
+
+
+        if not afterDelim
+            results:Add(newString)
+        end
+
+        return results
+    end
+end

@@ -1,0 +1,299 @@
+package Libraries.Data.Formats
+
+use Libraries.Containers.Array
+use Libraries.Containers.Blueprints.Iterator
+
+/*
+The DocumentTypeDefinitionAttribute class represents an attribute that has been 
+parsed from a document type definition. 
+
+Attribute: Example
+
+use Libraries.System.File
+use Libraries.Data.Formats
+
+// DTD Attribute example: <!ATTLIST person name CDATA #REQUIRED> 
+DocumentTypeDefinitionAttribute MyDTDAttribute                   
+MyDTDAttribute:SetElementName("person")
+MyDTDAttribute:SetAttributeName("name")
+MyDTDAttribute:SetType("CDATA")
+MyDTDAttribute:SetValue("#REQUIRED")
+
+boolean required = MyDTDAttribute:IsRequiredValue() // required will be true
+boolean implied = MyDTDAttribute:IsImpliedValue() // implied will be false
+boolean fixed = MyDTDAttribute:IsFixedValue() // fixed will be false
+*/
+
+
+class DocumentTypeDefinitionAttribute
+    text elementName = ""
+    text attributeName = ""
+    text attributeType = ""
+    text attributeValue = ""
+    boolean isRequired = false
+    boolean isImplied = false
+    boolean isFixed = false
+    Array<text> enumeratedAttributeValues
+
+    /*
+        This action determines if the value of the attribute is required. 
+
+        Attribute: Returns True if the value of the attribute is required 
+        and false if it is not. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute                   
+        MyDTDAttribute:SetValue("#REQUIRED")
+        boolean value = MyDTDAttribute:IsRequiredValue() // value will be true
+    */
+
+
+    public action IsRequiredValue() returns boolean
+        return isRequired
+    end
+
+    /*
+        This action determines if the value of the attribute is implied. 
+
+        Attribute: Returns True if the value of the attribute is implied 
+        and false if it is not. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute                   
+        MyDTDAttribute:SetValue("#IMPLIED")
+        boolean value = MyDTDAttribute:IsImpliedValue() // value will be true
+    */
+
+
+    public action IsImpliedValue() returns boolean
+        return isImplied
+    end
+
+    /*
+        This action determines if the value of the attribute is fixed. 
+
+        Attribute: Returns True if the value of the attribute is fixed and false if it is not. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        text quote
+        DocumentTypeDefinitionAttribute MyDTDAttribute                   
+        MyDTDAttribute:SetValue("#FIXED " + quote:GetDoubleQuote() + "cash" + quote:GetDoubleQuote()")
+        boolean value = MyDTDAttribute:IsFixedValue() // value will be true
+    */
+
+
+    public action IsFixedValue() returns boolean
+        return isFixed
+    end
+
+    /*
+        This action sets the element name to the given text value.
+
+        Attribute: Parameter name The value to set the element name to. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        MyDTDAttribute:SetElementName("person")
+    */
+
+
+    public action SetElementName(text name)
+        elementName = name:Trim()
+    end
+
+    /*
+        This action gets the element name.
+
+        Attribute: Returns The value of the element name. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        MyDTDAttribute:SetElementName("person")
+        text value = MyDTDAttribute:GetElementName() // value will be "person"
+    */
+
+
+    public action GetElementName() returns text
+        return elementName
+    end
+
+    /*
+        This action sets the attribute name to the given text value.
+
+        Attribute: Parameter name The value to set the attribute name to. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        MyDTDAttribute:SetAttributeName("name")
+    */
+
+
+    public action SetAttributeName(text name)
+        attributeName = name:Trim()
+    end
+
+    /*
+        This action gets the attribute name.
+
+        Attribute: Returns The value of the attribute name. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        MyDTDAttribute:SetAttributeName("name")
+        text value = MyDTDAttribute:GetAttributeName() // value will be "name"
+    */
+
+
+    public action GetAttributeName() returns text
+        return attributeName
+    end
+
+    /*
+        This action sets the attribute type to the given text value as long as 
+        it is a valid option. Attribute types can be one of the following: CDATA, 
+        ID, IDREF, IDREFS, NMTOKEN, NMTOKENS, ENTITY, ENTITIES, NOTATION, or a 
+        formatted enumerated list, e.g. (en1|en2|..).
+
+        Attribute: Parameter type The value to set the attribute type to. 
+
+        Attribute: Returns True if the parameter was a valid type, false otherwise.
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        boolean success = MyDTDAttribute:SetType("CDATA")
+    */
+
+
+    public action SetType(text type) returns boolean
+        type = type:Trim()
+        if type:StartsWith("(") and
+           type:EndsWith(")")
+            newType = type:GetSubtext(1, type:GetSize() -1)
+            withCommaType = newType:Replace("|", ",") // This is a work-around because split action wouldn't work on "|" character
+
+            enumeratedAttributeValues = withCommaType:Split(",")
+            attributeType = ""
+
+            return true
+        elseif type = "CDATA" or type = "ID" or type = "IDREF" or type = "IDREFS" or type = "NMTOKEN" or type = "NMTOKENS" or type = "ENTITY" or type = "ENTITIES" or type = "NOTATION"
+            attributeType = type
+            return true
+        else
+            return false
+        end
+    end
+
+    /*
+        This action gets the attribute type.
+
+        Attribute: Returns The value of the attribute type. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        if MyDTDAttribute:SetType("CDATA")
+            text value = MyDTDAttribute:GetType() // value will be "CDATA"
+        end
+    */
+
+
+    public action GetType() returns text
+        return attributeType
+    end
+
+    /*
+        This action sets the attribute valeu to the given text value . It will 
+        also check to see if the value is required, implied, or fixed.
+
+        Attribute: Parameter type The value to set the attribute value to. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        MyDTDAttribute:SetValue("#REQUIRED")
+    */
+
+
+    public action SetValue(text value)
+        value = value:Trim()
+        if value:Equals("#REQUIRED")
+            isRequired = true
+        elseif value:Equals("#IMPLIED")
+            isImplied = true
+        elseif value:GetSize() > 6
+            sub = value:GetSubtext(0, 6)
+            if sub:Equals("#FIXED")
+                isFixed = true
+                attributeValue = value:GetSubtext(7)
+            else
+                attributeValue = value:Replace(value:GetDoubleQuote(), "")
+            end
+        else
+            attributeValue = value:Replace(value:GetDoubleQuote(), "")
+        end
+    end
+
+    /*
+        This action gets the attribute value.
+
+        Attribute: Returns The value of the attribute type. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        MyDTDAttribute:SetType("#FIXED " + quote:GetDoubleQuote() + "cash" + quote:GetDoubleQuote()")
+        text value = MyDTDAttribute:GetValue() // value will be "cash"
+        boolean fixed = MyDTDAttribute:IsFixedValue() // fixed will be true
+    */
+
+
+    public action GetValue() returns text
+        return attributeValue
+    end
+
+    /*
+        This action gets the array of enumerated values.
+
+        Attribute: Returns The array of enumerated values. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        boolean success = MyDTDAttribute:SetType("(cash|check)")
+        if MyDTDAttribute:HasEnumeratedValues()
+            Array<text> values = MyDTDAttribute:GetEnumeratedValues()
+        end
+    */
+
+
+    public action GetEnumeratedValues() returns Array<text>
+        return enumeratedAttributeValues
+    end
+
+    /*
+        This action determines if there are enumerated values for this attribute.
+
+        Attribute: Returns True if there are enumerated values stored, false otherwise. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionAttribute MyDTDAttribute
+        boolean success = MyDTDAttribute:SetType("(cash|check)")
+        if MyDTDAttribute:HasEnumeratedValues()
+            Array<text> values = MyDTDAttribute:GetEnumeratedValues()
+        end
+    */
+
+
+    public action HasEnumeratedValues() returns boolean
+        return not enumeratedAttributeValues:IsEmpty()
+    end
+end

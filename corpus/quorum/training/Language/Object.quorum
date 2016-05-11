@@ -1,0 +1,85 @@
+package Libraries.Language
+
+use Libraries.Language.Support.CompareResult
+
+/*
+The Object class is the basic building block of all classes. This means 
+everything is an Object and some of it's basic functionality is available
+to all classes.
+
+Attribute: Example
+
+class Main
+   action Main
+      Object o
+      Object i
+      if o:Equals(i)
+         output "Equal objects"
+      end
+   end
+end
+*/
+class Object
+    /*
+        This action determines if two objects are equal based on their
+        hash code values.
+
+        Attribute: Parameter object The to be compared.
+
+        Attribute: Returns True if the hash codes are equal and false if they
+        are not equal. 
+
+        Attribute: Example
+        use Libraries.Language.Object
+        use Libraries.Language.Types.Text
+        Object o
+        Text t
+        boolean result = o:Equals(t)
+    */ 
+    action Equals(Object object) returns boolean
+        integer myHash = GetHashCode()
+        integer otherHash = object:GetHashCode()
+        return myHash = otherHash
+    end 
+
+    /*
+        This action gets the hash code for an object. 
+
+        Attribute: Returns The integer hash code of the object.
+
+        Attribute: Example
+
+        Object o
+        integer hash = o:GetHashCode()
+    */ 
+    system action GetHashCode() returns integer
+
+    /*
+        This action compares two object hash codes and returns a CompareResult.
+        The compare result is either larger if this hash code is larger than
+        the object passed as a parameter, smaller, or equal.
+
+        Attribute: Parameter object The object to compare to.
+        Attribute: Returns The Compare result, Smaller, Equal, or Larger. 
+
+        Attribute: Example
+        use Libraries.Language.Support.CompareResult
+        Object o
+        Object t
+        CompareResult result = o:Compare(t)
+    */ 
+    action Compare(Object object) returns CompareResult
+        CompareResult result
+        integer myHash = me:GetHashCode()
+        integer oHash = object:GetHashCode()
+
+        if myHash < oHash
+            result:result = result:SMALLER
+        elseif myHash = oHash
+            result:result = result:EQUAL
+        else
+            result:result = result:LARGER
+        end
+        return result
+    end
+end

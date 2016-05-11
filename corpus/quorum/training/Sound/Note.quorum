@@ -1,0 +1,49 @@
+package Libraries.Sound
+
+use Libraries.Sound.Playable
+
+/*
+    This class represents a single note to be played.
+
+    Attribute: Author Jeff Wilson
+*/
+
+class Note is Playable
+    private integer pitch = 60
+    
+    /*
+        Get the pitch for this particular note. See the Music class's documentation on specifying pitches.
+        
+        Attribute: Returns the pitch (0 to 127)
+    */
+    public action GetPitch returns integer
+        return pitch
+    end
+
+    /*
+        Set the pitch for this particular note. See the Music class's documenation on specifying pitches.
+
+        Attribute: Parameter the pitch (0 to 127)
+    */
+    public action SetPitch(integer pitch)
+        me:pitch = pitch
+    end
+
+    /*
+        Perform a deep copy of this object.
+        
+        Attribute: Returns the new Note
+    */
+    public action Copy returns Object
+        Note n
+        n:SetEventType(parent:MusicEvent:eventType)
+        n:SetConstantPitchBend(parent:Playable:constantPitchBend)
+        n:SetPrePitchBend(parent:Playable:prePitchBend)
+        n:SetPrePitchBendLength(parent:Playable:prePitchBendLength)
+        n:SetStartTime(parent:Playable:startTime)
+        n:SetLength(parent:Playable:length)
+        n:SetVolume(parent:Playable:volume)
+        n:SetPitch(pitch)
+        return n
+    end
+end

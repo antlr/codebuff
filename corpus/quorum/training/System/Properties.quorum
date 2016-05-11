@@ -1,0 +1,137 @@
+package Libraries.System
+
+/*
+The properties class is designed to gather information about the system
+that the user is running. Currently, it supports a general property action, 
+GetProperty, which can gather any known system property. It also currently
+contains helper methods for determining which operating system the user is on
+and for determining which web page was requested if this is a web project. System 
+properties are equivalent to what are often termed "environment variables."
+
+Attribute: Example
+use Libraries.System.Properties
+
+Properties properties
+text address = properties:GetRequestedWebPage()
+output address
+*/
+class Properties 
+    
+    /*
+    This is a public constant for the operating system property name.
+    */
+    public constant text operatingSystem = "os.name"
+
+    /*
+    This is a public constant for the web address environment variable, if 
+    one is set.
+    */
+    public constant text requestedWebPage = "quorum.url"
+
+    /*
+        This action returns a property from the system.
+
+        Attribute: Parameter key the property being requested
+        Attribute: Example
+
+        use Libraries.System.Properties
+
+        Properties properties
+        text value = properties:GetProperty("os.name")
+        output value
+    */
+    action GetProperty(text key) returns text
+        if not HasPropertyNative(key)
+            return ""
+        else
+            return GetPropertyNative(key)
+        end
+    end
+
+    /*
+        This action sets a property on the system.
+
+        Attribute: Parameter key the property being requested
+        Attribute: Parameter value the property value being set
+        Attribute: Example
+
+        use Libraries.System.Properties
+
+        Properties properties
+        properties:SetProperty("my.custom.property", "value")
+    */
+    action SetProperty(text key, text value)
+        SetPropertyNative(key, value)
+    end
+
+    /*
+        This action returns a the location of the running executable on the system.
+
+        Attribute: Example
+
+        use Libraries.System.Properties
+        use Libraries.System.File
+
+        Properties properties
+        File file = properties:GetRunPath()
+        output file:GetAbsolutePath()
+    */
+    system action GetRunLocation returns File
+
+    /*
+        This action returns an environment variable from the system.
+
+        Attribute: Parameter key the property being requested
+        Attribute: Example
+
+        use Libraries.System.Properties
+
+        Properties properties
+        text value = properties:GetEnvironmentVariable("quorum.url")
+        output value
+    */
+    action GetEnvironmentVariable(text key) returns text
+        if not HasEnvironmentVariableNative(key)
+            return ""
+        else
+            return GetEnvironmentVariableNative(key)
+        end
+    end
+
+    /*
+    This property returns the name of the operating system currently running
+    the program.
+
+    Attribute: Example
+    use Libraries.System.Properties
+
+    Properties properties
+    text value = properties:GetOperatingSystemName()
+    output value
+    */
+    action GetOperatingSystemName returns text
+        return GetProperty(operatingSystem)
+    end
+
+    /*
+    This helper method returns the requested web address if the project
+    was a web project.
+
+    Attribute: Example
+    use Libraries.System.Properties
+
+    Properties properties
+    text address = properties:GetRequestedWebPage()
+    output address
+    */
+    action GetRequestedWebPage returns text
+        return GetEnvironmentVariable(requestedWebPage)
+    end
+
+    private system action SetPropertyNative(text key, text value)
+    private system action GetPropertyNative(text key) returns text
+    private system action HasPropertyNative(text key) returns boolean
+
+    private system action GetEnvironmentVariableNative(text key) returns text
+    private system action HasEnvironmentVariableNative(text key) returns boolean
+end

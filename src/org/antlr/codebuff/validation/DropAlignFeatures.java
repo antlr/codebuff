@@ -19,17 +19,19 @@ import java.util.Map;
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.version;
-import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_ALL;
+import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 
 // hideous cut/paste from WS version
 public class DropAlignFeatures {
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
+			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
 			ANTLR4_DESCR,

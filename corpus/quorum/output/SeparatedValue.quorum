@@ -1,0 +1,274 @@
+package Libraries.Data.Formats
+
+use Libraries.System.File
+use Libraries.System.FileReader
+use Libraries.Language.Errors.FileNotFoundError
+use Libraries.Containers.Array
+use Libraries.Containers.Table
+
+/*
+The SeparatedValue class reads in data files in a format with common separator.
+The most commonly used of these is the Comma Separated Value (CSV), which is the
+default setting.
+
+Attribute: Example
+
+use Libraries.System.File
+use Libraries.Data.Formats.SeparatedValue
+
+SeparatedValue csvReader //first create the reader
+File csv //then create a file
+csv:SetPath("Data.csv") //set its path to a file we've created
+csvReader:Read(csv) //read the csv file
+*/
+
+
+class SeparatedValue
+    text separator = "," //by default, a comma separated value reader
+
+    Table<text> table
+integer numberColumns = - 1
+    boolean conistent = true
+ 
+    /*
+        This action reads in a file and puts any data found into a table. If the 
+        data is not in a consistent format, meaning that the number of columns
+        varies per row, then IsConsistent() will return false and obtaining a
+        correct parse cannot be guaranteed.
+
+
+        Attribute: Parameter file The file to be read in.
+
+        Attribute: Example
+
+        use Libraries.System.File
+        use Libraries.Data.Formats.SeparatedValue
+
+        SeparatedValue csvReader //first create the reader
+        File csv //then create a file
+        csv:SetPath("Data.csv") //set its path to a file we've created
+        csvReader:Read(csv) //read the csv file
+    */
+
+
+    action Read(File file)
+        SeparatedValueFileReader reader
+        numberColumns = - 1
+        conistent = true
+        if not file:Exists()
+            FileNotFoundError error
+            error:SetErrorMessage("Could not find the file at path: " + file:GetAbsolutePath())
+            alert(error)
+        end
+
+        reader:OpenForRead(file)
+        count = 1
+        done = false
+        repeat until done //for testing
+
+            if not reader:IsAtEndOfFile()
+                line = reader:ReadLine()
+                Array<text> row = ReadLine(line)
+                if row not= undefined
+                    table:AddRow(row)
+
+                    if numberColumns = - 1
+                        numberColumns = row:GetSize()
+                    elseif numberColumns not= row:GetSize()
+                        conistent = false
+                    end
+                end
+            else
+                done = true
+            end
+            count = count + 1
+        end
+    end
+
+    /*
+        This action checks whether all rows have the same number of columns. If
+        this is the case, it returns true.
+
+
+        Attribute: Returns This returns true if all files have an equal number
+            of columns.
+
+        Attribute: Example
+
+        use Libraries.System.File
+        use Libraries.Data.Formats.SeparatedValue
+
+        SeparatedValue csvReader //first create the reader
+        File csv //then create a file
+        csv:SetPath("Data.csv") //set its path to a file we've created
+        csvReader:Read(csv) //read the csv file
+
+        boolean consistent = csvReader:IsConsistent()
+    */
+
+
+    action IsConsistent returns boolean
+        return conistent
+    end
+
+    /*
+        This action returns a value from a previously read in file. It will
+        throw an error if a file has not been properly read in.
+
+        Attribute: Parameter row The row being accessed.
+        Attribute: Parameter column The column being accessed.
+
+        Attribute: Returns This returns a text representation of a cell.
+
+        Attribute: Example
+
+        use Libraries.System.File
+        use Libraries.Data.Formats.SeparatedValue
+
+        SeparatedValue csvReader //first create the reader
+        File csv //then create a file
+        csv:SetPath("Data.csv") //set its path to a file we've created
+        csvReader:Read(csv) //read the csv file
+
+        text value = csvReader:Get(1, 3) //access the item at row 1, column 3
+    */
+
+
+    action Get(integer row, integer column) returns text
+        return table:Get(row, column)
+    end
+
+    /*
+        This action returns the number of available rows.
+
+        Attribute: Returns This returns the number of rows.
+
+        Attribute: Example
+
+        use Libraries.System.File
+        use Libraries.Data.Formats.SeparatedValue
+
+        SeparatedValue csvReader //first create the reader
+        File csv //then create a file
+        csv:SetPath("Data.csv") //set its path to a file we've created
+        csvReader:Read(csv) //read the csv file
+
+        rows = csvReader:GetNumberOfRows()
+    */
+
+
+    action GetNumberOfRows returns integer
+        return table:GetNumberOfRows()
+    end
+
+    /*
+        This action returns the number of available columns.
+
+        Attribute: Returns This returns the number of columns.
+
+        Attribute: Example
+
+        use Libraries.System.File
+        use Libraries.Data.Formats.SeparatedValue
+
+        SeparatedValue csvReader //first create the reader
+        File csv //then create a file
+        csv:SetPath("Data.csv") //set its path to a file we've created
+        csvReader:Read(csv) //read the csv file
+
+        columns = csvReader:GetNumberOfColumns()
+    */
+
+
+    action GetNumberOfColumns returns integer
+        return numberColumns
+    end
+
+    private action ReadLine(text line) returns Array<text>
+        //process every character, using double quotes and the delimiter 
+        //as a guide for determining cells.
+
+        Array<text> row
+        count = 0
+        isInDoubleQuotes = false
+        text current = ""
+        size = line:GetSize()
+        justFinishedDoubleQuote = false
+        dq = line:GetDoubleQuote()
+        repeat size times
+            char = line:GetCharacter(count)
+            if char = dq
+                isInDoubleQuotes = not isInDoubleQuotes
+            elseif char = separator and not isInDoubleQuotes
+                row:Add(current)
+                justFinishedDoubleQuote = false
+                current = ""
+            else
+                current = current + char
+            end
+            count = count + 1
+        end
+
+        row:Add(current)
+        return row
+    end
+
+    /*
+        This action returns the separator used by the reader. By default, the
+        separator is a column. This separator must be a single character.
+
+        Attribute: Returns This returns the separator used by the reader.
+
+        Attribute: Example
+
+        use Libraries.System.File
+        use Libraries.Data.Formats.SeparatedValue
+
+        SeparatedValue csvReader //first create the reader
+        File csv //then create a file
+        csv:SetPath("Data.csv") //set its path to a file we've created
+        csvReader:Read(csv) //read the csv file
+
+        separator = csvReader:GetSeparator()
+    */
+
+
+    action GetSeparator returns text
+        return separator
+    end
+
+    /*
+        This action sets the separator used by the reader. This action must
+        be called before the Read(File) action.
+
+        Attribute: Parameter separator This sets the separator for the reader.
+
+        Attribute: Example
+
+        use Libraries.System.File
+        use Libraries.Data.Formats.SeparatedValue
+
+        SeparatedValue csvReader //first create the reader
+        csvReader:SetSeparator("?") //set the separator to a question mark
+
+        File csv //then create a file
+        csv:SetPath("Data.csv") //set its path to a file we've created
+        csvReader:Read(csv) //read the csv file
+    */
+
+
+    action SetSeparator(text separator)
+        text sep = separator
+        if (sep = undefined)
+         //   alert("Separator cannot be undefined")
+
+        end
+
+        if not sep:IsEmpty()
+            me:separator = sep:GetCharacter(0)
+        else
+        //    alert("Separators cannot exceed a single character.")
+
+        end
+    end
+end

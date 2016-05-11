@@ -1,0 +1,31 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The OutOfBoundsError class is an error or exception that is thrown when 
+a parameter is outside of the specified range for a function.
+For example, if a function requires only positive integers, passing a negative
+integer will throw this exception.
+
+Attribute: Example
+
+use Libraries.Language.Errors.InvalidLocationError
+use Libraries.Containers.Array
+
+class Main
+   action Main
+      Random random
+      check
+        integer myNumber = random:RandomInteger(-5) // requires >= 0.
+      detect e is OutOfBoundsError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+class OutOfBoundsError is Error
+    on create
+        SetErrorMessage("The specified parameters were outside of the required range.")
+    end
+end

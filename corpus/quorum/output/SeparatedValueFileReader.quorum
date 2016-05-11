@@ -1,0 +1,84 @@
+package Libraries.Data.Formats
+
+use Libraries.Containers.Blueprints.Indexed
+use Libraries.Containers.Array
+use Libraries.System.FileReader
+
+
+class SeparatedValueFileReader is FileReader
+
+    boolean isSetup = false
+                               text total = ""
+                               integer current = 0
+    Array<text> lines
+
+
+    action ReadLine() returns text
+        if not isSetup
+            Setup()
+        end
+        value = lines:Get(current)
+        current = current + 1
+        return value
+    end
+
+
+                               action ReadLines() returns Indexed<text>
+                                   if not isSetup
+                                       Setup()
+                                   end
+
+                                   return lines
+                               end
+
+
+                               action IsAtEndOfFile() returns boolean
+                                   if not isSetup
+                                       Setup()
+                                   end
+
+                                   if current < lines:GetSize()
+                                       return false
+                                   else
+                                       return true
+                                   end
+                               end
+
+                               private action Setup
+                                   isSetup = true
+                                   total = parent:FileReader:Read()
+                                   BreakIntoLines()
+                               end
+
+                               private action BreakIntoLines
+                                   size = total:GetSize()
+                                   Array<text> lines
+                                   isInDoubleQuote = false
+                                   myTotal = total //temporary fix to possible compiler bug with using autoboxed primitives in fields.
+
+                                   line = ""
+                                   dq = myTotal:GetDoubleQuote()
+                                   newline = myTotal:GetLineFeed()
+                                   i = 0
+                                   repeat size times
+                                       char = myTotal:GetCharacter(i)
+                                       if char = dq
+                                           isInDoubleQuote = not isInDoubleQuote
+                                       end
+
+                                       if (char = newline and not isInDoubleQuote) or i = (size -1)
+                                           lines:Add(line)
+                                           line = ""
+                                       else
+                                           if char not= newline
+                                               line = line + char
+                                           else
+                                               line = line + " "
+                                           end
+                                       end
+                                       i = i + 1
+                                   end
+
+                                   me:lines = lines
+                               end
+end

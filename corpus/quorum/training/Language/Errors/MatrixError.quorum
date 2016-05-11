@@ -1,0 +1,29 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The MatrixError class is an error or exception that is thrown when there is
+an error while performing computations on a matrix.
+
+Attribute: Example
+
+use Libraries.Language.Errors.MatrixError
+use Libraries.Compute.Matrix3
+class Main
+   action Main
+      Matrix3 matrix
+      matrix:Set(1, 1, 1, 1, 1, 1, 1, 1, 1)
+      check
+        matrix:Inverse()
+      detect e is MatrixError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+class MatrixError is Error
+    on create
+        SetErrorMessage("Matrix Error: An error occurred while conducting computations on a matrix.")
+    end
+end

@@ -1,0 +1,50 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.all
+
+/*
+    The AccessibilityEvent class is used to represent an event that happened on 
+    the system. It can be used to represent other, more specific types of 
+    events, such as mouse, keyboard, and system events. An event is typically 
+    used to describe parsed XML with the specifications in the Legam Screen 
+    Reader XML documentation.
+
+    Attribute: Example
+
+    AccessibilityEvent kevent
+    say(kevent:GetDescription())
+
+*/
+class AccessibilityEvent 
+
+    /*
+        This action should return a string to describe the event.
+        
+        Attribute: Parameter value The text of the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        MouseEvent event
+        text result = event:GetDescription()
+    */
+    blueprint action GetDescription() returns text
+
+    /*
+        This action gets the category of the event. This will be one of the 
+        following: Focus, Keyboard, Mouse, Window, Notification, Menu, or 
+        PropertyChange.
+        
+        Attribute: Returns text of what the category is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        KeyboardEvent event
+        text category = event:GetCategory()
+    */
+    blueprint action GetCategory() returns text
+
+end

@@ -1,0 +1,63 @@
+package Libraries.Containers.Blueprints
+
+/*
+
+Inheriting from the Addable class provides a basic blueprint for adding
+and removing something from an object.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.Addable
+
+class MyClass is Addable
+    action Add(Type value)
+        //implement here
+    end
+end
+*/
+
+
+class Addable<Type>
+    /*
+        This action adds a value to an object.
+
+        Attribute: Parameter value The value to be inserted.
+    */
+
+
+    blueprint action Add(Type value)
+
+    /*
+        This action determines if an addable object contains a certain item. 
+
+        Attribute: Parameter value The item to find in the Addable object.
+
+        Attribute: Returns Returns true if the item was in the Addable object and false if it was not. 
+    */
+
+    blueprint action Has(Type value) returns boolean
+
+    /*
+        This action removes the first occurrence of an item that is found in the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+    */
+
+
+    blueprint action Remove(Type value) returns boolean
+
+    /*
+        This action removes all occurrences of an item from the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+    */
+
+
+    blueprint action RemoveAll(Type value) returns boolean
+end

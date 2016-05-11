@@ -1,0 +1,75 @@
+package Libraries.Data.Formats
+
+/*
+The ElementImplementation class is used to represent a parsed XML element. In XML, 
+an element is everything from the element's start tag to the element's end tag. 
+Elements can contain text, attributes, and other elements.
+
+Attribute: Example
+
+use Libraries.Data.Formats
+
+ElementImplementation bookElement
+bookElement:SetName("book")
+bookElement:SetValue("Lord of the Flies")
+
+Attribute authorAttribute
+authorAttribute:name = "author"
+authorAttribute:value = "William Golding"
+
+bookElement:Add(authorAttribute)
+*/
+
+
+class ElementImplementation is Element
+
+    /*
+        This action sets the name of the element to the given value.
+
+        Attribute: Parameter name The value to set the name of the element to. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        ElementImplementation bookElement
+        bookElement:SetName("book")
+    */
+    action SetName(text name)
+        parent:Element:name = name
+    end
+
+    /*
+        This action sets the value of the element to the given value.
+
+        Attribute: Parameter value The value to set the value of the element to. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        ElementImplementation bookElement
+        bookElement:SetValue("Lord of the Flies")
+    */
+
+
+                            action SetValue(text value)
+                                parent:Element:value = value
+                            end
+    
+    /*
+        This action adds the given attribute to the array of attributes.
+
+        Attribute: Parameter attribute The attribute to add to the attribute list. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        ElementImplementation bookElement
+        Attribute authorAttribute
+        authorAttribute:name = "author"
+        authorAttribute:value = "William Golding"
+        bookElement:Add(authorAttribute)
+    */
+
+
+                            action Add(Attribute attribute)
+                                AttributesImplementation at = parent:Element:attributes
+                                at:Add(attribute)
+                            end
+end

@@ -1,0 +1,64 @@
+package Libraries.Containers.Support
+
+
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Support.HashNode
+use Libraries.Containers.Array
+
+class HashTableIterator<Key, Value>// is Iterator<HashNode<Key, Value>>
+    Array<HashNode<Key, Value>> array = undefined
+    integer position = 0
+    HashNode<Key, Value> node = undefined
+    
+    
+    action GetCurrent returns HashNode<Key, Value>
+        return node
+    end
+
+    action HasNext returns boolean
+        return node not= undefined
+    end
+
+    private action GoToNextNode
+        if node not= undefined
+            node = node:next
+        end
+
+        if node not= undefined
+            return now //we've found the next one
+        else 
+            position = position + 1
+        end
+
+        //the current one still needs to be found, it's currently undefined
+        repeat while position < array:GetSize()
+            HashNode<Key, Value> newNode = array:Get(position)
+            if newNode not= undefined
+                node = newNode
+                return now //we're finished searching
+            end
+            position = position + 1
+        end
+    end
+
+    action Next returns HashNode<Key, Value>
+        HashNode<Key, Value> returnedNode = node
+        GoToNextNode()
+        return returnedNode
+    end
+
+    action Rewind
+        position = -1
+        node = undefined
+    end
+
+    action GetArray returns Array<HashNode<Key, Value>>
+        return array
+    end
+
+    action SetArray(Array<HashNode<Key, Value>> array) 
+        me:array = array
+        Rewind()
+        GoToNextNode()
+    end
+end

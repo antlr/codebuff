@@ -1,0 +1,344 @@
+package Libraries.Compute
+
+use Libraries.System.DateTime
+use Libraries.Containers.List
+use Libraries.Containers.Array
+use Libraries.Compute.BitwiseOperations
+//use Libraries.Language.Errors.OutOfBoundsError
+
+/*
+The Random class permits generation of pseudorandom numbers that can be used
+for a variety of applications.
+
+Attribute: Example
+
+use Libraries.Compute.Random
+
+    class Main
+        action main
+            // Print a list of ten random integers, each within the range
+            // 5 to 9.
+            Random random
+
+            repeat 10 times
+                output random:RandomIntegerBetween(5, 9)
+            end
+        end
+    end
+*/
+
+
+class Random
+    BitwiseOperations op
+Array<integer> mt
+integer index = n + 1
+
+    //coeefficients for MT 19937 algorithm (32-bit)
+
+integer w = 32                      //word size (bits)
+
+integer n = 624                     //degree of recurrence
+
+integer m = 397                     //middle word offset
+
+integer r = 31                      //separation point (bits in lower bitmask)
+
+integer u = 11                      //additional bitshift/mask
+
+integer s = 7                       //tempering bitshift
+
+integer t = 15                      //tempering bitshift
+
+integer l = 18                      //additional bitshift/mask
+
+integer f = 1812433253              //initialization constant
+
+integer a = -1727483681             //0x9908B0DF (419999967 unsigned)
+
+integer b = -1658038656             //0x9D2C5680 (489444992 unsigned)
+
+integer c = -272236544              //0xEFC60000 (1875247104 unsigned)
+
+integer LowerMask = 2147483647      //0x7FFFFFFF
+
+integer UpperMask = LowerMask + 1   //0x80000000
+
+integer TopMask = -65536            //0xFFFF0000
+
+integer BottomMask = 65535          //0x0000FFFF
+
+
+on create
+        // Set up the generator with the time as the default seed value.
+
+   InitializeNative()
+end
+
+private action InitializeNative()
+        // Default seed uses system time
+
+   mt:SetSize(n)
+   DateTime dt
+   InitArray(dt:GetEpochTime())
+end
+
+private action InitArray(number seed)
+   seed = seed mod LowerMask
+   mt:Set(0, cast(integer, seed))
+
+   integer i = 1
+   repeat n -1 times
+       integer y = op:ExclusiveOr(mt:Get(i -1), op:ShiftRightPositive(mt:Get(i -1), 30))
+       mt:Set(i, op:ShiftLeft(op:ShiftRightPositive(op:And(y, TopMask), 16) * f, 16) + (op:And(y, BottomMask) * f) + i)
+       i = i + 1
+   end
+
+   Twist()
+end
+
+private action Twist()
+   integer y = 0
+   integer i = 0
+   repeat n - m times
+       y = op:Or(op:And(mt:Get(i), UpperMask), op:And(mt:Get(i + 1), LowerMask))
+       mt:Set(i, op:ExclusiveOr(op:ExclusiveOr(mt:Get(i + m), op:ShiftRightPositive(y, 1)), op:And(y, 1) * a))
+       i = i + 1
+   end
+
+   repeat m -1 times
+       y = op:Or(op:And(mt:Get(i), UpperMask), op:And(mt:Get(i + 1), LowerMask))
+       mt:Set(i, op:ExclusiveOr(op:ExclusiveOr(mt:Get(i - (n - m)), op:ShiftRightPositive(y, 1)), op:And(y, 1) * a))
+       i = i + 1
+   end
+   y = op:Or(op:And(mt:Get(i), UpperMask), op:And(mt:Get(0), LowerMask))
+   mt:Set(i, op:ExclusiveOr(op:ExclusiveOr(mt:Get(m -1), op:ShiftRightPositive(y, 1)), op:And(y, 1) * a))
+   index = 0
+end
+
+private action NextRandom() returns integer
+   if index >= n
+       Twist()
+   end
+
+   integer y = mt:Get(index)
+   y = op:ExclusiveOr(y, op:ShiftRightPositive(y, u))
+   y = op:ExclusiveOr(y, op:And(op:ShiftLeft(y, s), b))
+   y = op:ExclusiveOr(y, op:And(op:ShiftLeft(y, t), c))
+   y = op:ExclusiveOr(y, op:ShiftRightPositive(y, l))
+   index = index + 1
+
+   return op:ShiftRightPositive(y, 1)  //no long int, shift once for [0,max_int] interval
+
+end
+
+private action RandomIntegerNative(integer maximum) returns integer
+   return cast(integer, RandomNumber() * (maximum + 1))
+end
+
+    /*
+    This action sets the seed used to generate random numbers. On creation of
+    a Random object, the seed is set to the current system time in milliseconds.
+
+    Attribute: Parameter seed The number that should be used as a seed. Note that
+    the fractional portion of the number will be ignored.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    Random random
+    random:SetSeed(1010001) // set the seed to 1010001
+
+    */
+
+
+action SetSeed(number seed)
+   InitArray(seed)
+end
+
+    /*
+    This action returns a random integer within the range
+    0 to +2,147,483,646 (lower bound inclusive, upper bound inclusive).
+
+    Attribute: Returns Returns the random number.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    Random random
+    integer randomNumber = random:RandomInteger()
+
+    */
+
+
+action RandomInteger() returns integer
+   return NextRandom()
+end
+
+    /*
+    This action returns a random number within the range 0 to 1.
+
+    Attribute: Returns Returns the random number.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    Random random
+    number randomNumber = random:RandomNumber()
+
+    */
+
+
+action RandomNumber() returns number
+   integer max = 0
+
+   return cast(number, NextRandom()) / max:GetMaximumValue()
+end
+
+    /*
+    This action returns a random boolean value. (True or False)
+
+    Attribute: Returns Returns the random boolean.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    Random random
+    boolean randomBool = random:RandomBoolean()
+
+    */
+
+
+action RandomBoolean() returns boolean
+   if NextRandom() mod 2 = 0
+       return false
+   else
+       return true
+   end
+end
+
+
+    /*
+    This action returns a random integer that is between zero (inclusive) and
+    +2,147,483,646 (inclusive).
+    
+    Attribute: Parameter maximum - The maximum integer that can be generated.
+    Attribute: Returns Returns the random integer.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    Random random
+    integer randomNumber = random:RandomInteger(5)
+    */
+
+
+action RandomInteger(integer maximum) returns integer
+   if maximum <= 0
+       //     OutOfBoundsError e
+       //     e:SetErrorMessage("The maximum number must be a positive integer.")
+       //     alert(e)
+
+   end
+
+   return me:RandomIntegerNative(maximum)
+end
+
+    /*
+    This action returns a random integer between minimum and maximum. Minimum
+    and maximum are inclusive.
+
+    Attribute: Parameter minimum The minimum number to be generated.
+    Attribute: Parameter maximum The maximum number to be generated.
+    Attribute: Returns Returns the random integer.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    Random random
+    integer randomNumber = random:RandomIntegerBetween(1, 5)
+
+    */
+
+
+action RandomIntegerBetween(integer minimum, integer maximum) returns integer
+//        if minimum >= maximum
+//            OutOfBoundsError e
+//            e:SetErrorMessage("The minimum number must be smaller than the maximum number.")
+//            alert(e)
+//        elseif minimum < 0 or maximum < 0
+//            OutOfBoundsError e
+//            e:SetErrorMessage("The minimum and maximum numbers must be greater than or equal to zero.")
+//            alert(e)
+//        elseif (maximum - minimum) <= 0
+//            OutOfBoundsError e
+//            e:SetErrorMessage("There is no integer between " + minimum + " and " + maximum + ".")
+//            alert(e)
+//        end
+
+   return me:RandomInteger(maximum - minimum) + minimum
+end
+
+    /*
+    This action returns a list of randomly generated integers in the range
+    0 to +2,147,483,646 (lower bound inclusive, upper bound inclusive).
+
+    Attribute: Parameter length the length of the list to be generated.
+
+    Attribute: Returns Returns the list of random integers.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    use Libraries.Containers.List
+    Random random
+    List<Integer> list
+    list = random:RandomListOfIntegers(15)
+
+    */
+
+
+action RandomListOfIntegers(integer length) returns List<integer>
+   if length <= 0
+//            OutOfBoundsError e
+//            e:SetErrorMessage("The list length must be a positive integer.")
+//            alert(e)
+
+   end
+   List<integer> newList
+
+   integer counter = 0
+   repeat until counter = length
+       newList:Add(me:RandomInteger())
+       counter = counter + 1
+   end
+   return newList
+end
+
+    /*
+    This action returns a list of randomly generated numbers in the range
+    0 to 1.
+
+    Attribute: Parameter length the length of the list to be generated.
+
+    Attribute: Returns Returns the list of random numbers.
+
+    Attribute: Example
+    use Libraries.Compute.Random
+    use Libraries.Containers.List
+    Random random
+    List<number> list
+    list = random:RandomListOfNumbers(15)
+
+    */
+
+
+action RandomListOfNumbers(integer length) returns List<number>
+   if length <= 0
+//            OutOfBoundsError e
+//            e:SetErrorMessage("The list length must be a positive integer.")
+//            alert(e)
+
+   end
+   List<number> newList
+
+   integer counter = 0
+   repeat until counter = length
+       newList:Add(me:RandomNumber())
+       counter = counter + 1
+   end
+   return newList
+end
+end

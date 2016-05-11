@@ -1,0 +1,27 @@
+package Libraries.Interface.Events
+
+/*
+The MouseListener class is used to listen for and react to MouseEvents where
+the user has clicked or released a mouse button. To use a MouseListener in a
+program, users should make a new class that inherits from it and overrides
+ClickedMouse and/or ReleasedMouse.
+*/
+class MouseListener
+
+    /*
+    This action is used to respond to a MouseEvent where a mouse button was
+    clicked.
+    */
+    action ClickedMouse(MouseEvent event)
+
+    end
+
+    /*
+    This action is used to respond to a MouseEvent where a mouse button was
+    released.
+    */
+    action ReleasedMouse(MouseEvent event)
+
+    end
+
+end

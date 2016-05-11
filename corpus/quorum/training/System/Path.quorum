@@ -1,0 +1,204 @@
+// TODO: Documentation
+
+package Libraries.System
+
+use Libraries.Language.Errors.InvalidPathError
+
+/*
+The Path class is used to represent a path on the system. A path can be either
+absolute or relative. This class provides a consistent interface for
+manipulating paths, and provides a system that is more or less consistent
+throughout operating systems.
+
+Attribute: Author Jeff Wilson
+Attribute: Example
+// TODO
+*/
+
+class Path 
+    text path = ""
+
+    /*
+      * Test on the native side whether or not a path is absolute.
+      */
+    private system action IsPathAbsoluteNative(text path) returns boolean
+
+    /*
+     * Make path seprators in a path consistent. For example, if the path
+     * separator on a system is '/', the following path will be changed as
+     * such:
+     *
+     * '\Users\jeff\Music'
+     *
+     * becomes
+     * '/Users/jeff/Music'
+     */
+    private system action FixPathSeparatorsNative(text path) returns text
+    
+    /*
+        Returns true if the set path is relative. A "relative" path is
+        a path that does not refer to an exact location--that is, what it
+        refers to depends on the current directory our application is in.
+        As an example, the path
+
+        ./hello.txt
+
+        is relative, as is
+
+        foo.txt
+
+        as these both refer to files in the current directory. In addition, the
+        path
+
+        images/bar.png
+
+        is also relative, as it refers to a file in the "images" directory
+        under the current directory.
+
+        If a path is not relative, it is absolute. For a description of absolute
+        paths, see the IsPathAbsolute() action in this class.
+
+        Attribute: Returns true if the path is relative; false otherwise.
+        Attribute: Example
+        use Libraries.System.Path
+
+        Path p
+        p:SetRelativePath("./hello.txt")
+        output p:IsPathRelative() // willoutput  "true", as we called SetRelativePath
+     */
+    action IsPathRelative() returns boolean
+        if path = ""
+            InvalidPathError e
+            e:SetErrorMessage("InvalidPathError: There is no path set in this instance of Path. Call either SetRelativePath() or SetAbsolutePath() first.")
+            alert(e)
+        end
+        
+        return not IsPathAbsoluteNative(path)
+    end
+
+    /*
+        Returns true if the set path is absolute. This action will raise an
+        InvalidPathError if this instance of "Path" does not have a set path
+        using either the SetPathAbsolute() or SetPathRelative() action.
+
+        An "absolute" path is
+        a path that refers to an exact location on disk--that is, what the path
+        refers to is independent of the current directory. As an example,
+
+        /hello.txt
+
+        is an absolute path, as on UNIX systems, it refers to a file under the
+        root of the hard disk, outside of any particular directory. In addition,
+        the path
+
+        C:\Program Files
+
+        is also absolute, as it refers to the "Program Files" directory on the
+        "C" drive in Windows. If we were to write the path
+
+        Program Files
+
+        this would refer to the "Program Files" in the current directory, which
+        could be on any drive, not necessarily just "C."
+
+        If a path is not absolute, it is relative. For a description of relative
+        paths, see the IsPathRelative() action in this class.
+
+        Attribute: Returns true if the path is absolute; false otherwise.
+        Attribute: Example
+        use Libraries.System.Path
+
+        Path p
+        p:SetAbsolutePath("C:\Windows")
+        output p:IsPathAbsolute() // willoutput  "true", as we called SetAbsolutePath
+
+        p:SetAbsolutePath("/Users/jeff") // on Mac and Unix/Linux systems, '/' means root of file system.
+        output p:IsPathAbsolute() // willoutput  "true", as we called SetAsolutePath
+     */
+    action IsPathAbsolute() returns boolean
+        if path = ""
+            InvalidPathError e
+            e:SetErrorMessage("InvalidPathError: There is no path set in this instance of Path. Call either SetRelativePath() or SetAbsolutePath() first.")
+            alert(e)
+        end
+
+        return not IsPathRelative()
+    end
+
+    /*
+        Set an absolute path. See IsAbsolutePath() for an explanation of absolute paths.
+        If the given path is not absolute, an InvalidPathError will be raised.
+
+        Attribute: Parameter path the path to set
+        Attribute: Example
+        use Libraries.System.Path
+
+        Path p
+        p:SetAbsolutePath("C:\Windows")
+        p:SetAbsolutePath("/Users/jeff") // on Mac and Unix/Linux systems, '/' means root of file system.
+
+     */
+    action SetAbsolutePath(text path)
+        path = me:FixPathSeparatorsNative(path)
+        if not IsPathAbsoluteNative(path)
+            InvalidPathError e
+            e:SetErrorMessage("InvalidPathError: The given path '" + path + "' is not an absolute path. Please see the 'Path' class documentation for more information.")
+            alert(e)
+        end
+
+        me:path = path
+    end
+
+    /*
+        Set a relative path. See IsRelativePath() for an explanation of relative paths.
+        If the given path is not relative, an InvalidPathError will be raised.
+
+        Attribute: Parameter path the path to set
+        Attribute: Example
+        use Libraries.System.Path
+
+        Path p
+        p:SetRelativePath("./hello.txt") // in current directory
+        p:SetRelativePath("../../hello.txt") // go 2 directories up from our current directory
+        p:SetRelativePath("hello.txt") // in current directory
+     */
+    action SetRelativePath(text path)
+        path = me:FixPathSeparatorsNative(path)
+        if IsPathAbsoluteNative(path)
+            InvalidPathError e
+            e:SetErrorMessage("InvalidPathError: The given path '" + path + "' is not an absolute path. Please see the 'Path' class documentation for more information.")
+            alert(e)
+        end
+
+        me:path = path
+    end
+
+    /*
+        Get the set path. This may be either relative or absolute; to find out, use the IsPathRelative() and IsPathAbsolute() actions.
+
+        If no path is set, an InvalidPathError is thrown.
+
+        Attribute: Returns the absolute or relative path set for this instance of Path.
+        Attribute: Example
+        use Libraries.System.Path
+
+        Path p
+        p:SetRelativePath("./hello.txt")
+        output p:GetPath() // willoutput  "./hello.txt"
+
+        p:SetAbsolutePath("/Users/jeff")
+        output p:GetPath() // willoutput  "/Users/jeff"
+
+        p:SetAbsolutePath("C:\Windows\")
+        output p:GetPath() // willoutput  "C:\Windows\"
+     */
+    action GetPath() returns text
+        if path = ""
+            InvalidPathError e
+            e:SetErrorMessage("InvalidPathError: There is no path set in this instance of Path. Call either SetRelativePath() or SetAbsolutePath() first.")
+            alert(e)
+        end
+
+        return path
+    end
+end

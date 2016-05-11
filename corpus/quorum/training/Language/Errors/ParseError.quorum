@@ -1,0 +1,26 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+/*
+The ParseError class is an error or exception that is thrown when there is
+an error while parsing a string and converting it into another form.
+
+Attribute: Example
+
+use Libraries.Language.Errors.CastError
+class Main
+   action Main
+      check
+        text t = "1.4"
+        integer i = t:ParseInteger()
+      detect e is ParseError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+class ParseError is Error
+    on create
+        SetErrorMessage("Parse Error: An error occurred while parsing a text value.")
+    end
+end

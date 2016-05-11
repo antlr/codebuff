@@ -1,0 +1,26 @@
+package Libraries.Interface.Events
+
+use Libraries.Interface.Item3D
+
+/*
+The CollisionEvent3D class represents a collision between two objects in 3D
+space. When an Item3D object is involved in a collision, it can receive a
+CollisionEvent3D object which contains data about the other colliding Item3D.
+*/
+class CollisionEvent3D 
+    Item3D item = undefined
+
+    /*
+    This action will set the item that is passed by this object.
+    */
+    action SetItem(Item3D item3D)
+        item = item3D
+    end
+
+    /*
+    This action will return the colliding item contained in this object.
+    */
+    action GetItem returns Item3D
+        return item
+    end
+end

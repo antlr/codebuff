@@ -1,0 +1,134 @@
+package Libraries.Data.Formats
+
+use Libraries.System.File
+
+/*
+The DocumentTypeDefinitionEntity class represents an entity that has been 
+parsed from a document type definition. 
+
+Attribute: Example
+
+use Libraries.System.File
+use Libraries.Data.Formats
+
+// DTD Element example: <!ENTITY language "Quorum">
+DocumentTypeDefinitionEntity MyDTDEntity                
+MyDTDEntity:SetName("language")
+MyDTDEntity:SetValue("Quorum")
+
+text name = MyDTDEntity:GetName() // name will be "language"
+text value = MyDTDEntity:GetValue() // value will be "Quorum"
+*/
+
+
+class DocumentTypeDefinitionEntity
+    text entityName = ""
+    text entityValue = ""
+    File sourceDirectory
+
+    /*
+        This action gets the entity name.
+
+        Attribute: Returns The value of the entity name. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionEntity MyDTDEntity
+        MyDTDEntity:SetName("language")
+        text value = MyDTDEntity:GetName() // value will be "language"
+    */
+
+
+    public action GetName() returns text
+        return entityName
+    end
+
+    /*
+        This action sets the entity name to the given text value.
+
+        Attribute: Parameter name The value to set the entity name to. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionEntity MyDTDEntity
+        MyDTDEntity:SetName("language")
+    */
+
+
+    public action SetName(text name)
+        entityName = name:Trim()
+    end
+
+    /*
+        This action gets the entity value.
+
+        Attribute: Returns The value of the entity value. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionEntity MyDTDEntity
+        MyDTDEntity:SetValue("Quorum")
+        text value = MyDTDEntity:GetValue() // value will be "Quorum"
+    */
+
+
+    public action GetValue() returns text
+        return entityValue
+    end
+    
+    /*
+        This action gets the entity value.
+
+        Attribute: Returns The value of the entity value. 
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        DocumentTypeDefinitionEntity MyDTDEntity
+        MyDTDEntity:SetValue("Quorum")
+        //or
+        MyDTDEntity:SetValue("SYSTEM " + quote:GetDoubleQuote() + "entity.dtd" + quote:GetDoubleQuote())
+    */
+
+
+    public action SetValue(text value)
+        value = value:Trim()
+        if value:StartsWith("SYSTEM")
+            fileName = value:GetSubtext(6)
+            File entity
+            if sourceDirectory:Exists()
+                entity:SetWorkingDirectory(sourceDirectory:GetWorkingDirectory())
+            end
+
+            entity:SetPath(fileName:Trim())
+            //output entity:GetAbsolutePath()
+
+
+            if entity:Exists()
+                entityValue = entity:Read()
+            else
+                entityValue = ""
+            end
+        else
+            entityValue = value:Trim()
+        end
+    end
+
+    /*
+        This action sets the source directory for the document type definition. 
+        If the DTD uses external sources, they need to be in this directory.
+
+        Attribute: Parameter directory The directory of external sources.
+        
+        Attribute: Example
+        use Libraries.Data.Formats
+        
+        DocumentTypeDefinitionEntity MyDTDEntity
+        MyDTDEntity:SetSourceDirectory("C:\")
+        MyDTDEntity:SetValue("SYSTEM " + quote:GetDoubleQuote() + "entity.dtd" + quote:GetDoubleQuote())
+    */
+
+
+    public action SetSourceDirectory(text directory)
+        sourceDirectory:SetWorkingDirectory(directory)
+    end
+end

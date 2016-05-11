@@ -1,0 +1,53 @@
+package Libraries.Data.Formats
+
+/*
+Inheriting from the Attributes class provides a basic blueprint for a
+collection of Attributes.
+
+Attribute: Example
+
+use Libraries.Data.Formats
+
+class MyAttributes is Attributes
+    Array<Attribute> data
+
+    action GetName(integer index) returns text
+        //implementation goes here
+    end
+end
+*/
+
+
+class Attributes 
+
+   /*
+        This action gets the name of the Attribute at the given location in the 
+        collection of Attributes. 
+
+        Attribute: Parameter index The index or location of the wanted attribute.
+
+        Attribute: Returns The name of the attribute at the indexed location.
+    */
+
+
+    blueprint action GetName(integer index) returns text
+
+    /*
+        This action gets the value of the Attribute at the given location in the 
+        collection of Attributes. 
+
+        Attribute: Parameter index The index or location of the wanted attribute.
+
+        Attribute: Returns The value of the attribute at the indexed location.
+    */
+
+blueprint action GetValue(integer index) returns text
+
+    /*
+        This action gets the size of the collection of Attributes.
+
+        Attribute: Return The size of the collection of Attributes.
+    */
+
+blueprint action GetSize returns integer
+end

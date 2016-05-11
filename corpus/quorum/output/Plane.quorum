@@ -1,0 +1,215 @@
+package Libraries.Compute
+
+use Libraries.Compute.Vector3
+
+/*
+This class represents a plane. A plane is defined as a unit length normal and the
+distance from the origin.
+*/
+
+
+class Plane
+    public constant text onPlane = "OnPlane"
+    public constant text back = "Back"
+    public constant text front = "Front"
+    Vector3 normal
+    number d = 0
+
+    /*
+    This action sets the plane's normal vector and distance form the origin.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter normalVector The normal vector of the plane
+    Attribute: Parameter distanceFromOrigin The distance of the plane from the origin
+    */
+
+
+    action Set(Vector3 normalVector, number distanceFromOrigin)
+        normal:Set(normalVector)
+        normal:Normalize()
+        d = distanceFromOrigin
+    end
+
+    /*
+    This action sets the plane based on the passed normal vector and a point
+    on the plane.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter normalVector The normal vector of the plane
+    Attribute: Parameter point The point on the plane
+    */
+
+
+    action Set(Vector3 normalVector, Vector3 point)
+        normal:Set(normalVector)
+        normal:Normalize()
+        d = -1 * normal:DotProduct(point)
+    end
+
+    /*
+    This action sets the plane given the three passed points that are on the
+    plane. The normal vector of the plane is calculated as the cross-product
+    between (point1 - point2) x (point2 - point3).
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter point1 The first point
+    Attribute: Parameter point2 The second point
+    Attribute: Parameter point3 The thrid point
+    */
+
+
+    action Set(Vector3 point1, Vector3 point2, Vector3 point3)
+        Vector3 tempVector
+        tempVector:Set(point1)
+        tempVector:Subtract(point2)
+        Vector3 tempVector2
+        tempVector2:Set(point2)
+        tempVector2:Subtract(point3)
+        tempVector:CrossProduct(tempVector2)
+        normal:Set(tempVector)
+        normal:Normalize()
+        d = -1 * point1:DotProduct(normal)
+    end
+
+    /*
+    This action sets the plane with the given normal vector from the passed x,
+    y, and z components and the passed distance from the origin.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter normalX The x component of the normal vector
+    Attribute: Parameter normalY The y component of the normal vector
+    Attribute: Parameter normalZ The z component of the normal vector
+    Attribute: Parameter distanceFromOrigin The distance from the origin
+    */
+
+
+    action Set(number normalX, number normalY, number normalZ, number distanceFromOrigin)
+        normal:Set(normalX, normalY, normalZ)
+        d = distanceFromOrigin
+    end
+
+    /*
+    This action sets the plane using the normal vector and distance from the
+    origin from the passed Plane object.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter plane The plane to use to set this plane
+    */
+
+
+    action Set(Plane plane)
+        normal:Set(plane:GetNormal())
+        d = plane:GetDistance()
+    end
+
+    /*
+    This action returns the shortest distance from the plane and the passed
+    point.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter point The point to calculate the distance form the plane
+
+    Attribute: Returns the shortest distance between the point and plane
+    */
+
+
+    action Distance(Vector3 point) returns number
+        return normal:DotProduct(point) + d
+    end
+
+    /*
+    This action returns which side the given point lies relative to the plane
+    and its normal. "OnPlane" is returned if the point lies on the plane.
+    "Front" is the side of the plane to which the normal points. "Back" is the
+    side of the plane that is not the front.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter point The point to test
+    
+    Attribute: Returns which side of the plane the point is on
+    */
+
+
+    action TestPoint(Vector3 point) returns text
+        return TestPoint(point:GetX(), point:GetY(), point:GetZ())
+    end
+
+   /*
+    This action returns which side the given point lies relative to the plane
+    and its normal. "OnPlane" is returned if the point lies on the plane.
+    "Front" is the side of the plane to which the normal points. "Back" is the
+    side of the plane that is not the front.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter x The x coordinate of the point to test
+    Attribute: Parameter y The y coordinate of the point to test
+    Attribute: Parameter z The z coordinate of the point to test
+    
+    Attribute: Returns which side of the plane the point is on
+    */
+
+
+    action TestPoint(number x, number y, number z) returns text
+        number distance = normal:DotProduct(x, y, z) + d
+        if distance = 0
+            return onPlane
+        elseif distance < 0
+            return back
+        else
+            return front
+        end
+    end
+
+    /*
+    This action determines whether the plane is facing the passed direction
+    vector. The direction vector can be thought of as the direction a camera
+    looks in. The plane is front facing (and the action will return true) if the
+    front side of the plane determined by the normal vector faces the camera.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter direction The direction the camera looks in
+
+    Attribute: Returns true if the plane is front facing, false if not
+    */
+
+
+    action IsFrontFacing(Vector3 direction) returns boolean
+        number dot = normal:DotProduct(direction)
+        return dot <= 0
+    end
+
+    /*
+    This action returns the normal vector of the plane.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns The normal vector of the plane
+    */
+
+
+    action GetNormal returns Vector3
+        return normal
+    end
+
+    /*
+    This action returns the distance of the plane from the origin.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns the distance of the plane from the origin
+    */
+
+
+    action GetDistance returns number
+        return d
+    end
+end

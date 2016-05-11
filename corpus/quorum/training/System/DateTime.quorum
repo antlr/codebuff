@@ -1,0 +1,176 @@
+package Libraries.System
+
+/*
+The DateTime class is used to gather information about date and time on the system,
+or from a specified date/time. On creation, this object will return information
+pertaining to the current date and time as reported by the system. This class can
+also be used to gather information about a different date and time using the standard
+epoch time and the SetEpochTime() action. If SetEpochTime() is not called,
+information about the current date and time will be returned by the various functions.
+
+Attribute: Example
+use Libraries.System.DateTime
+
+class Main
+    action main
+        DateTime datetime
+        // Print the current date and time.
+        output datetime:GetMonth() + " " + datetime:GetDayOfMonth() + ", " + datetime:GetYear() + " " datetime:GetHour() + ":" + datetime:GetMinutes()
+    end
+*/
+class DateTime    
+    /*
+    This action returns the year represented by this DateTime object.
+    
+    Attribute: Returns the year
+    
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetYear()
+    */
+    system action GetYear() returns integer
+
+    /*
+    This action returns the month represented by this DateTime object. 
+    The month is in the range 1 to 12, inclusive.
+    
+    Attribute: Returns the month
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetMonth()
+    */
+    system action GetMonth() returns integer
+
+    /*
+    This action returns the day of the month represented by this DateTime object. The day is in
+    the range 1 to 31, inclusive.
+    
+    Attribute: Returns the day of the month
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetDayOfMonth()
+    */
+    system action GetDayOfMonth() returns integer
+
+    /*
+    This action returns the day of the week represented by this DateTime object. The day is in the
+    range 1 to 7, inclusive.
+    
+    Attribute: Returns the day of the week
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetDayOfWeek()
+    */
+    system action GetDayOfWeek() returns integer
+
+    /*
+    This action returns the hour represented by this DateTime object. The hour is in the
+    range 0 to 23, where 0-12 represent the times 12 AM to 12 PM, and
+    13-23 represent 1 PM to 11 PM.
+    
+    Attribute: Returns the hour
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetHour()
+    */
+    system action GetHour() returns integer
+
+    /*
+    This action returns the minute represented by this DateTime object. The minute is in the
+    range 0 to 59, inclusive.
+    
+    Attribute: Returns the minute
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetMinute()
+    */
+    system action GetMinute() returns integer
+
+    /*
+    This action returns the second represented by this DateTime object. The second is in the
+    range 0 to 59, inclusive.
+    
+    Attribute: Returns the second
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetSecond()
+    */
+    system action GetSecond() returns integer
+
+    /*
+    This action returns the timezone of the system. The timezone is reported as
+    an offset of UTC. For example, Central Standard Time in the United States is UTC - 6.
+    
+    Attribute: Returns the timezone offset from UTC.
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetTimeZone()
+    */
+    system action GetTimeZone() returns integer
+    
+    /*
+    This action returns whether or not the current system is observing daylight savings time.
+    
+    Attribute: Returns whether or no daylight savings time is being observed
+
+    Attribute: Example
+    DateTime datetime
+    boolean dst = datetime:IsDaylightSavings()
+
+    if dst
+        output "Spring forward"
+    else
+        output "Fall back"
+    end
+    */
+    system action IsDaylightSavings() returns boolean
+
+    /*
+    This action returns the elapsed milliseconds since the epoch, January 1,
+    1970 00:00:00 GMT, as reported by the system. This time can be used to
+    store a date and use it at a later time to retrieve information such as the hour.
+    This action will always return the current epoch time, regardless of whether or not
+    SetEpochTime() has been called.
+    
+    Attribute: Returns Returns the elapsed time since the epoch as reported by the system.
+
+    Attribute: Example
+    DateTime datetime
+    output datetime:GetEpochTime()
+    */
+    system action GetEpochTime() returns number
+
+    /*
+    This action sets the date/time to be represented by this DateTime instance
+    to the specified epochTime value. Once this function is called, this DateTime
+    instance cannot be used to get the current date/time.
+
+    Attribute: Parameter epochTime - the number of milliseconds that have elapsed since the epoch,
+    returned by GetEpochTime().
+
+    Attribute: Example
+    DateTime datetime
+    // Set this instance to the exact time of the epoch.
+    datetime:SetEpochTime(0)
+    output datetime:GetMonth() // will return 1 for January
+    */
+    system action SetEpochTime(number epochTime)
+
+    /*
+    This action sets the time zone offset to be used when returning various date/time
+    information to the user.
+    
+    Attribute: Example
+    DateTime datetime
+    datetime:SetTimeZone(0) // set time zone to UTC.
+    output "The current UTC hour is " + datetime:GetHour()
+    */
+    system action SetTimeZone(integer timeZoneOffset)
+end

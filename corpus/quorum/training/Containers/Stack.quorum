@@ -1,0 +1,239 @@
+package Libraries.Containers
+
+use Libraries.Containers.Blueprints.StackBlueprint
+use Libraries.Containers.List
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Support.ListNode
+
+/*
+The Stack class is a data structure that stores items as if you were "stacking"
+ them. It adds items to the top of the Stack, and when an item is requested to 
+be removed, the top item is pulled from the Stack (Last In First Out). The Stack
+ class is similar to the List class.
+
+Attribute: Example
+
+use Libraries.Containers.Stack
+class Main
+   action Main
+      //make the queue
+      Stack<integer> myStack
+      //add a value
+      myStack:Push(12)
+      myStack:Push(13)
+      myStack:Push(14)
+      //remove the top item (14)
+      integer value = myStack:Pop()
+   end
+end
+*/
+class Stack<Type> is StackBlueprint<Type>
+    List<Type> list
+
+    /*
+        This action adds a value at the end of the stack.
+
+        Attribute: Parameter value The value to be added to the top of the stack.
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Add(12)
+    */
+    action Add(Type value)
+        list:AddToFront(value)
+    end
+
+    /*
+        This action copies an object and returns the copy. 
+
+        Attribute: Returns Returns a copy of this object.
+
+        Attribute: Example
+    use Libraries.Containers.Stack
+    Stack<integer> myStack
+    Stack<integer> copyStack
+    myStack:Add(12)
+    Object o = myStack:Copy()
+    copyStack = cast(Stack<integer>, o)
+    */
+    action Copy returns Object
+
+        Stack<Type> newStack
+
+        Object o = list:Copy()
+        List<Type> newList = cast(List<Type>, o)
+        repeat until newList:IsEmpty()
+            newStack:Push(newList:RemoveFromEnd())
+        end
+
+        return newStack
+    end
+
+    /*
+        This action empty's the stack, clearing out all of the items contained within it. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Add(12)
+        myStack:Empty() //the item we added is now gone
+    */
+    action Empty
+        list:Empty()
+    end
+
+    /*
+        This action gets an iterator for the object and returns that iterator. 
+
+        Attribute: Returns Returns the iterator for an object. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        use Libraries.Containers.Blueprints.Iterator
+        Stack<integer> myStack
+        myStack:Add(12)
+        myStack:Add(13)
+        myStack:Add(12)
+        Iterator<integer> StackIterator = myStack:GetIterator()
+    */
+    action GetIterator() returns Iterator<Type>
+        return list:GetIterator()
+    end
+
+    /*
+        This action retrieves the number of elements or nodes in a stack. 
+
+        Attribute: Returns Returns an integer value representing the size of the stack.
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Add(12)
+        integer size = myStack:GetSize()
+    */
+    action GetSize returns integer
+        return list:GetSize()
+    end
+
+    /*
+        This action determines if an addable object contains a certain item. 
+
+        Attribute: Parameter value The item to find in the Addable object.
+
+        Attribute: Returns Returns true if the item was in the Addable object and false if it was not. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Add(12)
+        myStack:Add(1)
+        boolean hasItem = myStack:Has(12)
+    */
+    action Has(Type value) returns boolean
+        return list:Has(value)
+    end
+
+    /*
+        This action returns a boolean value, true if the container is empty and false if it contains any items. 
+
+        Attribute: Returns Returns true when the container is empty and false when it is not. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        if(myStack:IsEmpty())
+            output "The stack is empty."
+        end
+    */
+    action IsEmpty returns boolean
+        return list:IsEmpty()
+    end
+
+    /*
+        This action removes the first occurrence of an item that is found in the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Add(43)
+        myStack:Add(13)
+        myStack:Add(43)
+        boolean removed = myStack:Remove(43)
+    */
+    action Remove(Type value) returns boolean
+        return list:Remove(value)
+    end
+
+    /*
+        This action removes all occurrences of an item from the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Add(43)
+        myStack:Add(13)
+        myStack:Add(43)
+        boolean removed = myStack:RemoveAll(43)
+    */
+    action RemoveAll(Type value) returns boolean
+        return list:RemoveAll(value)
+    end
+
+    /*
+        This action gets the item at the top of the stack(the item will remain in the stack). 
+
+        Attribute: Returns The item at the top of the stack.
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Push(1)
+        myStack:Push(2)
+        integer result = myStack:Pop()
+        integer topResult = myStack:Peek()
+    */
+    action Peek() returns Type
+        return list:GetFromFront()
+    end
+
+    /*
+        This action removes the item at the top of the stack. 
+
+        Attribute: Returns The item at the top of the stack. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Push(1)
+        myStack:Push(2)
+        integer result = myStack:Pop()
+    */
+    action Pop() returns Type
+        return list:RemoveFromFront()
+    end
+
+    /*
+        This action adds an item to the top of the stack.
+
+        Attribute: Parameter value The item to the top of the stack. 
+
+        Attribute: Example
+        use Libraries.Containers.Stack
+        Stack<integer> myStack
+        myStack:Push(1)
+        myStack:Push(2)
+    */
+    action Push(Type value)
+        list:AddToFront(value)
+    end
+end
+

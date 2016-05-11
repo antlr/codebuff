@@ -1,0 +1,38 @@
+package Libraries.Interface.Events
+
+/*
+The TouchListener class is used to listen for and react to TouchEvents where
+the user has begun touching or stopped touching the screen, or is moving a
+finger across the screen. To use a TouchListener in a program, users should make
+a new class that inherits from it and overrides TouchBegan, TouchFinished, or
+TouchContinued.
+*/
+class TouchListener 
+    
+    /*
+    This action is used to respond to a TouchEvent where the user's finger has
+    just touched the screen.
+    */
+    action BeganTouch(TouchEvent event)
+
+    end
+
+    /*
+    This action is used to respond to a TouchEvent where the user's finger has
+    just been lifted off of the screen.
+    */
+    action EndedTouch(TouchEvent event)
+
+    end
+
+    /*
+    This action is used to respond to a TouchEvent where the user's finger is
+    pressed against the screen. This action can be triggered by either the user
+    keeping their finger stationary on the screen, or moving it across the
+    screen.
+    */
+    action ContinuedTouch(TouchEvent event)
+
+    end
+
+end

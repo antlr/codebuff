@@ -1,0 +1,69 @@
+package Libraries.Data.Formats
+
+/*
+Inheriting from the Element class provides a basic blueprint for a
+XML element.
+
+Attribute: Example
+
+use Libraries.Data.Formats
+
+class MyElement is Element
+    //implementation goes here
+end
+*/
+
+
+class Element
+    AttributesImplementation attributes
+    text name = ""
+    text value = ""
+
+    /*
+        This action gets the name of the element.
+
+        Attribute: Returns The name of the element.
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        Element bookElement
+        text value = bookElement:GetName()
+    */
+
+
+    action GetName returns text
+        return name
+    end
+
+    /*
+        This action gets the value of the element.
+
+        Attribute: Returns The value of the element.
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        Element bookElement
+        text value = bookElement:GetValue()
+    */
+
+
+    action GetValue returns text
+        return value
+    end
+
+    /*
+        This action gets the attributes of the element.
+
+        Attribute: Returns The AttributesImplementation for the element.
+
+        Attribute: Example
+        use Libraries.Data.Formats
+        Element bookElement
+        AttributesImplementation value = bookElement:GetAttributes()
+    */
+
+
+    action GetAttributes returns AttributesImplementation
+        return attributes
+    end
+end

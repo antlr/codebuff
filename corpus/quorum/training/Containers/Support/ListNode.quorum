@@ -1,0 +1,117 @@
+package Libraries.Containers.Support
+
+/*
+
+The ListNode class is a support class for List data structure.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Support.ListNode
+
+class Main
+    action main
+        ListNode<integer> node
+        node:Set(29)
+    end
+end
+*/
+class ListNode <Type>
+    public ListNode<Type> next = undefined
+    public ListNode<Type> previous = undefined
+    public Type value = undefined
+
+
+    /*
+        This action gets the next node. 
+
+        Attribute: Returns The next node of type ListNode<Type>
+
+        Attribute: Example
+        use Libraries.Containers.Support.ListNode
+        ListNode<integer> node
+        node:GetNext()
+
+    */
+    action GetNext returns ListNode<Type>
+        return next
+    end
+
+
+    /*
+        This action gets the previous node. 
+
+        Attribute: Returns The previous node of type ListNode<Type>
+
+        Attribute: Example
+        use Libraries.Containers.Support.ListNode
+        ListNode<integer> node
+        node:GetPrevious()
+
+    */
+    action GetPrevious returns ListNode<Type>
+        return previous
+    end
+
+    /*
+        This action gets the value stored in the node. 
+
+        Attribute: Returns The value stored in the node.
+
+        Attribute: Example
+        use Libraries.Containers.Support.ListNode
+        ListNode<integer> node
+        integer val = node:GetValue()
+
+    */
+    action GetValue returns Type
+        return value
+    end
+
+    /*
+        This action sets the next node. 
+
+        Attribute: Parameter node The next node in the list.
+
+        Attribute: Example
+        use Libraries.Containers.Support.ListNode
+        ListNode<integer> node
+        ListNode<integer> nextNode
+        nextNode:SetValue(30)
+        node:SetNext(nextNode)
+    */
+    action SetNext(ListNode<Type> node)
+        next = node
+    end
+
+    /*
+        This action sets the previous node. 
+
+        Attribute: Parameter node The previous node in the list.
+
+        Attribute: Example
+        use Libraries.Containers.Support.ListNode
+        ListNode<integer> node
+        ListNode<integer> prevNode
+        prevNode:SetValue(28)
+        node:SetPrevious(prevNode)
+    */
+    action SetPrevious(ListNode<Type> node)
+        previous = node
+    end
+
+    /*
+        This action sets the value stored in the node. 
+
+        Attribute: Parameter value The value to be stored by this node.
+
+        Attribute: Example
+        use Libraries.Containers.Support.ListNode
+        ListNode<integer> node
+        node:SetValue(29)
+    */
+    action SetValue(Type value)
+        me:value = value
+    end
+end

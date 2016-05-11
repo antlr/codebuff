@@ -1,0 +1,89 @@
+package Libraries.Containers.Blueprints
+
+/*
+
+Inheriting from the Indexed class provides a basic blueprint for indexed
+objects.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.Indexed
+
+class MyIndexedClass<Type> is Indexed<Type>
+    action Add(integer location, Type value)
+        //implement here
+    end
+end
+*/
+
+
+class Indexed<Type>
+
+    /*
+        This action adds a value at a location in the indexed object. 
+
+        Attribute: Parameter value The item to be added to the indexed object.
+        Attribute: Parameter location The index or location the value will be stored at. 
+    */
+
+
+    blueprint action Add(integer location, Type value)
+
+    /*
+        This action gets the item at a given location in an List.
+
+
+        Attribute: Parameter location The index or location the value is located at. 
+
+        Attribute: Returns The item at the given location.
+    */
+
+    blueprint action Get(integer location) returns Type
+
+    /*
+        This action gets the first occurrence of the item and returns its location. 
+
+
+        Attribute: Parameter value The item being searched for.
+
+        Attribute: Returns The location of the first occurrence of the item. 
+    */
+
+
+    blueprint action GetFirstLocation(Type value) returns integer
+
+    /*
+        This action gets the last occurrence of the item and returns its location. 
+
+        Attribute: Parameter value The item being searched for.
+
+        Attribute: Returns The location of the last occurrence of the item. 
+    */
+
+
+    blueprint action GetLastLocation(Type value) returns integer
+
+    /*
+        This action removes an item from an indexed object and returns that item. 
+
+        Attribute: Parameter location The index or location of the item to remove. 
+
+        Attribute: Returns The item that was removed from the indexed object. 
+    */
+
+
+    blueprint action RemoveAt(integer location) returns Type
+
+    /*
+        This action sets the item at a given location in the indexed object to a new item. 
+
+        Attribute: Parameter value The item to be added to the indexed object. 
+        Attribute: Parameter location The index or location the value will be stored at. 
+    */
+
+
+    blueprint action Set(integer location, Type value)
+
+end

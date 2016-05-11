@@ -1,0 +1,39 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.Iterator
+
+/*
+
+Inheriting from the KeyedIterative class provides a basic blueprint for getting
+iterators for keyed objects.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.KeyedIterative
+
+class MyHashTable<Key, Value> is KeyedIterative<Key, Value>
+    action GetKeyIterator returns Iterator<Key>
+        //implement here
+    end
+end
+*/
+class KeyedIterative<Key, Value> 
+
+    /*
+        This action gets an iterator that iterates over all the keys in the
+        keyed object.
+
+        Attribute: Returns The iterator of keys. 
+    */
+    blueprint action GetKeyIterator() returns Iterator<Key>
+
+    /*
+        This action gets an iterator that iterates over all the values in the
+        keyed object.
+
+        Attribute: Returns The iterator of values.
+    */
+    blueprint action GetValueIterator() returns Iterator<Value>
+end

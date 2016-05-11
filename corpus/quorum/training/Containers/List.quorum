@@ -1,0 +1,696 @@
+package Libraries.Containers
+
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Blueprints.ListBlueprint
+use Libraries.Containers.Support.ListNode
+use Libraries.Language.Errors.InvalidLocationError
+use Libraries.Containers.Support.ListIterator
+use Libraries.Containers.Blueprints.Sortable
+
+/*
+The List class is a data structure that stores items in nodes. Each of these
+nodes stores an item and a reference to the next and previous node in the
+sequence. Because of this, the list data structure does not need to re-size
+itself like an Array would when the structure is filled. One downside to this
+is, the nodes can only be accessed through the first or last nodes. Some basic
+examples and explanations of Lists can be found below.
+
+Attribute: Example
+
+use Libraries.Containers.List
+class Main
+   action Main
+      //make the list
+      List<integer> myList
+      //add a value
+      myList:Add(12)
+      //get it back
+      integer value = myList:GetFromFront()
+   end
+end
+*/
+class List <Type> is ListBlueprint<Type>
+    ListNode<Type> head = undefined
+    ListNode<Type> tail = undefined
+    integer invalidIndex = -1
+    integer size = 0
+
+    /*
+        This action adds a value at the end of the list.
+
+        Attribute: Parameter value The value to be inserted at the back or last index of the linked list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(12)
+    */
+    action Add(Type value)
+        ListNode<Type> node
+        node:value = value
+        if head = undefined
+            head = node
+            tail = node
+        else
+            tail:next = node
+            node:previous = tail
+            tail = node
+        end
+        size = size + 1
+    end
+
+    /*
+        This action adds a value at a location in List. 
+
+        Attribute: Parameter value The item to be added to the List.
+        Attribute: Parameter location The index or location the value will be stored at. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(12, 0)
+    */ 
+    action Add(integer location, Type value)
+        ListNode<Type> current = head
+        ListNode<Type> node
+        node:value = value
+
+        if location < 0 or location > size
+            InvalidLocationError error
+            error:SetErrorMessage("The location: " + location + " is not valid.")
+            alert(error)
+        elseif location = size //it's just a tail add, do it fast
+            AddToEnd(value)
+            return now
+        end
+
+
+        integer i = 0
+        repeat while current not= undefined
+            if i = location
+                if current = head //first element
+                    node:next = current
+                    current:previous = node
+                    head = node
+                else
+                    ListNode<Type> prev = current:previous
+                    prev:next = node
+                    node:previous = prev
+                    node:next = current
+                    current:previous = node
+                end
+                size = size + 1
+                return now
+            end
+            current = current:next
+            i = i + 1
+        end
+    end
+
+    /*
+        This action adds an item to the end of the list.
+
+        Attribute: Parameter value The item to be added to the list. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:AddToEnd(12)
+    */
+    action AddToEnd(Type value)
+        if tail = undefined
+            Add(value)
+            return now
+        else
+            ListNode<Type> node
+            node:value = value
+
+            tail:next = node
+            node:previous = tail
+            tail = node
+            size = size + 1
+        end
+    end
+
+    /*
+        This action adds an item to the front of the list.
+
+        Attribute: Parameter value The item to be added to the list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:AddToFront(12)
+    */
+    action AddToFront(Type value)
+        if head = undefined
+            Add(value)
+            return now
+        else
+            ListNode<Type> node
+            node:value = value
+
+            head:previous = node
+            node:next = head
+            head = node
+            size = size + 1
+        end
+    end
+
+    /*
+        This action copies an object and returns the copy. 
+
+        Attribute: Returns Returns a copy of this object.
+
+        Attribute: Example
+    use Libraries.Containers.List
+    List<integer> myList
+    List<integer> copyList
+    myList:Add(12)
+    Object o = myList:Copy()
+    copyList = cast(List<integer>, o)
+    */
+    action Copy returns Object
+        List<Type> newList
+
+        ListNode<Type> current = head
+
+        repeat until current = undefined
+            newList:Add(current:value)
+            current = current:next
+        end
+
+        return newList
+    end
+
+    /*
+        This action empty's the list, clearing out all of the items contained within it. 
+
+        Attribute: Example
+    use Libraries.Containers.List
+    List<integer> myList
+    myList:Add(12)
+    myList:Empty() //the item we added is now gone
+    */
+    action Empty
+        size = 0
+        head = undefined
+        tail = undefined
+    end
+
+    /*
+        This action gets the item at a given location in an List.
+
+
+        Attribute: Parameter location The index or location the value is located at. 
+
+        Attribute: Returns The item at the given location.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(12)
+        myList:Add(13)
+        integer value = myList:Get(0)
+    */
+    action Get(integer location) returns Type
+        Type result = undefined
+        if location < 0 or location >= size
+            InvalidLocationError error
+            error:SetErrorMessage("The location: " + location + " is not valid.")
+            alert(error)
+        else
+            ListNode<Type> current = head
+            //technically, this would be faster if we checked if
+            //location is greater than size/2, then pulled from the tail
+            repeat location times
+                current = current:next
+            end
+            result = current:value
+        end
+        return result
+    end
+
+    /*
+        This action gets the first occurrence of the item and returns its location. 
+
+
+        Attribute: Parameter value The item being searched for.
+
+        Attribute: Returns The location of the first occurrence of the item. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(12)
+        myList:Add(13)
+        myList:Add(12)
+        integer index = myList:GetFirstLocation(12)
+    */
+    action GetFirstLocation(Type value) returns integer
+        boolean found = false
+        integer i = 0
+        ListNode<Type> current = head
+        repeat while current not= undefined
+            Type type = current:value
+            if value:Equals(type)
+                current = undefined
+                found = true
+            else
+                current = current:next
+                i = i + 1
+            end
+        end
+
+        if found
+            return i
+        else
+            return invalidIndex
+        end
+    end
+    
+    /*
+        This action gets the last occurrence of the item and returns its location. 
+
+
+        Attribute: Parameter value The item being searched for.
+
+        Attribute: Returns The location of the last occurrence of the item. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(12)
+        myList:Add(13)
+        myList:Add(12)
+        integer index = myList:GetLastLocation(12)
+    */
+    action GetLastLocation(Type value) returns integer
+        boolean found = false
+        integer i = size - 1
+        ListNode<Type> current = tail
+        repeat while current not= undefined
+            Type type = current:value
+            if value:Equals(type)
+                current = undefined
+                found = true
+            else
+                current = current:previous
+                i = i - 1
+            end
+        end
+
+        if found 
+            return i
+        else
+            return invalidIndex
+        end
+    end
+
+    /*
+        This action gets the item at the front of the list(the item will remain in the list). 
+
+        Attribute: Returns The item at the front of the list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(4)
+        myList:Add(13)
+        myList:Add(12)
+        integer value = myList:GetFromFront()
+    */
+    action GetFromFront returns Type
+        if head not= undefined
+            return head:value
+        end
+
+        return undefined
+    end
+
+    /*
+        This action gets the item at the end of the list(the item will remain in the list). 
+
+        Attribute: Returns The item at the end of the list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(4)
+        myList:Add(13)
+        myList:Add(12)
+        integer value = myList:GetFromEnd()
+    */
+    action GetFromEnd returns Type
+        if tail not= undefined
+            return tail:value
+        end
+
+        return undefined
+    end
+
+    /*
+        This action gets an iterator for the object and returns that iterator. 
+
+        Attribute: Returns Returns the iterator for an object. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        use Libraries.Containers.Blueprints.Iterator
+        List<integer> myList
+        myList:Add(12)
+        myList:Add(13)
+        myList:Add(12)
+        Iterator<integer> listIterator = myList:GetIterator()
+    */
+    action GetIterator() returns Iterator<Type>
+        ListIterator<Type> iterator
+        iterator:Set(me, head, tail)
+
+        return iterator
+    end
+
+    /*
+        This action retrieves the number of elements or nodes in a list. 
+
+        Attribute: Returns Returns an integer value representing the size of the list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(12)
+        integer size = myList:GetSize()
+    */
+    action GetSize returns integer
+        return size
+    end
+
+
+    /*
+        This action determines if an addable object contains a certain item. 
+
+        Attribute: Parameter value The item to find in the Addable object.
+
+        Attribute: Returns Returns true if the item was in the Addable object and false if it was not. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(12)
+        myList:Add(1)
+        boolean hasItem = myList:Has(12)
+    */
+    action Has(Type value) returns boolean
+        ListNode<Type> current = head
+        repeat while current not= undefined
+            Type type = current:value
+            if value:Equals(type)
+                return true
+            end
+            current = current:next
+        end
+        return false
+    end
+
+    /*
+        This action returns a boolean value, true if the container is empty and false if it contains any items. 
+
+        Attribute: Returns Returns true when the container is empty and false when it is not. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        if myList:IsEmpty()
+            output "List is empty."
+        end
+    */
+    action IsEmpty returns boolean
+        return size = 0
+    end
+
+    /*
+        This action removes the first occurrence of an item that is found in the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(43)
+        myList:Add(13)
+        myList:Add(43)
+        boolean removed = myList:Remove(43)
+    */
+    action Remove(Type value) returns boolean
+        ListNode<Type> current = head
+        repeat while current not= undefined
+            Type type = current:value
+            if value:Equals(type)
+                RemoveNode(current)
+                return true
+            end
+            current = current:next
+        end
+        return false
+    end
+
+    /*
+        This action removes all occurrences of an item from the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(43)
+        myList:Add(13)
+        myList:Add(43)
+        boolean removed = myList:RemoveAll(43)
+    */
+    action RemoveAll(Type value) returns boolean
+        ListNode<Type> current = head
+        boolean wasRemoved = false
+        repeat while current not= undefined
+            Type type = current:value
+            if value:Equals(type)
+                RemoveNode(current)
+                wasRemoved = true
+            end
+            current = current:next
+        end
+        return wasRemoved
+    end
+
+    private action RemoveNode(ListNode<Type> node)
+        if node = head and GetSize() = 1
+            head = undefined
+            tail = undefined
+        elseif node = head
+            node:next = head:next
+            ListNode<Type> myNext = head:next
+            myNext:previous = undefined
+            head = myNext
+        elseif node = tail
+            ListNode<Type> prev = tail:previous
+            prev:next = undefined
+            tail = prev
+        else
+            ListNode<Type> prev = node:previous
+            ListNode<Type> myNext = node:next
+            prev:next = myNext
+            myNext:previous = prev
+        end
+
+        size = size - 1
+    end
+
+    private action GetNodeAtLocation(integer location) returns ListNode<Type>
+        ListNode<Type> result = undefined
+        if location < 0 or location >= size
+            InvalidLocationError error
+            error:SetErrorMessage("The location: " + location + " is not valid.")
+            alert(error)
+        else
+            ListNode<Type> current = head
+            repeat location times
+                current = current:next
+            end
+            result = current
+        end
+        return result
+    end
+
+    private action GetFirstNode(Type value) returns ListNode<Type>
+        boolean found = false
+        integer i = 0
+        ListNode<Type> current = head
+        ListNode<Type> result = undefined
+        repeat while current not= undefined
+            Type type = current:value
+            integer hash = type:GetHashCode()
+            if value:GetHashCode() = hash
+                result = current
+                current = undefined
+                found = true
+            else
+                current = current:next
+                i = i + 1
+            end
+        end
+
+        if found
+            return result
+        else
+            return undefined
+        end
+    end
+
+    /*
+        This action removes an item from an list and returns that item. 
+
+        Attribute: Parameter location The index or location of the item to remove. 
+
+        Attribute: Returns The item that was removed from the list. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(43)
+        myList:Add(13)
+        myList:Add(43)
+        integer value = myList:RemoveAt(0)
+    */
+    action RemoveAt(integer location) returns Type
+        ListNode<Type> node = GetNodeAtLocation(location)
+        Type result = node:value
+        RemoveNode(node)
+        return result
+    end
+
+    /*
+        This action removes the item at the end of the list. 
+
+        Attribute: Returns The item at the end of the list. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(33)
+        myList:Add(13)
+        myList:Add(43)
+        integer removed = myList:RemoveFromEnd()
+    */
+    action RemoveFromEnd returns Type
+        if tail = undefined
+            return undefined
+        end
+
+        Type result = tail:value
+        RemoveNode(tail)
+        return result
+    end
+
+    /*
+        This action copies the list to an array data structure.
+
+        Attribute: Returns This returns an array of the list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myArray
+        myArray:Add(33)
+        myArray:Add(13)
+        myArray:Add(43)
+        myArray:Sort()
+    */
+    action CopyToArray returns Array<Type>
+        Array<Type> array
+        
+        Iterator<Type> it = me:GetIterator()
+        repeat while it:HasNext()
+            Type key = it:Next()
+            array:Add(key)
+        end
+        return array
+    end
+
+    /*
+        This action sorts the values of the array. The example below sorts an
+        array. Implementors may use any known sorting algorithm. Objects that
+        should be sorted in a custom fashion should override the default
+        Compare action in Libraries.Language.Object.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(33)
+        myList:Add(13)
+        myList:Add(43)
+        myList:Sort()
+    */
+    action Sort
+        Array<Type> array = CopyToArray()
+        array:Sort()
+
+        ListIterator<Type> iterator
+        iterator:Set(me, head, tail)
+
+        integer i = 0
+        repeat while iterator:HasNext()
+            iterator:Next()
+            iterator:Set(array:Get(i))
+            i = i + 1
+        end
+    end
+
+    /*
+        This action removes the item at the front of the list. 
+
+        Attribute: Returns The item at the front of the list. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(33)
+        myList:Add(13)
+        myList:Add(43)
+        integer removed = myList:RemoveFromFront()
+    */
+    action RemoveFromFront returns Type
+        if head = undefined
+            return undefined
+        end
+
+        Type result = head:value
+        RemoveNode(head)
+        return result
+    end
+
+    /*
+        This action sets the item at a given location in the list to a new item. 
+
+        Attribute: Parameter value The item to be added to the list. 
+        Attribute: Parameter location The index or location the value will be stored at. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        List<integer> myList
+        myList:Add(43)
+        myList:Add(13)
+        myList:Add(43)
+        myList:Set(22, 2)
+    */
+    action Set(integer location, Type value)
+        if location = size
+            Add(value)
+        else
+            ListNode<Type> node = GetNodeAtLocation(location)
+            node:value = value
+        end
+    end
+
+end

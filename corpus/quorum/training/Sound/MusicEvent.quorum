@@ -1,0 +1,85 @@
+package Libraries.Sound
+
+use Libraries.Containers.Blueprints.Copyable
+/*
+    This class represents an event in a music track. This is the top level
+    interface describing anything that can be put on a music track, such as
+    Notes and Chords.
+
+    This class defines constants to describe the various event types. Currently,
+    the only event type supported is "noteOn", which is an event that will sound
+    one or more notes.
+
+    Attribute: Author Jeff Wilson
+
+    Attribute: Example
+    use Libraries.Sound.MusicEvent
+
+    MusicEvent event
+    event:SetEventType(0)
+*/
+
+class MusicEvent is Copyable
+    // Public constants. These represent the various event types.
+    public integer noteOn = 0
+    
+    private integer eventType = 0
+    
+    on create
+        // Assume this is anote on event by default.
+        eventType = noteOn
+    end
+    
+    /*
+        Returns the event type for this event.
+        
+        Attribute: Returns the event type.
+
+        Attribute: Example
+
+        use Libraries.Sound.MusicEvent
+
+        MusicEvent event
+        output event:GetEventType()
+
+    */
+    public action GetEventType() returns integer
+        return eventType
+    end
+    
+    /*
+        Set the event type for this event.
+        
+        Attribute: Parameter eventType the event type for this event.
+
+        Attribute: Example
+
+        use Libraries.Sound.MusicEvent
+
+        MusicEvent event
+        event:SetEventType(0)
+
+    */
+    public action SetEventType(integer eventType)
+        me:eventType = eventType
+    end
+    
+    /*
+        Perform a deep copy of this object.
+        
+        Attribute: Returns the new MusicEvent
+
+        Attribute: Example
+
+        use Libraries.Sound.MusicEvent
+
+        MusicEvent event
+        Object newEvent = event:Copy()
+        
+    */
+    public action Copy returns Object
+        MusicEvent e
+        e:SetEventType(eventType)
+        return e
+    end
+end

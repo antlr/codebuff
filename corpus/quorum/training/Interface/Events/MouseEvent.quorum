@@ -1,0 +1,111 @@
+package Libraries.Interface.Events
+
+/*
+The MouseEvent class represents an event where the user interacted with the
+mouse by clicking or releasing a mouse button, moving or dragging the mouse, or
+scrolling the mouse wheel.
+*/
+class MouseEvent
+    
+    /* A code used for eventType to indicate that the mouse was clicked. */
+    public constant integer CLICKED_MOUSE = 1
+
+    /* A code used for eventType to indicate that the mouse was moved. */
+    public constant integer MOVED_MOUSE = 2
+
+    /* A code used for eventType to indicate that the mouse was dragged. */
+    public constant integer DRAGGED_MOUSE = 3
+
+    /* A code used for eventType to indicate that a mouse button was released. */
+    public constant integer RELEASED_MOUSE = 4
+
+    /* A code used for eventType to indicate that the mouse wheel was scrolled. */
+    public constant integer SCROLLED_MOUSE = 5
+
+    /* A code used for mouseButton to indicate any mouse button. */
+    public constant integer ANY = -1
+
+    /* A code used for mouseButton to indicate the left mouse button. */
+    public constant integer LEFT = 0
+
+    /* A code used for mouseButton to indicate the right mouse button. */
+    public constant integer RIGHT = 1
+
+    /* A code used for mouseButton to indicate the middle mouse button. */
+    public constant integer MIDDLE = 2
+
+    /* A code used for mouseButton to indicate the back mouse button. */
+    public constant integer BACK = 3
+
+    /* A code used for mouseButton to indicate the forward mouse button. */
+    public constant integer FORWARD = 4
+
+    /* Which mouse button, if any, is the subject of the event. If no mouse
+    button is involved in the event, this will be ANY. */
+    public integer mouseButton = -1
+
+    /* The amount the scroll wheel moved for this event. Positive numbers
+    indicate the wheel scrolled up, and negative numbers indicate scroll down. */
+    public integer scrollAmount = 0
+
+    /* What caused the event, e.g., CLICKED_MOUSE, MOVED_MOUSE, etc. */
+    public integer eventType = 0
+
+    /* The x-coordinate of the mouse event on the screen. */
+    integer x = 0
+    /* The y-coordinate of the mouse event on the screen. */
+    integer y = 0
+
+    /* How far the mouse has moved on the x-coordinate system since the last event. */
+    integer movementX = 0
+    /* How far the mouse has moved on the y-coordinate system since the last event. */
+    integer movementY = 0
+
+    boolean eventHandled = false
+
+    /*
+    This action returns the x coordinate of where the event was on the screen.
+    */
+    action GetX returns integer
+        return x
+    end
+
+    /*
+    This action returns the y coordinate of where the event was on the screen.
+    */
+    action GetY returns integer
+        return y
+    end
+
+    /*
+    This action returns how much the mouse has moved on the x-axis since the
+    last movement event.
+    */
+    action GetMovementX returns integer
+        return movementX
+    end
+
+    /*
+    This action returns how much the mouse has moved on the y-axis since the
+    last movement event.
+    */
+    action GetMovementY returns integer
+        return movementY
+    end
+
+    /*
+    This action sets whether this event should be considered handled by any 
+    event listeners.
+    */
+    action SetEventHandled(boolean handled)
+        eventHandled = handled
+    end
+
+    /*
+    This action returns whether or not this event has already been handled.
+    */
+    action WasEventHandled returns boolean
+        return eventHandled
+    end
+
+end

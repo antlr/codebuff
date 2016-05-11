@@ -1,0 +1,25 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+/*
+The CastError class is an error or exception that is thrown when there is
+an error while casting values.
+
+Attribute: Example
+
+use Libraries.Language.Errors.CastError
+class Main
+   action Main
+      check
+        integer i = cast(integer, "1.4")
+      detect e is CastError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+class CastError is Error
+    on create
+        SetErrorMessage("Cast Error: An error occurred while casting")
+    end
+end

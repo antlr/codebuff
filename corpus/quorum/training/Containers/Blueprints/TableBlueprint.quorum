@@ -1,0 +1,40 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.Copyable
+/*
+
+Inheriting from the TableBlueprint class provides a basic blueprint for a
+2D array data structure. This table has a flag to indicate wither the array is
+dynamic or not. A dynamic table automatically resized the table when it has
+been filled.
+
+Attribute: Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.TableBlueprint
+
+class MyTable<Type> is TableBlueprint<Type>
+    action SetSize(integer rows, integer columns)
+        //implementation goes here
+    end
+end
+*/
+class TableBlueprint<Type> is Copyable
+    /*
+        This action returns true if the table is dynamic(resizable) or false
+        if the table does not automatically resize.
+
+        Attribute: Returns True if the table is resizable and false if it is not.
+    */
+    blueprint action GetAutoResize returns boolean
+
+    /*
+        This action changes the flag that tells the structure if it is a dynamic
+        table or not. If it is dynamic then resizable is true and
+        if it is not then resizable is false. 
+
+        Attribute: Parameter resizable The value to set the resizable flag to.
+    */
+    blueprint action SetAutoResize(boolean resizable)
+end

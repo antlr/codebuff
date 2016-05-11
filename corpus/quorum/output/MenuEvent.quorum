@@ -1,0 +1,24 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.all
+
+/*
+    The MenuEvent class is used to represent an event that happened to a menu.
+    These components are typically used as described in the Legam Screen Reader 
+    XML documentation.
+
+    Attribute: Example
+
+    MenuEvent mevent
+    mevent:SetCategory("Menu")
+    mevent:SetAction("MenuOpen")
+    mevent:SetComponent("Menu")
+    mevent:SetComponentName("File")
+    say(mevent:GetDescription())
+
+*/
+
+
+class MenuEvent is SystemEvent
+
+end

@@ -1,0 +1,534 @@
+package Libraries.System
+
+use Libraries.System.Blueprints.FileRandomAccessBlueprint
+use Libraries.System.File
+use Libraries.Containers.Blueprints.Indexed
+use Libraries.Language.Errors.InvalidArgumentError
+use Libraries.Language.Errors.EndOfFileError
+use Libraries.Language.Errors.InputOutputError
+use Libraries.Language.Errors.FileNotFoundError
+use Libraries.Containers.Array
+
+/*
+Ths class represents a "random access" file reader/writer. It is the standard
+file random access reader/writer used in Quorum. By "random access," we mean
+that it is possible to read (or write) bytes of data at the beginning of the file,
+and then move to a different arbitrary location, such as the end of the file, and
+do the same. This is most commonly used for reading/writing binary files. Unlike
+the sequential reader and writer classes in Quorum, (see FileReader and FileWriter, respectively)
+FileRandomAccess permits both reading and writing to a file simultaneously. This class is not
+recommended for use with plain text files for efficiency reasons. Use the FileReader and
+FileWriter classes for plain text files.
+
+Attribute: Example
+use Libraries.System.File
+use Libraries.System.FileRandomAccess
+
+// Open a file for random access and write a byte to it.
+File f
+f:SetPath("settings.dat")
+FileRandomAccess ra
+ra:OpenForRandomAccess(f)
+
+// Write a single byte to the beginning of the file. This will overwrite
+// whatever was there previously.
+ra:Write("a")
+
+// Always be sure to close files.
+ra:Close()
+
+// Read the first byte from a file, and then consume the rest.
+f:SetPath("mySound.wav")
+ra:OpenForRandomAccess(f)
+
+// Get the first byte.
+text firstByte = ra:Read(1)
+
+// Consume the rest of the data.
+text theRestOfTheBytes = ra:Read()
+
+// Close the file.
+ra:Close()
+
+// Open a file and read the first 60 bytes.
+f:SetPath("../familyPhoto.img")
+ra:OpenForRandomAccess()
+
+// Get the first 60 bytes (which might be, for example, the header of a binary file format).
+text header = ra:Read(60)
+
+// Close the file.
+ra:Close()
+*/
+
+
+class FileRandomAccess is FileRandomAccessBlueprint
+    /*
+     * The file we have open. Upon creation, this is "undefined" and won't
+     * be set until the user calls one of the "open" actions
+     */
+
+    private File file = undefined
+
+    /*
+     * Open the file on the native side.
+     */
+
+
+    private system action OpenForRandomAccessNative(text path)
+
+    /*
+     * Read lines from the file on the native side.
+     */
+                       private system action ReadLinesNative() returns text
+
+    /*
+     * Get the newline character(s) on the system.
+     */
+
+
+                       private system action GetSystemNewline() returns text
+
+    /*
+        Open the specified File object for random access. This permits us to
+        both read and write to the file. The contents of the file will be preserved if the
+        file already exists. When a file is open for random access,
+        we can perform read and write operations from any arbitrary location
+        in the file. This location is tracked in the FileRandomAccess instance
+        and can be changed using actions such as GetPosition() and SetPosition().
+
+        Attribute: Parameter File the file we wish to open for random access. If this does not point to a valid file,
+        a FileNotFoundError or an InputOutputError will be raised, depending on the nature of the problem. 
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Open a file for random access and write a byte to it.
+        File f
+        f:SetPath("settings.dat")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+
+        // Write a single byte to the beginning of the file. This will overwrite
+        // whatever was there previously.
+        ra:Write("a")
+
+        // Always be sure to close files.
+        ra:Close()
+     */
+
+
+    action OpenForRandomAccess(File file)
+        OpenForRandomAccessNative(file:GetAbsolutePath())
+    end
+
+    /*
+        When a file is opened for random access, the operating system keeps track
+        of this and prevents other applications from opening the file. After we
+        have finished manipulating our file, it is important that we tell the
+        operating system that we wish to relinquish our hold on this file, so that
+        other programs may use it. We do this using the Close() action.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Open a file, read a byte from it, and then close it.
+        File f
+        f:SetPath("C:\test.txt")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+
+        // Read the first byte.
+        output ra:Read(1)
+
+        // Always be sure to Close() files, so that other programs may use it.
+        ra:Close()
+     */
+
+
+                       system action Close()
+
+    /*
+        Get the current position in the file. With random access files, it is
+        possible to manipulate different parts of the file, with no particular
+        order requirements, ulike with sequential files. The location we wish
+        to manipulate is called the "position," and it is possible to change
+        this position as well as retrieve it. The position changes any time
+        we call SetPosition() or perform a read or write operation. This action
+        tells us the current position. Positions are zero-indexed; that is,
+        the minimum position is 0 and there is no limit on the maximum position.
+
+        Attribute: Returns our current position in the file. This will always be a whole number.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+        
+        // Open a file, write the string "hello" to it, and then find out what our
+        // position is.
+        f:SetPath("mySettings.dat")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+        
+        // Write "hello world" to the file.
+        ra:Write("hello world")
+        
+        // Get our current position.
+        number position = ra:GetPosition()
+
+        output "We are now at position " + position // As we started at the beginning of the file (position 0) and wrote an 11 character string, our new position will be 11.
+
+        // Always be sure to close files.
+        ra:Close()
+     */
+
+
+                       system action GetPosition() returns number
+
+    // The native implementation of SetPosition
+
+
+
+                       private system action SetPositionNative(number position)
+
+    /*
+        Set the current position in the file. As described in GetPosition(), the
+        position in the file is where we wish to perform operations. The position
+        determines where reading and writing occur in the file. The position is
+        zero-indexed, that is, the minimum position is 0 and there is no limit to the maximum
+        position. If the position is less than zero, an InvalidArgumentError will be raised.
+        If for some reason the position change fails, an InputOutputError will be raised.
+
+        Note that in other implementations of random access files, this operation is known
+        as "seeking."
+        
+        Attribute: Parameter position the position we wish to go to in the file. This must be greater than or equal to zero, and may extend beyond the current file size.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Open a file, seek to byte 20 and write a string.
+        File f
+        f:SetPath("randomAccessTest.txt")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+        
+        // Seek to position 20 (the 21st byte of the file, as positions are zero-indexed).
+        ra:SetPosition(20)
+        
+        // Write the string "after the 21st byte" to the file.
+        ra:Write("after the 21st byte")
+
+        // Assuming the file was empty from the start, the file will not look like so:
+        // "                     after the 21st byte"
+        // This is because we skipped over the first 21 bytes.
+
+        // Close the file.
+        ra:Close()
+    */
+
+
+    action SetPosition(number position)
+        if position < 0
+            InvalidArgumentError e
+            e:SetErrorMessage("InvalidArgumentError: SetPosition() requires a positive position.")
+            alert(e)
+        end
+
+        SetPositionNative(position)
+    end
+
+    /*
+        Determine if the end of the file has been reached. When we reach the
+        end of the file, it is no longer possible to read content from the file,
+        unless the pointer is changed to a different location before the end
+        of the file. In random access files, unlike sequential files, the
+        end of the file is flexible; that is, if we write data beyond the
+        previous size of the file, the "end of file" marker moves forward.
+
+        Attribute: Returns True if the end of the file has been reached; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Open a file and read 3 bytes. If the file is only 3 bytes long, we
+        // will have reached the end of the file. If the file is less than 3 bytes, or doesn't exist, the
+        // Read() action will throw an EndOfFileError.
+        File f
+        f:SetPath("essay.doc")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+
+        // Read 3 bytes.
+        text bytes = ra:Read(3)
+
+        // Are we at the end of the file?
+        output "We are at the end of the file: " + ra:IsAtEndOfFile()
+     */
+
+
+                       system action IsAtEndOfFile() returns boolean
+
+    /*
+        This is a convenience action. Calling this action is the same as
+        calling SetPosition(0), as positions are zero-indexed.
+     */
+
+
+    action GoToBeginning()
+        SetPosition(0)
+    end
+
+    // Native implementation for Read()
+
+
+                       private system action ReadNative() returns text
+
+    // Native implementation for Read(numberOfBytes)
+
+
+
+                       private system action ReadNative(integer numberOfBytes) returns text
+
+    // Native implementation for ReadLine()
+
+
+
+                       private system action ReadLineNative() returns text
+
+    /*
+        Read from the current position to the end of the file. This is useful
+        for consuming the rest of the data in a file after a certain point. As
+        an example, if we were parsing WAVE sound files, we may wish to process
+        header information and then consume the sample data after the headers
+        that continues until the end of the file. The position is set to the
+        end of the file after this action executes.
+
+        If the end of the file has been reached, an EndOfFileError will be
+        raised. If any other complications arise, an InputOutputError will
+        be raised.
+
+        Attribute: Returns returns the read bytes from the file.
+       
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Read the first byte from a file, and then consume the rest.
+        File f
+        f:SetPath("mySound.wav")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+
+        // Get the first byte.
+        text firstByte = ra:Read(1)
+       
+        // Consume the rest of the data.
+        text theRestOfTheBytes = ra:Read()
+
+        // Close the file.
+        ra:Close()
+     */
+
+
+    action Read() returns text
+        return ReadNative()
+    end
+
+    /*
+        Read from the current position the given number of bytes. This is useful
+        if, for example, we are reading a certain type of image file and know
+        that the header is exactly 60 bytes. This advances the pointer to
+        the current position plus numberOfBytes. If the end of the file is reached,
+        as many bytes are read as possible. 
+
+        Attribute: Parameter numberOfBytes the number of bytes we wish to read after the current position in the file.
+        
+        Attribute: Returns the read bytes. The length of this string may be less than the actual number of bytes we wished to read, if, for example, the end of the file is reached.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Open a file and read the first 60 bytes.
+        File f
+        f:SetPath("../familyPhoto.img")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+
+        // Get the first 60 bytes (which might be, for example, the header of a binary file format).
+        text header = ra:Read(60)
+
+        // Close the file.
+        ra:Close()
+     */
+
+
+    action Read(integer numberOfBytes) returns text
+        return ReadNative(numberOfBytes) // TODO, error check
+
+    end
+
+    /*
+        Read from the current position until a newline sequence is encountered.
+        A newline sequence is the sequence of characters created when the "enter" button is pressed in a text editor.
+        The bytes required to make a newline sequence depends on the operating
+        system. This action is slightly less useful for binary formats and may
+        jump to unpredicted locations in non-plain text files. One should be
+        especially cautious when using this action for Unicode character
+        encodings, as they are not supported.
+
+        The pointer is advanced the length of the read line plus the length of the newline sequence, which is typically one or two bytes.
+
+        Attribute: Returns the read line, minus the newline sequence.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Read the first line from a plain text file.
+        File f
+        f:SetPath("dataset.txt")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+        output ra:ReadLine() // grab the first line
+        
+        // Close the file.
+        ra:Close()
+     */
+
+
+    action ReadLine() returns text
+        return ReadLineNative()
+    end
+
+    /*
+        Read all remaining lines in the file. The same warnings from the ReadLine()
+        action apply. The position will be advanced to the end of the file after
+        this action executes.
+
+        Attribute: Returns an indexable collection of text items representing the lines in the file.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+        use Libraries.Containers.Blueprints.Indexed
+
+        // Read all the lines from a file, print the first and third.
+        File f
+        f:SetPath("I_Contain_Three_Lines.txt")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+
+        // Get all lines.
+        Indexed<text> lines = ra:ReadLines()
+
+        output lines:Get(0) // first line
+        output lines:Get(2) // third line
+
+        // Close the file.
+        ra:Close()
+     */
+
+
+    action ReadLines() returns Indexed<text>
+        if me:IsAtEndOfFile()
+            EndOfFileError e
+            alert(e)
+        end
+
+        // Each line in the file is delimited by a newline
+        // character.
+
+
+        Text listingString
+        listingString:SetValue(ReadLinesNative())
+        Array<text> lines = listingString:Split(GetSystemNewline())
+        return lines
+    end
+
+    // The native implementaiton of Write(textToWrite)
+
+
+                       private system action WriteNative(text textToWrite)
+
+    // The native implementation of WriteLine(textToWrite)
+
+                       private system action WriteLineNative(text textToWrite)
+
+    /*
+        Write the specified string to the file starting at the current position.
+        This will advance the position in the file to the current position plus
+        the length of the string.
+
+        If an error is encountered during writing, an InputOutputError will be raised.
+
+        Attribute: Parameter textToWrite the text we wish to write to the file.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Write "abcd" to the file, from the third byte onward.
+        File f
+        f:SetPath("alphabet_empty.txt")
+        FileRandomAccess ra
+        ra:OpenForRandomAccess(f)
+        
+        // Go to position 2 (byte 3).
+        ra:SetPosition(2)
+
+        // Write "abcd"
+        ra:Write("abcd")
+
+        // If the file was empty when we started, the file now looks like this:
+        // "   abcd"
+
+        // Close the file.
+        ra:Close()
+     */
+
+
+    action Write(text textToWrite)
+        WriteNative(textToWrite)
+    end
+
+    /*
+        Write the given string to the file starting from the current position, 
+        and add the appropriate newline
+        sequence on to the end. A newline sequence is the sequence of bytes
+        crated when one presses the "enter" key in a text editor. This will
+        advance the pointer from the current position to the current position
+        plus the length of the string, plus the length of the newline sequence.
+        The length of the newline sequence depends upon the operating system,
+        but it is typically two characters (on Widows) or one character (on Mac and other
+        Unix based systems).
+
+        Attribute: Parameter textToWrite the string we wish to write to the file starting at the current position.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.FileRandomAccess
+
+        // Write two lines to a file.
+        File f
+        f:SetPath("my_two_line_file.txt")
+        FileRandomAccess ra
+        
+        // Write the two lines.
+        ra:WriteLine("line 1")
+        ra:WriteLine("line 2")
+
+        // Close the file.
+        ra:Close()
+     */
+
+
+    action WriteLine(text textToWrite)
+        WriteLineNative(textToWrite)
+    end
+end

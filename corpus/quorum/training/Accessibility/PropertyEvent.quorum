@@ -1,0 +1,24 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.all
+
+/*
+    The PropertyEvent class is used to represent an event in which a property 
+    was changed. The properties that could be changed are State, Location, Name, 
+    Description, Value, Parent, Help, Default Action, Keyboard Shortcut, 
+    Selection, or Text Selection. These components are typically used as 
+    described in the Legam Screen Reader XML documentation.
+
+    Attribute: Example
+
+    PropertyEvent pevent
+    pevent:SetCategory("PropertyChange")
+    pevent:SetAction("Name")
+    pevent:SetComponent("Button")
+    pevent:SetComponentName("Cancel")
+    say(pevent:GetDescription())
+
+*/
+class PropertyEvent is SystemEvent
+
+end

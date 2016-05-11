@@ -1,0 +1,30 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.Iterator
+
+/*
+
+Inheriting from the Iterative class provides a basic blueprint for accessing
+an iterator.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.Iterative
+
+class MyClass<Type> is Iterative<Type>
+    action GetIterator returns Iterator<Type>
+        //implement here
+    end
+end
+*/
+class Iterative <Type>
+
+    /*
+        This action gets an iterator for the object and returns that iterator. 
+
+        Attribute: Returns Returns the iterator for an object. 
+    */
+    blueprint action GetIterator() returns Iterator<Type>
+end

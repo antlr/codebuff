@@ -1,0 +1,78 @@
+package Libraries.Sound
+
+use Libraries.Containers.List
+use Libraries.Containers.Blueprints.Iterator
+
+/*
+    This class represents a track. A track is a series of notes and chords. A collection
+    of tracks makes up a song. When tracks are played, all tracks begin at the exact same time.
+
+    Attribute: Author Jeff Wilson
+*/
+class Track
+    private List<MusicEvent> events
+    private Instrument instrument
+
+    /*
+        Add a new event to this track.
+        
+        Attribute: Parameter event the event to add
+    */
+    public action Add(MusicEvent event)
+        events:Add(event)
+    end
+
+    /*
+        Add a new note to this track.
+
+        Attribute: Parameter note the note to add
+    */
+    public action Add(Note note)
+        events:Add(note)
+    end
+
+    /*
+        Add a new chord to this track.
+
+        Attribute: Parameter chord the chord to add.
+    */
+    public action Add(Chord chord)
+        events:Add(chord)
+    end
+
+    /*
+        Get the instrument used for this track.
+
+        Attribute: Returns the instrument
+    */
+    public action GetInstrument returns Instrument
+        return instrument
+    end
+
+    /*
+        Set the instrument used for this track.
+
+        Attribute: Parameter instrument the instrument to use.
+    */
+    public action SetInstrument(Instrument instrument)
+        me:instrument = instrument
+    end
+
+    /*
+        Get the events on this track.
+
+        Attribute: Returns the events.
+    */
+    public action GetEvents() returns Iterator<MusicEvent>
+        return events:GetIterator()
+    end
+
+    /*
+        Remove the specified event.
+
+        Attribute: Parameter index the index to remove.
+    */
+    public action Remove(integer index)
+        events:RemoveAt(index)
+    end
+end

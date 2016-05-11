@@ -20,13 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
+import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
@@ -139,7 +133,7 @@ public class LeaveOneOutValidator {
 			editDistance = levenshteinDistance(testDoc.content, output);
 		}
 		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
-//		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
+		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
 		if ( saveOutput ) {
 			File dir = new File(outputDir+"/"+language.name+"/"+Tool.version);
 			if ( !dir.exists() ) {
@@ -207,13 +201,14 @@ public class LeaveOneOutValidator {
 
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-			JAVA_DESCR,
-			JAVA8_DESCR,
-			ANTLR4_DESCR,
-			SQLITE_NOISY_DESCR,
-			SQLITE_CLEAN_DESCR,
-			TSQL_NOISY_DESCR,
-			TSQL_CLEAN_DESCR,
+			QUORUM_DESCR,
+//			JAVA_DESCR,
+//			JAVA8_DESCR,
+//			ANTLR4_DESCR,
+//			SQLITE_NOISY_DESCR,
+//			SQLITE_CLEAN_DESCR,
+//			TSQL_NOISY_DESCR,
+//			TSQL_CLEAN_DESCR,
 		};
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);
 		String[] dirs = corpusDirs.toArray(new String[languages.length]);

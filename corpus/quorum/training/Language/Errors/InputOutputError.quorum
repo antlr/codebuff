@@ -1,0 +1,33 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The InputOutputError class is an error or exception that is thrown when 
+a problem is encountered during system or file input/output. The exact
+nature of the error can vary depending on the operation that caused the error.
+For example, attempting to write to a file when the file has been opened for
+reading can cause an InputOutputError.
+
+Attribute: Example
+
+use Libraries.Language.Errors.InputOutputError
+use Libraries.Containers.File
+
+class Main
+   action Main
+      File file
+      file:OpenForRead("myfile.txt")
+      check
+        file:WriteLine("This is an illegal operation!")
+      detect e is InputOutputError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+class InputOutputError is Error
+    on create
+        SetErrorMessage("InputOutputError: An error occurred during an input/output operation.")
+    end
+end

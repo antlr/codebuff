@@ -1,0 +1,2195 @@
+package Libraries.Compute
+
+use Libraries.Compute.Math
+use Libraries.Compute.Matrix3
+use Libraries.Containers.Array
+
+/*
+Vector2 is a class representing a vector in 2D space.
+
+Attribute: Author Amanda Austin
+
+Attribute: Example
+
+use Libraries.Compute.Vector2
+
+Vector2 firstVector
+Vector2 secondVector
+
+firstVector:Set(3.0, 4.0)
+secondVector:Set(2.0, 3.0)
+
+number dotProduct = firstVector:DotProduct(secondVector)
+output "The dot product is: " + dotProduct
+*/
+
+
+class Vector2
+    Math math
+    number x = 0
+    number y = 0
+    constant number radiansToDegrees = 180 / math:pi
+
+    constant number degreesToRadians = math:pi / 180
+
+    /*
+    This action returns the current x component of the vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns the x component of the vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(4.0, 3.0)
+    number x = vector:GetX()
+    output "The x component is " + x
+
+    */
+
+
+    action GetX returns number
+        return x
+    end
+
+    /*
+    This action returns the current y component of the vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns the y component of the vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(4.0, 3.0)
+    number y = vector:GetY()
+    output "The y component is " + y
+
+    */
+
+
+    action GetY returns number
+        return y
+    end
+
+    /*
+    This action sets the vector's components to the components of the passed
+    vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector the vector to use to set the components
+
+    Attribute: Returns the calling vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    firstVector:Set(2.4, 4.3)
+    
+    Vector2 secondVector
+    secondVector:Set(firstVector)
+
+    number newX = secondVector:GetX()
+    number newY = secondVector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Set(Vector2 vector) returns Vector2
+        x = vector:GetX()
+        y = vector:GetY()
+        return me
+    end
+
+    /*
+    This action sets the x and y components of the vector to the passed x and
+    y values.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue the value to set as the x component
+    Attribute: Parameter yValue the value to set as the y component
+
+    Attribute: Returns the calling vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    vector:Set(8.8, 4.2)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Set(number xValue, number yValue) returns Vector2
+        x = xValue
+        y = yValue
+        return me
+    end
+
+    /*
+    This action returns a copy of the current vector. The new vector's x and
+    y components are the same as the calling vector's x and y components.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns a new vector that is a copy of the calling vector
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(4.8, 3.2)
+    
+    Vector2 copyVector
+    copyVector = vector:Copy()
+
+    number newX = copyVector:GetX()
+    number newY = copyVector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Copy returns Vector2
+        Vector2 vector
+        vector:Set(me:x, me:y)
+        return vector
+    end
+
+    /*
+    This action returns the length of the vector with the passed x and y
+    components measured from the origin (0, 0).
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter x The x component of the vector
+    Attribute: Parameter y The y component of the vector
+
+    Attribute: Returns The length of the vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    
+    number length = vector:Length(3.0, 4.0)
+    output "The length of the vector is " + length
+
+    */
+
+
+    action Length(number x, number y) returns number
+        return math:SquareRoot(x * x + y * y)
+    end
+
+
+    /*
+    This action returns the length of the vector measured from the origin (0, 0)
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns the length of the calling vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(3.0, 4.0)
+    
+    number length = vector:Length()
+    output "The length of the vector is " + length
+
+    */
+
+
+    action Length returns number
+        return math:SquareRoot(x * x + y * y)
+    end
+
+    /*
+    This action returns the square of the length of the vector with the passed x 
+    and y components measured from the origin (0, 0).
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter x The x component of the vector
+    Attribute: Parameter y The y component of the vector
+
+    Attribute: Returns The square of the length of the vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    
+    number lengthSquared = vector:LengthSquared(3.0, 4.0)
+    output "The square of the length of the vector is " + lengthSquared
+
+    */
+
+
+    action LengthSquared(number x, number y) returns number
+        return x * x + y * y
+    end
+
+    /*
+    This action returns the square of the length of the vector measured from the 
+    origin (0, 0).
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns The square of the length of the calling vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(3.0, 4.0)
+    
+    number lengthSquared = vector:LengthSquared()
+    output "The square of the length of the vector is " + lengthSquared
+
+    */
+
+
+    action LengthSquared returns number
+        return x * x + y * y
+    end
+
+    /*
+    This action subtracts the passed vector from the calling vector. For example,
+    if A and B are vectors, then this action will compute A - B. This changes
+    the calling vector to the result of the subtraction. Using the above 
+    example, this results in A = A - B
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter The vector to subtract
+    
+    Attribute: Returns The calling vector after subtraction
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+    
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(9.0, 8.0)
+    secondVector:Set(6.0, 5.0)
+    
+    firstVector:Subtract(secondVector)
+    
+    number newX = firstVector:GetX()
+    number newY = firstVector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Subtract(Vector2 vector) returns Vector2
+        x = x - vector:GetX()
+        y = y - vector:GetY()
+        return me
+    end
+
+    /*
+    This action subtracts a vector with the passed components from the calling 
+    vector. This action changes the calling vector to the result of the
+    subtraction.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue The x component of the vector to subtract
+    Attribute: Parameter yValue The y component of the vector to subtract
+    
+    Attribute: Returns The calling vector after subtraction
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+
+    vector:Set(9.0, 8.0)
+    
+    vector:Subtract(7.3, 2.7)
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Subtract(number xValue, number yValue) returns Vector2
+        x = x - xValue
+        y = y - yValue
+        return me
+    end
+
+    /*
+    This action produces a normalized vector with the same direction as the
+    original vector but with a length of 1. This action changes the calling
+    vector to the normalized vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns the normalized vector with a length of 1
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(23.4, 43.2)
+    vector:Normalize()
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The normalized vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Normalize returns Vector2
+        number length = Length()
+        if length not= 0
+            x = x / length
+            y = y / length
+        end
+
+        return me
+    end
+
+    /*
+    This action adds the passed vector to the calling vector. This action
+    changes the calling vector to the result of the addition.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter The vector to add
+    
+    Attribute: Returns The calling vector after addition
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(3.2, 5.5)
+    secondVector:Set(8.3, 4.2)
+    
+    firstVector:Add(secondVector)
+
+    number newX = firstVector:GetX()
+    number newY = firstVector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"  
+  
+    */
+
+
+    action Add(Vector2 vector) returns Vector2
+        x = x + vector:GetX()
+        y = y + vector:GetY()
+        return me
+    end
+
+
+    /*
+    This action adds the vector with the passed x and y components to the
+    calling vector. This changes the calling vector to the result of the 
+    addition.
+    
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue The x component of the vector to add
+    Attribute: Parameter yValue The y component of the vector to add
+
+    Attribute: Returns The calling vector after addition
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(4.3, 8.1)
+
+    vector:Add(3.3, 9.2)
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Add(number xValue, number yValue) returns Vector2
+        x = x + xValue
+        y = y + yValue
+        return me
+    end
+
+    /*
+    This action computes the dot product of the two vectors given by the passed
+    x and y components.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter x1 The x component of the first vector
+    Attribute: Parameter y1 The y component of the first vector
+    Attribute: Parameter x2 The x component of the second vector
+    Attribute: Parameter y2 The y component of the second vector
+
+    Attribute: Returns The dot product of the two vectors.
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    number dotProduct = vector:DotProduct(3.0, 4.0, 5.0, 6.0)
+    output "The dot product is " + dotProduct
+
+    */
+
+
+    action DotProduct(number x1, number y1, number x2, number y2) returns number
+        return x1 * x2 + y1 * y2
+    end
+
+    /*
+    This action computes the dot product between the calling vector and the
+    passed vector.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter vector The other vector
+
+    Attribute: Returns The dot product of the two vectors
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(5.0, 6.0)
+    
+    number dotProduct = firstVector:DotProduct(secondVector)
+    output "The dot product is " + dotProduct
+
+    */
+
+
+    action DotProduct(Vector2 vector) returns number
+        return x * vector:GetX() + y * vector:GetY()
+    end
+
+
+    /*
+    This action computes the dot product between the calling vector and the
+    vector with the passed x and y components.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue The x component of the other vector
+    Attribute: Parameter yValue The y component of the other vector
+
+    Attribute: Returns The dot product of the two vectors
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(3.0, 4.0)
+    
+    number dotProduct = vector:DotProduct(4.0, 5.0)
+    output "The dot product is " + dotProduct
+
+    */
+
+
+    action DotProduct(number xValue, number yValue) returns number
+        return x * xValue + y * yValue
+    end
+
+
+    /*
+    This action scales the vector by multiplying the x and y components by the
+    passed scalar value.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter scalar The scalar value to multiply by
+    
+    Attribute: Returns The calling vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(2.0, 3.0)
+
+    vector:Scale(2.0)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Scale(number scalar) returns Vector2
+        x = x * scalar
+        y = y * scalar
+        return me
+    end
+
+    /*
+    This action scales the vector by multiplying the x component with the
+    passed x value and the y component with the passed y value.
+    
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue The value to multiply the x component by
+    Attribute: Parameter yValue The value to multiply the y component by
+
+    Attribute: Returns The calling vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    vector:Set(2.0, 3.0)
+
+    vector:Scale(3.0, 4.0)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Scale(number xValue, number yValue) returns Vector2
+        x = x * xValue
+        y = y * yValue
+        return me
+    end
+
+    /*
+    This action scales the vector by multiplying the x component by the
+    x component of the passed vector and the y component by the y component
+    of the passed vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The vector to scale by
+    
+    Attribute: Returns The calling vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector 
+    Vector2 scaleVector
+    
+    vector:Set(2.0, 3.0)
+    scaleVector:Set(3.0, 4.0)
+
+    vector:Scale(scaleVector)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Scale(Vector2 vector) returns Vector2
+        x = x * vector:GetX()
+        y = y * vector:GetY()
+        return me
+    end
+
+    /*
+    This action multiplies the passed vector by the passed scalar and adds the
+    result to the calling vector. This changes the calling vector to the result
+    of the multiplication and addition.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter vector The vector to multiply by the scalar
+    Attribute: Parameter scalar The value to multiply the vector by
+    
+    Attribute: Returns The calling vector after multiplication and addition
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    Vector2 addVector
+    
+    vector:Set(4.0, 7.0)
+    addVector:Set(2.5, 1.5)
+    
+    vector:MultiplyAndAdd(addVector, 2.0)
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action MultiplyAndAdd(Vector2 vector, number scalar) returns Vector2
+        x = x + vector:GetX() * scalar
+        y = y + vector:GetY() * scalar
+        return me
+    end
+
+    /*
+    This action multiplies the passed vector by the passed scalar vector and
+    adds the result to the calling vector. This changes the calling vector to
+    the result of the multiplication and addition.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter addVector The vector to multiply by the scale vector
+    Attribute: Parameter scaleVector The vector to multiply the scale vector by
+
+    Attribute: Returns The calling vector after multiplication and addition
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    Vector2 addVector
+    Vector2 scaleVector
+
+    vector:Set(4.0, 7.0)
+    addVector:Set(2.0, 3.0)
+    scaleVector:Set(3.0, 1.0)
+
+    vector:MultiplyAndAdd(addVector, scaleVector)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action MultiplyAndAdd(Vector2 addVector, Vector2 scaleVector) returns Vector2
+        x = x + addVector:GetX() * scaleVector:GetX()
+        y = y + addVector:GetY() * scaleVector:GetY()
+        return me
+    end
+
+    /*
+    This action computes the distance between the vectors represented by the
+    passed x and y components.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter x1 The x component of the first vector
+    Attribute: Parameter y1 The y component of the first vector
+    Attribute: Parameter x2 The x component of the second vector
+    Attribute: Parameter y2 The y component of the second vector
+    
+    Attribute: Returns The distance between the two vectors
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    number distance = vector:Distance(2.0, 3.0, 5.0, 1.0)
+    output "The distance is " + distance
+
+    */
+
+
+    action Distance(number x1, number y1, number x2, number y2) returns number
+        constant number x_d = x2 - x1
+        constant number y_d = y2 - y1
+        return math:SquareRoot(x_d * x_d + y_d * y_d)
+    end
+
+    /*
+    This action computes the distance between the calling vector and the passed
+    vector.
+    
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+    
+    Attribute: Returns The distance between the two vectors
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    Vector2 otherVector
+    
+    vector:Set(4.0, 9.0)
+    otherVector:Set(3.0, 7.0)
+    
+    number distance = vector:Distance(otherVector)
+    output "The distance is " + distance
+
+    */
+
+
+    action Distance(Vector2 vector) returns number
+        constant number x_d = vector:GetX() - x
+        constant number y_d = vector:GetY() - y
+        return math:SquareRoot(x_d * x_d + y_d * y_d)
+    end
+
+    /*
+    This action computes the distance between the calling vector and the vector
+    represented by the passed x and y components.
+    
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue The x component of the other vector
+    Attribute: Parameter yValue The y component of the other vector
+    
+    Attribute: Returns The distance between the two vectors
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    
+    vector:Set(3.0, 7.0)
+    
+    number distance = vector:Distance(7.0, 8.0)
+    output "The distance is " + distance
+
+    */
+
+
+    action Distance(number xValue, number yValue) returns number
+        constant number x_d = xValue - x
+        constant number y_d = yValue - y
+        return math:SquareRoot(x_d * x_d + y_d * y_d)
+    end
+
+    /*
+    This action computes the square of the distance between the vectors
+    represented by the passed x and y components.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter x1 The x component of the first vector
+    Attribute: Parameter y1 The y component of the first vector
+    Attribute: Parameter x2 The x component of the second vector
+    Attribute: Parameter y2 The y component of the second vector
+    
+    Attribute: Returns The square of the distance between the two vectors
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    number distanceSquared = vector:DistanceSquared(2.0, 3.0, 5.0, 1.0)
+    output "The square of the distance is " + distanceSquared
+
+    */
+
+
+    action DistanceSquared(number x1, number y1, number x2, number y2) returns number
+        constant number x_d = x2 - x1
+        constant number y_d = y2 - y1
+        return x_d * x_d + y_d * y_d
+    end
+
+    /*
+    This action computes the square of the distance between the calling vector
+    and the passed vector.
+    
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+    
+    Attribute: Returns The square of the distance between the two vectors
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    Vector2 otherVector
+    
+    vector:Set(4.0, 9.0)
+    otherVector:Set(3.0, 7.0)
+    
+    number distanceSquared = vector:DistanceSquared(otherVector)
+    output "The square of the distance is " + distanceSquared
+
+    */
+
+
+    action DistanceSquared(Vector2 vector) returns number
+        constant number x_d = vector:GetX() - x
+        constant number y_d = vector:GetY() - y
+        return x_d * x_d + y_d * y_d
+    end
+
+    /*
+    This action computes the square of the distance between the calling vector
+    and the vector represented by the passed x and y components.
+    
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue The x component of the other vector
+    Attribute: Parameter yValue The y component of the other vector
+    
+    Attribute: Returns The square of the distance between the two vectors
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    
+    vector:Set(3.0, 7.0)
+    
+    number distanceSquared = vector:DistanceSquared(7.0, 8.0)
+    output "The square of the distance is " + distanceSquared
+
+    */
+
+
+    action DistanceSquared(number xValue, number yValue) returns number
+        constant number x_d = xValue - x
+        constant number y_d = yValue - y
+        return x_d * x_d + y_d * y_d
+    end
+
+    /*
+    This action limits the length of the vector to the passed limit value. This
+    changes the calling vector to have a new length if its old length was
+    greater than the passed limit.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter limit The value to limit the length to
+
+    Attribute: Returns The vector with a new length if its old length was larger than the passed limit
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(3.0, 4.0)
+    
+    vector:Limit(2.5)
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+    
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Limit(number limit) returns Vector2
+        return LimitSquared(limit * limit)
+    end
+
+    /*
+    This action limits the square of the length of the vector to the passed
+    value, which represents the square of the value to limit the length of the
+    vector to. This changes the calling vector to have a new length if the
+    old length squared was greater than the limit squared.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter limitSquared the square of the limit
+
+    Attribute: Returns the calling vector with a new length if the old length squared was greater than the limit squared
+    
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(3.0, 4.0)
+    
+    vector:LimitSquared(6.25)
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+    
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action LimitSquared(number limitSquared) returns Vector2
+        number lengthSquared = LengthSquared()
+        if lengthSquared > limitSquared
+            return Scale(math:SquareRoot(limitSquared / lengthSquared))
+        end
+
+        return me
+    end
+
+    /*
+    This action clamps the length of the vector to be between the passed minimum
+    and maximum values. This changes the vector if the length of the vector is
+    greater than the maximum or less than the minimum.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter min The minimum length
+    Attribute: Parameter max The maximum length
+
+    Attribute: Returns The vector with a new length if the old length was below the minimum or above the maximum
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(3.0, 4.0)
+    
+    vector:Clamp(0.5, 1.5)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+    
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action Clamp(number min, number max) returns Vector2
+        constant number lengthSquared = LengthSquared()
+        if lengthSquared = 0.0
+            return me
+        end
+
+        number max2 = max * max
+
+        if lengthSquared > max2
+            return Scale(math:SquareRoot(max2 / lengthSquared))
+        end
+
+        number min2 = min * min
+
+        if lengthSquared < min2
+            return Scale(math:SquareRoot(min2 / lengthSquared))
+        end
+
+        return me
+    end
+
+    /*
+    This action sets the length of the vector to the passed length.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter length The new length of the vector
+
+    Attribute: Returns The vector with the new length
+    
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector    
+    vector:Set(3.0, 4.0)
+
+    vector:SetLength(10.0)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+    
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action SetLength(number length) returns Vector2
+        return SetLengthSquared(length * length)
+    end
+
+    /*
+    This action sets the length of the vector to the passed value that
+    represents the square of the new length.
+    
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter lengthSquared the length squared
+
+    Attribute: Returns The vector with a new length
+    
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(3.0, 4.0)
+
+    vector:SetLengthSquared(100.0)
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+    
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action SetLengthSquared(number lengthSquared) returns Vector2
+        number oldLengthSquared = LengthSquared()
+        if oldLengthSquared = 0 or oldLengthSquared = lengthSquared
+            return me
+        else
+            return Scale(math:SquareRoot(lengthSquared / oldLengthSquared))
+        end
+    end
+
+    /*
+    This action multiplies the vector by the passed 3-by-3 matrix. This action 
+    is mainly necessary for game graphics. This changes the vector to the 
+    result of the multiplication.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter matrix The 3x3 matrix to multiply by
+
+    Attribute: Returns The vector after multiplication
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    use Libraries.Compute.Matrix3
+    use Libraries.Containers.Array
+
+    Vector2 vector
+    Matrix3 matrix
+    Array<number> array
+    
+    vector:Set(4.0, 8.0)
+    
+    number n = 0.0
+    integer i = 0
+    repeat while i < 9
+        array:Add(n)
+        n = n + 1.0
+        i = i + 1
+    end
+    matrix:Set(array)        
+
+    vector:Multiply(matrix)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+    
+    output "The new vector is: [" + newX + ", " + newY + "]" 
+   
+    */
+
+
+    action Multiply(Matrix3 matrix) returns Vector2
+        number x = me:x + matrix:row0column0 + me:y * matrix:row0column1 + matrix:row0column2
+        number y = me:x + matrix:row1column0 + me:y * matrix:row1column1 + matrix:row1column2
+        me:x = x
+        me:y = y
+        return me
+    end
+
+
+    /*
+    This action computes the 2D cross product of the calling vector and the
+    passed vector. This action is mainly necessary for game graphics.
+    
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter vector The other vector
+
+    Attribute: Returns The 2D cross product of the vectors
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(4.0, 2.0)
+    secondVector:Set(8.0, 8.0)
+    
+    number crossProduct = firstVector:CrossProduct(secondVector)
+
+    output "The 2D cross product is: " + crossProduct
+
+    */
+
+
+    action CrossProduct(Vector2 vector) returns number
+        return x * vector:GetY() - y * vector:GetX()
+    end
+
+    /*
+    This action computes the 2D cross product of the calling vector and the
+    vector represented by the passed x and y components. This action is mainly
+    necessary for game graphics.
+    
+    Attribute: Author Amanda Austin
+    
+    Attribute: Parameter xValue The x component of the other vector
+    Attribute: Parameter yValue The y component of the other vector
+
+    Attribute: Returns The 2D cross product of the vectors
+
+    Attribute: Example
+    
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+
+    vector:Set(4.0, 2.0)
+    
+    number crossProduct = vector:CrossProduct(10.0, 3.0)
+
+    output "The 2D cross product is: " + crossProduct
+
+    */
+
+
+    action CrossProduct(number xValue, number yValue) returns number
+        return x * yValue - y * xValue
+    end
+
+    /*
+    This action computes the angle in degrees of the vector relative to the
+    positive x-axis.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Returns The angle of the vector relative to the x-axis (in degrees)
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    
+    vector:Set(1.0, 1.0)
+    
+    number angle = vector:Angle()
+    
+    output "The angle in degrees of the vector is: " + angle
+
+    */
+
+
+    action Angle returns number
+        number angle = math:InverseTangent(y, x) * radiansToDegrees
+
+        if angle < 0
+            angle = angle + 360
+        end
+
+        return angle
+    end
+
+    /*
+    This action computes the angle in degrees between the calling vector and the
+    passed vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+
+    Attribute: Returns The angle between the two vectors (in degrees)
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    use Libraries.Compute.Math
+
+    Math math
+    
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(0.5, math:SquareRoot(3) / 2)
+    secondVector:Set(math:SquareRoot(2) / 2, math:SquareRoot(2) / 2)
+
+    number angle = firstVector:Angle(secondVector)
+
+    output "The angle in degrees between the vectors is: " + angle
+
+    */
+
+
+    action Angle(Vector2 vector) returns number
+        return math:InverseCosine(me:DotProduct(vector)/ (me:Length() * vector:Length())) * radiansToDegrees
+    end
+
+    /*
+    This action computes the angle in radians of the vector relative to the
+    positive x-axis.
+
+    Attribute: Author Amanda Austin
+    
+    Attribute: Returns The angle of the vector relative to the x-axis (in radians)
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    
+    vector:Set(1.0, 1.0)
+    
+    number angle = vector:AngleInRadians()
+    
+    output "The angle in radians of the vector is: " + angle
+
+
+    */
+
+
+    action AngleInRadians returns number
+        return math:InverseTangent(y, x)
+    end
+
+
+    /*
+    This action computes the angle in radians between the calling vector and the
+    passed vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+
+    Attribute: Returns The angle between the two vectors (in radians)
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    use Libraries.Compute.Math
+
+    Math math
+    
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(0.5, math:SquareRoot(3) / 2)
+    secondVector:Set(math:SquareRoot(2) / 2, math:SquareRoot(2) / 2)
+
+    number angle = firstVector:AngleInRadians(secondVector)
+
+    output "The angle in radians between the vectors is: " + angle
+
+    */
+
+
+    action AngleInRadians(Vector2 vector) returns number
+        return math:InverseCosine(me:DotProduct(vector)/ (me:Length() * vector:Length()))
+    end
+
+    /*
+    This action sets the vector to have the passed angle in degrees relative to
+    the x-axis.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter degrees The new angle of the vector
+
+    Attribute: Returns The calling vector with the new angle
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(1.0, 5.0)
+
+    vector:SetAngle(45.0)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action SetAngle(number degrees) returns Vector2
+        return SetAngleInRadians(degrees * degreesToRadians)
+    end
+
+    /*
+    This action sets the vector to have the passed angle in radians relative to
+    the x-axis.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter radians The new angle of the vector
+
+    Attribute: Returns The calling vector with the new angle
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    use Libraries.Compute.Math
+
+    Math math
+
+    Vector2 vector
+    vector:Set(1.0, 5.0)
+
+    vector:SetAngleInRadians(math:pi / 4)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action SetAngleInRadians(number radians) returns Vector2
+        Set(Length(), 0.0)
+        RotateRadians(radians)
+        return me
+    end
+
+    /*
+    This action rotates the vector by the passed angle in degrees in the
+    counter-clockwise direction.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter degrees The rotation angle in degrees
+    
+    Attribute: Returns The calling vector after rotation
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(1.0, 1.0)
+
+    vector:Rotate(45.0)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"   
+    
+    */
+
+
+    action Rotate(number degrees) returns Vector2
+        return RotateRadians(degrees * degreesToRadians)
+    end
+    
+    /*
+    This action rotates the vector by the passed angle in radians in the
+    counter-clockwise direction.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter radians The rotation angle in radians
+    
+    Attribute: Returns The calling vector after rotation
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    use Libraries.Compute.Math
+    
+    Math math
+
+    Vector2 vector
+    vector:Set(1.0, 1.0)
+
+    vector:RotateRadians(math:pi / 4)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"   
+    
+    */
+
+
+    action RotateRadians(number radians) returns Vector2
+        number cos = math:Cosine(radians)
+        number sin = math:Sine(radians)
+        number newX = x * cos - y * sin
+        number newY = x * sin + y * cos
+        x = newX
+        y = newY
+        return me
+    end
+
+    /*
+    This action rotates the vector 90 degrees. If the passed boolean is true,
+    then the rotation direction is in the counter-clockwise direction. If it
+    is false, then the rotation direction is in the clockwise direction.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter rotateCounterClockwise Whether to rotate counter-clockwise
+
+    Attribute: Returns The vector after rotation
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    
+    Vector2 vector
+    vector:Set(4.0, 1.0)
+    
+    vector:Rotate90Degrees(true)
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"  
+    
+    */
+
+
+    action Rotate90Degrees(boolean rotateCounterClockwise) returns Vector2
+        number xValue = x
+
+        if rotateCounterClockwise
+            x = y * -1.0
+            y = xValue
+        else
+            x = y
+            y = xValue * -1.0
+        end
+
+        return me
+    end
+
+    /*
+    This action performs a linear interpolation between the calling vector and
+    the passed target vector by alpha, which is between 0, and 1, inclusive.
+    This changes the calling vector to the result of the linear interpolation.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter target The target vector
+    Attribute: Parameter alpha The alpha value
+
+    Attribute: Returns The calling vector after linear interpolation
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    Vector2 target
+
+    vector:Set(2.0, 7.0)
+    target:Set(3.0, 6.0)
+    number alpha = 0.5
+
+    vector:LinearInterpolation(target, alpha)
+
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"  
+
+    */
+
+
+    action LinearInterpolation(Vector2 target, number alpha) returns Vector2
+        constant number invAlpha = 1.0 - alpha
+        x = (x * invAlpha) + (target:GetX() * alpha)
+        y = (y * invAlpha) + (target:GetY() * alpha)
+        return me
+    end
+
+
+    /*
+    This action determines whether the passed vector equals the calling vector
+    to within the passed precision.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+    Attribute: Parameter precision The desired precision
+
+    Attribute: Returns true if the vectors are equal within the passed precision, false otherwise
+    
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(6.0, 8.0)
+    secondVector:Scale(0.5)
+
+    boolean areEqual = firstVector:EqualsAtPrecision(secondVector, 0.00001)
+    
+    if areEqual
+        output "The two vectors are equal."
+    else
+        output "The two vectors are not equal."
+    end
+
+    */
+
+
+    action EqualsAtPrecision(Vector2 vector, number precision) returns boolean
+        if vector = undefined
+            return false
+        elseif math:AbsoluteValue(vector:GetX() - x) > precision
+            return false
+        elseif math:AbsoluteValue(vector:GetY() - y) > precision
+            return false
+        end
+
+        return true
+    end
+
+    /*
+    This action determines whether the vector represented by the passed x and
+    y components equals the calling vector to within the passed precision.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter xValue The x component of the other vector
+    Attribute: Parameter yValue The y component of the other vector
+    Attribute: Parameter precision The desired precision
+
+    Attribute: Returns true if the vectors are equal within the passed precision, false otherwise
+    
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+
+    vector:Set(3.0, 4.0)
+    
+    boolean areEqual = vector:EqualsAtPrecision(3.0, 4.0000001, 0.00001)
+    
+    if areEqual
+        output "The two vectors are equal."
+    else
+        output "The two vectors are not equal."
+    end
+
+    */
+
+
+    action EqualsAtPrecision(number xValue, number yValue, number precision) returns boolean
+        if math:AbsoluteValue(xValue - x) > precision
+            return false
+        elseif math:AbsoluteValue(yValue - y) > precision
+            return false
+        end
+
+        return true
+    end
+
+    /*
+    This action determines whether the vector is a unit vector, meaning it has
+    a length of 1.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns true if the vector is a unit vector, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(0.0, 1.0)
+
+    boolean isUnit = vector:IsUnit()
+    
+    if isUnit
+        output "The vector is a unit vector."
+    else
+        output "The vector is not a unit vector."
+    end
+
+    */
+
+
+    action IsUnit returns boolean
+        return IsUnit(0.000000001)
+    end
+
+    /*
+    This action determines whether the vector is a unit vector, meaning it has
+    a length of 1 to within the passed precision.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter precision The desired precision
+
+    Attribute: Returns true if the vector is a unit vector to within the passed precision, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:Set(0.0, 1.0)
+
+    boolean isUnit = vector:IsUnit(0.00001)
+    
+    if isUnit
+        output "The vector is a unit vector."
+    else
+        output "The vector is not a unit vector."
+    end
+
+    */
+
+
+    action IsUnit(number precision) returns boolean
+        if math:AbsoluteValue(LengthSquared() -1.0) < precision
+            return true
+        else
+            return false
+        end
+    end
+
+    /*
+    This action determines whether the vector is the zero vector, meaning that
+    its x and y components are 0.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns true if the vector is the zero vector, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(5.0, 6.0)
+    secondVector:Set(5.0, 6.0)
+
+    firstVector:Subtract(secondVector)
+    
+    boolean isZero = firstVector:IsZero()
+
+    if isZero
+        output "The vector is the zero vector."
+    else
+        output "The vector is not the zero vector."
+    end
+
+    */
+
+
+    action IsZero returns boolean
+        return x = 0 and y = 0
+    end
+
+    /*
+    This action determines whether the vector is the zero vector to within the
+    passed precision, meaning that its x and y components are 0.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter precision The desired precision
+
+    Attribute: Returns true if the vector is the zero vector to within the passed precision, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(5.0, 6.0)
+    secondVector:Set(5.0, 6.0)
+
+    firstVector:Subtract(secondVector)
+    
+    boolean isZero = firstVector:IsZero(0.00001)
+
+    if isZero
+        output "The vector is the zero vector."
+    else
+        output "The vector is not the zero vector."
+    end
+
+    */
+
+
+    action IsZero(number precision) returns boolean
+        return LengthSquared() < precision
+    end
+
+
+    /*
+    This action determines whether the passed vector is on the same line as the
+    calling vector, either in the same or opposite direction.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter other The other vector
+
+    Attribute: Returns true if the vectors are on the same line, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+    
+    firstVector:Set(1.0, 2.0)
+    secondVector:Set(-2.0, -4.0)
+
+    boolean onLine = firstVector:IsOnLine(secondVector)
+    
+    if onLine
+        output "The two vectors are on the same line."
+    else
+        output "The two vectors are not on the same line."
+    end
+
+    */
+
+
+    action IsOnLine(Vector2 other) returns boolean
+        return math:AbsoluteValue(x * other:GetY() - y * other:GetX()) <= 0.000001
+    end
+    
+
+    /*
+    This action determines whether the passed vector is on the same line as the
+    calling vector to within the passed precision, either in the same or
+    opposite direction
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter other The other vector
+    Attribute: Parameter precision The desired precision
+
+    Attribute: Returns true if the vectors are on the same line, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+    
+    firstVector:Set(1.0, 2.0)
+    secondVector:Set(-2.0, -4.0)
+
+    boolean onLine = firstVector:IsOnLine(secondVector, 0.00001)
+    
+    if onLine
+        output "The two vectors are on the same line."
+    else
+        output "The two vectors are not on the same line."
+    end
+
+    */
+
+
+    action IsOnLine(Vector2 other, number precision) returns boolean
+        return math:AbsoluteValue(x * other:GetY() - y * other:GetX()) <= precision
+    end
+
+
+    /*
+    This action determines whether the passed vector is collinear with the
+    calling vector, meaning that it lies on the same line as the calling vector 
+    and has the same direction as the calling vector to within the passed 
+    precision.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter other The other vector
+    Attribute: Parameter precision The desired precision
+
+    Attribute: Returns true if the vectors are collinear, false otherwise.
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+    
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(6.0, 8.0)
+
+    boolean collinear = firstVector:IsCollinear(secondVector, 0.00001)
+
+    if collinear
+        output "The two vectors are collinear in the same direction"
+    else
+        output "The two vectors are not collinear in the same direction"
+    end
+
+    */
+
+
+    action IsCollinear(Vector2 other, number precision) returns boolean
+        return IsOnLine(other, precision) and DotProduct(other) > 0.0
+    end
+
+
+    /*
+    This action determines whether the passed vector is collinear with the
+    calling vector, meaning that it lies on the same line as the calling vector 
+    and has the same direction as the calling vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter other The other vector
+
+    Attribute: Returns true if the vectors are collinear, false otherwise.
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+    
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(6.0, 8.0)
+
+    boolean collinear = firstVector:IsCollinear(secondVector)
+
+    if collinear
+        output "The two vectors are collinear in the same direction"
+    else
+        output "The two vectors are not collinear in the same direction"
+    end
+
+    */
+
+
+    action IsCollinear(Vector2 other) returns boolean
+        return IsOnLine(other) and DotProduct(other) > 0.0
+    end
+
+
+    /*
+    This action determines whether the passed vector is collinear in the
+    opposite direction with the calling vector, meaning that it lies on the same
+    line as the calling vector and has the opposite direction as the calling
+    vector to within the passed precision.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter other The other vector
+    Attribute: Parameter precision The desired precision
+
+    Attribute: Returns true if the vectors are collinear in the opposite directions, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+    
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(-6.0, -8.0)
+
+    boolean collinearOpposite = firstVector:IsCollinearOpposite(secondVector, 0.00001)
+
+    if collinearOpposite
+        output "The two vectors are collinear in the opposite direction"
+    else
+        output "The two vectors are not collinear in the opposite direction"
+    end
+
+    */
+
+
+    action IsCollinearOpposite(Vector2 other, number precision) returns boolean
+        return IsOnLine(other, precision) and DotProduct(other) < 0.0
+    end
+
+
+    /*
+    This action determines whether the passed vector is collinear in the
+    opposite direction with the calling vector, meaning that it lies on the same
+    line as the calling vector and has the opposite direction as the calling
+    vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter other The other vector
+
+    Attribute: Returns true if the vectors are collinear in the opposite directions, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+    
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(-6.0, -8.0)
+
+    boolean collinearOpposite = firstVector:IsCollinearOpposite(secondVector)
+
+    if collinearOpposite
+        output "The two vectors are collinear in the opposite direction"
+    else
+        output "The two vectors are not collinear in the opposite direction"
+    end
+
+    */
+
+
+    action IsCollinearOpposite(Vector2 other) returns boolean
+        return IsOnLine(other) and DotProduct(other) < 0.0
+    end
+
+    /*
+    This action determines whether the passed vector is perpendicular to the
+    calling vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+
+    Attribute: Returns true if the two vectors are perpendicular, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(1.0, 0.0)
+    secondVector:Set(0.0, 1.0)
+    
+    boolean isPerpendicular = firstVector:IsPerpendicular(secondVector)
+    
+    if isPerpendicular
+        output "The two vectors are perpendicular."
+    else
+        output "The two vectors are not perpendicular."
+    end
+
+    */
+
+
+    action IsPerpendicular(Vector2 vector) returns boolean
+        return math:AbsoluteValue(DotProduct(vector)) <= 0.000001
+    end
+
+    
+    /*
+    This action determines whether the passed vector is perpendicular to the
+    calling vector to within the passed precision.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+    Attribute: Parameter precision The desired precision
+    
+    Attribute: Returns true if the two vectors are perpendicular, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(1.0, 0.0)
+    secondVector:Set(0.0, 1.0)
+    
+    boolean isPerpendicular = firstVector:IsPerpendicular(secondVector, 0.00001)
+    
+    if isPerpendicular
+        output "The two vectors are perpendicular."
+    else
+        output "The two vectors are not perpendicular."
+    end
+
+    */
+
+
+    action IsPerpendicular(Vector2 vector, number precision) returns boolean
+        return math:AbsoluteValue(DotProduct(vector)) <= precision
+    end
+
+
+    /*
+    This action determines whether the passed vector has the same direction as
+    the calling vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+
+    Attribute: Returns true if the two vectors have the same direction, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 firstVector
+    Vector2 secondVector
+    
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(6.0, 8.0)
+
+    boolean isSame = firstVector:HasSameDirection(secondVector)
+
+    if isSame
+        output "The two vectors have the same direction."
+    else
+        output "The two vectors do not have the same direction."
+    end
+
+    */
+
+
+    action HasSameDirection(Vector2 vector) returns boolean
+        return DotProduct(vector) > 0
+    end
+
+
+    /*
+    This action determines whether the passed vector has the opposite direction
+    as the calling vector.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Parameter vector The other vector
+
+    Attribute: Returns true if the two vectors have the opposite direction, false otherwise
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+    
+    Vector2 firstVector
+    Vector2 secondVector
+
+    firstVector:Set(3.0, 4.0)
+    secondVector:Set(-3.0, -4.0)
+    
+    boolean isOpposite = firstVector:HasOppositeDirection(secondVector)
+
+    if isOpposite
+       output "The two vectors have opposite directions." 
+    else
+       output "The two vectors do not have opposite directions."
+    end
+
+    */
+
+
+    action HasOppositeDirection(Vector2 vector) returns boolean
+        return DotProduct(vector) < 0
+    end
+
+
+    /*
+    This action sets the vector to the zero vector, meaning both the x and y
+    components will be set to 0.
+
+    Attribute: Author Amanda Austin
+
+    Attribute: Returns The calling vector set to the zero vector
+
+    Attribute: Example
+
+    use Libraries.Compute.Vector2
+
+    Vector2 vector
+    vector:SetZero()
+    
+    number newX = vector:GetX()
+    number newY = vector:GetY()
+
+    output "The new vector is: [" + newX + ", " + newY + "]"
+
+    */
+
+
+    action SetZero returns Vector2
+        x = 0
+        y = 0
+
+        return me
+    end
+end

@@ -1,0 +1,125 @@
+package Libraries.Interface.Events
+
+use Libraries.Containers.List
+use Libraries.Containers.Blueprints.Iterator
+
+/*
+This class is used to read MouseEvents from the Mouse and send them to the
+appropriate MouseListeners, MouseMovementListeners, and MouseWheelListeners 
+which have registered themselves with this processor.
+*/
+class MouseProcessor
+
+    List<MouseEvent> events
+    List<MouseListener> listeners
+    List<MouseMovementListener> moveListeners
+    List<MouseWheelListener> wheelListeners
+
+    /*  Deletes any old events that may be in the events list, then gets all
+        current events, stores them internally, and returns the list. */
+    action GetCurrentEvents returns List<MouseEvent>
+        events:Empty()
+        GetCurrentEventsNative()
+        return events
+    end
+        
+    private system action GetCurrentEventsNative
+
+    /*
+    Adds a MouseListener to this MouseProcessor. The listener will be notified
+    of clicked mouse and released mouse events during ProcessEvents.
+    */
+    action AddListener(MouseListener listener)
+        listeners:Add(listener)
+    end
+
+    /*
+    Removes a MouseListener from this MouseProcessor. It will no longer be
+    notified of clicked mouse and released mouse events during ProcessEvents.
+    */
+    action RemoveListener(MouseListener listener)
+        listeners:Remove(listener)
+    end
+
+    /*
+    Adds a MouseMovementListener to this MouseProcessor. The listener will be
+    notified of moved mouse and dragged mouse events during ProcessEvents.
+    */
+    action AddMovementListener(MouseMovementListener listener)
+        moveListeners:Add(listener)
+    end
+
+    /*
+    Removes a MouseMovementListener from this MouseProcessor. The listener will 
+    no longer be notified of moved mouse and dragged mouse events during
+    ProcessEvents.
+    */
+    action RemoveMovementListener(MouseMovementListener listener)
+        moveListeners:Remove(listener)
+    end
+
+    /*
+    Adds a MouseWheelListener to this MouseProcessor. The listener will be
+    notified of scrolled mouse wheel events during ProcessEvents.
+    */
+    action AddWheelListener(MouseWheelListener listener)
+        wheelListeners:Add(listener)
+    end
+
+    /*
+    Removes a MouseWheelListener from this MouseProcessor. The listener will no
+    longer be notified of scrolled mouse wheel events during ProcessEvents.
+    */
+    action RemoveWheelListener(MouseWheelListener listener)
+        wheelListeners:Remove(listener)
+    end
+
+    /*
+    This action will notify all registered listeners of any mouse events stored
+    in the internal events list, which is populated by the GetCurrentEvents
+    action.
+    */
+    action ProcessEvents
+
+        if not events:IsEmpty()
+
+            Iterator<MouseListener> clickIterator = listeners:GetIterator()
+            Iterator<MouseMovementListener> moveIterator = moveListeners:GetIterator()
+            Iterator<MouseWheelListener> wheelIterator = wheelListeners:GetIterator()
+
+            MouseEvent currentEvent = undefined
+            
+            repeat while not events:IsEmpty()
+                currentEvent = events:RemoveFromFront()
+
+                if currentEvent:eventType = currentEvent:MOVED_MOUSE
+                    repeat while moveIterator:HasNext()
+                        moveIterator:Next():MovedMouse(currentEvent)
+                    end
+                    moveIterator:Rewind()
+                elseif currentEvent:eventType = currentEvent:DRAGGED_MOUSE
+                    repeat while moveIterator:HasNext()
+                        moveIterator:Next():DraggedMouse(currentEvent)
+                    end
+                    moveIterator:Rewind()
+                elseif currentEvent:eventType = currentEvent:CLICKED_MOUSE
+                    repeat while clickIterator:HasNext()
+                        clickIterator:Next():ClickedMouse(currentEvent)
+                    end
+                    clickIterator:Rewind()
+                elseif currentEvent:eventType = currentEvent:RELEASED_MOUSE
+                    repeat while clickIterator:HasNext()
+                        clickIterator:Next():ReleasedMouse(currentEvent)
+                    end
+                    clickIterator:Rewind()
+                elseif currentEvent:eventType = currentEvent:SCROLLED_MOUSE
+                    repeat while wheelIterator:HasNext()
+                        wheelIterator:Next():ScrolledMouse(currentEvent)
+                    end
+                    wheelIterator:Rewind()
+                end
+            end
+        end
+    end
+
+end

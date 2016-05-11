@@ -1,0 +1,23 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.all
+
+/*
+    The FocusEvent class is used to represent an event for when the focus changed.
+    These components are typically used as described in the Legam Screen Reader 
+    XML documentation.
+
+    Attribute: Example
+
+    FocusEvent fevent
+    fevent:SetCategory("Focus")
+    fevent:SetAction("Component")
+    fevent:SetComponent("Menu")
+    fevent:SetComponentName("File")
+    say(fevent:GetDescription())
+
+*/
+
+class FocusEvent is SystemEvent
+
+end

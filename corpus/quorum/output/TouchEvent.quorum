@@ -1,0 +1,124 @@
+package Libraries.Interface.Events
+
+/*
+The TouchEvent class represents an event caused by the user tapping the screen,
+releasing their finger from the screen, or moving their finger across the screen.
+*/
+
+
+class TouchEvent 
+    
+    /* This value represents the event that a finger is first touching the screen. */
+    public constant integer BEGAN = 0
+
+    /* This value represents that a finger is moving across the screen. */
+    public constant integer MOVED = 1
+    
+    /* This value represents that a finger is touching the screen and not moving. */
+    public constant integer STATIONARY = 2
+
+    /* This value represents that a finger has been lifted off the screen. */
+    public constant integer ENDED = 3
+
+    /* 
+    This value represents that the system cancelled a touch event, e.g., the
+    user has put the phone to their face while receiving a call.
+    */
+    public constant integer CANCELLED = 4
+
+    /*
+    The eventType field represents what type of touch event this is, or in other
+    words, what is happening that is triggering this touch event. The possible
+    values for it are BEGAN, MOVED, STATIONARY, ENDED, and CANCELLED.
+    */
+    public integer eventType = - 1
+
+    /*
+    This variable represents the x-position on the screen where the touch event
+    has occurred.
+    */
+    public integer x = 0
+    
+    /*
+    This variable represents the y-position on the screen where the touch event
+    has occurred.
+    */
+    public integer y = 0
+
+    /*
+    This variable represents how far the user's finger has moved on the
+    x-coordinate plane since the last touch event was recorded for that finger.
+    */
+    public integer movementX = 0
+
+    /*
+    This variable represents how far the user's finger has moved on the
+    x-coordinate plane since the last touch event was recorded for that finger.
+    */
+    public integer movementY = 0
+
+    /*
+    This variable represents the particular finger that has triggered this
+    event. If multiple fingers are touching the screen, each finger have a
+    different ID.
+    */
+    public integer fingerID = 0
+    boolean eventHandled = false
+
+    /*
+    This action returns the x coordinate of where the event was on the screen.
+    */
+
+
+    action GetX returns integer
+        return x
+    end
+
+    /*
+    This action returns the y coordinate of where the event was on the screen.
+    */
+
+
+    action GetY returns integer
+        return y
+    end
+
+    /*
+    This action returns how much the user's finger moved on the x-axis since the
+    last movement event.
+    */
+
+
+    action GetMovementX returns integer
+        return movementX
+    end
+
+    /*
+    This action returns how much the user's finger moved on the y-axis since the
+    last movement event.
+    */
+
+
+    action GetMovementY returns integer
+        return movementY
+    end
+
+    /*
+    This action sets whether this event should be considered handled by any 
+    event listeners.
+    */
+
+
+    action SetEventHandled(boolean handled)
+        eventHandled = handled
+    end
+
+    /*
+    This action returns whether or not this event has already been handled.
+    */
+
+
+    action WasEventHandled returns boolean
+        return eventHandled
+    end
+end

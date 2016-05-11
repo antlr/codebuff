@@ -1,0 +1,623 @@
+package Libraries.Containers
+
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Blueprints.HashTableBlueprint
+use Libraries.Containers.Support.KeyedNode
+use Libraries.Containers.Array
+use Libraries.Compute.BitwiseOperations
+use Libraries.Containers.Support.HashNode
+use Libraries.Containers.Support.HashTableIterator
+use Libraries.Containers.Support.HashTableKeyIterator
+use Libraries.Containers.Support.HashTableValueIterator
+
+/*
+The HashTable class is a data structure that stores and allows access to items
+through the use of a key. In the hash table keys and values are paired. Some 
+basic examples and explanations of Lists can be found below.
+
+Attribute: Example
+
+use Libraries.Containers.HashTable
+class Main
+   action Main
+      //make the hash table
+      HashTable<text, integer> phoneBook
+      //add a value(2626984) with a key(Jane)
+      phoneBook:Add("Jane", 2626984)
+      //get it back
+      integer value = phoneBook:GetValue("Jane")
+   end
+end
+*/
+class HashTable<Key, Value> is HashTableBlueprint<Key, Value>
+    //the maximum ratio of nodeCount to threshold before a rehash must be done.
+    number maxResizeRatio = 0.75
+    integer arraySize = 8//128
+    integer maxItemsBeforeResize = 0
+    //the items stored in the hash table
+    Array<HashNode<Key, Value>> array
+    BitwiseOperations bitwise
+
+    //this is here only to store the max and min values of integers.
+    Integer int
+    //number of nodes that are currently in the hashmap
+    integer size = 0
+    constant integer resizeAmount = 2
+
+    on create
+        array:SetSize(arraySize)
+        array:SetAutoResize(false)
+        maxItemsBeforeResize = ComputeMaxItemResize()
+    end
+
+    private action ComputeMaxItemResize returns integer
+        return cast(integer, maxResizeRatio * arraySize)
+    end
+    
+
+    /*
+        This action gets a value with a given key.
+
+        Attribute: Parameter key The key that matches up to a value.
+
+        Attribute: Returns The value that matches the key-value pair. 
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        integer value = phoneBook:GetValue("Jane")
+    */
+    action GetValue(Key key) returns Value
+        integer index = ComputeIndex(key)
+        HashNode<Key, Value> node = array:Get(index)
+        if node = undefined or key = undefined
+            return undefined
+        end 
+
+        if key:Equals(node:key)
+            return node:value
+        end
+
+        HashNode<Key, Value> temp = node:next
+        repeat while temp not= undefined
+            if key:Equals(temp:key)
+                return temp:value
+            end
+            temp = temp:next
+        end
+
+        return undefined
+    end
+
+    /*
+        This action gets the key that matches the value. Warning: this method
+        is inefficient, you should access items in a hash table through their
+        keys.
+
+        Attribute: Parameter value The value that matches up to a key.
+
+        Attribute: Returns The key that matches the key-value pair. 
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        text key = phoneBook:GetKey(2626984)
+    */
+    action GetKey(Value value) returns Key
+        integer i = 0
+        repeat array:GetSize() times
+            HashNode<Key, Value> node = array:Get(i)
+            repeat until node = undefined
+                if value:Equals(node:value)
+                    return node:key
+                end
+                node = node:next
+            end
+            i = i + 1
+        end
+        return undefined
+    end
+
+    /*
+        This action gets an iterator that iterates over all the keys in the
+        hash table.
+
+        Attribute: Returns The iterator of keys. 
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        use Libraries.Containers.Blueprints.Iterator
+
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        Iterator<text> keysIterator = phoneBook:GetKeyIterator()
+    */
+    action GetKeyIterator() returns Iterator<Key>
+        HashTableIterator<Key, Value> support
+        support:SetArray(array)
+
+        HashTableKeyIterator<Key, Value> keys
+        keys:iterator = support
+        return keys
+    end
+
+    /*
+        This action gets an array that contains all the keys in the
+        hash table. This method requires iterating over all elements in the 
+        array, and as such, should be used sparing.
+
+        Attribute: Returns The iterator of keys. 
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        use Libraries.Containers.Blueprints.Iterator
+
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        Array<text> keysIterator = phoneBook:GetKeyArray()
+    */
+    action CopyToKeyArray returns Array<Key>
+        Array<Key> array
+        
+        Iterator<Key> it = me:GetKeyIterator()
+        repeat while it:HasNext()
+            Key key = it:Next()
+            array:Add(key)
+        end
+        return array
+    end
+
+    /*
+        This action gets an iterator that iterates over all the values in the
+        hash table.
+
+        Attribute: Returns The iterator of values.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        use Libraries.Containers.Blueprints.Iterator
+
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        Iterator<integer> keysIterator = phoneBook:GetValueIterator()
+    */
+    action GetValueIterator() returns Iterator<Value>
+        HashTableIterator<Key, Value> support
+        support:SetArray(array)
+
+        HashTableValueIterator<Key, Value> values
+        values:iterator = support
+        return values
+    end
+
+    /*
+        This action gets an array that contains all the values in the
+        hash table. This method requires iterating over all elements in the 
+        array, and as such, should be used sparingly.
+
+        Attribute: Returns The iterator of keys. 
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        use Libraries.Containers.Blueprints.Iterator
+
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        Array<text> keysIterator = phoneBook:GetKeyArray()
+    */
+    action CopyToValueArray returns Array<Value>
+        Array<Value> array
+        
+        Iterator<Key> it = me:GetValueIterator()
+        repeat while it:HasNext()
+            Value value = it:Next()
+            array:Add(value)
+        end
+        return array
+    end
+
+    /*
+        This action gets the number of items in the hash table.
+
+        Attribute: Returns The number of items in the hash table .
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        integer size = phoneBook:GetSize()
+    */
+    action GetSize returns integer
+        return size
+    end
+
+    /*
+        This action empties or clears out the hash table.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        phoneBook:Empty()
+    */
+    action Empty
+        array:Empty()
+        size = 0
+        array:SetSize(arraySize)
+        array:SetAutoResize(false)
+        maxItemsBeforeResize = ComputeMaxItemResize()
+    end
+
+    /*
+        This action determines if a hash table is empty.
+
+        Attribute: Returns True if the hash table is empty and false if it
+        contains any items. 
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        boolean empty = phoneBook:IsEmpty()
+    */
+    action IsEmpty returns boolean
+        return size = 0
+    end
+
+    /*
+        This action adds an item to the hash table, given the key-value pair. The
+        implementation of this action is identical to that of Set.
+
+        Attribute: Parameter key The key used to access the value.
+
+        Attribute: Parameter value The value to be stored.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+    */
+    action Add(Key key, Value value)
+        KeyedNode<Key, Value> item = undefined
+        if key not= undefined
+            Set(array, key, value)
+        else 
+        end
+
+        if size >= me:maxItemsBeforeResize
+            Resize(arraySize * resizeAmount)
+            
+        end
+    end
+
+    /*
+        This action adds an item to the hash table, given the key-value pair. It
+        functions identically to the add action and exists only as a convencience
+        action, given that there are also actions named with the prefix Get.
+
+        Attribute: Parameter key The key used to access the value.
+
+        Attribute: Parameter value The value to be stored.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+    */
+    action Set(Key key, Value value)
+        KeyedNode<Key, Value> item = undefined
+        if key not= undefined
+            Set(array, key, value)
+        else 
+        end
+
+        if size >= me:maxItemsBeforeResize
+            Resize(arraySize * resizeAmount)
+            
+        end
+    end
+
+    private action ComputeIndex(Key key) returns integer
+        return ComputeIndex(array, key)
+    end
+
+    private action ComputeIndex(Array<HashNode<Key, Value>> a, Key key) returns integer
+        integer hash = key:GetHashCode()
+        hash = ComputeHashCode(hash)
+        return bitwise:And(hash, a:GetSize() -1)
+    end
+
+    /*
+        This action sets a value at a particular index. If that index is currently
+        empty, this method creates a new HashNode and sets it to the location.
+        If the node is not empty, dig through the chain at that location
+        and add it to the end. Finally, if we have met our threshold, resize 
+        the entire hash.
+
+        Attribute: Parameter a The array that the set value will be passed into
+        Attribute: Parameter index The array index gathered from the hash.
+        Attribute: Parameter key the key used to access the value.
+        Attribute: Parameter value the value to be stored.
+    */
+    private action Set(Array<HashNode<Key, Value>> a, Key key, Value value)
+        integer index = ComputeIndex(a, key)
+        HashNode<Key, Value> node = a:Get(index)
+        if node = undefined
+            HashNode<Key, Value> node2
+            node = node2
+
+            node:key = key
+            node:value = value
+            size = size + 1
+            a:Set(index, node)
+        else //the node is not empty, so find the right key and set it 
+            repeat while node not= undefined
+                Key k = node:key
+                if k:Equals(key) //size is unchanged
+                    node:value = value
+                    node = undefined
+                else //the key is not the same, so keep searching
+                    if node:next = undefined //make a new node and add it
+                        HashNode<Key, Value> node2
+                        node2:key = key
+                        node2:value = value
+                        node:next = node2
+                        size = size + 1
+                    else
+                        node = node:next
+                    end
+                end
+            end
+        end
+    end
+
+    private action Resize(integer newSize)
+        //the hash table is already as big as it can ever get. 
+        //as such, it cannot be resized.
+        if newSize = int:maximumValue
+            return now
+        end
+
+
+        Array<HashNode<Key, Value>> oldArray = array
+        
+        Array<HashNode<Key, Value>> newArray
+        newArray:SetAutoResize(false)
+        newArray:SetSize(newSize)
+        
+        //newArray:SetSize(me:
+        //now transfer the data to the new array and set a new threshold value
+        TransferData(oldArray, newArray)
+        //get rid of the reference to the old array, so it can 
+        //be garbage collected
+        array = newArray
+
+        arraySize = newSize
+        me:maxItemsBeforeResize = me:ComputeMaxItemResize()
+    end
+
+    private action TransferData(Array<HashNode<Key, Value>> old, Array<HashNode<Key, Value>> new)
+        integer i = 0
+        me:size = 0
+        repeat arraySize times
+            HashNode<Key, Value> hash = old:Get(i)
+            HashNode<Key, Value> originalHash = hash
+            if hash not= undefined
+                //first rehash this value, then all of its 
+                //chained values, if any
+                //integer index = ComputeIndex(new, hash:key)
+                Set(new, hash:key, hash:value)
+                //now do any chained values
+                repeat until hash:next = undefined
+                    HashNode<Key, Value> next = hash:next
+                    //integer index = ComputeIndex(new, next)
+                    Set(new, next:key, next:value)
+                    
+                    //cut the chain of previous values, now that they have
+                    //been reinserted into the new table.
+                    hash:next = undefined
+                    hash = next
+                end
+                originalHash:next = undefined
+            end
+            i = i + 1
+        end
+    end
+
+    /*
+        This action computes an index from a particular key.
+
+        Attribute: Parameter key the key used to access the value.
+        Attribute: Returns an integer a new hash code, based on this integer
+    */
+    private action ComputeHashCode(integer hash) returns integer
+        integer hash1 = bitwise:ShiftRightPositive(hash, 20)
+        integer hash2 = bitwise:ShiftRightPositive(hash, 12)
+        integer hash3 = bitwise:ExclusiveOr(hash1, hash2)
+
+        integer result = bitwise:ExclusiveOr(hash, hash3)
+        integer hash4 = bitwise:ShiftRightPositive(result, 7)
+        integer hash5 = bitwise:ShiftRightPositive(result, 4)
+        integer right = bitwise:ExclusiveOr(hash4, hash5)
+        return bitwise:ExclusiveOr(result, right)
+    end
+
+    /*
+        This action determines if the hash table contains a certain value.
+
+        Attribute: Parameter value The value to find.
+        
+        Attribute: Returns True if the value is in the hash table and false
+        if it is not.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        phoneBook:HasValue(2626984)
+    */
+    action HasValue(Value value) returns boolean
+        Key key = GetKey(value)
+        return key not= undefined
+    end
+
+    /*
+        This action determines if the hash table contains a certain key.
+
+        Attribute: Parameter key The key to find.
+        
+        Attribute: Returns True if the key is in the hash table and false
+        if it is not.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        phoneBook:HasKey("Jane")
+    */
+    action HasKey(Key key) returns boolean
+        integer index = ComputeIndex(key)
+        HashNode<Key, Value> node = array:Get(index)
+        if node = undefined or key = undefined
+            return false
+        end 
+
+        if key:Equals(node:key)
+            return true
+        end
+
+        HashNode<Key, Value> temp = node:next
+        repeat while temp not= undefined
+            if key:Equals(temp:key)
+                return true
+            end
+            temp = temp:next
+        end
+
+        return false
+    end
+
+    /*
+        This action removes a key-value pair given a key.
+
+        Attribute: Parameter key The key of the key-value pair to be removed.
+        
+        Attribute: Returns The value that was removed.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        integer value = phoneBook:RemoveKey("Jane")
+    */
+    action RemoveKey(Key key) returns Value
+        integer index = ComputeIndex(key)
+        HashNode<Key, Value> node = array:Get(index)
+
+        HashNode<Key, Value> previous = undefined
+
+        repeat while node not= undefined
+            if key:Equals(node:key)
+                if previous not= undefined
+                    previous:next = node:next
+                else
+                    array:Set(index, node:next)
+                end
+                size = size - 1
+                return node:value
+            else
+                previous = node
+                node = node:next
+            end
+        end
+
+        return undefined
+    end
+
+    /*
+        This action removes a key-value pair given a value.
+
+        Attribute: Parameter value The value of the key-value pair to be removed.
+        
+        Attribute: Returns The key that was removed.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        text key = phoneBook:RemoveValue(2626984)
+    */
+    action RemoveValue(Value value) returns Key
+        Key key = me:GetKey(value)
+        if key = undefined
+            return undefined
+        end
+
+        me:RemoveKey(key)
+        return key
+    end
+
+    /*
+        This action removes all instances of a key-value pair given a key. As 
+        the HashTable class requires all values are unique, this only
+        removes at most one value.
+
+        Attribute: Parameter key The key of the key-value pair to be removed.
+        
+        Attribute: Returns True if any key-value pairs were removed and false
+        if none were removed.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        boolean removed = phoneBook:RemoveAllValues(2626984)
+    */
+    action RemoveAllValues(Value value) returns boolean
+        Key key = RemoveValue(value)
+        if key = undefined
+            return false
+        else 
+            return true
+        end
+    end
+
+    /*
+        This action removes a key-value pair given a key. As the HashTable class
+        requires unique values, this action really only removes the one
+        value
+
+        Attribute: Parameter key The key of the key-value pair to be removed.
+        
+        Attribute: Returns True if any key-value pairs were removed and false 
+        if none were removed.
+
+        Attribute: Example
+        use Libraries.Containers.HashTable
+        HashTable<text, integer> phoneBook
+        phoneBook:Add("Jane", 2626984)
+        boolean removed = phoneBook:RemoveAllKeys("Jane")
+    */
+    action RemoveAllKeys(Key key) returns boolean
+        Value value = RemoveKey(key)
+        if value = undefined
+            return false
+        else
+            return true
+        end
+    end
+
+    action Copy returns Object
+        HashTable<Key, Value> copy
+
+        Array<HashNode<Key, Value>> newArray = cast(Array<HashNode<Key, Value>>, array:Copy())
+
+        copy:array = newArray
+        copy:maxResizeRatio = me:maxResizeRatio
+        copy:arraySize = me:arraySize
+        copy:maxItemsBeforeResize = me:maxItemsBeforeResize
+        copy:size = me:size
+
+        return copy
+    end
+end

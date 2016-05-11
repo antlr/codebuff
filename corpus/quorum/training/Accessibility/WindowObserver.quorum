@@ -1,0 +1,34 @@
+package Libraries.Accessibility
+
+/*
+    The WindowObserver class provides functionality to output a window system event.
+    This class has a blueprint action that has to be instantiated called ReceiveEvent.
+
+    Attribute: Example
+
+    AccessibilityManager manager
+    WindowObserver wObserver
+    manager:Add(wObserver)
+
+    manager:Start()
+    manager:Stop()
+
+*/
+
+class WindowObserver 
+
+/*
+        This action is a blueprint function that receives an event from the system
+        for the programmer to use.
+
+        Attribute: Parameter event The event from the system.
+
+        Attribute: Example
+
+        KeyboardObserver observer
+        SystemEvent event
+        observer:ReceiveEvent(event)
+    */
+    blueprint action ReceiveEvent(WindowEvent event)
+
+end
