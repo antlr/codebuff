@@ -29,6 +29,7 @@ public class TestK extends LeaveOneOutValidator {
 	public TestK(String rootDir, LangDescriptor language, int k) {
 		super(rootDir, language);
 		this.k = k;
+		outputDir = "/tmp";
 	}
 
 	/** Return error rate for each document using leave-one-out validation */

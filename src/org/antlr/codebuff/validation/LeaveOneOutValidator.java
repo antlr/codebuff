@@ -37,7 +37,7 @@ import static org.antlr.codebuff.misc.BuffUtils.map;
 public class LeaveOneOutValidator {
 	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
 
-	public static final String outputDir = "output";
+	public static String outputDir = "output";
 
 	final Random random = new Random();
 
