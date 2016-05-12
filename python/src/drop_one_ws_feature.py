@@ -1,6 +1,6 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.12 'Wed May 11 13:27:55 PDT 2016'
+# CodeBuff 1.4.12 'Wed May 11 16:47:22 PDT 2016'
 #
 import matplotlib.pyplot as plt
 
@@ -14,12 +14,14 @@ sqlite = [0.09365244, 0.09885536, 0.08324662, 0.09428571, 0.09714286, 0.08974359
 ax.plot(featureIndexes, sqlite, label="sqlite")
 java8 = [0.04628331, 0.047685836, 0.045769766, 0.04628331, 0.04628331, 0.047685836, 0.04628331, 0.04628331]
 ax.plot(featureIndexes, java8, label="java8")
+quorum = [0.027692307, 0.029860651, 0.027027028, 0.026755853, 0.038424592, 0.028037382, 0.027692307, 0.029835392]
+ax.plot(featureIndexes, quorum, label="quorum")
 antlr = [0.20212767, 0.18502203, 0.20575744, 0.20212767, 0.19309174, 0.21909109, 0.20212767, 0.20212767]
 ax.plot(featureIndexes, antlr, label="antlr")
 tsql = [0.088607594, 0.08450704, 0.088607594, 0.096045196, 0.09113924, 0.08101266, 0.09367089, 0.09765625]
 ax.plot(featureIndexes, tsql, label="tsql")
 
-labels = ['curated', ' LT(-1)', 'Strt line', 'LT(-1) right ancestor', ' LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor']
+labels = ['curated', ' LT(-1)', 'Strt line', 'LT(-1) right ancestor', ' LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor', 'LT(-1)', 'Strt line', 'LT(-1) right ancestor', 'LT(1)', 'Big list', 'List elem.', 'LT(1) left ancestor']
 ax.set_xticklabels(labels, rotation=60, fontsize=8)
 plt.xticks(featureIndexes, labels, rotation=60)
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)

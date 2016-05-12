@@ -11,4 +11,4 @@ python sqlite_noisy_one_file_capture.py &
 python sqlite_one_file_capture.py &
 python tsql_noisy_one_file_capture.py &
 python tsql_one_file_capture.py &
-
+python quorum_one_file_capture.py &
