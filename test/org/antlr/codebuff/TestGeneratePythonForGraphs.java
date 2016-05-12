@@ -3,6 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.validation.DropAlignFeatures;
 import org.antlr.codebuff.validation.DropWSFeatures;
 import org.antlr.codebuff.validation.LeaveOneOutValidator;
+import org.antlr.codebuff.validation.OneFileCapture;
 import org.antlr.codebuff.validation.SubsetValidator;
 import org.antlr.codebuff.validation.TestK;
 import org.junit.Test;
@@ -31,5 +32,10 @@ public class TestGeneratePythonForGraphs {
 	@Test
 	public void genIncreaseK() throws Exception {
 		TestK.main(null);
+	}
+
+	@Test
+	public void genOneFileCapture() throws Exception {
+		OneFileCapture.main(null);
 	}
 }
