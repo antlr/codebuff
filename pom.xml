@@ -7,7 +7,7 @@
 	</parent>
 	<groupId>org.antlr</groupId>
 	<artifactId>codebuff</artifactId>
-	<version>1.4.13</version>
+	<version>1.4.14</version>
 	<packaging>jar</packaging>
 
 	<name>CodeBuff Computer Language Formatter</name>
