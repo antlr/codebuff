@@ -1,0 +1,58 @@
+package Libraries.Containers.Blueprints
+
+/*
+
+Inheriting from the Iterator class provides a basic blueprint for iterating
+over an item.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.Iterator
+
+class MyClass<Type> is Iterator<Type>
+    action HasNext returns boolean
+        //implement here
+    end
+end
+*/
+
+
+class Iterator<Type>
+
+    /*
+        This action gets the current item and does not move onto the next item
+        to be iterated over. 
+
+        Attribute: Returns Returns the object. 
+    */
+
+
+    blueprint action GetCurrent returns Type
+
+    /*
+        This action determines if there is a next item in the iteration. 
+
+        Attribute: Returns true if there is a next item and false if there is not. 
+    */
+
+
+    blueprint action HasNext returns boolean
+
+    /*
+        This action gets the next item in the iteration and continues the iteration. 
+
+        Attribute: Returns Returns the object. 
+    */
+
+
+    blueprint action Next returns Type
+
+    /*
+        This action starts the iteration over from the beginning. 
+    */
+
+
+    blueprint action Rewind
+end

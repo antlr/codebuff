@@ -1,0 +1,568 @@
+package Libraries.Sound
+
+use Libraries.Language.Errors.InvalidArgumentError
+use Libraries.System.File
+use Libraries.Sound.Note
+use Libraries.Sound.Chord
+use Libraries.Containers.List
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Sound.Instrument
+use Libraries.Sound.Track
+
+/*
+    This class generates music from the Music Instrument Digital Interface
+    (MIDI) standard. This class can be used to play invidual notes and
+    individual chords, as well as used to compose multi-track songs. This class
+    abstracts away much of the MIDI interface, greatly simplifying song
+    composition. For song composition, see the Playable and Track classes, as well as the AddTrack() and
+    PlaySong() methods of this class.
+
+    Throughout this class and its related classes, individual pitches are
+    represented by integers. "Middle C" is note 60. A recommend resource for
+    understanding these numbers is the following page:
+
+    http://tomscarff.110mb.com/midi_analyser/midi_note_numbers_for_octaves.htm
+
+    This class also defines some constants that can be used throughout music-related
+    classes. These constants include: breve, wholeNote, halfNote, quarterNote, 
+    eighthNote , sixteenthNote, thirtySecondthNote, sixtyFourthNote
+
+    These constants can all be used to specify note start times and length. In
+    addition, mathematical manipulation of these constants is permitted. For example,
+    if we wanted a double whole note, we could type m:wholeNote*2, as well as
+    m:breve.
+
+    Attribute: Author Andy Stefik and Jeff Wilson
+    Attribute: Example
+
+use Libraries.Sound.Music
+
+Music music
+//play me a chromatic scale
+integer note = 60
+repeat 12 times
+    music:Play(note, 0.25)
+    note = note + 1
+end
+*/
+
+
+class Music
+    private integer ticksPerWholeNote = 384 // 96 * 4
+
+private integer beatsPerMinute = 120 // A pretty standard tempo
+
+private List<Instrument> instruments
+private List<Track> tracks
+private Instrument currentInstrument
+
+    /* A note with two times the duration of a whole note. */
+    public integer breve = ticksPerWholeNote * 2
+    /* A whole note. */
+    public integer wholeNote = ticksPerWholeNote
+    /* A note with half the duration of a whole note. */
+    public integer halfNote = ticksPerWholeNote /2
+    /* A note with a quarter the duration of a whole note. */
+    public integer quarterNote = ticksPerWholeNote /4
+    /* A note with an eighth the duration of a whole note. */
+    public integer eighthNote = ticksPerWholeNote /8
+    /* A note with a sixteenth the duration of a whole note. */
+    public integer sixteenthNote = ticksPerWholeNote /16
+    /* A note with a thirty-second the duration of a whole note. */
+    public integer thirtySecondthNote = ticksPerWholeNote /32
+    /* A note with a sixty-fourth the duration of a whole note. */
+    public integer sixtyFourthNote = ticksPerWholeNote /64
+
+
+private system action AddNoteForChord(integer note)
+
+
+private system action PlayChord(number length, number volume, number lengthInSeconds)
+
+
+private system action StartSong()
+
+
+private system action PlayMidiNative(text path)
+
+
+private system action StartTrack(integer instrument)
+
+
+private system action AddNoteToTrack(integer note, number volume, integer constantBend, integer preBend, integer preBendLength, number onPos, number offPos)
+
+
+private system action PlaySongNative()
+
+
+private system action GetTempoNative() returns integer
+
+
+private system action SetTempoNative(integer beatsPerMinute)
+
+
+private system action GetCurrentInstrumentName() returns text
+
+
+private system action GetCurrentInstrumentNumber() returns integer
+
+
+private system action SetCurrentInstrument(integer index)
+
+
+private system action GetInstrumentName(integer index) returns text
+
+
+private system action StopNative()
+
+    /*
+        Computes how long a note lasts, in seconds.
+    */
+
+
+private action ComputeNoteSeconds(number length) returns number
+   number beatsPerSecond = beatsPerMinute /60.0
+   number ticksPerSecond = beatsPerSecond * quarterNote
+   number noteLen = length / ticksPerSecond
+   return noteLen
+end
+
+    /*
+        Plays a note for the specified duration, at the given volume.
+        
+        Attribute: Parameter note the note number (0 to 127)
+        Attribute: Parameter duration how long to play the note (in seconds)
+        Attribute: Parameter volume the volume to play the note at (0 to 1).
+        
+        Attribute: Example
+        use Libraries.Sound.Music
+        Music muse
+        muse:Play(60, 1, 0.5) // middle C for 1 second, half volume
+    */
+
+
+public system action Play(integer note, number duration, number volume)
+    
+    /*
+        Closes all of the resources being used by the Music instance. This
+        method *must* be called, or the program will not exit properly.
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        Music muse
+        muse:Close()
+    */
+
+
+public system action Close()
+
+
+on create
+        // Populate the instruments list
+
+   integer index = 0
+   text name = "not an instrument"
+   repeat until name = ""
+       Instrument i
+       name = GetInstrumentName(index)
+       i:SetName(name)
+       i:SetValue(index)
+       index = index + 1
+       instruments:Add(i)
+   end
+end
+
+    /*
+        Plays a note for the specified duration at maximum volume.
+        
+        Attribute: Parameter note the note number (0 to 127)
+        Attribute: Parameter duration how long to play the note (in seconds)
+        
+        Attribute: Example
+        use Libraries.Sound.Music
+        Music muse
+        muse:Play(60, 1) // middle C, for 1 second, full volume
+    */
+
+
+public action Play(integer note, number duration)
+   Play(note, duration, 1.0)
+end
+
+    /*
+        Plays a note. See the "Note" class for specifics on how to use these objects.
+
+        Attribute: Parameter note the note object to play
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Note
+        Music muse
+        Note note
+        note:SetPitch(60)
+        note:SetLength(muse:quarterNote)
+        muse:Play(note)
+    */
+
+
+public action Play(Note note)
+   number noteLen = ComputeNoteSeconds(note:GetLength())
+   Play(note:GetPitch(), noteLen, note:GetVolume())
+end
+    
+    /*
+        Plays a chord. See the "Chord" class for specifics on how to use these objects.
+        
+        Attribute: Parameter chord the chord object to play.
+        
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Chord
+        Music muse
+        Chord chord
+        // Play a major C chord.
+        chord:Add(60)
+        chord:Add(64)
+        chord:Add(72)
+        chord:SetLength(muse:quarterNote)
+        
+        muse:Play(chord)
+    */
+
+
+public action Play(Chord chord)
+   Iterator<integer> notes = chord:GetPitches()
+   repeat while notes:HasNext()
+       integer note = notes:Next()
+       AddNoteForChord(note)
+   end
+        
+        // Now actually play the chord
+
+   number noteLen = ComputeNoteSeconds(chord:GetLength())
+   PlayChord(chord:GetLength(), chord:GetVolume(), noteLen)
+end
+    
+    /*
+        Play the given MIDI file. See the "Stop" method to stop playback.
+
+        Attribute: Parameter path the path to the MIDI fie.
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.System.File
+        Music muse
+        File file
+        muse:Play(file)
+    */
+
+
+public action Play(File file)
+   if (file not= undefined)
+       InvalidArgumentError e
+       e:SetErrorMessage("The MIDI file is not a valid file. It either doesn't exist or points to a directory.")
+       alert(e)
+   elseif (not file:IsFile())
+       InvalidArgumentError e
+       e:SetErrorMessage("The MIDI file " + file:GetAbsolutePath() + " is not a valid file. It either doesn't exist or points to a directory.")
+       alert(e)
+   end
+
+   PlayMidiNative(file:GetAbsolutePath())
+end
+
+    /*
+        Play the song that was constructed using the AddTrack() method. A "song"
+        consists of one or more tracks of notes and/or chords. If no tracks
+        exist, this method will do nothing. See the "Stop" method to stop playback.
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Note
+        use Libraries.Sound.Chord
+        use Libraries.Sound.Track
+        // Play a simple C arpeggio followed by a C chord.
+        
+        Music muse
+        Track t = muse:AddTrack()
+
+        Note n1
+        Note n2
+        Note n3
+        Chord c1
+        n1:SetPitch(60)
+        n2:SetPitch(64)
+        n3:SetPitch(67)
+        n2:SetStartTime(muse:quarterNote)
+        n3:SetStartTime(muse:quarterNote)
+        n1:SetLength(muse:quarterNote)
+        n2:SetLength(muse:quarterNote)
+        n3:SetLength(muse:quarterNote)
+        c1:Add(60)
+        c1:Add(64)
+        c1:Add(67)
+        c1:SetStartTime(muse:quarterNote)
+        c1:SetLength(muse:breve)
+        t:Add(n1)
+        t:Add(n2)
+        t:Add(n3)
+        t:Add(c1)
+        muse:PlaySong()
+    */
+
+
+public action PlaySong()
+        // The StartSong() native method will clean up the native side for
+        // new song generation.
+
+   StartSong()
+
+        // Since all times are put into the system relatively, we have to
+        // convert them to absolute timings. We do that by adding to this
+        // variable the start time of each event. Time '0' is our start time.
+
+
+   number currentTime = 0
+
+        // Loop through all tracks and get *all* events.
+
+   Iterator<Track> trackIterator = tracks:GetIterator()
+        
+        // Get each event and handle them as necessary. For now, there are only
+        // Playable events, but as others are added, they will need to be
+        // dumped here to be managed and sent to the native side.
+
+   repeat while trackIterator:HasNext()
+       currentTime = 0
+       Track track = trackIterator:Next()
+       Instrument ti = track:GetInstrument()
+       integer instrumentIndex = ti:GetValue()
+       StartTrack(instrumentIndex) // start a new track on the native side with the appropriate instrument.
+
+       Iterator<MusicEvent> events = track:GetEvents()
+       repeat while events:HasNext()
+           MusicEvent event = events:Next()
+
+                // Handle playable events first.
+
+           if event is Playable
+               Playable p = cast(Playable, event)
+                    
+                    // We must keep track of the current time to convert
+                    // all relative times to absolute time, since this is what
+                    // the Java MIDI library requires.
+
+               currentTime = currentTime + p:GetStartTime()
+               if event is Note
+                        // Single notes can just be dumped directly into the track.
+
+                   Note n = cast(Note, event)
+                   AddNoteToTrack(n:GetPitch(), n:GetVolume(), n:GetConstantPitchBend(), n:GetPrePitchBend(), n:GetPrePitchBendLength(), currentTime, currentTime + n:GetLength())
+               elseif event is Chord
+                        // Chords must be dumped one note at a time. All notes
+                        // start at the same time, so advancing the time is
+                        // not required.
+
+                   Chord c = cast(Chord, event)
+                   Iterator<integer> notes = c:GetPitches()
+                   repeat while notes:HasNext()
+                       integer note = notes:Next()
+                       AddNoteToTrack(note, c:GetVolume(), c:GetConstantPitchBend(), c:GetPrePitchBend(), c:GetPrePitchBendLength(), currentTime, currentTime + c:GetLength())
+                   end
+               end
+           end
+       end
+   end
+   PlaySongNative()
+end
+    
+    /*
+        Stops any currently playing music. This includes individual notes, individual chords,
+        created songs and MIDI files.
+    */
+
+
+public action Stop
+   StopNative()
+end
+
+    /*
+        Gets the current tempo of the song being created in beats per minute. The default tempo is 120 bpm.
+        
+        Attribute: Example
+        use Libraries.Sound.Music
+        Music muse
+        output "The tempo is " + muse:GetTempo() + " beats per minute."
+    */
+
+
+public action GetTempo() returns integer
+   return beatsPerMinute
+end
+
+    /*
+        Gets the track at the specified index.
+
+        Attribute: Parameter index the index of the requested track (zero based).
+        Attribute: Returns the requested track
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Track
+        Music muse
+        Track myTrack = muse:AddTrack()
+        Track aCopyOfMyTrack = muse:GetTrack(0)
+    */
+
+
+public action GetTrack(integer index) returns Track
+   return tracks:Get(index)
+end
+
+    /*
+        Get all the tracks from this song.
+
+        Attribute: Returns an iterator containing all tracks (if any).
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Track
+        use Libraries.Containers.Blueprints.Iterator
+        Music muse
+        Iterator<Track> tracks = muse:GetTracks()
+    */
+
+
+public action GetTracks() returns Iterator<Track>
+   return tracks:GetIterator()
+end
+
+    /*
+        Returns the requested instrument. This instrument can be used to set
+        the instrument of individual tracks, or of this Music object. The General MIDI
+        specification defines a number of instruments which can be expected
+        on most systems. For a complete list, see:
+
+        http://www.midi.org/techspecs/gm1sound.php
+
+        Attribute: Returns the requested instrument
+        Attribute: Parameter index the requested instrument number (zero based).
+        
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Instrument
+        Music muse
+        Instrument i = muse:GetInstrument(0) // get the default piano specified by the General MIDI standard.
+        output i:GetName()
+    */
+
+
+public action GetInstrument(integer index) returns Instrument
+   return instruments:Get(index)
+end
+
+    /*
+        Returns an iterator containing all available instruments on the system.
+
+        Attribute: Returns the available instruments.
+        
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Instrument
+        use Libraries.Containers.Blueprints.Iterator
+        Music muse
+        Iterator<Instrument> instruments = muse:GetInstruments()
+        output "Here are all the available instruments:"
+        repeat while instruments:HasNext()
+            Instrument i = instruments:Next()
+            output i:GetName()
+        end
+    */
+
+
+public action GetInstruments() returns Iterator<Instrument>
+   return instruments:GetIterator()
+end
+    
+    /*
+        Returns the number of midi "clock ticks" per whole note. The MIDI specification
+        uses clock ticks to keep all MIDI devices synchronized, and MIDI uses Pulses Per Quarter Note (PPQ)
+        to clearly indicate to MIDI devices how long each note should last, based on the tempo and number of 
+        clock ticks it spans. In this implementation, Ticks Per Whole Note is used to simplify calculations.
+        To get PPQ (if desired), simply divide the result by four. The default PPQ used by this class is 96,
+        meaning the number of ticks per whole note is likely to be 384.
+
+        Attribute: Returns the number of clock ticks per whole note.
+    */
+
+
+public action GetTicksPerWholeNote() returns integer
+   return ticksPerWholeNote
+end
+
+    /*
+        Add a new track to this composition. A new track is created (with the appropriate parameters)
+        and returned. Notes can be added to this track to be played. See the PlaySong() action.
+
+        Attribute: Returns a new track
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Track
+        Music muse
+        
+        // Add three tracks to our composition.
+        Track t1 = muse:AddTrack()
+        Track t2 = muse:AddTrack()
+        Track t3 = muse:AddTrack()
+    */
+
+
+public action AddTrack() returns Track
+   Track t
+   t:SetInstrument(currentInstrument)
+   tracks:Add(t)
+   return t
+end
+
+    /*
+        Set the tempo of this song, specified in beats per minute. The default tempo is 120 beats per minute. Note that
+        this will only affect the PlaySong() action and the Play() actions that accept a relative time value (such as
+        quarterNote).
+
+        Attribute: Parameter beatsPerMinute the tempo of the song, in beats per minute.
+        
+        Attribute: Example
+        use Libraries.Sound.Music
+        Music muse
+        muse:SetTempo(240) // speed it up
+    */
+
+
+public action SetTempo(integer beatsPerMinute)
+   me:beatsPerMinute = beatsPerMinute
+   me:SetTempoNative(beatsPerMinute)
+end
+
+    /*
+        Set the default instrument. This will affect any new created track (it will be set to this instrument),
+        and it will also affect the instrument used for the various Play() actions.
+
+        Attribute: Parameter instrument the instrument to set
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Instrument
+        Music muse
+        
+        // Select a different instrument and set it as the default, then play a note.
+        Instrument i = muse:GetInstrument(10)
+        muse:SetInstrument(i)
+        muse:Play(60, 1)
+    */
+
+
+public action SetInstrument(Instrument instrument)
+   me:currentInstrument = instrument
+   SetCurrentInstrument(currentInstrument:GetValue())
+end
+end

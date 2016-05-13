@@ -1,0 +1,285 @@
+package Libraries.Interface
+
+use Libraries.Interface.Events.MouseListener
+use Libraries.Game.Graphics.Label
+use Libraries.Game.Graphics.Font
+use Libraries.Game.Graphics.Color
+
+/*
+    The Button class is an extension of the Libraries.Interface.Panel class and
+    the Libraries.Interface.Events.MouseListener class. It represents a button
+    on the screen that will automatically call its own MouseListener actions
+    when it is clicked on. To make your own Button that reacts to mouse events,
+    create a class that inherits from Button and overrides its MouseListener
+    actions.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Interface.Events.MouseEvent
+
+        class MyButton is Button
+
+            action ClickedMouse(MouseEvent event)
+                output "MyButton was clicked!"
+            end
+
+            action ReleasedMouse(MouseEvent event)
+                output "MyButton was released!"
+            end
+        end
+*/
+
+
+class Button is Panel, MouseListener
+
+    private Label title
+
+on create
+   title:SetText("Button")
+end
+
+    /*
+    This action sets the initial width and height of the button, and loads its
+    background, border, and button label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100)
+                Add(button)
+            end
+        end
+    */
+
+
+action Initialize(number width, number height)
+   Color border
+   border:SetColor(0.55, 0.55, 0.55, 1)
+   SetBorderColor(border)
+   Color background
+   background:SetColor(0.85, 0.85, 0.85, 1)
+   SetBackgroundColor(background)
+   parent:Panel:Initialize(width, height)
+   SetName("Button")
+   AddMouseListener(me)
+   Add(title)
+   title:SetX(cast(integer, (width - title:GetTextWidth())/2))
+   title:SetY(cast(integer, (height - title:GetTextHeight())/2))
+end
+
+    /*
+    This action sets the initial width and height of the button, and sets the
+    text on the Button's label. It also loads its background, border, and button 
+    label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100, "Quorum!")
+                Add(button)
+            end
+        end
+    */
+
+
+action Initialize(number width, number height, text buttonTitle)
+   title:SetText(buttonTitle)
+   Initialize(width, height)
+end
+
+    /*
+    This action sets the text on the Button's label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100)
+                button:SetText("My Button")
+                Add(button)
+            end
+        end
+    */
+
+
+action SetText(text buttonText)
+   title:SetText(buttonText)
+end
+
+    /*
+    This action returns the current text on the Button's label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100)
+                Add(button)
+                output "The default text for the button is " + button:GetText()
+            end
+        end
+    */
+
+
+action GetText returns text
+   return title:GetText()
+end
+
+    /*
+    This action sets the font being used by this Button's label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Graphics.Font
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100)
+                Font myFont
+                myFont:LoadFont("Times New Roman")
+                button:SetFont(myFont)
+                Add(button)
+            end
+        end
+    */
+
+
+action SetFont(Font font)
+   title:SetFont(font)
+   title:SetX(cast(integer, (GetWidth() - title:GetTextWidth())/2))
+   title:SetY(cast(integer, (GetHeight() - title:GetTextHeight())/2))
+end
+
+    /*
+    This action returns the current font being used by this Button's label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Graphics.Font
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100)
+                Font myFont
+                myFont =  button:GetFont()
+            end
+        end
+    */
+
+
+action GetFont returns Font
+   return title:GetFont()
+end
+
+    /*
+    This action sets the size of the font being used by this Button's label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100)
+                button:SetTextSize(24)
+                Add(button)
+            end
+        end
+    */
+
+
+action SetTextSize(integer size)
+   title:SetSize(size)
+   title:SetX(cast(integer, (GetWidth() - title:GetTextWidth())/2))
+   title:SetY(cast(integer, (GetHeight() - title:GetTextHeight())/2))
+end
+
+    /*
+    This action returns the current size of the font being used by this Button's label.
+
+    Attribute: Example
+
+        use Libraries.Interface.Button
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Button button
+                button:Initialize(200, 100)
+                output "The default font size of a button is " + button:GetTextSize()
+            end
+        end
+    */
+
+
+action GetTextSize returns integer
+   return title:GetSize()
+end
+end

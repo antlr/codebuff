@@ -1,0 +1,33 @@
+package Libraries.Interface.Events
+
+/*
+The KeyboardListener class is used to listen for and react to KeyboardEvents.
+Programs that want to react to KeyboardEvents should make a class that inherits
+from this class and overrides the PressedKey and/or ReleasedKey actions.
+*/
+
+
+class KeyboardListener
+
+    /*
+    This action responds to a KeyboardEvent where the user pressed a key. This
+    action does nothing on its own, and should be overriden in an inheriting
+    class for user programs.
+    */
+
+
+    action PressedKey(KeyboardEvent event)
+
+    end
+
+    /*
+    This action responds to a KeyboardEvent where the user released a key. This
+    action does nothing on its own, and should be overriden in an inheriting
+    class for user programs.
+    */
+
+
+    action ReleasedKey(KeyboardEvent event)
+
+    end
+end

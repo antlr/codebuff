@@ -1,0 +1,412 @@
+package Libraries.Interface
+
+use Libraries.Game.Game
+use Libraries.Interface.Events.KeyboardListener
+use Libraries.Interface.Events.KeyboardEvent
+use Libraries.Game.Graphics.Drawable
+use Libraries.Game.Graphics.Texture
+use Libraries.Game.Graphics.Label
+use Libraries.Game.InputMonitor
+use Libraries.Game.Graphics.Color
+
+
+/*
+    The TextBox class is an extension of the Libraries.Interface.Panel class, 
+    and is used to receive text input from the user. 
+
+    Attribute: Example
+
+        use Libraries.Interface.TextBox
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                TextBox box
+                box:SetPosition(100, 100)
+                box:Initialize(100, 100)
+                Add(box)
+                AddKeyboardListener(box)
+            end
+
+        end
+*/
+
+
+class TextBox is Panel, KeyboardListener
+
+    private InputMonitor im
+              private Label response
+              private text responseStr = ""
+              private text oldResponse = ""
+              private boolean textChanged = true
+              private Drawable lineCursor
+              private integer cursorIndex = 0
+              private boolean cursorMoved = true
+              private number blinkTimer = 0
+              private number blinkRate = 0.5
+
+    on create
+        Color white
+        white = white:White()
+        SetBackgroundColor(white)
+        Color nearWhite
+        nearWhite:SetColor(0.9, 0.9, 0.9, 1)
+        SetBorderColor(nearWhite)
+    end
+
+    /*
+    The Initialize action sets the starting width and height of the TextBox,
+    loads the default background and border, and prepares the box for input.
+
+    Attribute: Parameter width The width of the text box.
+    Attribute: Parameter height The height of the text box.
+
+    Attribute: Example
+
+        use Libraries.Interface.TextBox
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                TextBox box
+                box:Initialize(100, 100)
+                Add(box)
+                AddKeyboardListener(box)
+            end
+
+        end
+    */
+
+
+    action Initialize(number width, number height)
+        parent:Panel:Initialize(width, height)
+        integer spacing = response:GetLineHeight()/4
+        response:SetPosition(spacing, height - response:GetLineHeight() - spacing)
+        response:SetWidth(width -2 * spacing)
+        Add(response)
+        Texture lineTexture
+        Color nearBlack
+        nearBlack:SetColor(0.1, 0.1, 0.1, 1)
+        lineTexture:LoadFilledRectangle(2, spacing * 3, nearBlack)
+        lineCursor:Load(lineTexture)
+        lineCursor:SetPosition(spacing, height - response:GetLineHeight() - spacing)
+        Add(lineCursor)
+    end
+
+    /*
+    Returns the input that the user has put in the TextBox.
+
+    Attribute: Example
+
+        use Libraries.Interface.TextBox
+        use Libraries.Game.Game
+        use Libraries.Game.InputMonitor
+        use Libraries.Interface.Events.KeyboardEvent
+
+        class Main is Game
+
+            TextBox box
+            InputMonitor monitor
+            KeyboardEvent keys
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                box:Initialize(100, 100)
+                Add(box)
+                AddKeyboardListener(box)
+            end
+
+            action Update(number time)
+                if monitor:IsKeyPressed(keys:ENTER)
+                    output box:GetInput()
+                end
+            end
+
+        end
+    */
+
+
+    action GetInput returns text
+        return responseStr
+    end
+
+    /*
+    This action positions the cursor and makes it blink on and off. When TextBox
+    is used in conjunction with the Game class, this action will automatically
+    be called by Game immediately after Game:Update() is called if the TextBox
+    is a part of the Game via the Add(Item) action.
+    */
+
+
+    action Update(number delta)
+        UpdateText()
+
+        if cursorMoved
+            blinkTimer = 0
+            lineCursor:Show()
+
+            if cursorIndex = 0
+                lineCursor:SetPosition(response:GetX(), response:GetY())
+            else
+                Item2D temp = response:GetItem(cursorIndex -1)
+                lineCursor:SetPosition(response:GetX() + temp:GetX() + temp:GetWidth(), response:GetY() + temp:GetY())
+            end
+        else
+            blinkTimer = blinkTimer + delta
+            if blinkTimer > blinkRate
+                blinkTimer = 0
+                if lineCursor:IsShowing()
+                    lineCursor:Hide()
+                else
+                    lineCursor:Show()
+                end
+            end
+        end
+        cursorMoved = false
+    end
+
+    /*
+    This action listens for a key on the keyboard to be pressed. When a key is
+    pressed, if it is a valid symbol, it will be added to the text box's input.
+    When used in conjunction with the Game class, this will be called
+    automatically if added to the Game via the AddKeyboardListener(KeyboardListener)
+    action.
+    */
+
+
+    action PressedKey(KeyboardEvent ke)
+        ShiftPressed = false
+        if im:IsKeyPressed(ke:SHIFT_LEFT) or im:IsKeyPressed(ke:SHIFT_RIGHT)
+            ShiftPressed = true
+        end
+
+        if (ke:keyCode >= ke:NUM_0 and ke:keyCode <= ke:NUM_9) or (ke:keyCode >= ke:NUMPAD_0 and ke:keyCode <= ke:NUMPAD_9)
+            text preText = ""
+            if cursorIndex not= 0
+                preText = responseStr:GetSubtext(0, cursorIndex)
+            end
+
+            text postText = ""
+            if cursorIndex not= responseStr:GetSize()
+                postText = responseStr:GetSubtext(cursorIndex)
+            end
+            responseStr = preText + ke:ToText(ke:keyCode, ShiftPressed) + postText
+            textChanged = true
+            cursorIndex = cursorIndex + 1
+            cursorMoved = true
+        elseif (ke:keyCode >= ke:A and ke:keyCode <= ke:Z) or IsPunctuation(ke:keyCode)
+            text preText = ""
+            if cursorIndex not= 0
+                preText = responseStr:GetSubtext(0, cursorIndex)
+            end
+
+            text postText = ""
+            if cursorIndex not= responseStr:GetSize()
+                postText = responseStr:GetSubtext(cursorIndex)
+            end
+            responseStr = preText + ke:ToText(ke:keyCode, ShiftPressed) + postText
+            textChanged = true
+            cursorIndex = cursorIndex + 1
+            cursorMoved = true
+        elseif ke:keyCode = ke:SPACE
+            text preText = ""
+            if cursorIndex not= 0
+                preText = responseStr:GetSubtext(0, cursorIndex)
+            end
+
+            text postText = ""
+            if cursorIndex not= responseStr:GetSize()
+                postText = responseStr:GetSubtext(cursorIndex)
+            end
+            responseStr = preText + " " + postText
+            textChanged = true
+            cursorIndex = cursorIndex + 1
+            cursorMoved = true
+        elseif ke:keyCode = ke:LEFT
+            if cursorIndex > 0
+                cursorIndex = cursorIndex -1
+                cursorMoved = true
+            end
+
+        elseif ke:keyCode = ke:RIGHT
+            if cursorIndex < response:GetItemCount()
+                cursorIndex = cursorIndex + 1
+                cursorMoved = true
+            end
+
+        elseif ke:keyCode = ke:BACKSPACE
+            if cursorIndex not= 0
+                text preText = ""
+                if cursorIndex > 1
+                    preText = responseStr:GetSubtext(0, cursorIndex -1)
+                end
+
+                text postText = ""
+                if cursorIndex not= responseStr:GetSize()
+                    postText = responseStr:GetSubtext(cursorIndex)
+                end
+                responseStr = preText + postText
+                cursorIndex = cursorIndex -1
+                textChanged = true
+                cursorMoved = true
+            end
+
+        elseif ke:keyCode = ke:FORWARD_DEL
+            if cursorIndex not= responseStr:GetSize()
+                text preText = ""
+                if cursorIndex > 0
+                    preText = responseStr:GetSubtext(0, cursorIndex -1)
+                end
+
+                text postText = ""
+                if cursorIndex < responseStr:GetSize() -1
+                    postText = responseStr:GetSubtext(cursorIndex + 1)
+                end
+                responseStr = preText + postText
+                
+                // Note that the cursorIndex does not change, but we want to
+                // re-evaluate the cursor's position because the text has moved.
+
+                textChanged = true
+                cursorMoved = true
+            end
+        end
+    end
+
+    private action IsPunctuation(integer keyCode) returns boolean
+        boolean value = keyCode >= 68 and keyCode <= 76
+        value = value or keyCode = 17 or keyCode = 55 or keyCode = 56 or keyCode = 81
+        return value
+    end
+
+    private action UpdateText
+        if textChanged
+            response:SetText(responseStr)
+
+            if response:GetTextHeight() > GetHeight()
+                response:SetText(oldResponse)
+            else
+                oldResponse = responseStr
+            end
+            textChanged = false
+        end
+    end
+
+    /*
+    Sets the number of seconds that should pass between the cursor blinking on
+    or off.
+
+    Attribute: Example
+
+        use Libraries.Interface.TextBox
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                TextBox box
+                box:Initialize(100, 100)
+                box:SetBlinkRate(0.25)
+                Add(box)
+                AddKeyboardListener(box)
+            end
+
+        end
+    */
+
+
+    action SetBlinkRate(number rate)
+        blinkRate = rate
+    end
+
+    /*
+    Returns the current number of seconds that are allowed to pass between the
+    cursor blinking on and off.
+
+    Attribute: Example
+
+        use Libraries.Interface.TextBox
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                TextBox box
+                box:Initialize(100, 100)
+                Add(box)
+                AddKeyboardListener(box)
+                output "The default blink rate is " + box:GetBlinkRate()
+            end
+
+        end
+    */
+
+
+    action GetBlinkRate returns number
+        return blinkRate
+    end
+
+    /*
+    This action enables the text box, making it accept input and making the
+    cursor visible. Note that the text box is enabled by default.
+    */ /*
+    action Enable
+        AddKeyboardListener(me)
+        lineCursor:Show()
+    end */
+
+    /*
+    This action disables the text box, preventing it from accepting input and
+    hiding the cursor.
+
+    Attribute: Example
+
+        use Libraries.Interface.TextBox
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                TextBox box
+                box:Initialize(100, 100)
+                Add(box)
+                AddKeyboardListener(box)
+                box:Disable()
+            end
+
+        end
+    */ /*
+    action Disable
+        // Update text to set the most recent text, if needed.
+        UpdateText()
+
+        lineCursor:Hide()
+
+        RemoveKeyboardListener(me)
+    end */
+end
