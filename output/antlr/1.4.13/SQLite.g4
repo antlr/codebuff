@@ -276,12 +276,12 @@ exprs
 
 foreign_key_clause
     :   K_REFERENCES foreign_table ('(' column_names ')')? (   (   K_ON (K_DELETE | K_UPDATE)
-(   K_SET K_NULL
-|   K_SET K_DEFAULT
-|   K_CASCADE
-|   K_RESTRICT
-|   K_NO K_ACTION
-)
+                                                                   (   K_SET K_NULL
+                                                                   |   K_SET K_DEFAULT
+                                                                   |   K_CASCADE
+                                                                   |   K_RESTRICT
+                                                                   |   K_NO K_ACTION
+                                                                   )
                                                                |   K_MATCH name
                                                                ))* (K_NOT? K_DEFERRABLE (K_INITIALLY K_DEFERRED | K_INITIALLY K_IMMEDIATE)?)?
     ;

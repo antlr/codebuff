@@ -195,7 +195,7 @@ public class Compiler {
         else {
                  String msg = parser.getErrorMessage(re, parser.getTokenNames());
                  group.errMgr.compileTimeError(ErrorType.SYNTAX_ERROR, templateToken, re.token, msg);
-             }
+        }
         throw new STException(); // we have reported the error, so just blast out
     }
 }

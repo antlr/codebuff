@@ -25,7 +25,7 @@ SELECT
     , db_buffer_pages
     , db_buffer_MB = db_buffer_pages / 128
     , db_buffer_percent =
-      CONVERT(DECIMAL(6, 3), db_buffer_pages * 100.0 / @total_buffer)
+CONVERT(DECIMAL(6, 3), db_buffer_pages * 100.0 / @total_buffer)
 FROM src
 ORDER BY db_buffer_MB
     DESC;
@@ -36,7 +36,7 @@ ORDER BY db_buffer_MB
 WITH src AS
 (
          SELECT
-             [Object] = o.name
+         [Object] = o.name
 , [Type] = o.type_desc
 , [Index] = COALESCE(i.name, '')
 , [Index_Type] = i.type_desc

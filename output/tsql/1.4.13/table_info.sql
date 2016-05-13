@@ -98,9 +98,9 @@ FROM (
              tab1.name child_table
              , col1.name child_column
              , CASE col1.colid
-                   WHEN ref.fkey1
+               WHEN ref.fkey1
                    THEN 1
-                   WHEN ref.fkey2
+               WHEN ref.fkey2
                    THEN 2
                WHEN ref.fkey3
                    THEN 3
@@ -134,9 +134,9 @@ FROM (
              , col2.name parent_column
              , ref.constid constraint_id
              , CASE col2.colid
-                   WHEN ref.rkey1
+               WHEN ref.rkey1
                    THEN 1
-                   WHEN ref.rkey2
+               WHEN ref.rkey2
                    THEN 2
                WHEN ref.rkey3
                    THEN 3
@@ -172,25 +172,25 @@ FROM (
              sysobjects tab2,
              sysreferences ref
          WHERE col1.id = ref.fkeyid AND
-               tab1.id = col1.id AND
-               col2.id = ref.rkeyid AND
-               tab2.id = col2.id AND
-               col1.colid IN
-               (ref.fkey1, ref.fkey2
-                         , ref.fkey3
-                         , ref.fkey4
-                         , ref.fkey5
-                         , ref.fkey6
-                         , ref.fkey7
-                         , ref.fkey8
-                         , ref.fkey9
-                         , ref.fkey10
-                         , ref.fkey11
-                         , ref.fkey12
-                         , ref.fkey13
-                         , ref.fkey14
-                         , ref.fkey15
-                         , ref.fkey16)
+tab1.id = col1.id AND
+col2.id = ref.rkeyid AND
+tab2.id = col2.id AND
+col1.colid IN
+(ref.fkey1, ref.fkey2
+          , ref.fkey3
+          , ref.fkey4
+          , ref.fkey5
+          , ref.fkey6
+          , ref.fkey7
+          , ref.fkey8
+          , ref.fkey9
+          , ref.fkey10
+          , ref.fkey11
+          , ref.fkey12
+          , ref.fkey13
+          , ref.fkey14
+          , ref.fkey15
+          , ref.fkey16)
                                     AND col2.colid IN
                                         (ref.rkey1, ref.rkey2
                                                   , ref.rkey3

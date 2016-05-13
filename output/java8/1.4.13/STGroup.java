@@ -560,14 +560,14 @@ public class STGroup {
         }
         else if ( isGroupFile ) {
             //System.out.println("look for fileUnderRoot: "+fileUnderRoot);
-                 if ( Misc.urlExists(fileUnderRoot) ) {
-                     g = new STGroupFile(fileUnderRoot, encoding, delimiterStartChar, delimiterStopChar);
-                     g.setListener(this.getListener());
-                 }
-                 else {
-                     g = new STGroupFile(fileName, delimiterStartChar, delimiterStopChar);
-                     g.setListener(this.getListener());
-                 }
+            if ( Misc.urlExists(fileUnderRoot) ) {
+                g = new STGroupFile(fileUnderRoot, encoding, delimiterStartChar, delimiterStopChar);
+                g.setListener(this.getListener());
+            }
+            else {
+                g = new STGroupFile(fileName, delimiterStartChar, delimiterStopChar);
+                g.setListener(this.getListener());
+            }
         }
         else if ( isGroupDir ) {
 //          System.out.println("try dir "+fileUnderRoot);

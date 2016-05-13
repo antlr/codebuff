@@ -89,82 +89,82 @@ public class STViewFrame extends JFrame {
 
         //======== treeContentSplitPane ========
         {
-            treeContentSplitPane.setResizeWeight(0.25);
+        treeContentSplitPane.setResizeWeight(0.25);
 
             //======== treeAttributesSplitPane ========
-            {
-                treeAttributesSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-                treeAttributesSplitPane.setResizeWeight(0.7);
+        {
+        treeAttributesSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        treeAttributesSplitPane.setResizeWeight(0.7);
 
                 //======== treeScrollPane ========
-                {
-                    treeScrollPane.setViewportView(tree);
-                }
-                treeAttributesSplitPane.setTopComponent(treeScrollPane);
+        {
+        treeScrollPane.setViewportView(tree);
+        }
+        treeAttributesSplitPane.setTopComponent(treeScrollPane);
 
                 //======== attributeScrollPane ========
-                {
-                    attributeScrollPane.setViewportView(attributes);
-                }
-                treeAttributesSplitPane.setBottomComponent(attributeScrollPane);
-            }
-            treeContentSplitPane.setLeftComponent(treeAttributesSplitPane);
+        {
+        attributeScrollPane.setViewportView(attributes);
+        }
+        treeAttributesSplitPane.setBottomComponent(attributeScrollPane);
+        }
+        treeContentSplitPane.setLeftComponent(treeAttributesSplitPane);
 
             //======== outputTemplateSplitPane ========
-            {
-                outputTemplateSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-                outputTemplateSplitPane.setResizeWeight(0.7);
+        {
+        outputTemplateSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        outputTemplateSplitPane.setResizeWeight(0.7);
 
                 //======== scrollPane7 ========
-                {
-                    scrollPane7.setViewportView(output);
-                }
-                outputTemplateSplitPane.setTopComponent(scrollPane7);
+        {
+        scrollPane7.setViewportView(output);
+        }
+        outputTemplateSplitPane.setTopComponent(scrollPane7);
 
                 //======== templateBytecodeTraceTabPanel ========
-                {
+        {
 
                     //======== panel1 ========
-                {
-                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
+        {
+            panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
 
                         //======== scrollPane3 ========
-                    {
-                        scrollPane3.setViewportView(template);
-                    }
-                    panel1.add(scrollPane3);
+            {
+            scrollPane3.setViewportView(template);
+            }
+            panel1.add(scrollPane3);
 
                         //======== scrollPane2 ========
-                    {
-                        scrollPane2.setViewportView(ast);
-                    }
-                    panel1.add(scrollPane2);
-                }
-                templateBytecodeTraceTabPanel.addTab("template", panel1);
+            {
+            scrollPane2.setViewportView(ast);
+            }
+            panel1.add(scrollPane2);
+        }
+        templateBytecodeTraceTabPanel.addTab("template", panel1);
 
 
                     //======== scrollPane15 ========
-                {
-                    scrollPane15.setViewportView(bytecode);
-                }
-                templateBytecodeTraceTabPanel.addTab("bytecode", scrollPane15);
+        {
+        scrollPane15.setViewportView(bytecode);
+        }
+        templateBytecodeTraceTabPanel.addTab("bytecode", scrollPane15);
 
 
                     //======== scrollPane1 ========
-                {
-                    scrollPane1.setViewportView(trace);
-                }
-                templateBytecodeTraceTabPanel.addTab("trace", scrollPane1);
-                }
-                outputTemplateSplitPane.setBottomComponent(templateBytecodeTraceTabPanel);
-            }
-            treeContentSplitPane.setRightComponent(outputTemplateSplitPane);
+        {
+        scrollPane1.setViewportView(trace);
+        }
+        templateBytecodeTraceTabPanel.addTab("trace", scrollPane1);
+        }
+        outputTemplateSplitPane.setBottomComponent(templateBytecodeTraceTabPanel);
+        }
+        treeContentSplitPane.setRightComponent(outputTemplateSplitPane);
         }
         contentPane.add(treeContentSplitPane, new GridBagConstraints(0,1,1,1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0),0,0));
 
         //======== errorScrollPane ========
         {
-            errorScrollPane.setViewportView(errorList);
+        errorScrollPane.setViewportView(errorList);
         }
         contentPane.add(errorScrollPane, new GridBagConstraints(0,2,1,1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0),0,0));
         pack();

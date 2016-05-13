@@ -197,11 +197,11 @@ public class AutoIndentWriter implements STWriter {
                     continue;
                 }
                 else if ( c=='\n' ) {
-                         out.write(newline);
-                         n += newline.length();
-                         charPosition = 0;
-                         charIndex += newline.length();
-                         n += indent();
+                    out.write(newline);
+                    n += newline.length();
+                    charPosition = 0;
+                    charIndex += newline.length();
+                    n += indent();
                     // continue writing any chars out
                 }
                 else {  // write A or B part

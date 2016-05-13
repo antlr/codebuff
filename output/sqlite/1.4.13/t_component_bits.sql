@@ -120,9 +120,9 @@ ORDER BY server_name
 DELETE FROM t_component_queue_assoc
 WHERE server_id =
           (
-          SELECT server_id
-          FROM t_server
-          WHERE server_name = 'pyxis')
+              SELECT server_id
+              FROM t_server
+              WHERE server_name = 'pyxis')
 
 -- shows the queues in the t_queue_server_assoc table tied to the queue_name in t_queue
 
@@ -200,9 +200,9 @@ WHERE name LIKE 'DexRealECPreProcessor2%'
 DELETE FROM t_proc_controller_assoc
 WHERE server_id =
           (
-          SELECT server_id
-          FROM t_server
-          WHERE server_name = 'boston')
+              SELECT server_id
+              FROM t_server
+              WHERE server_name = 'boston')
 
 SELECT *
 FROM t_proc_controller

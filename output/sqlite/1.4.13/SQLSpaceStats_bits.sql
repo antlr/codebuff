@@ -27,7 +27,7 @@ FROM SQLSpaceStats a
            a.total_space = b.total_space AND
            a.usedspace = b.usedspace AND
            a.freespace = b.freespace AND
-           a.freepct = b.freepct AND
+        a.freepct = b.freepct AND
            a.Name = b.Name AND
            a.[FileName] = b.[FileName] AND
            a.LastUpdate = b.LastUpdate AND

@@ -181,7 +181,7 @@ THEN 16 END parent_pos
                    tab2.id = col2.id AND col1.colid IN
                    ( ref.fkey1, ref.fkey2, ref.fkey3, ref.fkey4, ref.fkey5, ref.fkey6, ref.fkey7, ref.fkey8, ref.fkey9, ref.fkey10, ref.fkey11, ref.fkey12, ref.fkey13, ref.fkey14, ref.fkey15, ref.fkey16)
                    AND col2.colid IN
-                       ( ref.rkey1, ref.rkey2, ref.rkey3, ref.rkey4, ref.rkey5, ref.rkey6, ref.rkey7, ref.rkey8, ref.rkey9, ref.rkey10, ref.rkey11, ref.rkey12, ref.rkey13, ref.rkey14, ref.rkey15, ref.rkey16)
+                   ( ref.rkey1, ref.rkey2, ref.rkey3, ref.rkey4, ref.rkey5, ref.rkey6, ref.rkey7, ref.rkey8, ref.rkey9, ref.rkey10, ref.rkey11, ref.rkey12, ref.rkey13, ref.rkey14, ref.rkey15, ref.rkey16)
                    AND tab1.name <> 'dtproperties'
          ) foreignkeycols, sysobjects obj
 WHERE child_pos = parent_pos AND

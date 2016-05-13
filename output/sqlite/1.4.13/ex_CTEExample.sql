@@ -8,8 +8,8 @@ TABLE [dbo].[Items]
    NOT NULL, [Item] [varchar](100) NOT NULL)
 CREATE TABLE [dbo].[PriceHistory]
 ([ItemId] [int]
-   NOT NULL, [PriceStartDate] [datetime]
-                 NOT NULL, [Price] [decimal](10, 2) NOT NULL)
+     NOT NULL, [PriceStartDate] [datetime]
+                   NOT NULL, [Price] [decimal](10, 2) NOT NULL)
 
 SELECT
     currow.Item

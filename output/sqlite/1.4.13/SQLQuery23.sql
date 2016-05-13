@@ -15,10 +15,10 @@ SELECT
           SELECT ErrorDateTime
           WHERE ErrorMessage LIKE '%Cleanup phase is beginning.%') AS TaskEndTime
     , CONVERT(NVARCHAR(12), DATEADD(ms, DATEDIFF(ms, (
-                                SELECT ErrorDateTime
-                                WHERE ErrorMessage LIKE '%Validation phase is beginning.%'), (
-                                SELECT ErrorDateTime
-                                WHERE ErrorMessage LIKE '%Cleanup phase is beginning.%')), 0), 114) AS TaskTimeTaken
+SELECT ErrorDateTime
+WHERE ErrorMessage LIKE '%Validation phase is beginning.%'), (
+SELECT ErrorDateTime
+WHERE ErrorMessage LIKE '%Cleanup phase is beginning.%')), 0), 114) AS TaskTimeTaken
 --, *
 FROM dbo.DMartComponentLogging
 WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())

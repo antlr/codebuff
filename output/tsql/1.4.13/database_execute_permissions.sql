@@ -3,7 +3,7 @@
 
 INSERT INTO dbs SELECT name
                  FROM sys.databases
-                 ORDER BY name
+ORDER BY name
 
 -- can be changed to do windows users easily
 

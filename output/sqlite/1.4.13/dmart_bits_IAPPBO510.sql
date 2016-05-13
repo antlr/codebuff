@@ -105,7 +105,7 @@ FROM
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
             , COUNT(CASE WHEN Status = 4
-                              AND
+AND
                               CONVERT(DATE, LoadReportDBEndDate) <
                               CONVERT(DATE, GETDATE())THEN Status
                     ELSE NULL END) AS OldStatus4
@@ -123,7 +123,7 @@ FROM
                     ELSE NULL END) AS Status3
 --, COUNT ( CASE WHEN Status = 4 THEN Status ELSE NULL END ) AS Status4
             , COUNT(CASE WHEN Status = 4
-                              AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())THEN Status
+AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID
@@ -147,7 +147,7 @@ FROM
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
             , COUNT(CASE WHEN Status = 4
-                              AND
+AND
                               CONVERT(DATE, LoadReportDBEndDate) <
                               CONVERT(DATE, GETDATE())THEN Status
                     ELSE NULL END) AS OldStatus4
@@ -164,7 +164,7 @@ FROM
             THEN Status
                     ELSE NULL END) AS Status3
             , COUNT(CASE WHEN Status = 4
-                              AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())THEN Status
+AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID

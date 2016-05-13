@@ -44,7 +44,7 @@ AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1
                     JOIN sys.partitions AS p
                         ON p.object_id = i.object_id AND
                            p.index_id = i.index_id
-                    JOIN sys.allocation_units AS a
+                     JOIN sys.allocation_units AS a
                         ON a.container_id = p.partition_id
                 WHERE i.object_id = tbl.object_id), 0.0) AS [IndexKB]
     , Coalesce((SELECT Cast(v.low / 1024.0
@@ -56,7 +56,7 @@ AS FLOAT) * SUM(CASE WHEN a.type <> 1
                     JOIN sys.partitions AS p
                         ON p.object_id = i.object_id AND
                            p.index_id = i.index_id
-                    JOIN sys.allocation_units AS a
+                     JOIN sys.allocation_units AS a
                         ON a.container_id = p.partition_id
                 WHERE i.object_id = tbl.object_id), 0.0) AS [DataKB]
     , tbl.create_date

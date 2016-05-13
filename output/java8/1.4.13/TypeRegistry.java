@@ -104,8 +104,8 @@ public class TypeRegistry<V> implements Map<Class<?>, V> {
             return null;
         }
         else if ( candidates.size()==1 ) {
-                 cache.put(keyClass, candidates.get(0));
-                 return backingStore.get(candidates.get(0));
+            cache.put(keyClass, candidates.get(0));
+            return backingStore.get(candidates.get(0));
         }
         else {
                  for (int i = 0; i<candidates.size()-1; i++) {
@@ -145,7 +145,7 @@ public class TypeRegistry<V> implements Map<Class<?>, V> {
                  }
                  cache.put(keyClass, candidates.get(0));
                  return backingStore.get(candidates.get(0));
-             }
+        }
     }
 
     public V put(Class<?> key, V value) {

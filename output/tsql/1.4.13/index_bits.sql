@@ -125,9 +125,9 @@ SELECT
 FROM sys.dm_db_index_usage_stats
     JOIN sys.indexes
         ON sys.dm_db_index_usage_stats.object_id =
-           sys.indexes.object_id
+sys.indexes.object_id
            AND sys.dm_db_index_usage_stats.index_id =
-               sys.indexes.index_id
+sys.indexes.index_id
            AND sys.indexes.name NOT LIKE 'PK%'
            AND OBJECT_NAME(sys.indexes.object_id) <> 'sysdiagrams'
 WHERE sys.dm_db_index_usage_stats.database_id = DB_ID()

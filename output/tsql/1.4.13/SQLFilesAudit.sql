@@ -7,10 +7,10 @@ SELECT
            ELSE 0
            END AS bit)    AS [IsPrimaryFile]
     , CAST(CASE WHEN s.growth = 0
-          THEN (CASE WHEN s.type = 2
-               THEN 0
-                ELSE 99
-                END)
+           THEN (CASE WHEN s.type = 2
+                     THEN 0
+                 ELSE 99
+                 END)
            ELSE s.is_percent_growth END AS INT)    AS [GrowthType]
     , s.physical_name AS [FileName]
     , s.size * CONVERT(float,

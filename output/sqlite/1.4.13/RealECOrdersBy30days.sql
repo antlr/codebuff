@@ -19,7 +19,7 @@ ORDER BY DATEDIFF(day, do_date_initiated, do_date_received)
     DESC
 
 SELECT 'ZeroToThirty' = COUNT(CASE WHEN DATEDIFF(day, do_date_initiated, do_date_received) BETWEEN 0 AND 29
-    THEN 'DaysBetween'
+THEN 'DaysBetween'
                               END)
 , COUNT(CASE WHEN DATEDIFF(day, do_date_initiated, do_date_received) BETWEEN 30 AND 59
             THEN 'DaysBetween'

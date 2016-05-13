@@ -236,7 +236,7 @@ WHERE t.active = 1
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT LIKE 'PWEBSVC%'
       -- 2008 R2 servers do not have the IIS Admin service
-                                 AND t.server_name NOT IN
+AND t.server_name NOT IN
                                  ('PWEBUSB20', 'PWEBUSB21', 'XWEBUTIL12', 'XWEBUTIL13', 'EWEBPROD1', 'PWEBBO20', 'PWEBBO21', 'PWEBMET20', 'PWEBMET21')
                                  AND t.server_name NOT IN(
                                      SELECT DISTINCT l.address

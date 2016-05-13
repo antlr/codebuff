@@ -14,10 +14,10 @@ SELECT DISTINCT
     , ProcedureText
 FROM
     (
-SELECT *
-FROM sprocswithservernames
-WHERE DatabaseName NOT LIKE '%Status%'
-                           AND DatabaseName NOT LIKE '%PerfTest%'
+        SELECT *
+        FROM sprocswithservernames
+        WHERE DatabaseName NOT LIKE '%Status%'
+                                    AND DatabaseName NOT LIKE '%PerfTest%'
     ) AS q
 ORDER BY ProcedureName, DatabaseName
 
@@ -28,9 +28,9 @@ SELECT DISTINCT
     , ProcedureText
 FROM
     (
-SELECT *
-FROM sprocswithservernames
-WHERE DatabaseName LIKE '%Status%'
+        SELECT *
+        FROM sprocswithservernames
+        WHERE DatabaseName LIKE '%Status%'
     ) AS q
 ORDER BY ProcedureName, DatabaseName
 -------------------------------------------------------------------

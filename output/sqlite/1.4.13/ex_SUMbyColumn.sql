@@ -15,5 +15,5 @@ SELECT
 FROM t
 GROUP BY COL
 ORDER BY CASE WHEN Col IS NULL
-             THEN 999
-         ELSE 0 END
+         THEN 999
+              ELSE 0 END

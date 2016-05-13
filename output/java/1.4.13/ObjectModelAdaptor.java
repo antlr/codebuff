@@ -40,17 +40,17 @@ import java.util.Map;
 public class ObjectModelAdaptor implements ModelAdaptor {
     protected static final Member INVALID_MEMBER;
     static {
-               Member invalidMember;
-               try {
-                   invalidMember = ObjectModelAdaptor.class.getDeclaredField("INVALID_MEMBER");
-               }
-               catch (NoSuchFieldException ex) {
-                   invalidMember = null;
-               }
-               catch (SecurityException ex) {
-                   invalidMember = null;
-               }
-               INVALID_MEMBER = invalidMember;
+Member invalidMember;
+try {
+   invalidMember = ObjectModelAdaptor.class.getDeclaredField("INVALID_MEMBER");
+}
+catch (NoSuchFieldException ex) {
+   invalidMember = null;
+}
+catch (SecurityException ex) {
+   invalidMember = null;
+}
+INVALID_MEMBER = invalidMember;
     }
 
     protected static final Map<Class<?>, Map<String, Member>> membersCache = new HashMap<Class<?>, Map<String, Member>>();
