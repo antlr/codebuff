@@ -180,7 +180,7 @@ public class Trainer {
 		new FeatureMetaData(RULE,  new String[] {"", "parent^2"}, 1),
 		new FeatureMetaData(INT,   new String[] {"parent^2", "child index"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"", "parent^3"}, 1),
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(INT,   new String[] {"parent^3", "child index"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"", "parent^4"}, 1),
 		new FeatureMetaData(INT,   new String[] {"parent^4", "child index"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"", "parent^5"}, 1),
