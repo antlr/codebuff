@@ -1,0 +1,571 @@
+package Libraries.Interface.Events
+
+/*
+The KeyboardEvent class represents an event on the keyboard, which is caused by
+the user pushing down or releasing a key. This class also contains constants for
+the possible keys that may have been pressed or released.
+*/
+
+
+class KeyboardEvent
+    public constant integer PRESSED_KEY = 1
+
+
+    public constant integer RELEASED_KEY = 2
+
+    /*  The keyCode corresponds to a constant value in Keys.quorum. The value of 
+        -1 is the default for any key in Keys. */
+
+
+    public integer keyCode = - 1
+
+    /* This is either PRESSED_KEY or RELEASED_KEY. */
+
+
+    public integer eventType = 0
+
+
+    public constant integer ANY_KEY = - 1
+
+
+    public constant integer NUM_0 = 7
+
+
+    public constant integer NUM_1 = 8
+
+
+    public constant integer NUM_2 = 9
+
+
+    public constant integer NUM_3 = 10
+
+
+    public constant integer NUM_4 = 11
+
+
+    public constant integer NUM_5 = 12
+
+
+    public constant integer NUM_6 = 13
+
+
+    public constant integer NUM_7 = 14
+
+
+    public constant integer NUM_8 = 15
+
+
+    public constant integer NUM_9 = 16
+
+
+    public constant integer A = 29
+
+
+    public constant integer ALT_LEFT = 57
+
+
+    public constant integer ALT_RIGHT = 58
+
+
+    public constant integer APOSTROPHE = 75
+
+
+    public constant integer AT = 77
+
+
+    public constant integer B = 30
+
+
+    public constant integer BACK = 4
+
+
+    public constant integer BACKSLASH = 73
+
+
+    public constant integer C = 31
+
+
+    public constant integer CALL = 5
+
+
+    public constant integer CAMERA = 27
+
+
+    public constant integer CLEAR = 28
+
+
+    public constant integer COMMA = 55
+
+
+    public constant integer D = 32
+
+
+    public constant integer DEL = 67
+
+
+    public constant integer BACKSPACE = 67
+
+
+    public constant integer FORWARD_DEL = 112
+
+
+    public constant integer DPAD_CENTER = 23
+
+
+    public constant integer DPAD_DOWN = 20
+
+
+    public constant integer DPAD_LEFT = 21
+
+
+    public constant integer DPAD_RIGHT = 22
+
+
+    public constant integer DPAD_UP = 19
+
+
+    public constant integer CENTER = 23
+
+
+    public constant integer DOWN = 20
+
+
+    public constant integer LEFT = 21
+
+
+    public constant integer RIGHT = 22
+
+
+    public constant integer UP = 19
+
+
+    public constant integer E = 33
+
+
+    public constant integer ENDCALL = 6
+
+
+    public constant integer ENTER = 66
+
+
+    public constant integer ENVELOPE = 65
+
+
+    public constant integer EQUALS = 70
+
+
+    public constant integer EXPLORER = 64
+
+
+    public constant integer F = 34
+
+
+    public constant integer FOCUS = 80
+
+
+    public constant integer G = 35
+
+
+    public constant integer GRAVE = 68
+
+
+    public constant integer H = 36
+
+
+    public constant integer HEADSETHOOK = 79
+
+
+    public constant integer HOME = 3
+
+
+    public constant integer I = 37
+
+
+    public constant integer J = 38
+
+
+    public constant integer K = 39
+
+
+    public constant integer L = 40
+
+
+    public constant integer LEFT_BRACKET = 71
+
+
+    public constant integer M = 41
+
+
+    public constant integer MEDIA_FAST_FORWARD = 90
+
+
+    public constant integer MEDIA_NEXT = 87
+
+
+    public constant integer MEDIA_PLAY_PAUSE = 85
+
+
+    public constant integer MEDIA_PREVIOUS = 88
+
+
+    public constant integer MEDIA_REWIND = 89
+
+
+    public constant integer MEDIA_STOP = 86
+
+
+    public constant integer MENU = 82
+
+
+    public constant integer MINUS = 69
+
+
+    public constant integer MUTE = 91
+
+
+    public constant integer N = 42
+
+
+    public constant integer NOTIFICATION = 83
+
+
+    public constant integer NUM = 78
+
+
+    public constant integer O = 43
+
+
+    public constant integer P = 44
+
+
+    public constant integer PERIOD = 56
+
+
+    public constant integer PLUS = 81
+
+
+    public constant integer POUND = 18
+
+
+    public constant integer POWER = 26
+
+
+    public constant integer Q = 45
+
+
+    public constant integer R = 46
+
+
+    public constant integer RIGHT_BRACKET = 72
+
+
+    public constant integer S = 47
+
+
+    public constant integer SEARCH = 84
+
+
+    public constant integer SEMICOLON = 74
+
+
+    public constant integer SHIFT_LEFT = 59
+
+
+    public constant integer SHIFT_RIGHT = 60
+
+
+    public constant integer SLASH = 76
+
+
+    public constant integer SOFT_LEFT = 1
+
+
+    public constant integer SOFT_RIGHT = 2
+
+
+    public constant integer SPACE = 62
+
+
+    public constant integer STAR = 17
+
+
+    public constant integer SYM = 63
+
+
+    public constant integer T = 48
+
+
+    public constant integer TAB = 61
+
+
+    public constant integer U = 49
+
+
+    public constant integer UNKNOWN = 0
+
+
+    public constant integer V = 50
+
+
+    public constant integer VOLUME_DOWN = 25
+
+
+    public constant integer VOLUME_UP = 24
+
+
+    public constant integer W = 51
+
+
+    public constant integer X = 52
+
+
+    public constant integer Y = 53
+
+
+    public constant integer Z = 54
+
+
+    public constant integer META_ALT_LEFT_ON = 16
+
+
+    public constant integer META_ALT_ON = 2
+
+
+    public constant integer META_ALT_RIGHT_ON = 32
+
+
+    public constant integer META_SHIFT_LEFT_ON = 64
+
+
+    public constant integer META_SHIFT_ON = 1
+
+
+    public constant integer META_SHIFT_RIGHT_ON = 128
+
+
+    public constant integer META_SYM_ON = 4
+
+
+    public constant integer CONTROL_LEFT = 129
+
+
+    public constant integer CONTROL_RIGHT = 130
+
+
+    public constant integer ESCAPE = 131
+
+
+    public constant integer END = 132
+
+
+    public constant integer INSERT = 133
+
+
+    public constant integer PAGE_UP = 92
+
+
+    public constant integer PAGE_DOWN = 93
+
+
+    public constant integer PICTSYMBOLS = 94
+
+
+    public constant integer SWITCH_CHARSET = 95
+
+
+    public constant integer BUTTON_CIRCLE = 255
+
+
+    public constant integer BUTTON_A = 96
+
+
+    public constant integer BUTTON_B = 97
+
+
+    public constant integer BUTTON_C = 98
+
+
+    public constant integer BUTTON_X = 99
+
+
+    public constant integer BUTTON_Y = 100
+
+
+    public constant integer BUTTON_Z = 101
+
+
+    public constant integer BUTTON_L1 = 102
+
+
+    public constant integer BUTTON_R1 = 103
+
+
+    public constant integer BUTTON_L2 = 104
+
+
+    public constant integer BUTTON_R2 = 105
+
+
+    public constant integer BUTTON_THUMBL = 106
+
+
+    public constant integer BUTTON_THUMBR = 107
+
+
+    public constant integer BUTTON_START = 108
+
+
+    public constant integer BUTTON_SELECT = 109
+
+
+    public constant integer BUTTON_MODE = 110
+
+
+    public constant integer NUMPAD_0 = 144
+
+
+    public constant integer NUMPAD_1 = 145
+
+
+    public constant integer NUMPAD_2 = 146
+
+
+    public constant integer NUMPAD_3 = 147
+
+
+    public constant integer NUMPAD_4 = 148
+
+
+    public constant integer NUMPAD_5 = 149
+
+
+    public constant integer NUMPAD_6 = 150
+
+
+    public constant integer NUMPAD_7 = 151
+
+
+    public constant integer NUMPAD_8 = 152
+
+
+    public constant integer NUMPAD_9 = 153
+
+
+    public constant integer COLON = 243
+
+
+    public constant integer F1 = 244
+
+
+    public constant integer F2 = 245
+
+
+    public constant integer F3 = 246
+
+
+    public constant integer F4 = 247
+
+
+    public constant integer F5 = 248
+
+
+    public constant integer F6 = 249
+
+
+    public constant integer F7 = 250
+
+
+    public constant integer F8 = 251
+
+
+    public constant integer F9 = 252
+
+
+    public constant integer F10 = 253
+
+
+    public constant integer F11 = 254
+
+
+    public constant integer F12 = 255
+
+    /*
+    This action will return the text value represented by a particular key. The
+    boolean represents whether the text should use the shift-keyed value, e.g.,
+    the "A" key on the keyboard can represent the text "a" if shiftPressed is
+    false, or "A" if shiftPressed is true.
+    */
+
+
+    action ToText(integer keycode, boolean shiftPressed) returns text
+        if shiftPressed
+            return ToTextShift(keycode)
+        end
+        return ToText(keycode)
+    end
+
+    /*
+    This action will return the text value represented by a particular key. The
+    returned text value assumes that the shift key is not being held down.
+    */
+
+
+    action ToText(integer keycode) returns text
+        if keycode < 0
+            Error error
+            error:SetErrorMessage("Keycode cannot be negative, keycode: " + keycode)
+            alert(error)
+        end
+
+        if keycode > 255
+            Error error
+            error:SetErrorMessage("Keycode cannot be greater than 255, keycode: " + keycode)
+            alert(error)
+        end
+
+        text result = ToTextNative(keycode)
+        if result not= undefined
+            return result
+        end
+        // If it has reached this point, the key name was not found.
+        // Quorum doesn't allow returning "undefined" when text is expected,
+        // so an empty string is returned instead.
+
+        return ""
+    end
+
+    /*
+    This action will return the text value represented by a particular key. The
+    returned text value assumes that the shift key is being held down.
+    */
+
+
+    action ToTextShift(integer keycode) returns text
+        if keycode < 0
+            Error error
+            error:SetErrorMessage("Keycode cannot be negative, keycode: " + keycode)
+            alert(error)
+        end
+
+        if keycode > 255
+            Error error
+            error:SetErrorMessage("Keycode cannot be greater than 255, keycode: " + keycode)
+            alert(error)
+        end
+
+        text result = ToTextShiftNative(keycode)
+        if result not= undefined
+            return result
+        end
+        // If it has reached this point, the key name was not found.
+        // Quorum doesn't allow returning "undefined" when text is expected,
+        // so an empty string is returned instead.
+
+        return ""
+    end
+
+    private system action ToTextNative(integer keycode) returns text
+
+
+    private system action ToTextShiftNative(integer keycode) returns text
+end

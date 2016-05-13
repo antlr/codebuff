@@ -1,0 +1,103 @@
+package Libraries.Sound
+
+use Libraries.Sound.Playable
+use Libraries.Containers.List
+use Libraries.Containers.Blueprints.Iterator
+
+/*
+    This class represents a chord. A chord is a collection of notes that are
+    played together, at the same time.
+
+    Attribute: Author Jeff Wilson
+
+    Attribute: Example
+    use Libraries.Sound.Music
+    use Libraries.Sound.Chord
+
+    // Play a C major chord.
+    Music muse
+    Chord c
+    c:Add(60) // C
+    c:Add(64) // E
+    c:Add(67) // G
+    muse:Play(c)
+*/
+
+
+class Chord is Playable
+
+    private List<integer> pitches
+    
+    /*
+        Add a new pitch to this chord. When the chord is played, all the pitches
+        will sound at once.
+
+        Attribute: Parameter pitch the pitch to add
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Chord
+
+        Music muse
+        Chord c
+        c:Add(60) // C
+    */
+
+
+    public action Add(integer pitch)
+        pitches:Add(pitch)
+    end
+
+    /*
+        Get all the pitches from this chord.
+
+        Attribute: Returns an iterator of the pitches.
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Chord
+        use Libraries.Containers.Blueprints.Iterator
+
+        Music muse
+        Chord c
+        c:Add(60) // C
+        Iterator<integer> notes = c:GetPitches()
+    */
+
+
+            public action GetPitches returns Iterator<integer>
+                return pitches:GetIterator()
+            end
+
+    /*
+        Perform a deep copy of this object.
+        
+        Attribute: Returns the new Chord
+
+        Attribute: Example
+        use Libraries.Sound.Music
+        use Libraries.Sound.Chord
+
+        Music muse
+        Chord c
+        c:Add(60) // C
+        Object newChord = c:Copy()
+    */
+
+
+            public action Copy returns Object
+                Chord c
+                c:SetEventType(parent:MusicEvent:eventType)
+                c:SetConstantPitchBend(parent:Playable:constantPitchBend)
+                c:SetPrePitchBend(parent:Playable:prePitchBend)
+                c:SetPrePitchBendLength(parent:Playable:prePitchBendLength)
+                c:SetStartTime(parent:Playable:startTime)
+                c:SetLength(parent:Playable:length)
+                c:SetVolume(parent:Playable:volume)
+                Iterator<integer> pitches = me:GetPitches()
+                repeat while pitches:HasNext()
+                    c:Add(pitches:Next())
+                end
+                return c
+            end
+end

@@ -1,0 +1,1008 @@
+package Libraries.Accessibility
+
+use Libraries.Containers.Array
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Accessibility.all
+
+/*
+    The AccessibilityManager class provides basic functionality for creating a 
+    screen reader for the operating system.  This class can be used to listen to 
+    any subset of Observers  from the system.  
+
+    Attribute: Example
+
+    AccessibilityManager manager
+    KeyboardObserver kObserver
+    MouseObserver mObserver
+    FocusObserver fObserver
+    manager:Add(kObserver)
+    manager:Add(mObserver)
+    manager:Add(fObserver)
+
+    manager:Start()
+    manager:Stop()
+
+    Iterator<MouseObserver> mouseObservers = manager:GetMouseObservers()
+    MouseObserver first = mouseObservers:GetCurrent()
+    manager:Remove(first)
+
+*/
+
+
+class AccessibilityManager
+    private constant text keyboardEvent = "Keyboard"
+private constant text mouseEvent = "Mouse"
+private constant text focusEvent = "Focus"
+private constant text windowEvent = "Window"
+private constant text menuEvent = "Menu"
+private constant text propertyEvent = "PropertyChange"
+private Array<KeyboardObserver> keyboardObservers
+private Array<MouseObserver> mouseObservers
+private Array<FocusObserver> focusObservers
+private Array<WindowObserver> windowObservers
+private Array<MenuObserver> menuObservers
+private Array<PropertyObserver> propertyObservers
+private Array<EverythingObserver> everythingObservers
+    
+    /*
+        This action adds a KeyboardObserver to the AccessibilityManager.
+
+        Attribute: Parameter observer The observer to be added.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        KeyboardObserver observer
+        manager:Add(observer)
+    */
+
+
+action Add(KeyboardObserver observer)
+   keyboardObservers:Add(observer)
+   isKeyboardObservers = true
+end
+
+    /*
+        This action adds a MenuObserver to the AccessibilityManager.
+
+        Attribute: Parameter observer The observer to be added.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MenuObserver observer
+        manager:Add(observer)
+    */
+
+
+action Add(MenuObserver observer)
+   menuObservers:Add(observer)
+end
+
+    /*
+        This action adds a PropertyObserver to the AccessibilityManager.
+
+        Attribute: Parameter observer The observer to be added.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        PropertyObserver observer
+        manager:Add(observer)
+    */
+
+
+action Add(PropertyObserver observer)
+   propertyObservers:Add(observer)
+end
+
+    /*
+        This action adds a MouseObserver to the AccessibilityManager.
+
+        Attribute: Parameter observer The observer to be added.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MouseObserver observer
+        manager:Add(observer)
+    */
+
+
+action Add(MouseObserver observer)
+   mouseObservers:Add(observer)
+end
+
+    /*
+        This action adds a FocusObserver to the AccessibilityManager.
+
+        Attribute: Parameter observer The observer to be added.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        FocusObserver observer
+        manager:Add(observer)
+    */
+
+
+action Add(FocusObserver observer)
+   focusObservers:Add(observer)
+end
+
+    /*
+        This action adds a WindowObserver to the AccessibilityManager.
+
+        Attribute: Parameter observer The observer to be added.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        WindowObserver observer
+        manager:Add(observer)
+    */
+
+
+action Add(WindowObserver observer)
+   windowObservers:Add(observer)
+end
+
+    /*
+        This action adds a EverythingObserver to the AccessibilityManager.
+
+        Attribute: Parameter observer The observer to be added.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+    */
+
+
+action Add(EverythingObserver observer)
+   everythingObservers:Add(observer)
+end
+
+    /*
+        This action removes the KeyboardObserver if exists in the 
+        AccessibilityManager, and returns a boolean for whether or not it was
+        successful.
+
+        Attribute: Parameter observer The observer to be removed.
+        
+        Attribute: Returns true if remove was successful, otherwise returns false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        KeyboardObserver observer
+        manager:Add(observer)
+        boolean success = manager:Remove(observer)
+    */
+
+
+action Remove(KeyboardObserver observer) returns boolean
+   boolean removed = keyboardObservers:Remove(observer)
+   return removed
+end
+
+    /*
+        This action removes the MenuObserver if it exists in the 
+        AccessibilityManager and returns a boolean for whether or not the removal
+        was successful.
+
+        Attribute: Parameter observer The observer to be removed.
+        Attribute: Returns true if remove was successful, otherwise returns false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MenuObserver observer
+        manager:Add(observer)
+        boolean success = manager:Remove(observer)
+    */
+
+
+action Remove(MenuObserver observer) returns boolean
+   boolean removed = menuObservers:Remove(observer)
+   return removed
+end
+
+    /*
+        This action removes the PropertyObserver if it exists in the 
+        AccessibilityManager and returns a boolean for whether or not it was 
+        successful.
+
+        Attribute: Parameter observer The observer to be removed.
+        
+        Attribute: Returns true if remove was successful, otherwise returns false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        PropertyObserver observer
+        manager:Add(observer)
+        boolean success = manager:Remove(observer)
+    */
+
+
+action Remove(PropertyObserver observer) returns boolean
+   boolean removed = propertyObservers:Remove(observer)
+   return removed
+end
+
+    /*
+        This action removes the MouseObserver if it exists in the 
+        AccessibilityManager and returns a boolean for whether or not it was 
+        successful.
+
+        Attribute: Parameter observer The observer to be removed.
+        
+        Attribute: Returns true if remove was successful, otherwise returns false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MouseObserver observer
+        manager:Add(observer)
+        boolean success = manager:Remove(observer)
+    */
+
+
+action Remove(MouseObserver observer) returns boolean
+   boolean removed = mouseObservers:Remove(observer)
+   return removed
+end
+
+    /*
+        This action removes the FocusObserver if it exists in the 
+        AccessibilityManager and returns a boolean for whether or not it was 
+        successful.
+
+        Attribute: Parameter observer The observer to be removed.
+        
+        Attribute: Returns true if remove was successful, otherwise returns false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        FocusObserver observer
+        manager:Add(observer)
+        boolean success = manager:Remove(observer)
+    */
+
+
+action Remove(FocusObserver observer) returns boolean
+   boolean removed = focusObservers:Remove(observer)
+   return removed
+end
+
+    /*
+        This action removes the WindowObserver if it exists in the 
+        AccessibilityManager and returns a boolean for whether or not it was 
+        successful.
+
+        Attribute: Parameter observer The observer to be removed.
+        
+        Attribute: Returns true if remove was successful, otherwise returns false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        WindowObserver observer
+        manager:Add(observer)
+        boolean success = manager:Remove(observer)
+    */
+
+
+action Remove(WindowObserver observer) returns boolean
+   boolean removed = windowObservers:Remove(observer)
+   return removed
+end
+
+    /*
+        This action removes the EverythingObserver if it exists in the 
+        AccessibilityManager and returns a boolean for whether or not it was 
+        successful.
+
+        Attribute: Parameter observer The observer to be removed.
+        
+        Attribute: Returns true if remove was successful, otherwise returns false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        boolean success = manager:Remove(observer)
+    */
+
+
+action Remove(EverythingObserver observer) returns boolean
+   boolean removed = everythingObservers:Remove(observer)
+   return removed
+end
+
+    /*
+        This action gets the list of KeyboardObservers in the AccessibilityManager 
+        and returns them in an iterator.
+        
+        Attribute: Returns an Iterator of all of the KeyboardObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        KeyboardObserver observer
+        manager:Add(observer)
+        Iterator<KeyboardObserver> keyObservers = manager:GetKeyboardObservers()
+    */
+
+
+action GetKeyboardObservers() returns Iterator<KeyboardObserver>
+   return keyboardObservers:GetIterator()
+end
+
+    /*
+        This action gets the list of MenuObservers in the AccessibilityManager 
+        and returns them in an iterator.
+        
+        Attribute: Returns an Iterator of all of the MenuObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MenuObserver observer
+        manager:Add(observer)
+        Iterator<MenuObserver> menuObservers = manager:GetMenuObservers()
+    */
+
+
+action GetMenuObservers() returns Iterator<MenuObserver>
+   return menuObservers:GetIterator()
+end
+
+    /*
+        This action gets the list of PropertyObservers in the AccessibilityManager 
+        and returns them in an iterator.
+        
+        Attribute: Returns an Iterator of all of the PropertyObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        PropertyObserver observer
+        manager:Add(observer)
+        Iterator<PropertyObserver> keyObservers = manager:GetPropertyObservers()
+    */
+
+
+action GetPropertyObservers() returns Iterator<PropertyObserver>
+   return propertyObservers:GetIterator()
+end
+
+    /*
+        This action gets the list of MouseObservers in the AccessibilityManager 
+        and returns them in an iterator.
+        
+        Attribute: Returns an Iterator of all of the MouseObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MouseObserver observer
+        manager:Add(observer)
+        Iterator<MouseObserver> mouseObservers = manager:GetMouseObservers()
+    */
+
+
+action GetMouseObservers() returns Iterator<MouseObserver>
+   return mouseObservers:GetIterator()
+end
+
+    /*
+        This action gets the list of FocusObservers in the AccessibilityManager 
+        and returns them in an iterator.
+        
+        Attribute: Returns an Iterator of all of the FocusObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        FocusObserver observer
+        manager:Add(observer)
+        Iterator<FocusObserver> focusObservers = manager:GetFocusObservers()
+    */
+
+
+action GetFocusObservers() returns Iterator<FocusObserver>
+   return focusObservers:GetIterator()
+end
+
+    /*
+        This action gets the list of WindowObservers in the AccessibilityManager 
+        and returns them in an iterator.
+        
+        Attribute: Returns an Iterator of all of the WindowObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        WindowObserver observer
+        manager:Add(observer)
+        Iterator<WindowObserver> windowObservers = manager:GetWindowObservers()
+    */
+
+
+action GetWindowObservers() returns Iterator<WindowObserver>
+   return windowObservers:GetIterator()
+end
+
+    /*
+        This action gets the list of EverythingObservers in the AccessibilityManager 
+        and returns them in an iterator.
+        
+        Attribute: Returns an Iterator of all of the EverythingObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        Iterator<EverythingObserver> everythingObservers = manager:GetEverythingObservers()
+    */
+
+
+action GetEverythingObservers() returns Iterator<EverythingObserver>
+   return everythingObservers:GetIterator()
+end
+
+    /*
+        This action gets the number of KeyboardObservers in the AccessibilityManager 
+        and returns that value.
+        
+        Attribute: Returns an integer of how many KeyboardObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        KeyboadObserver observer
+        manager:Add(observer)
+        integer numKeyboard = manager:GetSizeOfKeyboardObservers()
+    */
+
+
+action GetSizeOfKeyboardObservers() returns integer
+   return keyboardObservers:GetSize()
+end
+
+    /*
+        This action gets the number of MenuObservers in the AccessibilityManager 
+        and returns that value.
+        
+        Attribute: Returns an integer of how many MenuObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MenuObserver observer
+        manager:Add(observer)
+        integer numKeyboard = manager:GetSizeOfMenuObservers()
+    */
+
+
+action GetSizeOfMenuObservers() returns integer
+   return menuObservers:GetSize()
+end
+
+    /*
+        This action gets the number of PropertyObservers in the AccessibilityManager 
+        and returns that value.
+        
+        Attribute: Returns an integer of how many PropertyObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        PropertyObserver observer
+        manager:Add(observer)
+        integer num = manager:GetSizeOfPropertyObservers()
+    */
+
+
+action GetSizeOfPropertyObservers() returns integer
+   return propertyObservers:GetSize()
+end
+
+    /*
+        This action gets the number of MouseObservers in the AccessibilityManager 
+        and returns that value.
+        
+        Attribute: Returns an integer of how many MouseObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MouseObserver observer
+        manager:Add(observer)
+        integer numMouse = manager:GetSizeOfMouseObservers()
+    */
+
+
+action GetSizeOfMouseObservers() returns integer
+   return mouseObservers:GetSize()
+end
+
+    /*
+        This action gets the number of FocusObservers in the AccessibilityManager 
+        and returns that value.
+        
+        Attribute: Returns an integer of how many FocusObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        FocusObserver observer
+        manager:Add(observer)
+        integer numFocus = manager:GetSizeOfFocusObservers()
+    */
+
+
+action GetSizeOfFocusObservers() returns integer
+   return focusObservers:GetSize()
+end
+    
+    /*
+        This action gets the number of WindowObservers in the AccessibilityManager 
+        and returns that value.
+        
+        Attribute: Returns an integer of how many WindowObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        WindowObserver observer
+        manager:Add(observer)
+        integer numWindow = manager:GetSizeOfWindowObservers()
+    */
+
+
+action GetSizeOfWindowObservers() returns integer
+   return windowObservers:GetSize()
+end
+
+    /*
+        This action gets the number of EverythingObservers in the AccessibilityManager 
+        and returns that value.
+        
+        Attribute: Returns an integer of how many EverythingObservers.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        integer numEverything = manager:GetSizeOfEverythingObservers()
+    */
+
+
+action GetSizeOfEverythingObservers() returns integer
+   return everythingObservers:GetSize()
+end
+
+    /*
+        This action removes all observers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver eObserver
+        WindowObserver wObserver
+        FocusObserver fObserver
+        manager:Add(eObserver)
+        manager:Add(wObserver)
+        manager:Add(fObserver)
+        manager:Empty()
+    */
+
+
+action Empty()
+   keyboardObservers:Empty()
+   mouseObservers:Empty()
+   focusObservers:Empty()
+   windowObservers:Empty()
+   menuObservers:Empty()
+   propertyObservers:Empty()
+   everythingObservers:Empty()
+end
+
+    /*
+        This action removes all KeyboardObservers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        KeyboardObserver observer
+        manager:Add(observer)
+        manager:EmptyKeyboardObservers()
+    */
+
+
+action EmptyKeyboardObservers()
+   keyboardObservers:Empty()
+end
+
+    /*
+        This action removes all MenuObservers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MenuObserver observer
+        manager:Add(observer)
+        manager:EmptyMenuObservers()
+    */
+
+
+action EmptyMenuObservers()
+   menuObservers:Empty()
+end
+
+    /*
+        This action removes all PropertyObservers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        PropertyObserver observer
+        manager:Add(observer)
+        manager:EmptyPropertyObservers()
+    */
+
+
+action EmptyPropertyObservers()
+   propertyObservers:Empty()
+end
+
+    /*
+        This action removes all MouseObservers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MouseObserver observer
+        manager:Add(observer)
+        manager:EmptyMouseObservers()
+    */
+
+
+action EmptyMouseObservers()
+   mouseObservers:Empty()
+end
+
+    /*
+        This action removes all FoucsObservers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        FocusObserver observer
+        manager:Add(observer)
+        manager:EmptyFocusObservers()
+    */
+
+
+action EmptyFocusObservers()
+   focusObservers:Empty()
+end
+
+    /*
+        This action removes all WindowObservers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        WindowObserver observer
+        manager:Add(observer)
+        manager:EmptyWindowObservers()
+    */
+
+
+action EmptyWindowObservers()
+   windowObservers:Empty()
+end
+
+    /*
+        This action removes all EverythingObservers in the AccessibilityManager.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        manager:EmptyEverythingObservers()
+    */
+
+
+action EmptyEverythingObservers()
+   everythingObservers:Empty()
+end
+
+    /*
+        This action checks if the AccessibilityManager has any observers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager is 
+        empty, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver eObserver
+        WindowObserver wObserver
+        FocusObserver fObserver
+        manager:Add(eObserver)
+        manager:Add(wObserver)
+        manager:Add(fObserver)
+        boolean result = manager:IsEmpty()
+    */
+
+
+action IsEmpty() returns boolean
+   if keyboardObservers:IsEmpty() and mouseObservers:IsEmpty() and focusObservers:IsEmpty() and windowObservers:IsEmpty() and everythingObservers:IsEmpty() and menuObservers:IsEmpty() and propertyObservers:IsEmpty()
+       return true
+   else
+       return false
+   end
+end
+
+    /*
+        This action checks if the AccessibilityManager has any KeyboardObservers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager 
+        has no KeyboardObservers, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        KeyboardObserver observer
+        manager:Add(observer)
+        boolean result = manager:IsKeyboardObserversEmpty()
+    */
+
+
+action IsKeyboardObserversEmpty() returns boolean
+   return keyboardObservers:IsEmpty()
+end
+
+    /*
+        This action checks if the AccessibilityManager has any MenuObservers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager 
+        has no MenuObservers, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MenuObserver observer
+        manager:Add(observer)
+        boolean result = manager:IsMenuObserversEmpty()
+    */
+
+
+action IsMenuObserversEmpty() returns boolean
+   return menuObservers:IsEmpty()
+end
+
+    /*
+        This action checks if the AccessibilityManager has any PropertyObservers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager 
+        has no PropertyObservers, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        PropertyObserver observer
+        manager:Add(observer)
+        boolean result = manager:IsPropertyObserversEmpty()
+    */
+
+
+action IsPropertyObserversEmpty() returns boolean
+   return propertyObservers:IsEmpty()
+end
+
+    /*
+        This action checks if the AccessibilityManager has any MouseObservers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager 
+        has no MouseObservers, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        MouseObserver observer
+        manager:Add(observer)
+        boolean result = manager:IsMouseObserversEmpty()
+    */
+
+
+action IsMouseObserversEmpty() returns boolean
+   return mouseObservers:IsEmpty()
+end
+
+    /*
+        This action checks if the AccessibilityManager has any FocusObservers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager 
+        has no FocusObservers, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        FocusObserver observer
+        manager:Add(observer)
+        boolean result = manager:IsFocusObserversEmpty()
+    */
+
+
+action IsFocusObserversEmpty() returns boolean
+   return focusObservers:IsEmpty()
+end
+
+    /*
+        This action checks if the AccessibilityManager has any WindowObservers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager 
+        has no WindowObservers, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        WindowObserver observer
+        manager:Add(observer)
+        boolean result = manager:IsWindowObserversEmpty()
+    */
+
+
+action IsWindowObserversEmpty() returns boolean
+   return windowObservers:IsEmpty()
+end
+
+    /*
+        This action checks if the AccessibilityManager has any EverythingObservers in it, 
+        and returns true if it is empty, otherwise returns false.
+        
+        Attribute: Returns a boolean value, true if the AccessibilityManager 
+        has no EverythingObservers, otherwise false.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        boolean result = manager:IsEverythingObserversEmpty()
+    */
+
+
+action IsEverythingObserversEmpty() returns boolean
+   return everythingObservers:IsEmpty()
+end
+
+    /*
+        This action allows the AccessibilityManager to start getting events 
+        from the system.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        manager:Start()
+    */
+
+
+system action Start()    
+    
+    /*
+        This action stops events being passed to the  AccessibilityManager
+        from the system. Used after you have used Start() to start recieving events.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        manager:Start()
+        manager:Stop()
+    */
+
+
+system action Stop()
+
+    /*
+        This action gets the XML for an event from the system and parses it into 
+        a keyboard, mouse, or system event. It then sends that event to the 
+        appropriate observers (KeyboardObserver, MouseObserver, FocusObserver, 
+        WindowObserver, EverythingObserver) so that they will be processed/displayed.
+        
+        Attribute: Parameter event Text in XML format to represent an event.
+
+        Attribute: Example
+
+        AccessibilityManager manager
+        EverythingObserver observer
+        manager:Add(observer)
+        text eventXML
+        boolean result = manager:GetEvent(eventXML)
+    */
+
+
+action GetEvent(text event)
+   ExtensibleMarkupLanguageParser parser
+   AccessibilityEvent e = parser:ParseEvent(event)
+   text type = e:GetCategory()
+   type = type:Trim()
+   Iterator<EverythingObserver> eObservers = GetEverythingObservers()
+   repeat while (eObservers:HasNext())
+       EverythingObserver item = eObservers:Next()
+       item:ReceiveEvent(e)
+   end
+
+   if type = mouseEvent
+       Iterator<MouseObserver> mObservers = GetMouseObservers()
+       repeat while (mObservers:HasNext())
+           MouseObserver item = mObservers:Next()
+           MouseEvent mouse = cast(MouseEvent, e)
+           item:ReceiveEvent(mouse)
+       end
+
+   elseif type = keyboardEvent
+       Iterator<KeyboardObserver> kObservers = GetKeyboardObservers()
+       repeat while (kObservers:HasNext())
+           KeyboardObserver item = kObservers:Next()
+           KeyboardEvent key = cast(KeyboardEvent, e)
+           item:ReceiveEvent(key)
+       end
+
+   elseif type = focusEvent
+       Iterator<FocusObserver> fObservers = GetFocusObservers()
+       repeat while (fObservers:HasNext())
+           FocusObserver item = fObservers:Next()
+           FocusEvent focus = cast(FocusEvent, e)
+           item:ReceiveEvent(focus)
+       end
+
+   elseif type = propertyEvent
+       Iterator<PropertyObserver> observers = GetPropertyObservers()
+       repeat while (observers:HasNext())
+           PropertyObserver item = observers:Next()
+           PropertyEvent property = cast(PropertyEvent, e)
+           item:ReceiveEvent(property)
+       end
+
+   elseif type = menuEvent
+       Iterator<MenuObserver> observers = GetMenuObservers()
+       repeat while (observers:HasNext())
+           MenuObserver item = observers:Next()
+           MenuEvent menu = cast(MenuEvent, e)
+           item:ReceiveEvent(menu)
+       end
+
+   elseif type = windowEvent
+       Iterator<WindowObserver> wObservers = GetWindowObservers()
+       repeat while (wObservers:HasNext())
+           WindowObserver item = wObservers:Next()
+           WindowEvent window = cast(WindowEvent, e)
+           item:ReceiveEvent(window)
+       end
+   end
+end
+end

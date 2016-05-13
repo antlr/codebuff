@@ -1,0 +1,32 @@
+package Libraries.Language.Support
+
+/*
+The CompareResult class provides constants to represent results of a comparison.
+The possible results include LARGER, EQUAL, SMALLER, and INVALID. Each corresponds
+to an integer value, 1, 0, -1, and -2, respectively.
+
+Attribute: Example
+use Libraries.Language.Support.CompareResult
+
+class Main
+   action Main
+      Number one
+      one:SetValue(10.3)
+      Number two
+      two:SetValue(9.6)
+
+      if one:Compare(two) = CompareResult:LARGER
+        output "one is larger than two"
+      end
+   end
+end
+*/
+
+
+class CompareResult
+    public integer LARGER = 1
+    public integer EQUAL = 0
+    public integer SMALLER = - 1
+    public integer INVALID = - 2
+    public integer result = - 2
+end

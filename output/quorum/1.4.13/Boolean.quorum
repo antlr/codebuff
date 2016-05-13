@@ -1,0 +1,154 @@
+package Libraries.Language.Types
+
+use Libraries.Language.Object
+use Libraries.Language.Support.CompareResult
+
+/*
+The Boolean class is the object representation of the primitive type boolean. 
+
+
+Attribute: Example
+
+class Main
+   action Main
+      boolean isTrue = true
+      Boolean result = test(isTrue)
+   end
+   action test(Boolean bool) returns Boolean
+        return bool
+   end
+end
+*/
+
+
+class Boolean
+    //The value this Boolean class represents
+
+    private boolean value = false
+
+    /*
+        This action sets the value of the boolean object.
+
+        Attribute: Parameter i The boolean value(true or false).
+
+        Attribute: Example
+
+        Boolean isTrue
+        isTrue:SetValue(true)
+    */
+
+
+    action SetValue(boolean i)
+        value = i
+        SetValueNative(i)
+    end
+
+    private system action SetValueNative(boolean value)
+
+    /*
+        This action gets the value from the boolean object.
+
+        Attribute: Returns The value of the object.
+
+        Attribute: Example
+
+        Boolean isTrue
+        boolean result = isTrue:GetValue()
+    */
+
+
+    action GetValue returns boolean
+        return value
+    end
+
+    /*
+        This action gets the value from the boolean object and casts it to
+        a text value.
+
+        Attribute: Returns The value of the object converted to text.
+
+        Attribute: Example
+
+        Boolean isTrue
+        text result = isTrue:GetText()
+    */
+
+
+    action GetText returns text
+        return cast(text, value)
+    end
+
+    /*
+        This action compares two object values and returns a CompareResult.
+        The compare result is either larger if this hash code is larger than
+        the object passed as a parameter, smaller, or equal.
+
+        Attribute: Parameter object The object to compare to.
+        Attribute: Returns The Comprare result, Smaller, Equal, or Larger. 
+
+        Attribute: Example
+        use Libraries.Language.Support.CompareResult
+        Boolean o
+        Boolean t
+        
+        CompareResult result = o:Compare(t)
+    */
+
+
+    action Compare(Object object) returns CompareResult
+        CompareResult result
+        boolean thisOne = me:value
+        Boolean b = cast(Boolean, object)
+        boolean other = b:GetValue()
+        if thisOne = other
+            result:result = result:EQUAL
+        elseif thisOne = false and other = true
+            result:result = result:SMALLER
+        else
+            result:result = result:LARGER
+        end
+
+        return result
+    end
+
+    /*
+        This action determines if two objects are equal based on their
+        values(true or false).
+
+        Attribute: Parameter object The to be compared.
+
+        Attribute: Returns True if the values are equal and false if they
+        are not equal. 
+
+        Attribute: Example
+
+        Boolean o
+        Boolean t
+        boolean result = o:Equals(t)
+    */
+
+
+    action Equals(Object object) returns boolean
+        boolean myValue = GetValue()
+        Boolean t = undefined
+        t = cast(Boolean, object)
+        boolean otherValue = t:GetValue()
+        return myValue = otherValue
+    end
+
+    /*
+        This action gets the hash code for an object. In this case, GetHashCode
+        is overriden to return the integer 1231 if the boolean is true and
+        1237 if the boolean is false.
+
+        Attribute: Returns The integer hash code of the object.
+
+        Attribute: Example
+
+        Object o
+        integer hash = o:GetHashCode()
+    */
+
+
+    system action GetHashCode() returns integer
+end

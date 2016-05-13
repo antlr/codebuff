@@ -1,0 +1,37 @@
+package Libraries.Accessibility
+
+/*
+    The MenuObserver class provides functionality to output any menu 
+    event from the system. Common examples would be opening or closing a menu.
+
+    Attribute: Example
+
+    AccessibilityManager manager
+    MenuObserver observer
+    manager:Add(observer)
+
+    manager:Start()
+    manager:Stop()
+
+*/
+
+
+class MenuObserver 
+
+    /*
+        This action is a blueprint function that receives an event from the system
+        for the programmer to use.
+
+        Attribute: Parameter event The event from the system.
+
+        Attribute: Example
+
+        MenuObserver observer
+        SystemEvent event
+        observer:ReceiveEvent(event)
+    */
+
+
+    blueprint action ReceiveEvent(MenuEvent event)
+
+end

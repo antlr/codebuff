@@ -1,0 +1,40 @@
+package Libraries.Containers.Blueprints
+
+/*
+
+Inheriting from the Sortable class provides a basic blueprint for a
+sorting action. 
+
+Attribute: Author Andreas Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.ArrayBlueprint
+
+class MyType is Sortable
+    action Sort()
+        //implementation goes here
+    end
+end
+*/
+
+
+class Sortable
+    /*
+        This action sorts the values of the array. The example below sorts an
+        array. Implementors may use any known sorting algorithm. Objects that
+        should be sorted in a custom fashion should override the default
+        Compare action in Libraries.Language.Object.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(33)
+        myArray:Add(13)
+        myArray:Add(43)
+        myArray:Sort()
+    */
+
+
+    blueprint action Sort
+end

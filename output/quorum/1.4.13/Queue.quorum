@@ -1,0 +1,261 @@
+package Libraries.Containers
+
+use Libraries.Containers.List
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Blueprints.QueueBlueprint
+
+/*
+The Queue class is a data structure that stores items as if the items were in 
+a line, or "Queue." The first items that go into the Queue are the first items 
+to be removed from the Queue (First In First Out). The Queue class is similar
+ to the List class.
+
+Attribute: Example
+
+use Libraries.Containers.Queue
+class Main
+   action Main
+      //make the Queue
+      Queue<integer> myQueue
+      //add a value
+      myQueue:Add(12)
+      myQueue:Add(13)
+      myQueue:Add(14)
+      myQueue:Add(15)
+      //remove the first item (12)
+      integer value = myQueue:RemoveFromFront()
+   end
+end
+*/
+
+
+class Queue<Type> is QueueBlueprint<Type>
+    List<Type> list
+
+    /*
+        This action adds a value at the end of the queue.
+
+        Attribute: Parameter value The value to be inserted at the back of the queue.
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(12)
+    */
+
+
+                  action Add(Type value)
+                      list:AddToEnd(value)
+                  end
+
+    /*
+        This action copies an object and returns the copy. 
+
+        Attribute: Returns Returns a copy of this object.
+
+        Attribute: Example
+    use Libraries.Containers.Queue
+    Queue<integer> myQueue
+    Queue<integer> copyQueue
+    myQueue:Add(12)
+    Object o = myQueue:Copy()
+    copyQueue = cast(Queue<integer>, o)
+    */
+
+
+           action Copy returns Object
+               Queue<Type> newStack
+               Object o = list:Copy()
+               List<Type> newList = cast(List<Type>, o)
+               repeat until newList:IsEmpty()
+                   newStack:Add(newList:RemoveFromFront())
+               end
+               return newStack
+           end
+
+    /*
+        This action empty's the queue, clearing out all of the items contained within it. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(12)
+        myQueue:Empty() //the item we added is now gone
+    */
+
+
+           action Empty
+               list:Empty()
+           end
+
+    /*
+        This action gets an iterator for the object and returns that iterator. 
+
+        Attribute: Returns Returns the iterator for an object. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        use Libraries.Containers.Blueprints.Iterator
+        Queue<integer> myQueue
+        myQueue:Add(12)
+        myQueue:Add(13)
+        myQueue:Add(12)
+        Iterator<integer> QueueIterator = myQueue:GetIterator()
+    */
+
+
+           action GetIterator() returns Iterator<Type>
+               return list:GetIterator()
+           end
+
+    /*
+        This action retrieves the number of elements or nodes in a queue. 
+
+        Attribute: Returns Returns an integer value representing the size of the queue.
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(12)
+        integer size = myQueue:GetSize()
+    */
+
+
+           action GetSize returns integer
+               return list:GetSize()
+           end
+
+    /*
+        This action determines if an addable object contains a certain item. 
+
+        Attribute: Parameter value The item to find in the Addable object.
+
+        Attribute: Returns Returns true if the item was in the Addable object and false if it was not. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(12)
+        myQueue:Add(1)
+        boolean hasItem = myQueue:Has(12)
+    */
+
+
+           action Has(Type value) returns boolean
+               return list:Has(value)
+           end
+
+    /*
+        This action returns a boolean value, true if the container is empty and false if it contains any items. 
+
+        Attribute: Returns Returns true when the container is empty and false when it is not. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        if myQueue:IsEmpty()
+            output "The Queue is empty."
+        end
+    */
+
+
+           action IsEmpty returns boolean
+               return list:IsEmpty()
+           end
+
+    /*
+        This action removes the first occurrence of an item that is found in the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(43)
+        myQueue:Add(13)
+        myQueue:Add(43)
+        boolean removed = myQueue:Remove(43)
+    */
+
+
+           action Remove(Type value) returns boolean
+               return list:Remove(value)
+           end
+
+    /*
+        This action removes all occurrences of an item from the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(43)
+        myQueue:Add(13)
+        myQueue:Add(43)
+        boolean removed = myQueue:RemoveAll(43)
+    */
+
+
+           action RemoveAll(Type value) returns boolean
+               return list:RemoveAll(value)
+           end
+
+    /*
+        This action adds an item to the end of the queue.
+
+        Attribute: Parameter value The item to be added to the queue. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:AddToEnd(12)
+    */
+
+
+           action AddToEnd(Type value)
+               list:AddToEnd(value)
+           end
+
+    /*
+        This action gets the item at the front of the queue(the item will remain in the queue). 
+
+        Attribute: Returns The item at the front of the queue.
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(4)
+        myQueue:Add(13)
+        myQueue:Add(12)
+        integer value = myQueue:GetFromFront()
+    */
+
+
+           action GetFromFront() returns Type
+               return list:GetFromFront()
+           end
+
+    /*
+        This action removes the item at the front of the queue. 
+
+        Attribute: Returns The item at the front of the queue. 
+
+        Attribute: Example
+        use Libraries.Containers.Queue
+        Queue<integer> myQueue
+        myQueue:Add(33)
+        myQueue:Add(13)
+        myQueue:Add(43)
+        integer removed = myQueue:RemoveFromFront()
+    */
+
+
+           action RemoveFromFront() returns Type
+               return list:RemoveFromFront()
+           end
+end

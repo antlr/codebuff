@@ -1,0 +1,31 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The UndefinedObjectError class is an error or exception that is thrown when 
+a method is called on an undefined object.
+
+Attribute: Example
+
+use Libraries.Language.Errors.UndefinedObjectError
+use Libraries.Containers.Array
+
+class Main
+   action Main
+      check
+        Array<integer> a = undefined
+        a:Get(0)
+      detect e is UndefinedObjectError
+        output "Error detected: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+
+
+class UndefinedObjectError is Error
+    on create
+        SetErrorMessage("The object being referenced is undefined.")
+    end
+end
