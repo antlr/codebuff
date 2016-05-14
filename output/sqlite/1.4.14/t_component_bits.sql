@@ -22,8 +22,8 @@ FROM dbo.t_component c
 SELECT DISTINCT
     s.server_id
        , s.server_name
-    , pca.proc_controller_id
-    , pc.name --, csa.server_id, c.component_name, c.component_id
+       , pca.proc_controller_id
+       , pc.name --, csa.server_id, c.component_name, c.component_id
 FROM dbo.t_server s
     INNER JOIN dbo.t_proc_controller_assoc pca
         ON pca.server_id = s.server_id
@@ -56,8 +56,8 @@ ORDER BY pca.LastUpdate
 SELECT DISTINCT
     s.server_name
        , pc.name
-    , e.environment_name
-    , pc.component_id
+       , e.environment_name
+       , pc.component_id
 FROM dbo.t_server s
     INNER JOIN dbo.t_environment e
         ON s.environment_id = e.environment_id
@@ -88,8 +88,8 @@ WHERE name LIKE 'gebilling%'
 SELECT DISTINCT
     s.server_name
        , s.server_id
-    , c.component_name
-    , c.component_id
+       , c.component_name
+       , c.component_id
        , q.queue_name
        , q.queue_id
        , cqa.assoc_id
@@ -107,8 +107,8 @@ FROM dbo.t_server s
 SELECT DISTINCT
     s.server_name
        , s.server_id
-    , q.queue_name
-    , q.queue_id
+       , q.queue_name
+       , q.queue_id
        , qsa.LastUpdate
 FROM dbo.t_server s
     INNER JOIN dbo.t_queue_server_assoc qsa
@@ -128,8 +128,8 @@ WHERE server_id = (
 SELECT DISTINCT
     q.queue_name
        , qsa.queue_id
-    , s.server_name
-    , qsa.LastUpdate
+       , s.server_name
+       , qsa.LastUpdate
 FROM dbo.t_queue q
     INNER JOIN dbo.t_queue_server_assoc qsa
         ON q.queue_id = qsa.queue_id
@@ -241,7 +241,7 @@ WHERE server_name = 'xvm002'
 -- insert server id's into the t_monitoring table
 
 INSERT INTO t_monitoring ( server_id ) SELECT DISTINCT s.server_id
-                                              FROM dbo.t_server s
+                                       FROM dbo.t_server s
                                            LEFT OUTER JOIN dbo.t_server_type_assoc sta
                                                ON sta.server_id = s.server_id
                                            LEFT OUTER JOIN dbo.t_server_type st

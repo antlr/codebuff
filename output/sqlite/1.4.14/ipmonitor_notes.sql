@@ -69,8 +69,8 @@ SELECT
 FROM IPMonMonitors imm
     INNER JOIN IPMonTypeAssoc ita
         ON imm.TypeID = ita.typeid
-               INNER JOIN IPMonGroupMembers igm
-         ON imm.MonitorID = igm.MonitorID
+    INNER JOIN IPMonGroupMembers igm
+        ON imm.MonitorID = igm.MonitorID
 GROUP BY DeviceID, imm.MonitorID, imm.TypeID, ita.monitor_category, Name, [Address], [Description]
 ------------------------------------------------------------------------------------------------------------------------
 -- this adds a lot of extra rows as it has multiple groups for most monitors

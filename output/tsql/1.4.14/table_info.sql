@@ -17,11 +17,11 @@ SELECT
     , com.text default_value
     , obj.name default_cons_name
     , CASE WHEN col.isnullable = 1
-          THEN 'Y'
+    THEN 'Y'
       ELSE 'N'
       END is_nullable
     , CASE WHEN col.status & 80 = 80
-          THEN 'Y'
+    THEN 'Y'
       ELSE 'N'
       END is_identity
 FROM sysobjects tab, syscolumns col
@@ -93,9 +93,9 @@ FROM (
              tab1.name child_table
              , col1.name child_column
              , CASE col1.colid
-               WHEN ref.fkey1
+                   WHEN ref.fkey1
                    THEN 1
-               WHEN ref.fkey2
+                   WHEN ref.fkey2
                    THEN 2
                WHEN ref.fkey3
                    THEN 3
@@ -129,9 +129,9 @@ FROM (
              , col2.name parent_column
              , ref.constid constraint_id
              , CASE col2.colid
-               WHEN ref.rkey1
+                   WHEN ref.rkey1
                    THEN 1
-               WHEN ref.rkey2
+                   WHEN ref.rkey2
                    THEN 2
                WHEN ref.rkey3
                    THEN 3
@@ -175,34 +175,34 @@ FROM (
                        , ref.fkey3
                        , ref.fkey4
                        , ref.fkey5
-, ref.fkey6
-, ref.fkey7
-, ref.fkey8
-, ref.fkey9
-, ref.fkey10
-, ref.fkey11
-, ref.fkey12
-, ref.fkey13
-, ref.fkey14
-, ref.fkey15
-, ref.fkey16)
+                       , ref.fkey6
+                       , ref.fkey7
+                       , ref.fkey8
+                       , ref.fkey9
+                       , ref.fkey10
+                       , ref.fkey11
+                       , ref.fkey12
+                       , ref.fkey13
+                       , ref.fkey14
+                       , ref.fkey15
+                       , ref.fkey16)
                AND col2.colid IN
                    (ref.rkey1
                        , ref.rkey2
                        , ref.rkey3
                        , ref.rkey4
                        , ref.rkey5
-, ref.rkey6
-, ref.rkey7
-, ref.rkey8
-, ref.rkey9
-, ref.rkey10
-, ref.rkey11
-, ref.rkey12
-, ref.rkey13
-, ref.rkey14
-, ref.rkey15
-, ref.rkey16)
+                       , ref.rkey6
+                       , ref.rkey7
+                       , ref.rkey8
+                       , ref.rkey9
+                       , ref.rkey10
+                       , ref.rkey11
+                       , ref.rkey12
+                       , ref.rkey13
+                       , ref.rkey14
+                       , ref.rkey15
+                       , ref.rkey16)
                AND tab1.name <> 'dtproperties'
      ) foreignkeycols, sysobjects obj
 WHERE child_pos = parent_pos AND obj.id = constraint_id
@@ -215,7 +215,7 @@ SELECT
     , ind.name index_name
     , INDEX_COL(tab.name, ind.indid, idk.keyno) column_name
     , CASE WHEN ind.status & 2 = 2
-          THEN 'Y'
+    THEN 'Y'
       ELSE 'N'
       END is_unique
 FROM sysindexes ind, sysindexkeys idk

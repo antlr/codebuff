@@ -90,7 +90,7 @@ public class STLexer implements TokenSource {
                    "," +
                    line +
                    ":" +
-                   getCharPositionInLine() +
+                getCharPositionInLine() +
                    "]";
         }
     }

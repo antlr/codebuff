@@ -12,18 +12,18 @@ WHERE t.active = 1
       AND t.server_name NOT IN
           ('XWEBUTIL12', 'XWEBUTIL13', 'EWEBPROD1', 'PWEBSVC20', 'PWEBUSB20', 'XSQLUTIL11')
       AND t.server_name NOT IN (
-          SELECT DISTINCT l.address
-          FROM ipmongroups g
-              INNER JOIN ipmongroupmembers m ON g.groupid = m.groupid
-                          INNER JOIN ipmonmonitors l ON m.monitorid = l.monitorid
-                          INNER JOIN t_server t ON l.address = t.server_name
-                          INNER JOIN t_server_type_assoc tsta ON t.server_id = tsta.server_id
-          WHERE l.name LIKE '%PING%'
-                AND t.environment_id = 0
-                AND tsta.type_id IN
-                    ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
-                AND g.groupname IN ('Prod Ping')
-                AND t.active = 1)
+    SELECT DISTINCT l.address
+    FROM ipmongroups g
+        INNER JOIN ipmongroupmembers m ON g.groupid = m.groupid
+                    INNER JOIN ipmonmonitors l ON m.monitorid = l.monitorid
+                    INNER JOIN t_server t ON l.address = t.server_name
+                    INNER JOIN t_server_type_assoc tsta ON t.server_id = tsta.server_id
+    WHERE l.name LIKE '%PING%'
+          AND t.environment_id = 0
+          AND tsta.type_id IN
+              ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+          AND g.groupname IN ('Prod Ping')
+          AND t.active = 1)
 UNION ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT

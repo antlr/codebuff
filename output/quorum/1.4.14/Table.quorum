@@ -176,7 +176,7 @@ class Table<Type> is TableBlueprint<Type>
                        Array<Type> rowArray = it:Next()
                        rowArray:SetMaxSize(column)
 
-integer temp = rowArray:GetMaxSize()
+                       integer temp = rowArray:GetMaxSize()
                        if temp > actualSize
                            actualSize = temp
                        end

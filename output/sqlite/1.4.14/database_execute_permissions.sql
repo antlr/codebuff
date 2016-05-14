@@ -2,7 +2,7 @@
 -- ignores SQL accounts and domain users
 
 INSERT INTO dbs SELECT name
-                        FROM sys.databases
+                 FROM sys.databases
     ORDER BY name
 
 -- can be changed to do windows users easily

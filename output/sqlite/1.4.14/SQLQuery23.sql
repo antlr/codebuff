@@ -9,11 +9,11 @@ SELECT
 --, ErrorMessage
 --, ErrorDateTime
     , (
-          SELECT ErrorDateTime
-          WHERE ErrorMessage LIKE '%Validation phase is beginning.%') AS TaskStartTime
+    SELECT ErrorDateTime
+    WHERE ErrorMessage LIKE '%Validation phase is beginning.%') AS TaskStartTime
     , (
-          SELECT ErrorDateTime
-          WHERE ErrorMessage LIKE '%Cleanup phase is beginning.%') AS TaskEndTime
+    SELECT ErrorDateTime
+    WHERE ErrorMessage LIKE '%Cleanup phase is beginning.%') AS TaskEndTime
     , CONVERT(NVARCHAR(12), DATEADD(ms, DATEDIFF(ms, (
                                 SELECT ErrorDateTime
                                 WHERE ErrorMessage LIKE '%Validation phase is beginning.%'), (
@@ -63,9 +63,9 @@ GROUP BY SourceServer
       , SourceDB
       , DestServer
       , DestDB
-    , TaskName
-    , PackageName
-    , ErrorDateTime
+      , TaskName
+      , PackageName
+      , ErrorDateTime
       , ErrorMessage
 
 
@@ -74,16 +74,16 @@ GROUP BY SourceServer
 SELECT DISTINCT
     dmcl.ClientID
     , dmcl.SourceServer
-    , dmcl.SourceDB
-    , dmcl.DestServer
+       , dmcl.SourceDB
+       , dmcl.DestServer
        , dmcl.DestDB
        , dmcl.PackageName
        , dmcl.TaskName
        , dmcl.ErrorMessage
        , dmcl.ErrorDateTime
        , (
-             SELECT dmcl.ErrorDateTime
-             WHERE dmcl.ErrorMessage LIKE '%Validation phase is beginning.%') AS TaskStartTime
+    SELECT dmcl.ErrorDateTime
+    WHERE dmcl.ErrorMessage LIKE '%Validation phase is beginning.%') AS TaskStartTime
 --, (SELECT dmcl2.ErrorDateTime WHERE dmcl2.ErrorMessage LIKE '%Cleanup phase is beginning.%' AND dmcl.ClientID = dmcl2.ClientID AND dmcl.TaskName = dmcl2.TaskName AND dmcl.ErrorMessage LIKE '%Validation phase is beginning.%')  AS TaskEndTime
 --, CONVERT(NVARCHAR(12), DATEADD(ms, DATEDIFF(ms, (SELECT dmcl.ErrorDateTime WHERE dmcl.ErrorMessage LIKE '%Validation phase is beginning.%'), (SELECT dmcl2.ErrorDateTime WHERE dmcl2.ErrorMessage LIKE '%Cleanup phase is beginning.%')), 0), 114) AS TaskTimeTaken
 FROM dbo.DMartComponentLogging dmcl

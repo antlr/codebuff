@@ -241,7 +241,7 @@ WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GETDATE())
       AND DATEPART(month, ErrorDateTime) = DATEPART(month, GETDATE())
       AND DATEPART(year, ErrorDateTime) = DATEPART(year, GETDATE())
 GROUP BY TaskName
-    , ErrorDateTime
+       , ErrorDateTime
        , PackageName
        , DestDB
        , DestServer

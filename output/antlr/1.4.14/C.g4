@@ -346,7 +346,7 @@ gccAttributeList
     ;
 
 gccAttribute
-    :   ~(',' | '('| ')') // relaxed def for "identifier or reserved word" ('(' argumentExpressionList? ')')?
+    :   ~(',' | '(' | ')') // relaxed def for "identifier or reserved word" ('(' argumentExpressionList? ')')?
     |   // empty
     ;
 

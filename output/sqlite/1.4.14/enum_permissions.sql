@@ -1,6 +1,6 @@
 WITH perms_cte AS
 (
-SELECT
+    SELECT
     USER_NAME(p.grantee_principal_id) AS principal_name
     , dp.principal_id
     , dp.type_desc AS principal_type_desc
@@ -8,9 +8,9 @@ SELECT
     , OBJECT_NAME(p.major_id) AS object_name
     , p.permission_name
     , p.state_desc AS permission_state_desc
-FROM sys.database_permissions p
-INNER JOIN sys.database_principals dp
-         ON p.grantee_principal_id = dp.principal_id
+    FROM sys.database_permissions p
+    INNER JOIN sys.database_principals dp
+             ON p.grantee_principal_id = dp.principal_id
 )
 
 --users

@@ -164,7 +164,7 @@ public class CompiledST implements Cloneable {
                                                              argSTname,
                                                              null,
                                                              defArgTemplate,
-fa.defaultValueToken);
+                                                             fa.defaultValueToken);
                         fa.compiledDefaultValue.name = argSTname;
                         fa.compiledDefaultValue.defineImplicitlyDefinedTemplates(group);
                         break;

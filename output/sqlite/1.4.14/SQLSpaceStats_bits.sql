@@ -53,9 +53,7 @@ FROM SQLSpaceStats
 --WHERE LastUpdate > GetDate() - 2
 --AND server_name = 'STGSQL611'
 GROUP BY LastUpdate
-    , dbname
-    , server_name
-    , ServerID, flag, Fileid, FileGroup, total_space, freespace, freepct, [FileName]
+    , dbname, server_name, ServerID, flag, Fileid, FileGroup, total_space, freespace, freepct, [FileName]
 ORDER BY dbname, LastUpdate
     DESC
 -----------------------------------------------------------

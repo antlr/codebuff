@@ -4,15 +4,15 @@ This script generates filegroup listing on a given database for each table withi
 
 SELECT
     'Object Name' = CASE si.IndID
-                    WHEN 1
+                        WHEN 1
                         THEN so.Name
-                        ELSE si.Name END
+                    ELSE si.Name END
     , 'Object Type' = CASE WHEN si.IndID < 2
                           THEN 'Table'
                       ELSE 'Index'
                       END
     , 'Table Name' = CASE WHEN si.IndID > 1
-    THEN so.Name
+                         THEN so.Name
                      ELSE ' ' END
     , 'FileGroup Name' = sfg.GroupName
     , 'System FileName' = sf.Name

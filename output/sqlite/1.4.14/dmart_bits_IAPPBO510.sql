@@ -277,8 +277,8 @@ WHERE ReportServer = 'PSLQRPT22'
 
 UPDATE ClientConnection
 SET LoadStageDBStartDate = '2010-03-09 01:10:33.200'
-, LoadStageDBEndDate    = '2010-03-09 01:15:20.393'
-    , LoadReportDBStartDate = '2010-03-09 02:55:12.807'
+, LoadStageDBEndDate   = '2010-03-09 01:15:20.393'
+    , LoadReportDBStartDate   = '2010-03-09 02:55:12.807'
     , LoadReportDBEndDate   = '2010-03-09 02:59:33.627'
     WHERE Beta = '0'
 
@@ -288,18 +288,18 @@ WHERE SourceDB = 'PADemoDU'
 
 UPDATE ClientConnection
 SET LoadStageDBStartDate = '2010-03-09 01:10:33.200'
-, LoadStageDBEndDate    = '2010-03-09 01:15:20.393'
-    , LoadReportDBStartDate = '2010-03-09 02:55:12.807'
+, LoadStageDBEndDate   = '2010-03-09 01:15:20.393'
+    , LoadReportDBStartDate   = '2010-03-09 02:55:12.807'
     , LoadReportDBEndDate   = '2010-03-09 02:59:33.627'
-    , Status                = '0'
+    , Status   = '0'
 WHERE Beta = '0'
 
 UPDATE dbo.ClientConnection_test
 SET SourceServer = 'STGSQL613'
-, StageDB    = 'DMart_PADemoLP_Stage'
-    , CDCReportDB = 'DMart_CDCTest_Data'
+, StageDB   = 'DMart_PADemoLP_Stage'
+    , CDCReportDB   = 'DMart_CDCTest_Data'
     , SourceDB   = 'PADemoLP2'
-    , ClientID                = '10024'
+    , ClientID   = '10024'
     , StageServer   = 'STGSQLDOC710'
     , CDCReportServer   = 'STGSQLDOC710'
 
@@ -340,8 +340,8 @@ ORDER BY Beta, SourceDB
 
 UPDATE dbo.ClientConnection_test
 SET LoanCurrentStartDate = '2013-04-21 14:39:24.897'
-, LoanCurrentEndDate    = '2013-04-26 14:39:24.897'
-    , LoanMasterStartDate = '2013-04-21 14:39:24.897'
+, LoanCurrentEndDate   = '2013-04-26 14:39:24.897'
+    , LoanMasterStartDate   = '2013-04-21 14:39:24.897'
     , LoanMasterEndDate   = '2013-04-26 14:39:24.897'
-    , LoanSecondaryStartDate                = '2013-04-21 14:39:24.897'
+    , LoanSecondaryStartDate   = '2013-04-21 14:39:24.897'
     , LoanSecondaryEndDate   = '2013-04-26 14:39:24.897'

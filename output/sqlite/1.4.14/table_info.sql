@@ -42,8 +42,7 @@ SELECT
     , obj.name constraint_name
     , com.text condition
 FROM sysobjects tab,
-    syscomments com
-    ,
+    syscomments com,
     sysobjects obj
 WHERE obj.xtype = 'C'
       AND com.id = obj.id AND
@@ -60,8 +59,7 @@ SELECT
     , INDEX_COL(tab.name, ind.indid, idk.keyno) column_name
     , idk.keyno pos
 FROM sysobjects tab,
-    sysindexes ind
-    ,
+    sysindexes ind,
     sysindexkeys idk
 WHERE ind.status & 800
       = 800
@@ -80,8 +78,7 @@ SELECT
     , INDEX_COL(tab.name, ind.indid, idk.keyno) column_name
     , idk.keyno pos
 FROM sysobjects tab,
-    sysindexes ind
-    ,
+    sysindexes ind,
     sysindexkeys idk
 WHERE ind.status & 1000
       = 1000
@@ -199,8 +196,7 @@ SELECT
           THEN 'Y'
       ELSE 'N' END is_unique
 FROM sysindexes ind,
-    sysindexkeys idk
-    ,
+    sysindexkeys idk,
     sysobjects tab
 WHERE NOT(ind.status & 800 = 800)
       AND NOT(ind.status & 1000 = 1000)

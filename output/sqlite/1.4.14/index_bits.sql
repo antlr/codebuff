@@ -17,12 +17,12 @@ FROM SQLIndexRebuilds a
         FROM SQLIndexRebuilds
         GROUP BY ServerName, DBName, SQLStatement, IndexType, FragPercent
         HAVING count(*) > 1) b
-ON a.ServerName = b.ServerName AND
-   a.DBName = b.DBName AND
-   a.SQLStatement = b.SQLStatement AND
-   a.IndexType = b.IndexType AND
-   a.FragPercent = b.FragPercent AND
-   a.seq_num < b.max_seq_num
+        ON a.ServerName = b.ServerName AND
+           a.DBName = b.DBName AND
+           a.SQLStatement = b.SQLStatement AND
+           a.IndexType = b.IndexType AND
+           a.FragPercent = b.FragPercent AND
+           a.seq_num < b.max_seq_num
 
 --------------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ FROM sys.dm_db_missing_index_groups g
     JOIN sys.dm_db_missing_index_group_stats gs ON gs.group_handle = g.index_group_handle
          JOIN sys.dm_db_missing_index_details d ON g.index_handle = d.index_handle
 WHERE d.database_id = d.database_id AND
-d.object_id = d.object_id
+      d.object_id = d.object_id
 ORDER BY dbname
 --ORDER BY gs.user_seeks DESC
 --   and object_name(d.object_id) = 'Address'

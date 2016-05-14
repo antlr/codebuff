@@ -19,16 +19,16 @@ FROM SQLSpaceStats a
         FROM SQLSpaceStats
         GROUP BY Server_Name
         , dbname
-        , flag
-        , FileID
-        , FileGroup
-        , total_space
-        , usedspace
-        , freespace
-        , freepct
-        , Name
-        , LastUpdate
-        , [FileName]
+, flag
+, FileID
+, FileGroup
+, total_space
+, usedspace
+, freespace
+, freepct
+, Name
+, LastUpdate
+, [FileName]
         HAVING count(*) > 1
     ) b
         ON a.Server_Name = b.Server_Name AND

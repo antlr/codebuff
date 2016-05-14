@@ -91,7 +91,7 @@ FROM IPMonMonitors imm
     INNER JOIN IPMonGroupMembers igm ON imm.MonitorID = igm.MonitorID
 --WHERE Address = 'PSQLMET31'
 GROUP BY DeviceID
-    , imm.MonitorID
+, imm.MonitorID
 , igm.GroupID
 , ita.monitor_category
 , [Address]

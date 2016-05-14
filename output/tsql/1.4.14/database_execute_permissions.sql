@@ -3,9 +3,9 @@
 
 INSERT INTO dbs
 
-SELECT name
-FROM sys.databases
-ORDER BY name
+    SELECT name
+    FROM sys.databases
+    ORDER BY name
 
 -- can be changed to do windows users easily
 

@@ -67,9 +67,9 @@ ORDER BY Status
     ASC
     , SSISInstanceID
     ASC
-    , Beta
+, Beta
     ASC
-    , LoadStageDBStartDate
+, LoadStageDBStartDate
     ASC
 --------------------------------
 -- the current records from the error logging table

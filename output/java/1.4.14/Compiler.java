@@ -191,7 +191,7 @@ public class Compiler {
         }
         else if ( re instanceof NoViableAltException ) {
             String msg = "'"+re.token.getText()+"' came as a complete surprise to me";
-                                                           group.errMgr.compileTimeError(ErrorType.SYNTAX_ERROR, templateToken, re.token, msg);
+            group.errMgr.compileTimeError(ErrorType.SYNTAX_ERROR, templateToken, re.token, msg);
         }
         else if ( tokens.index()==0 ) { // couldn't parse anything
             String msg =

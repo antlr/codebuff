@@ -48,7 +48,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  */
 public class Trainer {
 	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.12; //1.0/7;
-	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.15;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
@@ -1151,13 +1151,13 @@ public class Trainer {
 			}
 		}
 		// check to see if we are 2nd or beyond repeated token
-//		if ( t instanceof TerminalNode ) {
-//			List<TerminalNode> repeatedTokens =
-//				((ParserRuleContext) parent).getTokens(((TerminalNode) t).getSymbol().getType());
-//			if ( repeatedTokens.size()>1 && repeatedTokens.indexOf(t)>0 ) {
-//				return CHILD_INDEX_LIST_ELEMENT;
-//			}
-//		}
+		if ( t instanceof TerminalNode ) {
+			List<TerminalNode> repeatedTokens =
+				((ParserRuleContext) parent).getTokens(((TerminalNode) t).getSymbol().getType());
+			if ( repeatedTokens.size()>1 && repeatedTokens.indexOf(t)>0 ) {
+				return CHILD_INDEX_LIST_ELEMENT;
+			}
+		}
 
 		return getChildIndex(t);
 	}

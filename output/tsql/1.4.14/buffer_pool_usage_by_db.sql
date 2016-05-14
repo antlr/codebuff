@@ -9,7 +9,7 @@ WITH src AS
 (
 SELECT
     database_id
-    , db_buffer_pages = COUNT_BIG(*)
+, db_buffer_pages = COUNT_BIG(*)
 FROM sys.dm_os_buffer_descriptors
 --WHERE database_id BETWEEN 5 AND 32766
 WHERE DB_NAME([database_id]) NOT IN
@@ -19,7 +19,7 @@ GROUP BY database_id
 SELECT
     [db_name] = CASE [database_id]
                 WHEN 32767
-                THEN 'Resource DB'
+                    THEN 'Resource DB'
                 ELSE DB_NAME([database_id]) END
     , db_buffer_pages
     , db_buffer_MB = db_buffer_pages / 128

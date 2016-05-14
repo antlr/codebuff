@@ -8,7 +8,7 @@ SELECT
     , msdb_dbo_backupset_backup_finish_date
     , msdb_dbo_backupset_expiration_date
     , CASE msdb_backupset.type
-      WHEN 'D'
+          WHEN 'D'
       THEN 'Database'
       WHEN 'L'
           THEN 'Log'

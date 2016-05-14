@@ -117,12 +117,11 @@ SELECT
     , sys.dm_db_index_usage_stats.user_lookups
     , sys.dm_db_index_usage_stats.user_updates
 FROM sys.dm_db_index_usage_stats
-    JOIN sys.indexes ON sys.dm_db_index_usage_stats.object_id = sys.indexes.object_id AND sys.dm_db_index_usage_stats.index_id = sys.indexes.index_id AND sys.indexes.name NOT LIKE 'PK%' AND
-                        OBJECT_NAME(sys.indexes.object_id) <> 'sysdiagrams'
+    JOIN sys.indexes ON sys.dm_db_index_usage_stats.object_id = sys.indexes.object_id AND sys.dm_db_index_usage_stats.index_id = sys.indexes.index_id AND sys.indexes.name NOT LIKE 'PK%'
+                        AND OBJECT_NAME(sys.indexes.object_id) <> 'sysdiagrams'
 WHERE sys.dm_db_index_usage_stats.database_id = DB_ID()
       AND user_scans = 0
       AND user_scans = 0
-
       AND user_lookups = 0
       AND user_seeks = 0
       AND sys.dm_db_index_usage_stats.index_id NOT IN

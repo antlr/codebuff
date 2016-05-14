@@ -55,17 +55,20 @@ SELECT
     , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate), 0), 114)    AS ReportLoadTime
 FROM ClientConnection
 GROUP BY Beta
-    , Status, SSISInstanceID, SourceDB
-      , LoadStageDBStartDate, LoadStageDBEndDate
+      , Status
+      , SSISInstanceID
+      , SourceDB
+      , LoadStageDBStartDate
+      , LoadStageDBEndDate
       , LoadReportDBStartDate
       , LoadReportDBEndDate
 ORDER BY Status
     ASC
     , SSISInstanceID
     ASC
-    , Beta
+, Beta
     ASC
-    , LoadStageDBStartDate
+, LoadStageDBStartDate
     ASC
 --------------------------------
 -- the current records from the error logging table

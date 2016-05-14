@@ -10,8 +10,8 @@ ORDER BY server
 SELECT DISTINCT
     Server
     , DatabaseName
-    , ProcedureName
-    , ProcedureText
+       , ProcedureName
+       , ProcedureText
 FROM
     (
         SELECT *
@@ -24,8 +24,8 @@ ORDER BY ProcedureName, DatabaseName
 SELECT DISTINCT
     Server
     , DatabaseName
-    , ProcedureName
-    , ProcedureText
+       , ProcedureName
+       , ProcedureText
 FROM
     (
         SELECT *

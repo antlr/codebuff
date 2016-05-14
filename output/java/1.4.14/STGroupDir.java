@@ -157,7 +157,7 @@ name, ioe);
 
     public CompiledST loadTemplateFile(String prefix, String unqualifiedFileName) {
         if ( verbose ) System.out.println("loadTemplateFile("+unqualifiedFileName+") in groupdir "+"from "+root +
-" prefix=" +
+                                          " prefix=" +
 prefix);
         URL f;
         try {

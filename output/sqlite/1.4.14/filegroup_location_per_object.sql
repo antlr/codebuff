@@ -23,6 +23,6 @@ FROM sysfilegroups sfg
         ON si.id = so.id
 WHERE so.type = 'U'
       AND si.Name NOT LIKE '#_%'ESCAPE '#'
-      AND so.Name NOT IN ('dtproperties')
+                                       AND so.Name NOT IN ('dtproperties')
 ORDER BY 2
     DESC, 3, 1

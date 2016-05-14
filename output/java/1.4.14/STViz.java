@@ -265,13 +265,13 @@ public class STViz {
                        @Override
                        public void run() {
                            synchronized ( lock ) {
-                                                 while ( viewFrame.isVisible() ) {
-                                                     try {
-                                                         lock.wait();
-                                                     }
-                                                     catch (InterruptedException e) {
-                                                     }
-                                                 }
+                               while ( viewFrame.isVisible() ) {
+                                   try {
+                                       lock.wait();
+                                   }
+                                   catch (InterruptedException e) {
+                                   }
+                               }
                            }
                        }
                    };
@@ -280,8 +280,8 @@ public class STViz {
                                         @Override
                                         public void windowClosing(WindowEvent arg0) {
                                             synchronized ( lock ) {
-                                                viewFrame.setVisible(false);
-                                                lock.notify();
+                                                                  viewFrame.setVisible(false);
+                                                                  lock.notify();
                                             }
                                         }
                                     });

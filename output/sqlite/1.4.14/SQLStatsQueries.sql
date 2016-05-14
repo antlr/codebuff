@@ -85,7 +85,7 @@ SELECT qs.total_worker_time / qs.execution_count AS [Avg CPU Time]
                         THEN len(convert(nvarchar(max), qt.text)) * 2
                         ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS query_text
        , qt.dbid
-    , dbname = db_name(qt.dbid)
+       , dbname = db_name(qt.dbid)
 , qt.objectid
 FROM sys.dm_exec_query_stats qs
 ORDER BY [Avg CPU Time]

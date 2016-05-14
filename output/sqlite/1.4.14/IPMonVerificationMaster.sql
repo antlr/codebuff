@@ -44,7 +44,7 @@ WHERE t.active = 1
       AND t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
-      ('XWEBUTIL12', 'XWEBUTIL13', 'EWEBPROD1', 'XSQLUTIL11')
+          ('XWEBUTIL12', 'XWEBUTIL13', 'EWEBPROD1', 'XSQLUTIL11')
       AND t.server_name NOT IN (
           SELECT DISTINCT l.address
           FROM ipmongroups g
@@ -61,7 +61,8 @@ WHERE t.active = 1
                 AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
                 AND g.groupname IN ('Prod O/S Services')
                 AND t.active = 1
-      ) UNION
+      )
+UNION
 ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
@@ -76,7 +77,7 @@ WHERE t.active = 1
       AND t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
-      ('XWEBUTIL12', 'XWEBUTIL13', 'XSQLUTIL11', 'EWEBPROD1', 'PVM400')
+          ('XWEBUTIL12', 'XWEBUTIL13', 'XSQLUTIL11', 'EWEBPROD1', 'PVM400')
       AND t.server_name NOT IN (
           SELECT DISTINCT l.address
           FROM ipmongroups g
@@ -93,9 +94,10 @@ WHERE t.active = 1
                 AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
                 AND g.groupname IN ('Prod O/S Services')
                 AND t.active = 1
-      ) UNION    ALL
+      )
+UNION
+ALL
 ---------------------------------------------------------------------------------------------------
-
 SELECT DISTINCT
     t.server_name
        , t.server_id
@@ -122,7 +124,8 @@ WHERE t.active = 1 AND
                 AND tsta.type_id IN ('8')
                 AND g.groupname IN ('Prod O/S Services')
                 AND t.active = 1
-      ) UNION
+      )
+UNION
 ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
@@ -137,7 +140,7 @@ WHERE t.active = 1
       t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
-      ('XSQLUTIL11')
+          ('XSQLUTIL11')
       AND t.server_name NOT IN (
           SELECT DISTINCT l.address
           FROM ipmongroups g
@@ -154,7 +157,8 @@ WHERE t.active = 1
                 AND tsta.type_id = 1 --DB Server
                 AND g.groupname IN ('Prod SQL Services')
                 AND t.active = 1
-      ) UNION
+      )
+UNION
 ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
@@ -169,7 +173,7 @@ WHERE t.active = 1
       t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
-      ('XSQLUTIL11', 'EWEBPROD1')
+          ('XSQLUTIL11', 'EWEBPROD1')
       AND t.server_name NOT IN (
           SELECT DISTINCT l.address
           FROM ipmongroups g
@@ -187,7 +191,8 @@ WHERE t.active = 1
                 AND tsta.type_id = 1 --DB Server
                 AND g.groupname IN ('Prod SQL Services')
                 AND t.active = 1
-      ) UNION
+      )
+UNION
 ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
@@ -202,7 +207,7 @@ WHERE t.active = 1
       t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
-      ('XSQLUTIL11')
+          ('XSQLUTIL11')
       AND t.server_name NOT IN (
           SELECT DISTINCT l.address
           FROM ipmongroups g
@@ -220,7 +225,8 @@ WHERE t.active = 1
                 AND tsta.type_id = 1 --DB Server
                 AND g.groupname IN ('Prod SQL Services')
                 AND t.active = 1
-      ) UNION
+      )
+UNION
 ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
@@ -272,7 +278,7 @@ WHERE t.active = 1 AND
       AND t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
-      ('XWEBUTIL12', 'XWEBUTIL13', 'EWEBPROD1')
+          ('XWEBUTIL12', 'XWEBUTIL13', 'EWEBPROD1')
       AND t.server_name NOT IN (
           SELECT DISTINCT l.address
           FROM ipmongroups g
@@ -327,7 +333,8 @@ WHERE t.active = 1
           --Connection, FTP or Internal FTP
                 AND g.groupname IN ('Prod FTP Port')
                 AND t.active = 1
-      ) UNION
+      )
+UNION
 ALL
 ---------------------------------------------------------------------------------------------------
 --SELECT DISTINCT t.server_name,
@@ -377,7 +384,7 @@ WHERE t.active = 1 AND
       AND t.environment_id = 0
       AND t.server_name NOT LIKE 'pdoc11'
       --This is a quasi standby server as i have been told. as such this monitor doesn't apply and wont work.
-                                 AND t.server_name NOT IN(
+      AND t.server_name NOT IN(
                                      SELECT DISTINCT l.address
                                      FROM ipmongroups g
                                          INNER JOIN

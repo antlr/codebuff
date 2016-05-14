@@ -262,10 +262,10 @@ CHAR_U : '\\' 'u' [0-9D-Fd-f] HEXD HEXD HEXD ;
 CHAR_NAMED : '\\'
              (   'newline'
              |   'return'
-|   'space'
-|   'tab'
-|   'formfeed'
-|   'backspace'
+             |   'space'
+             |   'tab'
+             |   'formfeed'
+             |   'backspace'
              ) ;
 CHAR_ANY : '\\' . ;
 NIL : 'nil' ;
