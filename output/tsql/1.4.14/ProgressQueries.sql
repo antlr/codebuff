@@ -13,8 +13,8 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4
-AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
 --, COUNT ( CASE WHEN Status = 4 AND LoadReportDBEndDate < GETDATE() THEN Status ELSE NULL END ) AS OldStatus4
@@ -30,8 +30,8 @@ AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
@@ -54,7 +54,14 @@ SELECT
     , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate,
                                                 LoadReportDBEndDate), 0), 114) AS ReportLoadTime
 FROM ClientConnection
-GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate, LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate
+GROUP BY Beta
+    , Status
+, SSISInstanceID
+, SourceDB
+, LoadStageDBStartDate
+, LoadStageDBEndDate
+, LoadReportDBStartDate
+, LoadReportDBEndDate
 ORDER BY Status
     ASC
     , SSISInstanceID

@@ -93,10 +93,7 @@ subexpression
     :   OPEN_PAREN ws expression ws CLOSE_PAREN
     ;
 
-literal
-    :   runtimeLiteral
-    |   parsetimeLiteral
-    ;
+literal : runtimeLiteral | parsetimeLiteral ;
 
 runtimeLiteral
     :   dynamicDictionary
@@ -178,10 +175,7 @@ literalArray
     ;
 
 literalArrayRest
-    :   ws (   (   parsetimeLiteral
-               |   bareLiteralArray
-               |   bareSymbol
-               ) ws)* CLOSE_PAREN
+    :   ws ((parsetimeLiteral | bareLiteralArray | bareSymbol) ws)* CLOSE_PAREN
     ;
 
 bareLiteralArray
@@ -242,8 +236,6 @@ RESERVED_WORD
     |   'self'
     |   'super'
     ;
-
-
 
 IDENTIFIER :   [a-zA-Z]+ [a-zA-Z0-9_]* ;
 DIGIT :   [0-9] ;

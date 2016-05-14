@@ -166,7 +166,7 @@ public class DropWSFeatures {
 	{
 		LeaveOneOutValidator validator = new LeaveOneOutValidator(language.corpusDir, language);
 		Triple<List<Formatter>,List<Float>,List<Float>> results =
-			validator.validateDocuments(injectWSFeatures, alignmentFeatures, false, true);
+			validator.validateDocuments(injectWSFeatures, alignmentFeatures, false, null);
 		List<Formatter> formatters = results.a;
 		List<Float> wsErrorRates = new ArrayList<>(); // don't include align errors
 		for (Formatter formatter : formatters) {

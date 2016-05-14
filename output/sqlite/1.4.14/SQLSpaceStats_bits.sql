@@ -15,11 +15,10 @@ FROM SQLSpaceStats a
             , Name
             , [FileName]
             , LastUpdate
-            , max(seq_num) AS max_seq_num
+            , max(seq_num)             AS max_seq_num
         FROM SQLSpaceStats
         GROUP BY Server_Name, dbname, flag, FileID, FileGroup, total_space, usedspace, freespace, freepct, Name, LastUpdate, [FileName]
-        HAVING count(*) > 1
-    ) b
+        HAVING count(*) > 1) b
         ON a.Server_Name = b.Server_Name AND
            a.dbname = b.dbname AND
            a.flag = b.flag AND

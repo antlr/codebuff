@@ -46,7 +46,7 @@ CharRef
 SEA_WS : (' '| '\t' | '\r'? '\n')+ ;
 OPEN : '<' -> pushMode(INSIDE) ;
 XMLDeclOpen : '<?xml' S -> pushMode(INSIDE) ;
-SPECIAL_OPEN : '<?' Name ->more , pushMode(PROC_INSTR) ;
+SPECIAL_OPEN : '<?' Name -> more , pushMode(PROC_INSTR) ;
 TEXT : ~[<&]+ ;        // match any 16 bit char other than < and &
 
 // ----------------- Everything INSIDE of a tag ---------------------

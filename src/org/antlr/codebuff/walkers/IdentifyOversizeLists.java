@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.antlr.codebuff.Formatter.WIDE_LIST_THRESHOLD;
-
 /** [USED IN FORMATTING ONLY]
  *  Walk tree and find and fill tokenToListInfo with all oversize lists with separators.
  */
@@ -62,25 +60,32 @@ public class IdentifyOversizeLists extends VisitSiblingLists {
 		SiblingListStats splitStats = corpus.rootAndSplitChildListStats.get(pair);
 		boolean oversize = stats==null && splitStats!=null;
 
-		int len = Trainer.getSiblingsLength(siblings);
-		if ( stats!=null && splitStats==null && len>=WIDE_LIST_THRESHOLD ) {
-			oversize = true; // fail-safe if we have never seen an oversize list for this pair in corpus
+		if ( stats!=null && splitStats==null ) {
+			// note: if we've never seen a split version of this ctx, do nothing;
+			// I used to have oversize failsafe
 		}
-		else {
-			if ( stats!=null&&splitStats!=null ) {
-				// compare distance in units of standard deviations to regular or split means
-				// like a one-dimensional Mahalanobis distance
-				double distToSplit = Math.abs(splitStats.median-len) / Math.sqrt(splitStats.variance);
-				double distToRegular = Math.abs(stats.median-len) / Math.sqrt(stats.variance);
-				// consider a priori probabilities as well.
-				float n = splitStats.numSamples+stats.numSamples;
-				float probSplit = splitStats.numSamples/n;
-				float probRegular = stats.numSamples/n;
-				distToSplit   *= (1 - probSplit);   // make distance smaller if probSplit is high
-				distToRegular *= (1 - probRegular);
-				if ( distToSplit<distToRegular ) {
-					oversize = true;
-				}
+
+		int len = Trainer.getSiblingsLength(siblings);
+		if ( stats!=null&&splitStats!=null ) {
+			// compare distance in units of standard deviations to regular or split means
+			// like a one-dimensional Mahalanobis distance.
+			// actually i took out the stddev divisor. they are usually very spread out and overlapping.
+			double distToSplit = Math.abs(splitStats.median-len);
+			double distToSplitSquared = Math.pow(distToSplit,2);
+			double distToSplitStddevUnits = distToSplitSquared / Math.sqrt(splitStats.variance);
+
+			double distToRegular = Math.abs(stats.median-len);
+			double distToRegularSquared = Math.pow(distToRegular,2);
+			double distToRegularStddevUnits = distToRegularSquared / Math.sqrt(stats.variance);
+
+			// consider a priori probabilities as well.
+			float n = splitStats.numSamples+stats.numSamples;
+			float probSplit = splitStats.numSamples/n;
+			float probRegular = stats.numSamples/n;
+			double adjDistToSplit   = distToSplitSquared   * (1 - probSplit);   // make distance smaller if probSplit is high
+			double adjDistToRegular = distToRegularSquared * (1 - probRegular);
+			if ( adjDistToSplit<adjDistToRegular ) {
+				oversize = true;
 			}
 		}
 		return oversize;

@@ -64,8 +64,7 @@ SELECT @GroupNames = COALESCE(@GroupNames + '], [', '') + GroupName
 FROM IPMonGroups
 GROUP BY GroupName
 ORDER BY GroupName
-SELECT @SQL
-= 'SELECT *
+SELECT @SQL = 'SELECT *
     , ' +
 @GroupNames + '
 FROM

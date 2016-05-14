@@ -1,5 +1,7 @@
 -- remove duplicates from SQLErrorLogs table
-alter table SQLIndexRebuilds add seq_num int identity go
+alter table SQLIndexRebuilds add seq_num int identity
+
+go
 --delete from a
 
 
@@ -10,10 +12,10 @@ select *-- from a from SQLIndexRebuilds a
          group by ServerName, DBName, SQLStatement, IndexType, FragPercent
          having count (*) > 1
          ) b on a.ServerName = b.ServerName
-                and a.DBName = b.DBName
-                and a.SQLStatement = b.SQLStatement
-                and a.IndexType = b.IndexType
-                and a.FragPercent = b.FragPercent and
+                and a.DBName = b.DBName and
+                a.SQLStatement = b.SQLStatement and
+                a.IndexType = b.IndexType and
+                a.FragPercent = b.FragPercent and
                 a.seq_num < b.max_seq_num
 
 --------------------------------------------------------------------------
@@ -104,13 +106,9 @@ SELECT OBJECT_NAME(sys.indexes.object_id) TableName
     , sys.dm_db_index_usage_stats.user_lookups
     , sys.dm_db_index_usage_stats.user_updates
 FROM    sys.dm_db_index_usage_stats
-    JOIN sys.indexes
-        ON sys.dm_db_index_usage_stats.object_id =
-sys.indexes.object_id
-           AND sys.dm_db_index_usage_stats.index_id =
-sys.indexes.index_id
-           AND sys.indexes.name NOT LIKE 'PK%'
-           AND OBJECT_NAME(sys.indexes.object_id) <> 'sysdiagrams'
+    JOIN sys.indexes ON sys.dm_db_index_usage_stats.object_id = sys.indexes.object_id
+                        AND sys.dm_db_index_usage_stats.index_id = sys.indexes.index_id AND sys.indexes.name NOT LIKE 'PK%' AND
+                        OBJECT_NAME(sys.indexes.object_id) <> 'sysdiagrams'
 WHERE sys.dm_db_index_usage_stats.database_id = DB_ID()
 AND user_scans = 0
 AND user_scans = 0

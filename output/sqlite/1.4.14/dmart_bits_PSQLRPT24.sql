@@ -13,10 +13,14 @@ SELECT
 FROM ClientConnection
 GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate, LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate, SourceServer
 ORDER BY SourceDB, Status
-    ASC, Beta
-    ASC, SSISInstanceID
-    ASC, LoadStageDBStartDate
-    ASC, SourceServer
+                 ASC
+                 , Beta
+                 ASC
+                 , SSISInstanceID
+                 ASC
+                 , LoadStageDBStartDate
+                 ASC
+                 , SourceServer
 -------------------------------------------
 
 
@@ -144,8 +148,7 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4
-AND
+            , COUNT(CASE WHEN Status = 4 AND
                               CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
@@ -161,8 +164,8 @@ AND
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnectionCDC
@@ -187,8 +190,7 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4
-AND
+            , COUNT(CASE WHEN Status = 4 AND
                               CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
@@ -204,8 +206,8 @@ AND
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection

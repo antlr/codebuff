@@ -74,7 +74,7 @@ FROM sys.dm_exec_query_stats qs
 WHERE cp.plan_handle = qs.plan_handle AND
       qt.dbid IS NULL
 ORDER BY [usecounts], [statement]
-    ASC
+                    ASC
 
 
 ------------------------------------------------------------------------

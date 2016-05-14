@@ -3,8 +3,9 @@ http://www.sqlservercentral.com/articles/T-SQL/62159/
 */
 
 CREATE TABLE [dbo].[Items]
-([ItemId] [int] NOT NULL, [Item] [varchar](100) NOT NULL) CREATE TABLE [dbo].[PriceHistory]
-                                                          ([ItemId] [int] NOT NULL, [PriceStartDate] [datetime] NOT NULL, [Price] [decimal](10, 2) NOT NULL)
+([ItemId] [int] NOT NULL, [Item] [varchar](100) NOT NULL)
+CREATE TABLE [dbo].[PriceHistory]
+([ItemId] [int] NOT NULL, [PriceStartDate] [datetime] NOT NULL, [Price] [decimal](10, 2) NOT NULL)
 
 SELECT
     currow.Item
@@ -14,11 +15,9 @@ SELECT
     , nextrow.PriceStartDate AS EndDate
 FROM PriceCompare currow
     LEFT JOIN PriceCompare nextrow
-        ON currow.rownum = nextrow.rownum - 1
-           AND currow.ItemId = nextrow.ItemId
+        ON currow.rownum = nextrow.rownum - 1 AND currow.ItemId = nextrow.ItemId
     LEFT JOIN PriceCompare prevrow
-        ON currow.rownum = prevrow.rownum + 1
-           AND currow.ItemId = prevrow.ItemId
+        ON currow.rownum = prevrow.rownum + 1 AND currow.ItemId = prevrow.ItemId
 
 INSERT INTO Items VALUES (1, 'vacuum cleaner')
 INSERT INTO Items VALUES (2, 'washing machine')

@@ -21,11 +21,11 @@ WITH perms_cte AS
     SELECT
         USER_NAME(p.grantee_principal_id)             AS principal_name
         , dp.principal_id
-        , dp.type_desc AS principal_type_desc
+        , dp.type_desc             AS principal_type_desc
         , p.class_desc
         , OBJECT_NAME(p.major_id)             AS object_name
         , p.permission_name
-        , p.state_desc AS permission_state_desc
+        , p.state_desc             AS permission_state_desc
     FROM sys.database_permissions p
         INNER JOIN sys.database_principals dp
              ON p.grantee_principal_id = dp.principal_id
@@ -38,7 +38,7 @@ SELECT
     , p.[object_name]
     , p.permission_name
     , p.permission_state_desc
-    , cast(NULL AS sysname)             AS role_name
+    , cast(NULL AS sysname) AS role_name
 FROM perms_cte p
 WHERE principal_type_desc <> 'DATABASE_ROLE'
 UNION
@@ -56,7 +56,7 @@ FROM perms_cte p
      (
          SELECT
              role_principal_id
-             , dp.type_desc AS principal_type_desc
+             , dp.type_desc             AS principal_type_desc
              , member_principal_id
              , user_name(member_principal_id)             AS member_principal_name
              , user_name(role_principal_id)             AS role_name --,*

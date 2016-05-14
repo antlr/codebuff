@@ -109,9 +109,9 @@ public class AutoIndentWriter implements STWriter {
 
     @Override
     public void pushAnchorPoint() {
-        if ( (anchors_sp+1)>= anchors.length ) {
-            int[] a = new int[anchors.length *2];
-            System.arraycopy(anchors, 0, a, 0, anchors.length -1);
+        if ( (anchors_sp+1) >= anchors.length ) {
+            int[] a = new int[anchors.length*2];
+            System.arraycopy(anchors, 0, a, 0, anchors.length-1);
             anchors = a;
         }
         anchors_sp++;
@@ -136,7 +136,7 @@ public class AutoIndentWriter implements STWriter {
         int n = 0;
         int nll = newline.length();
         int sl = str.length();
-        for (int i = 0; i< sl; i++) {
+        for (int i = 0; i < sl; i++) {
             char c = str.charAt(i);
             // found \n or \r\n newline?
             if ( c=='\r' ) continue;
@@ -190,12 +190,12 @@ public class AutoIndentWriter implements STWriter {
         int n = 0;
         // if want wrap and not already at start of line (last char was \n)
         // and we have hit or exceeded the threshold
-        if ( lineWidth!= NO_WRAP && wrap!=null && !atStartOfLine && charPosition>=lineWidth ) {
+        if ( lineWidth!= NO_WRAP&& wrap!=null && !atStartOfLine && charPosition>=lineWidth ) {
             // ok to wrap
             // Walk wrap string and look for A\nB.  Spit out A\n
             // then spit indent or anchor, whichever is larger
             // then spit out B.
-            for (int i = 0; i< wrap.length(); i++) {
+            for (int i = 0; i < wrap.length(); i++) {
                 char c = wrap.charAt(i);
                 if ( c=='\r' ) {
                     continue;
@@ -233,8 +233,8 @@ public class AutoIndentWriter implements STWriter {
         // *after* doing indents (might tabs in there or whatever)
 
         int indentWidth = n;
-        if ( anchors_sp>=0 && anchors[anchors_sp] >indentWidth ) {
-            int remainder = anchors[anchors_sp] -indentWidth;
+        if ( anchors_sp>=0 && anchors[anchors_sp]>indentWidth ) {
+            int remainder = anchors[anchors_sp]-indentWidth;
             for (int i = 1; i<=remainder; i++) out.write(' ');
             n += remainder;
         }

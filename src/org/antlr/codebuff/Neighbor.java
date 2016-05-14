@@ -2,6 +2,9 @@ package org.antlr.codebuff;
 
 import java.util.List;
 
+import static org.antlr.codebuff.Formatter.getHPosCategoryStr;
+import static org.antlr.codebuff.Formatter.getWSCategoryStr;
+
 public class Neighbor {
 	public Corpus corpus;
 	public final double distance;
@@ -26,7 +29,11 @@ public class Neighbor {
 		}
 		int cat = Y.get(corpusVectorIndex);
 		int[] elements = Trainer.triple(cat);
-		String display = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
-		return String.format("%s (cat=%s,d=%1.3f): %s", features, display, distance, lineText);
+//		String display = String.format("%d|%d|%d", cat&0xFF, elements[0], elements[1]);
+		String wsDisplay = getWSCategoryStr(cat);
+		String alignDisplay = getHPosCategoryStr(cat);
+		String display = wsDisplay!=null ? wsDisplay : alignDisplay;
+		if ( display==null ) display = String.format("%8s","none");
+		return String.format("%s (%s,d=%1.3f): %s", features, display, distance, lineText);
 	}
 }

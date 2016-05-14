@@ -75,10 +75,7 @@ type
     |   referenceType
     ;
 
-primitiveType
-    :   annotation* numericType
-    |   annotation* 'boolean'
-    ;
+primitiveType : annotation* numericType | annotation* 'boolean' ;
 
 numericType
     :   integralType
@@ -98,11 +95,7 @@ floatingPointType
     |   'double'
     ;
 
-referenceType
-    :   classOrInterfaceType
-    |   typeVariable
-    |   arrayType
-    ;
+referenceType : classOrInterfaceType | typeVariable | arrayType ;
 
 classOrInterfaceType
     :   (   classType_lfno_classOrInterfaceType
@@ -186,37 +179,25 @@ wildcard
     :   annotation* '?' wildcardBounds?
     ;
 
-wildcardBounds
-    :   'extends' referenceType
-    |   'super' referenceType
-    ;
+wildcardBounds : 'extends' referenceType | 'super' referenceType ;
 
 /*
  * Productions from §6 (Names)
  */
 
-packageName
-    :   Identifier
-    |   packageName '.' Identifier
-    ;
+packageName : Identifier | packageName '.' Identifier ;
 
 typeName : Identifier | packageOrTypeName '.' Identifier ;
 
 packageOrTypeName : Identifier | packageOrTypeName '.' Identifier ;
 
-expressionName
-    :   Identifier
-    |   ambiguousName '.' Identifier
-    ;
+expressionName : Identifier | ambiguousName '.' Identifier ;
 
 methodName
     :   Identifier
     ;
 
-ambiguousName
-    :   Identifier
-    |   ambiguousName '.' Identifier
-    ;
+ambiguousName : Identifier | ambiguousName '.' Identifier ;
 
 /*
  * Productions from §7 (Packages)
@@ -351,10 +332,7 @@ variableInitializer
     |   arrayInitializer
     ;
 
-unannType
-    :   unannPrimitiveType
-    |   unannReferenceType
-    ;
+unannType : unannPrimitiveType | unannReferenceType ;
 
 unannPrimitiveType
     :   numericType
@@ -368,12 +346,7 @@ unannReferenceType
     ;
 
 unannClassOrInterfaceType
-    :   (   unannClassType_lfno_unannClassOrInterfaceType
-        |   unannInterfaceType_lfno_unannClassOrInterfaceType
-        )
-        (   unannClassType_lf_unannClassOrInterfaceType
-        |   unannInterfaceType_lf_unannClassOrInterfaceType
-        )*
+    :   (unannClassType_lfno_unannClassOrInterfaceType | unannInterfaceType_lfno_unannClassOrInterfaceType) (unannClassType_lf_unannClassOrInterfaceType | unannInterfaceType_lf_unannClassOrInterfaceType)*
     ;
 
 unannClassType
@@ -588,12 +561,7 @@ constantDeclaration
     :   constantModifier* unannType variableDeclaratorList ';'
     ;
 
-constantModifier
-    :   annotation
-    |   'public'
-    |   'static'
-    |   'final'
-    ;
+constantModifier : annotation | 'public' | 'static' | 'final' ;
 
 interfaceMethodDeclaration
     :   interfaceMethodModifier* methodHeader methodBody
@@ -1066,9 +1034,7 @@ arrayAccess_lf_primary
     ;
 
 arrayAccess_lfno_primary
-    :   (   expressionName '[' expression ']'
-        |   primaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary '[' expression ']'
-        ) (primaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary '[' expression ']')*
+    :   (expressionName '[' expression ']' | primaryNoNewArray_lfno_primary_lfno_arrayAccess_lfno_primary '[' expression ']') (primaryNoNewArray_lfno_primary_lf_arrayAccess_lfno_primary '[' expression ']')*
     ;
 
 methodInvocation
@@ -1138,10 +1104,7 @@ constantExpression
     :   expression
     ;
 
-expression
-    :   lambdaExpression
-    |   assignmentExpression
-    ;
+expression : lambdaExpression | assignmentExpression ;
 
 lambdaExpression
     :   lambdaParameters '->' lambdaBody
@@ -1162,20 +1125,13 @@ lambdaBody
     |   block
     ;
 
-assignmentExpression
-    :   conditionalExpression
-    |   assignment
-    ;
+assignmentExpression : conditionalExpression | assignment ;
 
 assignment
     :   leftHandSide assignmentOperator expression
     ;
 
-leftHandSide
-    :   expressionName
-    |   fieldAccess
-    |   arrayAccess
-    ;
+leftHandSide : expressionName | fieldAccess | arrayAccess ;
 
 assignmentOperator
     :   '='
@@ -1400,10 +1356,7 @@ IntegerTypeSuffix
 fragment
 DecimalNumeral
     :   '0'
-    |   NonZeroDigit
-        (   Digits?
-        |   Underscores Digits
-        )
+    |   NonZeroDigit (Digits? | Underscores Digits)
     ;
 
 fragment
@@ -1413,8 +1366,7 @@ Digits
 
 fragment
 Digit
-    :   '0'
-    |   NonZeroDigit
+    :   '0' | NonZeroDigit
     ;
 
 fragment
@@ -1429,7 +1381,7 @@ DigitsAndUnderscores
 
 fragment
 DigitOrUnderscore
-    :   Digit | '_'
+    :   Digit |'_'
     ;
 
 fragment
@@ -1459,7 +1411,7 @@ HexDigitsAndUnderscores
 
 fragment
 HexDigitOrUnderscore
-    :   HexDigit | '_'
+    :   HexDigit |'_'
     ;
 
 fragment
@@ -1484,7 +1436,7 @@ OctalDigitsAndUnderscores
 
 fragment
 OctalDigitOrUnderscore
-    :   OctalDigit | '_'
+    :   OctalDigit |'_'
     ;
 
 fragment
@@ -1509,7 +1461,7 @@ BinaryDigitsAndUnderscores
 
 fragment
 BinaryDigitOrUnderscore
-    :   BinaryDigit | '_'
+    :   BinaryDigit |'_'
     ;
 
 // §3.10.2 Floating-Point Literals
@@ -1576,8 +1528,8 @@ BinaryExponentIndicator
 // §3.10.3 Boolean Literals
 
 BooleanLiteral
-    :   'true'| 'false'
-        ;
+    :   'true' |'false'
+    ;
 
 // §3.10.4 Character Literals
 
@@ -1601,8 +1553,7 @@ StringCharacters
 
 fragment
 StringCharacter
-    :   ~["\\]
-    |   EscapeSequence
+    :   ~["\\] | EscapeSequence
     ;
 
 // §3.10.6 Escape Sequences for Character and String Literals
@@ -1687,19 +1638,19 @@ RSHIFT_ASSIGN : '>>=' ;
 URSHIFT_ASSIGN : '>>>=' ;
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
-Identifier : JavaLetter JavaLetterOrDigit* ;
+Identifier :   JavaLetter JavaLetterOrDigit* ;
 fragment
 JavaLetter
     :   [a-zA-Z$_] // these are the "java letters" below 0x7F
-    |   // covers all characters above 0x7F which are not a surrogate   ~[\u0000-\u007F\uD800-\uDBFF] {Character.isJavaIdentifierStart(_input.LA(-1))}?
-    |   // covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF   [\uD800-\uDBFF] [\uDC00-\uDFFF] {Character.isJavaIdentifierStart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
+    |   // covers all characters above 0x7F which are not a surrogate   ~[\u0000-\u007F\uD800-\uDBFF] {Character.isJavaIdentifierStart(_input.LA(-1))} ?
+    |   // covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF   [\uD800-\uDBFF] [\uDC00-\uDFFF] {Character.isJavaIdentifierStart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))} ?
     ;
 
 fragment
 JavaLetterOrDigit
     :   [a-zA-Z0-9$_] // these are the "java letters or digits" below 0x7F
-    |   // covers all characters above 0x7F which are not a surrogate   ~[\u0000-\u007F\uD800-\uDBFF] {Character.isJavaIdentifierPart(_input.LA(-1))}?
-    |   // covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF   [\uD800-\uDBFF] [\uDC00-\uDFFF] {Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
+    |   // covers all characters above 0x7F which are not a surrogate   ~[\u0000-\u007F\uD800-\uDBFF] {Character.isJavaIdentifierPart(_input.LA(-1))} ?
+    |   // covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF   [\uD800-\uDBFF] [\uDC00-\uDFFF] {Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))} ?
     ;
 
 //
@@ -1714,5 +1665,4 @@ ELLIPSIS : '...' ;
 //
 WS :   [ \t\r\n\u000C]+ -> skip ;
 COMMENT : '/*' .*? '*/' -> skip ;
-LINE_COMMENT : '//' ~[\r\n]*
-               -> skip ;
+LINE_COMMENT : '//' ~[\r\n]* -> skip ;

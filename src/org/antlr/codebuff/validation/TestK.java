@@ -29,7 +29,6 @@ public class TestK extends LeaveOneOutValidator {
 	public TestK(String rootDir, LangDescriptor language, int k) {
 		super(rootDir, language);
 		this.k = k;
-		outputDir = "/tmp";
 	}
 
 	/** Return error rate for each document using leave-one-out validation */
@@ -39,7 +38,7 @@ public class TestK extends LeaveOneOutValidator {
 		List<Float> errors = new ArrayList<>();
 		for (int i = 0; i<documents.size(); i++) {
 			Triple<Formatter,Float,Float> results =
-				validate(language, documents, documents.get(i).fileName, k, false, false, false);
+				validate(language, documents, documents.get(i).fileName, k, null, false, false);
 			Float errorRate = results.c;
 			errors.add(errorRate);
 		}

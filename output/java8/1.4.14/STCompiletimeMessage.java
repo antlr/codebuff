@@ -55,7 +55,12 @@ public class STCompiletimeMessage extends STMessage {
                                 Throwable cause, Object arg) {
         this(error, srcName, templateToken, t, cause, arg, null);
     }
-    public STCompiletimeMessage(ErrorType error, String srcName, Token templateToken, Token t, Throwable cause, Object arg, Object arg2) {
+    public STCompiletimeMessage(ErrorType error,
+                                String srcName,
+                                Token templateToken,
+                                Token t,
+                                Throwable cause,
+                                Object arg, Object arg2) {
         super(error, null, cause, arg, arg2);
         this.templateToken = templateToken;
         this.token = t;

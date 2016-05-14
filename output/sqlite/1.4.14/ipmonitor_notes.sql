@@ -70,7 +70,7 @@ FROM IPMonMonitors imm
     INNER JOIN IPMonTypeAssoc ita
         ON imm.TypeID = ita.typeid
                INNER JOIN IPMonGroupMembers igm
-        ON imm.MonitorID = igm.MonitorID
+         ON imm.MonitorID = igm.MonitorID
 GROUP BY DeviceID, imm.MonitorID, imm.TypeID, ita.monitor_category, Name, [Address], [Description]
 ------------------------------------------------------------------------------------------------------------------------
 -- this adds a lot of extra rows as it has multiple groups for most monitors
@@ -94,7 +94,8 @@ GROUP BY DeviceID, imm.MonitorID, igm.GroupID, ita.monitor_category, [Address], 
 ------------------------------------------------------------------------------------------------------------------------
 -- PIVOT on GroupNames
 
-SELECT @GroupNames = COALESCE(@GroupNames + '], [', '') + GroupName
+SELECT
+    @GroupNames = COALESCE(@GroupNames + '], [', '') + GroupName
 FROM IPMonGroups
 GROUP BY GroupName
 ORDER BY GroupName

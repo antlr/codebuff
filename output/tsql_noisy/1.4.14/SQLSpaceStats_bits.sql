@@ -28,18 +28,18 @@ select * from SQLSpaceStats a
                                      , [FileName]
          having count (*) > 1
          ) b on a.Server_Name = b.Server_Name
-                and a.dbname = b.dbname
-                and a.flag = b.flag
-                and a.FileID = b.FileID
-                and a.FileGroup = b.FileGroup AND
-                a.total_space = b.total_space
-                AND a.usedspace = b.usedspace
-                AND a.freespace = b.freespace
-                AND a.freepct = b.freepct
-                AND a.Name = b.Name
-                AND a.[FileName] = b.[FileName]
-                AND a.LastUpdate = b.LastUpdate
-                AND a.seq_num < b.max_seq_num
+                and a.dbname = b.dbname and
+                a.flag = b.flag and
+                a.FileID = b.FileID and
+                a.FileGroup = b.FileGroup AND
+                a.total_space = b.total_space AND
+                a.usedspace = b.usedspace AND
+                a.freespace = b.freespace AND
+                a.freepct = b.freepct AND
+                a.Name = b.Name AND
+                a.[FileName] = b.[FileName] AND
+                a.LastUpdate = b.LastUpdate AND
+                a.seq_num < b.max_seq_num
 
 ----------------------------------------------------------
 

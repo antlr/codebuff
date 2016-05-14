@@ -10,15 +10,20 @@ SELECT
               114) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate), 0),
+    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate,
+                                                LoadReportDBEndDate), 0),
               114) AS ReportLoadTime
 FROM ClientConnection
 GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate, LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate, SourceServer
 ORDER BY SourceDB, Status
-    ASC, Beta
-    ASC, SSISInstanceID
-    ASC, LoadStageDBStartDate
-    ASC, SourceServer
+                 ASC
+                 , Beta
+                 ASC
+                 , SSISInstanceID
+                 ASC
+                 , LoadStageDBStartDate
+                 ASC
+                 , SourceServer
 -------------------------------------------
 
 
@@ -146,8 +151,8 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4
-AND CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -162,8 +167,8 @@ AND CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnectionCDC
@@ -188,8 +193,8 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4
-AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -204,8 +209,8 @@ AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
@@ -235,18 +240,23 @@ FROM dbo.DMartComponentLogging
 WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GETDATE())
       AND DATEPART(month, ErrorDateTime) = DATEPART(month, GETDATE())
       AND DATEPART(year, ErrorDateTime) = DATEPART(year, GETDATE())
-GROUP BY TaskName, ErrorDateTime, PackageName, DestDB, DestServer, SourceDB, SourceServer, ID, ClientId, ErrorMessage
+GROUP BY TaskName
+    , ErrorDateTime
+       , PackageName
+       , DestDB
+       , DestServer
+       , SourceDB
+       , SourceServer
+       , ID
+       , ClientId
+       , ErrorMessage
 ORDER BY ErrorDateTime
     DESC
 -------------------------------------------
 -------------------------------------------
 
 UPDATE ClientConnection
-SET LoadStageDBStartDate = '@3AM'
-    , LoadStageDBEndDate = '@3AM'
-    , LoadReportDBStartDate = '@3AM'
-    , LoadReportDBEndDate = '@3AM'
-    , Status = 4
+SET LoadStageDBStartDate = '@3AM', LoadStageDBEndDate = '@3AM', LoadReportDBStartDate = '@3AM', LoadReportDBEndDate = '@3AM', Status = 4
 WHERE Beta = '1'
 ----------------------------------------------
 
@@ -266,7 +276,8 @@ SELECT
               114) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , CONVERT(varchar(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate), 0),
+    , CONVERT(varchar(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate,
+                                                LoadReportDBEndDate), 0),
               114) AS ReportLoadTime
 FROM ClientConnection
 --WHERE ReportServer = 'PSQLRPT22'
@@ -306,7 +317,8 @@ FROM
             , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime
             , LoadReportDBStartDate
             , LoadReportDBEndDate
-            , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
+            , DATEDIFF(minute, LoadReportDBStartDate,
+                       LoadReportDBEndDate) AS ReportLoadTime
         FROM ClientConnection
         WHERE Beta != '2'
     ) AS t
@@ -323,7 +335,8 @@ FROM
             , Beta
             , [dbo].[ClientConnectionCDC].[StartTimeExtract]
             , [dbo].[ClientConnectionCDC].[EndTimeExtract]
-            , DATEDIFF(minute, StartTimeExtract, EndTimeExtract) AS DataLoadTime
+            , DATEDIFF(minute, StartTimeExtract,
+                       EndTimeExtract) AS DataLoadTime
          --, LoadReportDBStartDate
          --, LoadReportDBEndDate
          --, DATEDIFF(minute, LoadReportDBStartDate,

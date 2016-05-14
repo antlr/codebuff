@@ -118,11 +118,10 @@ FROM dbo.t_server s
 ORDER BY server_name
 
 DELETE FROM t_component_queue_assoc
-WHERE server_id =
-          (
-              SELECT server_id
-              FROM t_server
-              WHERE server_name = 'pyxis')
+WHERE server_id = (
+                      SELECT server_id
+                      FROM t_server
+                      WHERE server_name = 'pyxis')
 
 -- shows the queues in the t_queue_server_assoc table tied to the queue_name in t_queue
 
@@ -198,11 +197,10 @@ SET component_id = '237'
 WHERE name LIKE 'DexRealECPreProcessor2%'
 
 DELETE FROM t_proc_controller_assoc
-WHERE server_id =
-          (
-              SELECT server_id
-              FROM t_server
-              WHERE server_name = 'boston')
+WHERE server_id = (
+                      SELECT server_id
+                      FROM t_server
+                      WHERE server_name = 'boston')
 
 SELECT *
 FROM t_proc_controller
@@ -242,13 +240,12 @@ WHERE server_name = 'xvm002'
 
 -- insert server id's into the t_monitoring table
 
-INSERT INTO t_monitoring (server_id )
-    SELECT DISTINCT s.server_id
-    FROM dbo.t_server s
-        LEFT OUTER JOIN dbo.t_server_type_assoc sta
-            ON sta.server_id = s.server_id
-        LEFT OUTER JOIN dbo.t_server_type st
-            ON st.type_id = sta.type_id
-    WHERE s.active = '1'
-          AND st.type_id NOT LIKE '18'
-                                  AND s.server_name NOT LIKE '%dexma.com'
+INSERT INTO t_monitoring ( server_id ) SELECT DISTINCT s.server_id
+                                              FROM dbo.t_server s
+                                           LEFT OUTER JOIN dbo.t_server_type_assoc sta
+                                               ON sta.server_id = s.server_id
+                                           LEFT OUTER JOIN dbo.t_server_type st
+                                               ON st.type_id = sta.type_id
+                                       WHERE s.active = '1'
+                                             AND st.type_id NOT LIKE '18'
+                                                                     AND s.server_name NOT LIKE '%dexma.com'

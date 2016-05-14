@@ -15,7 +15,7 @@ SELECT CONVERT(CHAR(100), SERVERPROPERTY('Servername')) AS Server
     , msdb_dbo_backupset_description
 FROM   msdb_dbo_backupmediafamily INNER JOIN msdb_dbo_backupset
     ON msdb_dbg_backupmediafamily_media_set_id = msdb_dbo_backupset_media_set_id
-WHERE (CONVERT(datetime, msdb_dbo_backupset_backup_start_date, 102) >= GETDATE()-7)
+WHERE (CONVERT(datetime, msdb_dbo_backupset_backup_start_date, 102) >= GETDATE() -7)
 ORDER BY msdb_dbo_backupset_database_name, msdb_dbo_backupset_backup_finish_date
 -------------------------------------------------------------------------------------------
 --Most Recent Database Backup for Each Database - Detailed
@@ -58,8 +58,8 @@ WHERE msdb_backupset_type = 'D'
               WHERE msdb_backupset_type = 'D'
               ) AS B
     ON A.[server] = B.[server]
-    AND A.[database_name] = B.[database_name]
-       AND A.[last_db_backup_date] = B.[backup_finish_date]
+    AND A.[database_name] = B.[database_name] AND
+       A.[last_db_backup_date] = B.[backup_finish_date]
 ORDER BY backup_finish_date
 -------------------------------------------------------------------------------------------
 --Databases with data backup over 24 hours old

@@ -31,13 +31,7 @@ package org.stringtemplate.v4.compiler;
 public class Bytecode {
     public static final int MAX_OPNDS =2;
     public static final int OPND_SIZE_IN_BYTES =2;
-    public enum OperandType {
-
-        NONE,
-        STRING,
-        ADDR,
-        INT
-    }
+    public enum OperandType { NONE, STRING, ADDR, INT }
 
     public static class Instruction {
         public String name; // E.g., "load_str", "new"
@@ -122,54 +116,5 @@ public class Bytecode {
     public static final short MAX_BYTECODE =48;
 
     /** Used for assembly/disassembly; describes instruction set */
-    public static Instruction[] instructions = new Instruction[] {null, // <INVALID>
-new Instruction("load_str", OperandType.STRING), // index is the opcode
-new Instruction("load_attr", OperandType.STRING),
-new Instruction("load_local", OperandType.INT),
-new Instruction("load_prop", OperandType.STRING),
-new Instruction("load_prop_ind"),
-new Instruction("store_option", OperandType.INT),
-new Instruction("store_arg", OperandType.STRING),
-new Instruction("new", OperandType.STRING, OperandType.INT),
-new Instruction("new_ind", OperandType.INT),
-new Instruction("new_box_args", OperandType.STRING),
-new Instruction("super_new", OperandType.STRING, OperandType.INT),
-new Instruction("super_new_box_args", OperandType.STRING),
-new Instruction("write"),
-new Instruction("write_opt"),
-new Instruction("map"),
-new Instruction("rot_map", OperandType.INT),
-new Instruction("zip_map", OperandType.INT),
-new Instruction("br", OperandType.ADDR),
-new Instruction("brf", OperandType.ADDR),
-new Instruction("options"),
-new Instruction("args"),
-new Instruction("passthru", OperandType.STRING),
-null, //new Instruction("passthru_ind", OperandType.INT),
-new Instruction("list"),
-new Instruction("add"),
-new Instruction("tostr"),
-new Instruction("first"),
-new Instruction("last"),
-new Instruction("rest"),
-new Instruction("trunc"),
-new Instruction("strip"),
-new Instruction("trim"),
-new Instruction("length"),
-new Instruction("strlen"),
-new Instruction("reverse"),
-new Instruction("not"),
-new Instruction("or"),
-new Instruction("and"),
-new Instruction("indent", OperandType.STRING),
-new Instruction("dedent"),
-new Instruction("newline"),
-new Instruction("noop"),
-new Instruction("pop"),
-new Instruction("null"),
-new Instruction("true"),
-new Instruction("false"),
-new Instruction("write_str", OperandType.STRING),
-new Instruction("write_local", OperandType.INT),
-};
+    public static Instruction[] instructions = new Instruction[] {null, // <INVALID> new Instruction("load_str", OperandType.STRING), // index is the opcode new Instruction("load_attr", OperandType.STRING), new Instruction("load_local", OperandType.INT), new Instruction("load_prop", OperandType.STRING), new Instruction("load_prop_ind"), new Instruction("store_option", OperandType.INT), new Instruction("store_arg", OperandType.STRING), new Instruction("new", OperandType.STRING, OperandType.INT), new Instruction("new_ind", OperandType.INT), new Instruction("new_box_args", OperandType.STRING), new Instruction("super_new", OperandType.STRING, OperandType.INT), new Instruction("super_new_box_args", OperandType.STRING), new Instruction("write"), new Instruction("write_opt"), new Instruction("map"), new Instruction("rot_map", OperandType.INT), new Instruction("zip_map", OperandType.INT), new Instruction("br", OperandType.ADDR), new Instruction("brf", OperandType.ADDR), new Instruction("options"), new Instruction("args"), new Instruction("passthru", OperandType.STRING), null, //new Instruction("passthru_ind", OperandType.INT), new Instruction("list"), new Instruction("add"), new Instruction("tostr"), new Instruction("first"), new Instruction("last"), new Instruction("rest"), new Instruction("trunc"), new Instruction("strip"), new Instruction("trim"), new Instruction("length"), new Instruction("strlen"), new Instruction("reverse"), new Instruction("not"), new Instruction("or"), new Instruction("and"), new Instruction("indent", OperandType.STRING), new Instruction("dedent"), new Instruction("newline"), new Instruction("noop"), new Instruction("pop"), new Instruction("null"), new Instruction("true"), new Instruction("false"), new Instruction("write_str", OperandType.STRING), new Instruction("write_local", OperandType.INT),};
 }

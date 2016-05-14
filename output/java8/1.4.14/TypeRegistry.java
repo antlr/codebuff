@@ -42,7 +42,7 @@ import java.util.Set;
  */
 
 
-public class TypeRegistry<V> implements Map<Class<?>, V> {
+public class TypeRegistry <V> implements Map<Class<?>, V> {
     private final Map<Class<?>, V> backingStore = new HashMap<Class<?>, V>();
     private final Map<Class<?>, Class<?>> cache = new HashMap<Class<?>, Class<?>>();
     public int size() {

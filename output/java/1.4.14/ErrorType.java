@@ -38,10 +38,10 @@ public enum ErrorType{
     // INTERNAL ERRORS INTERNAL_ERROR("%s"), WRITE_IO_ERROR("error writing output caused by"), CANT_LOAD_GROUP_FILE("can't load group file %s");
 
 
-public String message;
+    public String message;
 
 
-ErrorType(String m) {
-   message = m;
-}
+    ErrorType(String m) {
+        message = m;
+    }
 }

@@ -42,8 +42,7 @@ public class Misc {
 
     /** Makes it clear when a comparison is intended as reference equality.
      */
-    public static boolean referenceEquals(Object x, Object y) { return x==y;
-    }
+    public static boolean referenceEquals(Object x, Object y) { return x==y; }
 
     // Seriously: why isn't this built in to java?
 
@@ -67,8 +66,7 @@ public class Misc {
 //        return buf.toString();
 //    }
 
-    public static String strip(String s, int n) { return s.substring(n, s.length()-n);
-    }
+    public static String strip(String s, int n) { return s.substring(n, s.length()-n); }
 
 //    public static String stripRight(String s, int n) {
 //        return s.substring(0, s.length()-n);
@@ -146,19 +144,19 @@ public class Misc {
         int i = 0;
         while ( i < s.length() ) {
             char c = s.charAt(i);
-            if ( c=='<'&& s.substring(i).startsWith("<\\\\>") ) {
+            if ( c=='<' && s.substring(i).startsWith("<\\\\>") ) {
                 buf.append("<\\\\>");
                 i += "<\\\\>".length();
                 continue;
             }
 
-            if ( c=='>'&& s.substring(i).startsWith(">\\>") ) {
+            if ( c=='>' && s.substring(i).startsWith(">\\>") ) {
                 buf.append(">>");
                 i += ">\\>".length();
                 continue;
             }
 
-            if ( c=='\\'&& s.substring(i).startsWith("\\>>") && !s.substring(i).startsWith("\\>>>") ) {
+            if ( c=='\\' && s.substring(i).startsWith("\\>>") && !s.substring(i).startsWith("\\>>>") ) {
                 buf.append(">>");
                 i += "\\>>".length();
                 continue;
@@ -176,9 +174,8 @@ public class Misc {
                 JarURLConnection jarURLConnection = (JarURLConnection)connection;
                 URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {
                                                                              jarURLConnection.getJarFileURL()
-                                                                   });
-                try { return urlClassLoader.findResource(jarURLConnection.getEntryName())!=null;
-                }
+});
+                try { return urlClassLoader.findResource(jarURLConnection.getEntryName())!=null; }
                 finally {
                     if ( urlClassLoader instanceof Closeable ) {
                         ((Closeable)urlClassLoader).close();
@@ -196,8 +193,7 @@ public class Misc {
             }
             return is!=null;
         }
-        catch (IOException ioe) { return false;
-        }
+        catch (IOException ioe) { return false; }
     }
 
     /**

@@ -272,7 +272,7 @@ public class ST {
             // flatten incoming list into existing list
             multi.addAll((List<?>)value);
         }
-        else if ( value!=null && value.getClass().isArray() ) {
+        else if ( value !=null && value.getClass().isArray() ) {
             if ( value instanceof Object[] ) {
                 multi.addAll(Arrays.asList((Object[])value));
             }
@@ -294,7 +294,8 @@ public class ST {
     public synchronized ST addAggr(String aggrSpec, Object ... values) {
         int dot = aggrSpec.indexOf(".{");
         if ( values==null || values.length==0 ) {
-            throw new IllegalArgumentException("missing values for aggregate attribute format: "+aggrSpec);
+            throw new IllegalArgumentException("missing values for aggregate attribute format: "+
+                                                   aggrSpec);
         }
 
         int finalCurly = aggrSpec.indexOf('}');
@@ -408,7 +409,7 @@ public class ST {
         else if ( curvalue.getClass().isArray() ) { // copy primitive array to list
             int length = Array.getLength(curvalue);
             multi = new AttributeList(length);
-            for (int i = 0; i< length; i++) {
+            for (int i = 0; i < length; i++) {
                 multi.add(Array.get(curvalue, i));
             }
         }
@@ -465,7 +466,11 @@ public class ST {
         return write(outputFile, listener, encoding, Locale.getDefault(), lineWidth);
     }
 
-    public int write(File outputFile, STErrorListener listener, String encoding, Locale locale, int lineWidth) throws IOException {
+    public int write(File outputFile,
+                     STErrorListener listener,
+                     String encoding,
+                     Locale locale,
+                     int lineWidth) throws IOException {
         Writer bw = null;
         try {
             FileOutputStream fos = new FileOutputStream(outputFile);
@@ -562,9 +567,8 @@ public class ST {
         if ( impl==null ) return "bad-template()";
         String name = impl.name+"()";
         if ( this.impl.isRegion ) {
-            name =
-"@" +
-STGroup.getUnMangledTemplateName(name);
+            name = "@" +
+                   STGroup.getUnMangledTemplateName(name);
         }
         return name;
     }

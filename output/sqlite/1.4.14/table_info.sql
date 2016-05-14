@@ -1,8 +1,8 @@
 /* Get tables */
 SELECT tab.name table_name
 FROM sysobjects tab
-WHERE tab.xtype = 'U'
-      AND tab.name <> 'dtproperties'
+WHERE tab.xtype = 'U' AND
+      tab.name <> 'dtproperties'
 ORDER BY 1
 
 /* Get columns */
@@ -21,8 +21,7 @@ SELECT
     , CASE WHEN col.isnullable = 1
           THEN 'Y'
       ELSE 'N' END is_nullable
-    , CASE WHEN col.status & 80
-                = 80
+    , CASE WHEN col.status & 80 = 80
           THEN 'Y'
       ELSE 'N' END is_identity
 FROM sysobjects tab
@@ -30,8 +29,8 @@ FROM sysobjects tab
     LEFT OUTER JOIN sysobjects obj ON com.id = obj.id
       , systypes typ
 WHERE tab.id = col.id AND
-      tab.xtype = 'U'
-      AND tab.name <> 'dtproperties'
+      tab.xtype = 'U' AND
+      tab.name <> 'dtproperties'
       AND col.xusertype = typ.xusertype
 ORDER BY 1, 3
 
@@ -48,8 +47,8 @@ FROM sysobjects tab,
     sysobjects obj
 WHERE obj.xtype = 'C'
       AND com.id = obj.id AND
-      tab.id = obj.parent_obj AND
-      tab.name <> 'dtproperties'
+      tab.id = obj.parent_obj
+      AND tab.name <> 'dtproperties'
 ORDER BY 1, 2
 
 /* Get primary key constraints */
@@ -68,8 +67,8 @@ WHERE ind.status & 800
       = 800
       AND ind.id = tab.id AND
       idk.id = tab.id AND
-      idk.indid = ind.indid AND
-      tab.name <> 'dtproperties'
+      idk.indid = ind.indid
+      AND tab.name <> 'dtproperties'
 ORDER BY 1, 2, 4
 
 /* Get unique key constraints */
@@ -88,8 +87,8 @@ WHERE ind.status & 1000
       = 1000
       AND ind.id = tab.id AND
       idk.id = tab.id AND
-      idk.indid = ind.indid AND
-      tab.name <> 'dtproperties'
+      idk.indid = ind.indid
+      AND tab.name <> 'dtproperties'
 ORDER BY 1, 2, 4
 
 /* Get foreign key constraints */
@@ -182,7 +181,7 @@ THEN 16 END parent_pos
                    tab2.id = col2.id AND col1.colid IN
                    ( ref.fkey1, ref.fkey2, ref.fkey3, ref.fkey4, ref.fkey5, ref.fkey6, ref.fkey7, ref.fkey8, ref.fkey9, ref.fkey10, ref.fkey11, ref.fkey12, ref.fkey13, ref.fkey14, ref.fkey15, ref.fkey16)
                    AND col2.colid IN
-                   ( ref.rkey1, ref.rkey2, ref.rkey3, ref.rkey4, ref.rkey5, ref.rkey6, ref.rkey7, ref.rkey8, ref.rkey9, ref.rkey10, ref.rkey11, ref.rkey12, ref.rkey13, ref.rkey14, ref.rkey15, ref.rkey16)
+                       ( ref.rkey1, ref.rkey2, ref.rkey3, ref.rkey4, ref.rkey5, ref.rkey6, ref.rkey7, ref.rkey8, ref.rkey9, ref.rkey10, ref.rkey11, ref.rkey12, ref.rkey13, ref.rkey14, ref.rkey15, ref.rkey16)
                    AND tab1.name <> 'dtproperties'
          ) foreignkeycols, sysobjects obj
 WHERE child_pos = parent_pos AND
@@ -196,21 +195,18 @@ SELECT
     tab.name table_name
     , ind.name index_name
     , INDEX_COL(tab.name, ind.indid, idk.keyno) column_name
-    , CASE WHEN ind.status & 2
-                = 2
+    , CASE WHEN ind.status & 2 = 2
           THEN 'Y'
       ELSE 'N' END is_unique
 FROM sysindexes ind,
     sysindexkeys idk
     ,
     sysobjects tab
-WHERE NOT(ind.status & 800
-          = 800)
-      AND NOT(ind.status & 1000
-              = 1000)
+WHERE NOT(ind.status & 800 = 800)
+      AND NOT(ind.status & 1000 = 1000)
       AND idk.id = tab.id AND
       idk.indid = ind.indid AND
       tab.xtype = 'U'
-      AND tab.id = ind.id AND
-      tab.name <> 'dtproperties'
+      AND tab.id = ind.id
+      AND tab.name <> 'dtproperties'
 ORDER BY 1, 2

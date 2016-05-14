@@ -469,7 +469,7 @@ time
     :   TIMES
     ;
 
-Identifier :   Letter ('_'| Letter | Digit)* ;
+Identifier : Letter ('_'| Letter | Digit)* ;
 DS : 'ds' ;
 ES : 'es' ;
 CS : 'cs' ;
@@ -725,9 +725,9 @@ NEAR : 'near' ;
 PROC : 'proc' ;
 QUESTION : '?' ;
 TIMES : 'times' ;
-Hexnum :   HexDigit+ ('h'| 'H') ;
-Integer :   Digit+ ;
-Octalnum :   ('0'..'7')+ ('o'| 'O') ;
+Hexnum : HexDigit+ ('h'| 'H') ;
+Integer : Digit+ ;
+Octalnum : ('0'..'7')+ ('o'| 'O') ;
 fragment
 HexDigit
     : ('0'..'9'| 'a'..'f' | 'A'..'F')
@@ -744,7 +744,7 @@ Exponent
     : ('e'| 'E') ('+'| '-')? ('0'..'9')+
     ;
 
-String : ' \'' ('\\' . | ~('\\' | '\''))* '\'' ;
+String : ' \'' ('\\' .| ~('\\' | '\''))* '\'' ;
 fragment
 Letter
     : ('a'..'z'| 'A'..'Z')
@@ -755,7 +755,7 @@ Digit
     :   '0'..'9'
     ;
 
-Etiqueta :   Identifier (':') ;
+Etiqueta : Identifier (':') ;
 Separator : ',' ;
 WS : (' '| '\t' | '\n' | '\r') -> skip ;
 LINE_COMMENT : ';' ~('\n' | '\r')* '\r'? '\n' -> skip ;

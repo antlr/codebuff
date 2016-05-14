@@ -84,8 +84,8 @@ WHERE dmcl.ErrorMessage LIKE '%Validation phase is beginning.%')    AS TaskStart
 FROM dbo.DMartComponentLogging dmcl
     JOIN dbo.DMartComponentLogging dmcl2
         ON dmcl.TaskName = dmcl2.TaskName AND
-           dmcl.SourceServer = dmcl2.SourceServer
-           AND dmcl.ClientID = dmcl2.ClientID
+           dmcl.SourceServer = dmcl2.SourceServer AND
+           dmcl.ClientID = dmcl2.ClientID
 WHERE DATEPART(day, dmcl.ErrorDateTime) = DATEPART(day, GetDate())
       AND DATEPART(month, dmcl.ErrorDateTime) = DATEPART(month, GetDate())
       AND DATEPART(year, dmcl.ErrorDateTime) = DATEPART(year, GetDate())

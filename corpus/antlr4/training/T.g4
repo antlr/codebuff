@@ -1,3 +1,3 @@
 grammar T;
 
-a : X ;
+a : A ;

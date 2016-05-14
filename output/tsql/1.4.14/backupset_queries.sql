@@ -23,7 +23,8 @@ FROM msdb_dbo_backupmediafamily
         ON msdb_dbg_backupmediafamily_media_set_id = msdb_dbo_backupset_media_set_id
 WHERE (CONVERT(datetime, msdb_dbo_backupset_backup_start_date,
                102) >= GETDATE() - 7)
-ORDER BY msdb_dbo_backupset_database_name, msdb_dbo_backupset_backup_finish_date
+ORDER BY msdb_dbo_backupset_database_name
+, msdb_dbo_backupset_backup_finish_date
 -------------------------------------------------------------------------------------------
 --Most Recent Database Backup for Each Database - Detailed
 -------------------------------------------------------------------------------------------
@@ -34,7 +35,8 @@ SELECT
     , B.backup_start_date
     , B.backup_finish_date
     , CONVERT(varchar(12), DATEADD(ms,
-                                   DATEDIFF(ms, B.backup_start_date, B.backup_finish_date), 0),
+                                   DATEDIFF(ms, B.backup_start_date,
+                                            B.backup_finish_date), 0),
               114)    AS BackupTime
     , B.backup_size
 --, B.expiration_date
@@ -70,9 +72,9 @@ FROM
                           ON msdb_dbg_backupmediafamily_media_set_id = msdb_dbo_backupset_media_set_id
                   WHERE msdb_backupset_type = 'D'
               ) AS B
-        ON A.[server] = B.[server]
-           AND A.[database_name] = B.[database_name]
-           AND A.[last_db_backup_date] = B.[backup_finish_date]
+        ON A.[server] = B.[server] AND
+           A.[database_name] = B.[database_name] AND
+           A.[last_db_backup_date] = B.[backup_finish_date]
 ORDER BY backup_finish_date
 -------------------------------------------------------------------------------------------
 --Databases with data backup over 24 hours old
@@ -81,7 +83,8 @@ SELECT
     CONVERT(CHAR(100), SERVERPROPERTY('Servername'))    AS Server
     , msdb_dbo_backupset_database_name
     , MAX(msdb_dbo_backupset_backup_finish_date)    AS last_db_backup_date
-    , DATEDIFF(hh, MAX(msdb_dbo_backupset_backup_finish_date), GETDATE())    AS [Backup Age (Hours)]
+    , DATEDIFF(hh, MAX(msdb_dbo_backupset_backup_finish_date),
+               GETDATE())    AS [Backup Age (Hours)]
 FROM msdb_dbo_backupset
 WHERE msdb_dbo_backupset_type = 'D'
 GROUP BY msdb_dbo_backupset_database_name HAVING (MAX(msdb_dbo_backupset_backup_finish_date) < DATEADD(hh, -24, GETDATE()))

@@ -9,10 +9,10 @@ order by server
 
 
 
-SELECT DISTINCT Server,
-       DatabaseName,
-       ProcedureName,
-       ProcedureText
+SELECT DISTINCT Server
+    , DatabaseName
+                , ProcedureName
+                , ProcedureText
 FROM
 (select * from sprocswithservernames
  WHERE  DatabaseName NOT LIKE '%Status%'
@@ -22,10 +22,10 @@ ORDER BY ProcedureName, DatabaseName
 
 
 
-SELECT DISTINCT Server,
-       DatabaseName,
-       ProcedureName,
-       ProcedureText
+SELECT DISTINCT Server
+    , DatabaseName
+                , ProcedureName
+                , ProcedureText
 FROM
 (select * from sprocswithservernames
  WHERE  DatabaseName LIKE '%Status%'

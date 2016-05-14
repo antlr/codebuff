@@ -30,13 +30,11 @@ import static org.antlr.codebuff.Trainer.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.Trainer.INDEX_FIRST_ON_LINE;
-import static org.antlr.codebuff.Trainer.INDEX_MATCHING_TOKEN_STARTS_LINE;
 import static org.antlr.codebuff.Trainer.INDEX_PREV_FIRST_ON_LINE;
 import static org.antlr.codebuff.Trainer.MAX_ALIGN_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.Trainer.earliestAncestorStartingWithToken;
 import static org.antlr.codebuff.Trainer.getContextFeatures;
-import static org.antlr.codebuff.Trainer.getMatchingSymbolStartsLine;
 import static org.antlr.codebuff.Trainer.getRealTokens;
 import static org.antlr.codebuff.Trainer.getTokensOnPreviousLine;
 import static org.antlr.codebuff.Trainer.indexTree;
@@ -343,12 +341,11 @@ public class Formatter {
 
 		boolean curTokenStartsNewLine = line>prevToken.getLine();
 
-		int[] features = getContextFeatures(tokenToNodeMap, doc, tokenIndexInStream);
+		int[] features = getContextFeatures(corpus, tokenToNodeMap, doc, tokenIndexInStream);
 
 		setListInfoFeatures(tokenToListInfo, features, curToken);
 
 		features[INDEX_PREV_FIRST_ON_LINE]         = prevTokenStartsLine ? 1 : 0;
-		features[INDEX_MATCHING_TOKEN_STARTS_LINE] = getMatchingSymbolStartsLine(corpus, testDoc, node);
 		features[INDEX_FIRST_ON_LINE]              = curTokenStartsNewLine ? 1 : 0;
 
 		return features;
@@ -405,15 +402,19 @@ public class Formatter {
 
 		int actualWS = Trainer.getInjectWSCategory(originalTokens, tokenIndexInStream);
 		String actualWSNL = getWSCategoryStr(actualWS);
+		actualWSNL = actualWSNL!=null ? actualWSNL : String.format("%8s","none");
 
 		String wsDisplay = getWSCategoryStr(injectNL_WS);
+		if ( wsDisplay==null ) wsDisplay = String.format("%8s","none");
 		String alignDisplay = getHPosCategoryStr(alignOrIndent);
+		if ( alignDisplay==null ) alignDisplay = String.format("%8s","none");
 		String newlinePredictionString =
 			String.format("### line %d: predicted %s actual %s",
 			              curToken.getLine(), wsDisplay, actualWSNL);
 
 		int actualAlignCategory = Trainer.getAlignmentCategory(originalDoc, nodeWithOriginalToken, indentSize);
 		String actualAlignDisplay = getHPosCategoryStr(actualAlignCategory);
+		actualAlignDisplay = actualAlignDisplay!=null ? actualAlignDisplay : String.format("%8s","none");
 
 		String alignPredictionString =
 			String.format("### line %d: predicted %s actual %s",
@@ -446,7 +447,8 @@ public class Formatter {
 		String catS = "none";
 		if ( cat==CAT_INJECT_NL ) catS = "'\\n'";
 		else if ( cat==CAT_INJECT_WS ) catS = "' '";
-		return String.format("%s|%d|%d", catS, elements[0], elements[1]);
+		else return null;
+		return String.format("%4s|%d|%d", catS, elements[0], elements[1]);
 	}
 
 	public static String getHPosCategoryStr(int alignOrIndent) {
@@ -456,7 +458,8 @@ public class Formatter {
 		if ( cat==CAT_ALIGN_WITH_ANCESTOR_CHILD ) catS = "align^";
 		else if ( cat==CAT_INDENT_FROM_ANCESTOR_CHILD ) catS = "indent^";
 		else if ( cat==CAT_INDENT ) catS = "indent";
-		return String.format("%s|%d|%d", catS, elements[0], elements[1]);
+		else return null;
+		return String.format("%7s|%d|%d", catS, elements[0], elements[1]);
 	}
 
 	/** Do not join two words like "finaldouble" or numbers like "3double",

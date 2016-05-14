@@ -1,4 +1,5 @@
-WITH daysCte (d) AS
+WITH daysCte (d)
+AS
 (
       SELECT CONVERT(DATETIME, '1 January 2011') AS d -- starting date
       UNION ALL

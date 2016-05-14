@@ -71,7 +71,7 @@ public class JTreeASTModel implements TreeModel {
 
     @Override
     public boolean isLeaf(Object node) {
-        return getChildCount(node)==0;
+        return getChildCount(node) ==0;
     }
 
     @Override

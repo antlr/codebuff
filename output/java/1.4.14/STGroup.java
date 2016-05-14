@@ -173,8 +173,7 @@ public class STGroup {
      *  This gets copied to parsers, walkers, and interpreters.
      */
     public ErrorManager errMgr = STGroup.DEFAULT_ERR_MGR;
-    public STGroup() {
-    }
+    public STGroup() { }
 
     public STGroup(char delimiterStartChar, char delimiterStopChar) {
         this.delimiterStartChar = delimiterStartChar;
@@ -201,7 +200,7 @@ public class STGroup {
         if ( name.charAt(0)!='/' ) {
             fullyQualifiedName = scope.st.impl.prefix+name;
         }
-        if ( verbose ) System.out.println("getEmbeddedInstanceOf("+
+        if ( verbose ) System.out.println("getEmbeddedInstanceOf(" +
 fullyQualifiedName+")");
         ST st = getInstanceOf(fullyQualifiedName);
         if ( st==null ) {
@@ -240,7 +239,7 @@ fullyQualifiedName+")");
      */
 
     public boolean isDefined(String name) {
-        return lookupTemplate(name)!=null;
+        return lookupTemplate(name) !=null;
     }
 
     /** Look up a fully-qualified name. */
@@ -298,7 +297,7 @@ fullyQualifiedName+")");
     }
 
     protected CompiledST lookupImportedTemplate(String name) {
-        if ( imports.size()==0 ) return null;
+        if ( imports.size() ==0 ) return null;
         for (STGroup g : imports) {
             if ( verbose ) System.out.println("checking "+g.getName()+" for imported "+name);
             CompiledST code = g.lookupTemplate(name);
@@ -320,7 +319,7 @@ fullyQualifiedName+")");
     }
 
     public boolean isDictionary(String name) {
-        return dictionaries.get(name)!=null;
+        return dictionaries.get(name) !=null;
     }
 
     /** for testing */
@@ -351,7 +350,7 @@ fullyQualifiedName+")");
     }
 
     public CompiledST defineTemplate(String fullyQualifiedTemplateName, Token nameT, List<FormalArgument> args, String template, Token templateToken) {
-        if ( verbose ) System.out.println("defineTemplate("+
+        if ( verbose ) System.out.println("defineTemplate(" +
 fullyQualifiedTemplateName+")");
         if ( fullyQualifiedTemplateName==null || fullyQualifiedTemplateName.length()==0 ) {
             throw new IllegalArgumentException("empty template name");
@@ -390,8 +389,12 @@ fullyQualifiedTemplateName+")");
         template = Misc.trimOneTrailingNewline(template);
         CompiledST code = compile(getFileName(), enclosingTemplateName, null, template, templateToken);
         String mangled = getMangledRegionName(enclosingTemplateName, name);
-        if ( lookupTemplate(mangled)==null ) {
-            errMgr.compileTimeError(ErrorType.NO_SUCH_REGION, templateToken, regionT, enclosingTemplateName, name);
+        if ( lookupTemplate(mangled) ==null ) {
+            errMgr.compileTimeError(ErrorType.NO_SUCH_REGION,
+                                    templateToken,
+                                    regionT,
+                                    enclosingTemplateName,
+                                    name);
             return new CompiledST();
         }
         code.name = mangled;
@@ -407,10 +410,17 @@ fullyQualifiedTemplateName+")");
     public void defineTemplateOrRegion(String fullyQualifiedTemplateName, String regionSurroundingTemplateName, Token templateToken, String template, Token nameToken, List<FormalArgument> args) {
         try {
             if ( regionSurroundingTemplateName!=null ) {
-                defineRegion(regionSurroundingTemplateName, nameToken, template, templateToken);
+                defineRegion(regionSurroundingTemplateName,
+                             nameToken,
+                             template,
+                             templateToken);
             }
             else {
-                defineTemplate(fullyQualifiedTemplateName, nameToken, args, template, templateToken);
+                defineTemplate(fullyQualifiedTemplateName,
+                               nameToken,
+                               args,
+                               template,
+                               templateToken);
             }
         }
         catch (STException e) {
@@ -432,7 +442,10 @@ fullyQualifiedTemplateName+")");
                     return;
                 }
                 else if ( code.regionDefType== ST.RegionType.IMPLICIT || prev.regionDefType== ST.RegionType.EXPLICIT ) {
-                    errMgr.compileTimeError(ErrorType.REGION_REDEFINITION, null, defT, getUnMangledTemplateName(name));
+                    errMgr.compileTimeError(ErrorType.REGION_REDEFINITION,
+                                            null,
+                                            defT,
+                                            getUnMangledTemplateName(name));
                     return;
                 }
             }
@@ -518,7 +531,7 @@ fullyQualifiedTemplateName+")");
      */
 
     public void importTemplates(Token fileNameToken) {
-        if ( verbose ) System.out.println("importTemplates("+
+        if ( verbose ) System.out.println("importTemplates(" +
 fileNameToken.getText()+")");
         String fileName = fileNameToken.getText();
         // do nothing upon syntax error
@@ -528,7 +541,7 @@ fileNameToken.getText()+")");
         //System.out.println("import "+fileName);
         boolean isGroupFile = fileName.endsWith(GROUP_FILE_EXTENSION);
         boolean isTemplateFile = fileName.endsWith(TEMPLATE_FILE_EXTENSION);
-        boolean isGroupDir = !(isGroupFile || isTemplateFile);
+        boolean isGroupDir = !(isGroupFile|| isTemplateFile);
         STGroup g = null;
 
         // search path is: working dir, g.stg's dir, CLASSPATH
@@ -667,7 +680,7 @@ fileName +
         }
 
         String templateName = Misc.getFileNameNoSuffix(unqualifiedFileName);
-        if ( prefix!=null && prefix.length()>0 ) templateName = prefix+templateName;
+        if ( prefix !=null && prefix.length()>0 ) templateName = prefix+templateName;
         CompiledST impl = rawGetTemplate(templateName);
         impl.prefix = prefix;
         return impl;

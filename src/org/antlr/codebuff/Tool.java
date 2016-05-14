@@ -49,7 +49,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Tool  -dbg  -sqlite    corpus/sql/training      corpus/sql/training/dmart_bits.sql
  * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
- * Tool  -dbg  -java      corpus/java/training/antlr4-tool     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
+ * Tool  -dbg  -leave-one-out -java      corpus/java/training/stringtemplate4     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
  * Tool  -dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
@@ -139,7 +139,7 @@ public class Tool {
 		if ( lang!=null && leaveOneOut ) {
 			start = System.nanoTime();
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpusDir, lang);
-			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, true, collectAnalysis);
+			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, null, collectAnalysis);
 			testDoc = parse(testFilename, lang);
 			stop = System.nanoTime();
 			Formatter formatter = val.a;

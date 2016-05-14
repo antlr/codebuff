@@ -117,7 +117,7 @@ public class Corpus {
 				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
 				siblingListName = siblingListName.replace("Context","");
 				System.out.println(parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
-					                   " (min,median,var,max)="+rootAndChildListStats.get(siblingPairs));
+					                   " (n,min,median,var,max)="+rootAndChildListStats.get(siblingPairs));
 			}
 			for (ParentSiblingListKey siblingPairs : rootAndSplitChildListStats.keySet()) {
 				String parent = ruleNames[siblingPairs.parentRuleIndex];
@@ -125,7 +125,7 @@ public class Corpus {
 				String siblingListName = ruleNames[siblingPairs.childRuleIndex];
 				siblingListName = siblingListName.replace("Context","");
 				System.out.println("SPLIT " +parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
-					                   " (min,median,var,max)="+rootAndSplitChildListStats.get(siblingPairs)+
+					                   " (n,min,median,var,max)="+rootAndSplitChildListStats.get(siblingPairs)+
 				                  " form "+splitListForms.get(siblingPairs));
 			}
 		}

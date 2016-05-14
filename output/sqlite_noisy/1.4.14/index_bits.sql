@@ -1,5 +1,6 @@
 -- remove duplicates from SQLErrorLogs table
-alter table SQLIndexRebuilds add seq_num int identity go
+alter
+table SQLIndexRebuilds add seq_num int identity go
 --delete from a
 
 
@@ -11,9 +12,8 @@ select *-- from a from   SQLIndexRebuilds a
         select ServerName, DBName, SQLStatement, IndexType, FragPercent, max(seq_num) AS max_seq_num
             from SQLIndexRebuilds
 group by ServerName, DBName, SQLStatement, IndexType, FragPercent
-                                                                       having  count(*) > 1
-        ) b
-            on a.ServerName = b.ServerName and a.DBName = b.DBName and a.SQLStatement = b.SQLStatement and a.IndexType = b.IndexType and a.FragPercent = b.FragPercent and a.seq_num < b.max_seq_num
+                                                                       having  count(*) > 1) b
+                                                                           on a.ServerName = b.ServerName and a.DBName = b.DBName and a.SQLStatement = b.SQLStatement and a.IndexType = b.IndexType and a.FragPercent = b.FragPercent and a.seq_num < b.max_seq_num
 
 --------------------------------------------------------------------------
 
@@ -96,7 +96,8 @@ from   sys.dm_db_missing_index_groups g
         on gs.group_handle = g.index_group_handle
     join sys.dm_db_missing_index_details d
         on g.index_handle = d.index_handle
-where d.database_id = d.database_id and d.object_id = d.object_id
+where d.database_id = d.database_id
+and d.object_id = d.object_id
 ORDER BY dbname
 --ORDER BY gs.user_seeks DESC
 --   and object_name(d.object_id) = 'Address'
@@ -133,7 +134,8 @@ WHERE sys.dm_db_index_usage_stats.database_id = DB_ID()
       AND user_scans = 0
     AND user_lookups = 0
 AND user_seeks = 0
-AND sys.dm_db_index_usage_stats.index_id NOT IN ( 0, 1)
+AND sys.dm_db_index_usage_stats.index_id
+NOT IN ( 0, 1)
 ORDER BY OBJECT_NAME(sys.indexes.object_id), sys.indexes.name
 
 

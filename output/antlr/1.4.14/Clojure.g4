@@ -270,14 +270,14 @@ CHAR_NAMED : '\\'
 CHAR_ANY : '\\' . ;
 NIL : 'nil' ;
 BOOLEAN
-    :   'true'| 'false'
+    :   'true' | 'false'
     ;
 
 SYMBOL
-    :   '.'| '/' | NAME
+    :   '.' | '/' | NAME
     ;
 
-NS_SYMBOL :   NAME '/' SYMBOL ;
+NS_SYMBOL : NAME '/' SYMBOL ;
 PARAM_NAME : '%' ([1-9] [0-9]*| '&')? ;
 
 // Fragments

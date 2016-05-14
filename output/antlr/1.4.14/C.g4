@@ -215,10 +215,7 @@ initDeclaratorList
     |   initDeclaratorList ',' initDeclarator
     ;
 
-initDeclarator
-    :   declarator
-    |   declarator '=' initializer
-    ;
+initDeclarator : declarator | declarator '=' initializer ;
 
 storageClassSpecifier
     :   'typedef'
@@ -283,10 +280,7 @@ structDeclaratorList
     |   structDeclaratorList ',' structDeclarator
     ;
 
-structDeclarator
-    :   declarator
-    |   declarator? ':' constantExpression
-    ;
+structDeclarator : declarator | declarator? ':' constantExpression ;
 
 enumSpecifier
     :   'enum' Identifier? '{' enumeratorList '}'
@@ -294,10 +288,7 @@ enumSpecifier
     |   'enum' Identifier
     ;
 
-enumeratorList
-    :   enumerator
-    |   enumeratorList ',' enumerator
-    ;
+enumeratorList : enumerator | enumeratorList ',' enumerator ;
 
 enumerator
     :   enumerationConstant
@@ -312,19 +303,10 @@ atomicTypeSpecifier
     :   '_Atomic' '(' typeName ')'
     ;
 
-typeQualifier
-    :   'const'
-    |   'restrict'
-    |   'volatile'
-    |   '_Atomic'
-    ;
+typeQualifier : 'const' | 'restrict' | 'volatile' | '_Atomic' ;
 
 functionSpecifier
-    :   (   'inline'
-        |   '_Noreturn'
-        |   '__inline__' // GCC extension
-        |   '__stdcall'
-        )
+    :   ('inline' | '_Noreturn' | '__inline__' // GCC extension | '__stdcall')
     |   gccAttributeSpecifier
     |   '__declspec' '(' Identifier ')'
     ;
@@ -364,14 +346,12 @@ gccAttributeList
     ;
 
 gccAttribute
-    :   ~(',' | '(' | ')') // relaxed def for "identifier or reserved word" ('(' argumentExpressionList? ')')?
+    :   ~(',' | '('| ')') // relaxed def for "identifier or reserved word" ('(' argumentExpressionList? ')')?
     |   // empty
     ;
 
 nestedParenthesesBlock
-    :   (   ~('(' | ')')
-        |   '(' nestedParenthesesBlock ')'
-        )*
+    :   (~('(' | ')') | '(' nestedParenthesesBlock ')')*
     ;
 
 pointer
@@ -386,10 +366,7 @@ typeQualifierList
     |   typeQualifierList typeQualifier
     ;
 
-parameterTypeList
-    :   parameterList
-    |   parameterList ',' '...'
-    ;
+parameterTypeList : parameterList | parameterList ',' '...' ;
 
 parameterList
     :   parameterDeclaration
@@ -401,10 +378,7 @@ parameterDeclaration
     |   declarationSpecifiers2 abstractDeclarator?
     ;
 
-identifierList
-    :   Identifier
-    |   identifierList ',' Identifier
-    ;
+identifierList : Identifier | identifierList ',' Identifier ;
 
 typeName
     :   specifierQualifierList abstractDeclarator?
@@ -448,15 +422,9 @@ designation
     :   designatorList '='
     ;
 
-designatorList
-    :   designator
-    |   designatorList designator
-    ;
+designatorList : designator | designatorList designator ;
 
-designator
-    :   '[' constantExpression ']'
-    |   '.' Identifier
-    ;
+designator : '[' constantExpression ']' | '.' Identifier ;
 
 staticAssertDeclaration
     :   '_Static_assert' '(' constantExpression ',' StringLiteral+ ')' ';'
@@ -469,7 +437,8 @@ statement
     |   selectionStatement
     |   iterationStatement
     |   jumpStatement
-    |   ('__asm' | '__asm__') ('volatile' | '__volatile__') '(' (logicalOrExpression (',' logicalOrExpression)*)? (':' (logicalOrExpression (',' logicalOrExpression)*)?)* ')' ';'
+    |   ('__asm' | '__asm__') ('volatile' | '__volatile__') '(' (logicalOrExpression (',' logicalOrExpression)*)?
+        (':' (logicalOrExpression (',' logicalOrExpression)*)?)* ')' ';'
     ;
 
 labeledStatement
@@ -535,11 +504,7 @@ functionDefinition
     :   declarationSpecifiers? declarator declarationList? compoundStatement
     ;
 
-declarationList
-    :   declaration
-    |   declarationList declaration
-    ;
-
+declarationList : declaration | declarationList declaration ;
 Auto : 'auto' ;
 Break : 'break' ;
 Case : 'case' ;
@@ -631,7 +596,7 @@ NotEqual : '!=' ;
 Arrow : '->' ;
 Dot : '.' ;
 Ellipsis : '...' ;
-Identifier :   IdentifierNondigit (IdentifierNondigit | Digit)* ;
+Identifier : IdentifierNondigit (IdentifierNondigit | Digit)* ;
 fragment
 IdentifierNondigit
     :   Nondigit
@@ -669,7 +634,10 @@ Constant
 
 fragment
 IntegerConstant
-    :   DecimalConstant IntegerSuffix? | OctalConstant IntegerSuffix? | HexadecimalConstant IntegerSuffix? | BinaryConstant
+    :   DecimalConstant IntegerSuffix?
+    |   OctalConstant IntegerSuffix?
+    |   HexadecimalConstant IntegerSuffix?
+    |   BinaryConstant
     ;
 
 fragment
@@ -714,7 +682,10 @@ HexadecimalDigit
 
 fragment
 IntegerSuffix
-    :   UnsignedSuffix LongSuffix? | UnsignedSuffix LongLongSuffix | LongSuffix UnsignedSuffix? | LongLongSuffix UnsignedSuffix?
+    :   UnsignedSuffix LongSuffix?
+    |   UnsignedSuffix LongLongSuffix
+    |   LongSuffix UnsignedSuffix?
+    |   LongLongSuffix UnsignedSuffix?
     ;
 
 fragment
@@ -729,7 +700,7 @@ LongSuffix
 
 fragment
 LongLongSuffix
-    :   'll' | 'LL'
+    :   'll'| 'LL'
     ;
 
 fragment
@@ -746,7 +717,8 @@ DecimalFloatingConstant
 
 fragment
 HexadecimalFloatingConstant
-    :   HexadecimalPrefix HexadecimalFractionalConstant BinaryExponentPart FloatingSuffix? | HexadecimalPrefix HexadecimalDigitSequence BinaryExponentPart FloatingSuffix?
+    :   HexadecimalPrefix HexadecimalFractionalConstant BinaryExponentPart FloatingSuffix?
+    |   HexadecimalPrefix HexadecimalDigitSequence BinaryExponentPart FloatingSuffix?
     ;
 
 fragment
@@ -763,7 +735,7 @@ ExponentPart
 
 fragment
 Sign
-    :   '+' | '-'
+    :   '+'| '-'
     ;
 
 fragment
@@ -790,12 +762,15 @@ HexadecimalDigitSequence
 
 fragment
 FloatingSuffix
-    :   'f' | 'l' | 'F' | 'L'
+    :   'f'| 'l' | 'F' | 'L'
     ;
 
 fragment
 CharacterConstant
-    :   '\'' CCharSequence '\'' | 'L\'' CCharSequence '\'' | 'u\'' CCharSequence '\'' | 'U\'' CCharSequence '\''
+    :   '\'' CCharSequence '\''
+    |   'L\'' CCharSequence '\''
+    |   'u\'' CCharSequence '\''
+    |   'U\'' CCharSequence '\''
     ;
 
 fragment
@@ -833,10 +808,10 @@ HexadecimalEscapeSequence
     :   '\\x' HexadecimalDigit+
     ;
 
-StringLiteral :   EncodingPrefix? '"' SCharSequence? '"' ;
+StringLiteral : EncodingPrefix? '"' SCharSequence? '"' ;
 fragment
 EncodingPrefix
-    :   'u8' | 'u' | 'U' | 'L'
+    :   'u8'| 'u' | 'U' | 'L'
     ;
 
 fragment

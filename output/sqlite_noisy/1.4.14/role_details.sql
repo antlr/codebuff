@@ -29,24 +29,24 @@ WITH perms_cte as
            on p.grantee_principal_id = dp.principal_id
 )
 --users
-SELECT p.principal_name
-    , p.principal_type_desc
-    , p.class_desc
-    , p.[object_name]
-    , p.permission_name
-    , p.permission_state_desc
-    , cast(NULL as sysname) as role_name
+SELECT p.principal_name,
+       p.principal_type_desc
+                       , p.class_desc,
+       p.[object_name],
+       p.permission_name
+                       , p.permission_state_desc,
+       cast(NULL as sysname) as role_name
 FROM perms_cte p
-WHERE principal_type_desc <> 'DATABASE_ROLE'UNION
+WHERE principal_type_desc <> 'DATABASE_ROLE'
+UNION
 --role members
-
-SELECT rm.member_principal_name
-    , rm.principal_type_desc
-    , p.class_desc
-    , p.object_name
-    , p.permission_name
-    , p.permission_state_desc
-    , rm.role_name
+SELECT rm.member_principal_name,
+                               rm.principal_type_desc
+                               , p.class_desc,
+                               p.object_name,
+                               p.permission_name
+                               , p.permission_state_desc,
+                               rm.role_name
 FROM    perms_cte p
     left outer JOIN
         (

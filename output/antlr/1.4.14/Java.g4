@@ -40,7 +40,13 @@
  */
 grammar Java;
 
-@header { } @ parser:: members { } @members { }
+@header { }
+
+@
+
+parser :: members { }
+
+@members { }
 
 // starting point for parsing a java file
 
@@ -66,11 +72,7 @@ typeDeclaration
 
 modifier
     :   classOrInterfaceModifier
-    |   (   'native'
-        |   'synchronized'
-        |   'transient'
-        |   'volatile'
-        )
+    |   ('native' | 'synchronized' | 'transient' | 'volatile')
     ;
 
 classOrInterfaceModifier
@@ -86,8 +88,7 @@ classOrInterfaceModifier
     ;
 
 variableModifier
-    :   'final'
-    |   annotation
+    :   'final' | annotation
     ;
 
 classDeclaration
@@ -163,8 +164,7 @@ memberDeclaration
  */
 
 methodDeclaration
-    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
-        ('throws' qualifiedNameList)? (methodBody | ';')
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')* ('throws' qualifiedNameList)? (methodBody | ';')
     ;
 
 genericMethodDeclaration
@@ -209,8 +209,7 @@ constantDeclarator
 // see matching of [] comment in methodDeclaratorRest
 
 interfaceMethodDeclaration
-    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
-        ('throws' qualifiedNameList)? ';'
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')* ('throws' qualifiedNameList)? ';'
     ;
 
 genericInterfaceMethodDeclaration
@@ -234,8 +233,7 @@ variableInitializer
     ;
 
 arrayInitializer
-    :   '{' (variableInitializer (',' variableInitializer)*
-             (',')?)? '}'
+    :   '{' (variableInitializer (',' variableInitializer)* (',')?)? '}'
     ;
 
 enumConstantName
@@ -280,8 +278,7 @@ formalParameters
     ;
 
 formalParameterList
-    :   formalParameter (',' formalParameter)*
-        (',' lastFormalParameter)?
+    :   formalParameter (',' formalParameter)* (',' lastFormalParameter)?
     |   lastFormalParameter
     ;
 
@@ -407,10 +404,7 @@ statement
     |   'for' '(' forControl ')' statement
     |   'while' parExpression statement
     |   'do' statement 'while' parExpression ';'
-    |   'try' block
-        (   catchClause+ finallyBlock?
-        |   finallyBlock
-        )
+    |   'try' block (catchClause+ finallyBlock? | finallyBlock)
     |   'try' resourceSpecification block catchClause* finallyBlock?
     |   'switch' parExpression '{' switchBlockStatementGroup* switchLabel* '}'
     |   'synchronized' parExpression block
@@ -440,7 +434,7 @@ resourceSpecification
     ;
 
 resources
-    :   r                         += resource (sep= ';' r                         += resource)*
+    :   r+= resource (sep= ';' r+= resource)*
     ;
 
 resource
@@ -522,7 +516,7 @@ expression
     |   expression '&&' expression
     |   expression '||' expression
     |   expression '?' expression ':' expression
-    |   <assoc = right> expression
+    |   <assoc = right > expression
         (   '='
         |   '+='
         |   '-='
@@ -546,10 +540,7 @@ primary
     |   Identifier
     |   typeSpec '.' 'class'
     |   'void' '.' 'class'
-    |   nonWildcardTypeArguments
-        (   explicitGenericInvocationSuffix
-        |   'this' arguments
-        )
+    |   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
     ;
 
 creator
@@ -569,8 +560,7 @@ innerCreator
 arrayCreatorRest
     :   '['
         (   ']' ('[' ']')* arrayInitializer
-        |   expression ']' ('[' expression ']')*
-            ('[' ']')*
+        |   expression ']' ('[' expression ']')* ('[' ']')*
         )
     ;
 
@@ -587,18 +577,16 @@ nonWildcardTypeArguments
     ;
 
 typeArgumentsOrDiamond
-    :   '<' '>'                         # Diamond
-    |   typeArguments                         # NonDiamondTypeArguments
+    :   '<' '>'                       # Diamond
+    |   typeArguments                       # NonDiamondTypeArguments
     ;
 
 nonWildcardTypeArgumentsOrDiamond
-    :   '<' '>'
-    |   nonWildcardTypeArguments
+    :   '<' '>' | nonWildcardTypeArguments
     ;
 
 superSuffix
-    :   arguments
-    |   '.' Identifier arguments?
+    :   arguments | '.' Identifier arguments?
     ;
 
 explicitGenericInvocationSuffix
@@ -701,7 +689,7 @@ IntegerTypeSuffix
 fragment
 DecimalNumeral
     :   '0'
-    |   NonZeroDigit (Digits?| Underscores Digits)
+    |   NonZeroDigit (Digits? | Underscores Digits)
     ;
 
 fragment
@@ -711,7 +699,7 @@ Digits
 
 fragment
 Digit
-    :   '0'| NonZeroDigit
+    :   '0' | NonZeroDigit
     ;
 
 fragment
@@ -721,7 +709,7 @@ NonZeroDigit
 
 fragment
 DigitOrUnderscore
-    :   Digit | '_'
+    :   Digit |'_'
     ;
 
 fragment
@@ -746,7 +734,7 @@ HexDigit
 
 fragment
 HexDigitOrUnderscore
-    :   HexDigit | '_'
+    :   HexDigit |'_'
     ;
 
 fragment
@@ -766,7 +754,7 @@ OctalDigit
 
 fragment
 OctalDigitOrUnderscore
-    :   OctalDigit | '_'
+    :   OctalDigit |'_'
     ;
 
 fragment
@@ -786,7 +774,7 @@ BinaryDigit
 
 fragment
 BinaryDigitOrUnderscore
-    :   BinaryDigit | '_'
+    :   BinaryDigit |'_'
     ;
 
 // §3.10.2 Floating-Point Literals
@@ -798,7 +786,10 @@ FloatingPointLiteral
 
 fragment
 DecimalFloatingPointLiteral
-    :   Digits '.' Digits? ExponentPart? FloatTypeSuffix?| '.' Digits ExponentPart? FloatTypeSuffix? | Digits ExponentPart FloatTypeSuffix? | Digits FloatTypeSuffix
+    :   Digits '.' Digits? ExponentPart? FloatTypeSuffix?
+    |   '.' Digits ExponentPart? FloatTypeSuffix?
+    |   Digits ExponentPart FloatTypeSuffix?
+    |   Digits FloatTypeSuffix
     ;
 
 fragment
@@ -850,7 +841,7 @@ BinaryExponentIndicator
 // §3.10.3 Boolean Literals
 
 BooleanLiteral
-    :   'true'| 'false'
+    :   'true' |'false'
     ;
 
 // §3.10.4 Character Literals
@@ -875,7 +866,7 @@ StringCharacters
 
 fragment
 StringCharacter
-    :   ~["\\]| EscapeSequence
+    :   ~["\\] | EscapeSequence
     ;
 
 // §3.10.6 Escape Sequences for Character and String Literals
@@ -956,7 +947,7 @@ RSHIFT_ASSIGN : '>>=' ;
 URSHIFT_ASSIGN : '>>>=' ;
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
-Identifier :   JavaLetter JavaLetterOrDigit* ;
+Identifier : JavaLetter JavaLetterOrDigit* ;
 fragment
 JavaLetter
     :   [a-zA-Z$_] // these are the "java letters" below 0xFF

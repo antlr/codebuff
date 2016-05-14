@@ -265,13 +265,13 @@ public class STViz {
                        @Override
                        public void run() {
                            synchronized ( lock ) {
-while ( viewFrame.isVisible() ) {
-   try {
-       lock.wait();
-   }
-   catch (InterruptedException e) {
-   }
-}
+                                                 while ( viewFrame.isVisible() ) {
+                                                     try {
+                                                         lock.wait();
+                                                     }
+                                                     catch (InterruptedException e) {
+                                                     }
+                                                 }
                            }
                        }
                    };
@@ -315,7 +315,9 @@ while ( viewFrame.isVisible() ) {
                 templateEvent = (EvalTemplateEvent)events.get(events.size()-1);
             }
             if ( templateEvent!=null ) {
-                highlight(m.output, templateEvent.outputStartChar, templateEvent.outputStopChar);
+                highlight(m.output,
+                          templateEvent.outputStartChar,
+                          templateEvent.outputStopChar);
             }
             if ( currentScope.st.isAnonSubtemplate() ) {
                 Interval r = currentScope.st.impl.getTemplateRange();
@@ -328,7 +330,7 @@ while ( viewFrame.isVisible() ) {
 
     protected void setText(JEditorPane component, String text) {
         List<Integer> windowsLineEndingsList = new ArrayList<Integer>();
-        for (int i = 0; i<text.length(); i +=2) {
+        for (int i = 0; i<text.length(); i+=2) {
             i = text.indexOf("\r\n", i);
             if ( i<0 ) {
                 break;
@@ -425,7 +427,8 @@ while ( viewFrame.isVisible() ) {
 
     protected void updateStack(InstanceScope scope, STViewFrame m) {
         List<ST> stack = Interpreter.getEnclosingInstanceStack(scope, true);
-        m.setTitle("STViz - ["+Misc.join(stack.iterator(), " ")+"]");
+        m.setTitle("STViz - ["+
+Misc.join(stack.iterator(), " ")+"]");
 //        // also do source stack
 //        StackTraceElement[] trace = st.newSTEvent.stack.getStackTrace();
 //        StringWriter sw = new StringWriter();
@@ -446,10 +449,10 @@ while ( viewFrame.isVisible() ) {
 
     public static void main(String[] args) throws IOException
     { // test rig
-        if ( args.length >0 && args[0].equals("1") ) test1();
-        else if ( args.length >0 && args[0].equals("2") ) test2();
-        else if ( args.length >0 && args[0].equals("3") ) test3();
-        else if ( args.length >0 && args[0].equals("4") ) test4();
+        if ( args.length>0 && args[0].equals("1") ) test1();
+        else if ( args.length>0 && args[0].equals("2") ) test2();
+        else if ( args.length>0 && args[0].equals("3") ) test3();
+        else if ( args.length>0 && args[0].equals("4") ) test4();
     }
 
     public static void test1() throws IOException
@@ -485,10 +488,12 @@ while ( viewFrame.isVisible() ) {
 
     public static void test2() throws IOException
     { // test rig
-        String templates = "t1(q1=\"Some\\nText\") ::= <<\n"+"<q1>\n"+">>\n"+"\n"+"t2(p1) ::= <<\n"+
+        String templates = "t1(q1=\"Some\\nText\") ::= <<\n"+
+                           "<q1>\n" +">>\n"+"\n"+"t2(p1) ::= <<\n" +
                            "<p1>\n"+
                            ">>\n"+
-                           "\n" +"main() ::= <<\n"+"START-<t1()>-END\n"+"\n"+"START-<t2(p1=\"Some\\nText\")>-END\n"+">>\n";
+                           "\n"+
+                           "main() ::= <<\n" +"START-<t1()>-END\n"+"\n"+"START-<t2(p1=\"Some\\nText\")>-END\n"+">>\n";
         String tmpdir = System.getProperty("java.io.tmpdir");
         writeFile(tmpdir, "t.stg", templates);
         STGroup group = new STGroupFile(tmpdir+"/"+"t.stg");
@@ -509,7 +514,8 @@ while ( viewFrame.isVisible() ) {
 
     public static void test4() throws IOException
     {
-        String templates = "main(t) ::= <<\n"+"hi: <t>\n"+">>\n"+"foo(x,y={hi}) ::= \"<bar(x,y)>\"\n"+"bar(x,y) ::= << <y> >>\n"+"ignore(m) ::= \"<m>\"\n";
+        String templates = "main(t) ::= <<\n"+"hi: <t>\n"+">>\n"+"foo(x,y={hi}) ::= \"<bar(x,y)>\"\n" +
+                           "bar(x,y) ::= << <y> >>\n" +"ignore(m) ::= \"<m>\"\n";
         STGroup group = new STGroupString(templates);
         ST st = group.getInstanceOf("main");
         ST foo = group.getInstanceOf("foo");

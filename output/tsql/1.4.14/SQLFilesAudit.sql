@@ -7,10 +7,10 @@ SELECT
            ELSE 0
            END AS bit)    AS [IsPrimaryFile]
     , CAST(CASE WHEN s.growth = 0
-           THEN (CASE WHEN s.type = 2
-                     THEN 0
-                 ELSE 99
-                 END)
+          THEN (CASE WHEN s.type = 2
+                    THEN 0
+                ELSE 99
+                END)
            ELSE s.is_percent_growth END AS INT)    AS [GrowthType]
     , s.physical_name AS [FileName]
     , s.size * CONVERT(float,
@@ -21,11 +21,10 @@ SELECT
                         8) END AS [MaxSize]
     , s.file_id AS [ID]
     , 'Server[@Name=' + quotename(CAST(serverproperty('Servername') AS sysname), '''') + ']' + '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name AS varbinary(256)) AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
-    , CAST(
-CASE s.is_percent_growth
-   WHEN 1
-   THEN s.growth
-ELSE s.growth * 8 END AS FLOAT)    AS [Growth]
+    , CAST(CASE s.is_percent_growth
+               WHEN 1
+               THEN s.growth
+           ELSE s.growth * 8 END AS FLOAT)    AS [Growth]
     , s.is_media_read_only AS [IsReadOnlyMedia]
     , s.is_read_only AS [IsReadOnly]
     , CAST(CASE s.state
@@ -45,7 +44,7 @@ FROM sys.filegroups AS g
            AND (s.data_space_id = g.data_space_id)
 ORDER BY [FileGroup_Name]
     ASC, [Name]
-    ASC
+       ASC
 
 ---------------------
 
@@ -53,9 +52,7 @@ SELECT
     s.name                                AS [Name]
     , s.physical_name AS [FileName]
 FROM MASTER.sysdatabases AS dtb, sys.master_files AS s
-WHERE (s.TYPE = 1 AND
-       s.database_id = Db_id())
-      AND ((dtb.name = Db_name()))
+WHERE (s.TYPE = 1 AND s.database_id = Db_id()) AND ((dtb.name = Db_name()))
 ORDER BY [Name]
     ASC
 

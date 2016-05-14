@@ -180,7 +180,10 @@ public class STLexer implements TokenSource {
     public STLexer(ErrorManager errMgr, CharStream input, Token templateToken) {
         this(errMgr, input, templateToken, '<', '>');
     }
-    public STLexer(ErrorManager errMgr, CharStream input, Token templateToken, char delimiterStartChar, char delimiterStopChar) {
+    public STLexer(ErrorManager errMgr,
+                   CharStream input,
+                   Token templateToken,
+                   char delimiterStartChar, char delimiterStopChar) {
         this.errMgr = errMgr;
         this.input = input;
         c = (char)input.LA(1); // prime lookahead
@@ -206,7 +209,10 @@ public class STLexer implements TokenSource {
     public void match(char x) {
         if ( c!= x ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
-            errMgr.lexerError(input.getSourceName(), "expecting '"+x+"', found '"+str(c)+"'", templateToken, e);
+            errMgr.lexerError(input.getSourceName(),
+                              "expecting '" +x+"', found '"+str(c)+"'",
+                              templateToken,
+                              e);
         }
         consume();
     }
@@ -356,7 +362,10 @@ public class STLexer implements TokenSource {
                     RecognitionException re = new NoViableAltException("", 0, 0, input);
                     re.line = startLine;
                     re.charPositionInLine = startCharPositionInLine;
-                    errMgr.lexerError(input.getSourceName(), "invalid character '"+str(c)+"'", templateToken, re);
+                    errMgr.lexerError(input.getSourceName(),
+                                      "invalid character '" +str(c)+"'",
+                                      templateToken,
+                                      re);
                     if ( c==EOF ) {
                         return newToken(EOF_TYPE);
                     }
@@ -429,7 +438,10 @@ public class STLexer implements TokenSource {
                 break;
             default:
                 NoViableAltException e = new NoViableAltException("", 0, 0, input);
-                errMgr.lexerError(input.getSourceName(), "invalid escaped char: '"+str(c)+"'", templateToken, e);
+                errMgr.lexerError(input.getSourceName(),
+                                  "invalid escaped char: '" +str(c)+"'",
+                                  templateToken,
+                                  e);
                 consume();
                 match(delimiterStopChar);
                 return SKIP;
@@ -445,25 +457,37 @@ public class STLexer implements TokenSource {
         char[] chars = new char[4];
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
-            errMgr.lexerError(input.getSourceName(), "invalid unicode char: '"+str(c)+"'", templateToken, e);
+            errMgr.lexerError(input.getSourceName(),
+                              "invalid unicode char: '" +str(c)+"'",
+                              templateToken,
+                              e);
         }
         chars[0] = c;
         consume();
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
-            errMgr.lexerError(input.getSourceName(), "invalid unicode char: '"+str(c)+"'", templateToken, e);
+            errMgr.lexerError(input.getSourceName(),
+                              "invalid unicode char: '" +str(c)+"'",
+                              templateToken,
+                              e);
         }
         chars[1] = c;
         consume();
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
-            errMgr.lexerError(input.getSourceName(), "invalid unicode char: '"+str(c)+"'", templateToken, e);
+            errMgr.lexerError(input.getSourceName(),
+                              "invalid unicode char: '" +str(c)+"'",
+                              templateToken,
+                              e);
         }
         chars[2] = c;
         consume();
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
-            errMgr.lexerError(input.getSourceName(), "invalid unicode char: '"+str(c)+"'", templateToken, e);
+            errMgr.lexerError(input.getSourceName(),
+                              "invalid unicode char: '" +str(c)+"'",
+                              templateToken,
+                              e);
         }
         chars[3] = c;
         // ESCAPE kills >

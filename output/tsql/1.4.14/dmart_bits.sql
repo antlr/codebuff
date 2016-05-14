@@ -9,7 +9,8 @@ SELECT
     AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate)
+    , DATEDIFF(minute, LoadReportDBStartDate,
+               LoadReportDBEndDate)
     AS ReportLoadTime
 FROM ClientConnection
 WHERE Beta = '1'
@@ -82,7 +83,8 @@ SELECT
     AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate)
+    , DATEDIFF(minute, LoadReportDBStartDate,
+               LoadReportDBEndDate)
     AS ReportLoadTime
 FROM ClientConnection
 --WHERE ReportServer = 'PSQLRPT22'
@@ -122,9 +124,7 @@ SET Status = '0'
 WHERE Beta = '1'
 
 UPDATE ClientConnection
-SET LoadStageDBStartDate = @Now
-    , LoadStageDBEndDate = @Now
-    , Status = 2
+SET LoadStageDBStartDate = @Now, LoadStageDBEndDate = @Now, Status = 2
 WHERE Beta = '1'
 
 UPDATE ClientConnection
@@ -134,9 +134,7 @@ WHERE ReportServer = 'PSLQRPT22'
 ---------------------------------------------
 
 UPDATE ClientConnection
-SET StageServer = 'PSQLRPT22'
-    , ReportServer = 'PSQLRPT22'
-    , Beta = '0'
+SET StageServer = 'PSQLRPT22', ReportServer = 'PSQLRPT22', Beta = '0'
 WHERE SourceDB = 'Redwood'
 
 UPDATE ClientConnection
@@ -167,8 +165,10 @@ FROM
             AS StageLoadTime
             , LoadReportDBStartDate
             , LoadReportDBEndDate
-            , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate)
+            , DATEDIFF(minute, LoadReportDBStartDate,
+                       LoadReportDBEndDate)
             AS ReportLoadTime
         FROM ClientConnection
         WHERE Beta != '2'
-ORDER BY Beta, 2) t
+ORDER BY Beta, 2
+    ) t

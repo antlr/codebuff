@@ -51,7 +51,7 @@ public class StringRenderer implements AttributeRenderer {
         if ( formatString.equals("upper") ) return s.toUpperCase(locale);
         if ( formatString.equals("lower") ) return s.toLowerCase(locale);
         if ( formatString.equals("cap") ) {
-            return (s.length()>0)? Character.toUpperCase(s.charAt(0))+s.substring(1) : s;
+            return (s.length()>0)? Character.toUpperCase(s.charAt(0))+s.substring(1): s;
         }
         if ( formatString.equals("url-encode") ) {
             try {
@@ -74,7 +74,7 @@ public class StringRenderer implements AttributeRenderer {
 
         StringBuilder buf = new StringBuilder(s.length());
         int len = s.length();
-        for (int i = 0; i< len; i++) {
+        for (int i = 0; i < len; i++) {
             char c = s.charAt(i);
             switch ( c ) {
                 case '&' : buf.append("&amp;");

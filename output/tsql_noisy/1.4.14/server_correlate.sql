@@ -34,9 +34,10 @@ select s.server_name from dbo.t_server s
 where s.server_name NOT in ('opsdb.dexma.com', 'opsdb.demo.dexma.com', 'impopsdb.dexma.com', '(local)', 'OPSFH.DEXMA.COM')
 union
 
-select s.server_name from dbo.t_server s
+select s.server_name
+from dbo.t_server s
 INNER JOIN
-                          dbo.t_dsn rs
+     dbo.t_dsn rs
 ON rs.remote_server_id = s.server_id
 where  s.server_name NOT in ('opsdb.dexma.com', 'opsdb.demo.dexma.com', 'impopsdb.dexma.com', '(local)', 'OPSFH.DEXMA.COM')
        AND active = '1'

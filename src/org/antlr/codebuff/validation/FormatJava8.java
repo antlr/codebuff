@@ -7,10 +7,10 @@ import java.util.List;
 
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 
-public class Java8LeaveOneOut {
+public class FormatJava8 {
 	public static void main(String[] args) throws Exception {
 		LeaveOneOutValidator validator = new LeaveOneOutValidator("corpus/java/training/antlr4-tool", JAVA8_DESCR);
-		Triple<List<Formatter>,List<Float>,List<Float>> results = validator.validateDocuments(true, true);
+		Triple<List<Formatter>,List<Float>,List<Float>> results = validator.validateDocuments(false, "output");
 		System.out.println(results.b);
 		System.out.println(results.c);
 	}

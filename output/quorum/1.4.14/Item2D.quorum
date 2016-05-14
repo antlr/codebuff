@@ -1033,7 +1033,7 @@ class Item2D is Item
                      number localY2 = localY + GetHeight()
                      number worldOriginX = GetX() - localX + GetOffsetX() + scaleOffsetX
                      number worldOriginY = GetY() - localY + GetOffsetY() + scaleOffsetY
-                     if (scaleX not= 1 or scaleY not= 1)
+                     if (scaleX not= 1 or scaleY not= 1 )
                 // Code used to scale about the center.
 
                          localX = localX * scaleX

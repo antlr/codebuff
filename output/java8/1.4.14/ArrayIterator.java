@@ -51,7 +51,7 @@ public class ArrayIterator implements Iterator<Object> {
 
     @Override
     public boolean hasNext() {
-        return (i+1) < n && n>0;
+        return (i +1) < n && n>0;
     }
 
     @Override

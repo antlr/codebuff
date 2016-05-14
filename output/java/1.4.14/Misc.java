@@ -98,7 +98,7 @@ public class Misc {
 
     public static String stripLastPathElement(String f) {
         int slash = f.lastIndexOf('/');
-        if ( slash <0 ) return f;
+        if ( slash<0 ) return f;
         return f.substring(0, slash);
     }
 
@@ -128,7 +128,7 @@ public class Misc {
         if ( name==null ) return "/";
         String parent = getParent(name);
         String prefix = parent;
-        if ( !parent.endsWith("/") ) prefix+='/';
+        if ( !parent.endsWith("/") ) prefix +='/';
         return prefix;
     }
 
@@ -146,21 +146,22 @@ public class Misc {
     public static String replaceEscapedRightAngle(String s) {
         StringBuilder buf = new StringBuilder();
         int i = 0;
-        while ( i <s.length() ) {
+        while ( i<s.length() ) {
             char c = s.charAt(i);
-            if ( c=='<'&& s.substring(i).startsWith("<\\\\>") ) {
+            if ( c=='<' && s.substring(i).startsWith("<\\\\>") ) {
                 buf.append("<\\\\>");
                 i += "<\\\\>".length();
                 continue;
             }
 
-            if ( c=='>'&& s.substring(i).startsWith(">\\>") ) {
+            if ( c=='>' && s.substring(i).startsWith(">\\>") ) {
                 buf.append(">>");
                 i += ">\\>".length();
                 continue;
             }
 
-            if ( c=='\\'&& s.substring(i).startsWith("\\>>")&& !s.substring(i).startsWith("\\>>>") ) {
+            if ( c=='\\'&& s.substring(i).startsWith("\\>>") &&
+                !s.substring(i).startsWith("\\>>>") ) {
                 buf.append(">>");
                 i += "\\>>".length();
                 continue;
@@ -176,7 +177,7 @@ public class Misc {
             URLConnection connection = url.openConnection();
             if ( connection instanceof JarURLConnection ) {
                 JarURLConnection jarURLConnection = (JarURLConnection)connection;
-                URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {
+                URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{
 jarURLConnection.getJarFileURL()
                                                                    });
                 try {
@@ -191,7 +192,7 @@ jarURLConnection.getJarFileURL()
             InputStream is = null;
             try {
                 is = url.openStream();
-                }
+            }
             finally {
                 if ( is!=null ) {
                     is.close();
@@ -213,7 +214,7 @@ jarURLConnection.getJarFileURL()
         int line = 1;
         int charPos = 0;
         int p = 0;
-        while ( p < index ) { // don't care about s[index] itself; count before
+        while ( p< index ) { // don't care about s[index] itself; count before
             if ( s.charAt(p)=='\n' ) {
                 line++;
                 charPos = 0;

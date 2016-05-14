@@ -25,8 +25,8 @@ GROUP BY InstanceID
 --------------------------------
 
 SELECT SourceDB,
-       [Status],
-       Beta
+       [Status]
+               , Beta
                , SSISInstanceID AS SSISIID
                , LoadStageDBStartDate
                , LoadStageDBEndDate
@@ -64,7 +64,9 @@ SELECT  CASE WHEN CAST(Beta AS VARCHAR) IS NULL THEN 'Grand Total' ELSE CAST(Bet
       --, LoadReportDBStartDate
       --, LoadReportDBEndDate
                                                                                                          , CONVERT(VARCHAR(12), DATEADD(ms, SUM(DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate)), 0), 114) AS ReportLoadTime
-                                                                                                         , CONVERT(VARCHAR(12), DATEADD(ms,SUM((DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate) )) + SUM((DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate) )), 0), 114) AS ClientTotal
+                                                                                                         , CONVERT(VARCHAR(12), DATEADD(ms,SUM((DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate))) + SUM((DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate))), 0), 114) AS ClientTotal
 FROM ClientConnection
 GROUP BY Beta
-    , SourceDB;
+    , SourceDB
+
+;

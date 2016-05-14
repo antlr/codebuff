@@ -20,7 +20,7 @@ WHERE pdlastupdate = '2011-11-14 11:26:00'
 UPDATE [Status].[ProjectDetail]
 SET HoursWorked    = '3', MinutesWorked = '0'
 WHERE PDID = '14854'
-          AND PSID = '1697'
+AND PSID = '1697'
 
 SELECT
     [PSID]
@@ -50,10 +50,7 @@ SELECT
 FROM [Status].[ProjectDetail] pd
     INNER JOIN [Status].[ProjectStatus] ps
         ON pd.PSID = ps.PSID
-WHERE pd.TechID = '4'
-      AND DATEPART(MONTH, PDLastUpdate)
-      IN
-      ('1', '2', '3')
+WHERE pd.TechID = '4' AND DATEPART(MONTH, PDLastUpdate) IN ('1', '2', '3')
       AND DATEPART(YEAR, PDLastUpdate) = '2013'
 ORDER BY pdlastupdate
     ASC

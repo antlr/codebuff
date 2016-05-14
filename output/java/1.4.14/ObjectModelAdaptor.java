@@ -40,17 +40,17 @@ import java.util.Map;
 public class ObjectModelAdaptor implements ModelAdaptor {
     protected static final Member INVALID_MEMBER;
     static {
-Member invalidMember;
-try {
-   invalidMember = ObjectModelAdaptor.class.getDeclaredField("INVALID_MEMBER");
-}
-catch (NoSuchFieldException ex) {
-   invalidMember = null;
-}
-catch (SecurityException ex) {
-   invalidMember = null;
-}
-INVALID_MEMBER = invalidMember;
+               Member invalidMember;
+               try {
+                   invalidMember = ObjectModelAdaptor.class.getDeclaredField("INVALID_MEMBER");
+               }
+               catch (NoSuchFieldException ex) {
+                   invalidMember = null;
+               }
+               catch (SecurityException ex) {
+                   invalidMember = null;
+               }
+               INVALID_MEMBER = invalidMember;
     }
 
     protected static final Map<Class<?>, Map<String, Member>> membersCache = new HashMap<Class<?>, Map<String, Member>>();
@@ -94,7 +94,7 @@ INVALID_MEMBER = invalidMember;
                                       if ( members!=null ) {
                                           member = members.get(memberName);
                                           if ( member!=null ) {
-                                              return member!= INVALID_MEMBER ?member : null;
+                                              return member != INVALID_MEMBER ?member : null;
                                           }
                                       }
                                       else {
@@ -104,7 +104,7 @@ INVALID_MEMBER = invalidMember;
 
             // try getXXX and isXXX properties, look up using reflection
                                       String methodSuffix =
-                                          Character.toUpperCase(memberName.charAt(0)) +
+                                          Character.toUpperCase(memberName.charAt(0))+
                                           memberName.substring(1, memberName.length());
                                       member = tryGetMethod(clazz, "get"+methodSuffix);
                                       if ( member==null ) {
@@ -117,7 +117,7 @@ INVALID_MEMBER = invalidMember;
                 // try for a visible field
                                           member = tryGetField(clazz, memberName);
                                       }
-                                      members.put(memberName, member!=null ?member : INVALID_MEMBER);
+                                      members.put(memberName, member !=null ?member : INVALID_MEMBER);
                                       return member;
         }
     }
@@ -130,10 +130,8 @@ INVALID_MEMBER = invalidMember;
             }
             return method;
         }
-        catch (NoSuchMethodException ex) {
-        }
-        catch (SecurityException ex) {
-        }
+        catch (NoSuchMethodException ex) { }
+        catch (SecurityException ex) { }
         return null;
     }
 
@@ -145,10 +143,8 @@ INVALID_MEMBER = invalidMember;
             }
             return field;
         }
-        catch (NoSuchFieldException ex) {
-        }
-        catch (SecurityException ex) {
-        }
+        catch (NoSuchFieldException ex) { }
+        catch (SecurityException ex) { }
         return null;
     }
 

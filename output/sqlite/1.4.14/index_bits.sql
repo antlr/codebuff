@@ -1,5 +1,6 @@
 -- remove duplicates from SQLErrorLogs table
-ALTER TABLE SQLIndexRebuilds ADD seq_num INT identity go
+ALTER
+TABLE SQLIndexRebuilds ADD seq_num INT identity go
 --delete from a
 
 SELECT *-- from a
@@ -12,11 +13,10 @@ FROM SQLIndexRebuilds a
             , SQLStatement
             , IndexType
             , FragPercent
-            , max(seq_num) AS max_seq_num
+            , max(seq_num)             AS max_seq_num
         FROM SQLIndexRebuilds
         GROUP BY ServerName, DBName, SQLStatement, IndexType, FragPercent
-        HAVING count(*) > 1
-    ) b
+        HAVING count(*) > 1) b
 ON a.ServerName = b.ServerName AND
    a.DBName = b.DBName AND
    a.SQLStatement = b.SQLStatement AND
@@ -32,7 +32,15 @@ ORDER BY LastUpdate
     DESC
 --------------------------------------------------------------------------
 
-SELECT 'dbcc showcontig (' + CONVERT(varchar(20), i.id) + ',' + -- table id CONVERT(varchar(20), i.indid) + ') -- ' + -- index id object_name(i.id) + '.' + -- table name i.name -- index name
+SELECT 'dbcc showcontig (' + CONVERT(varchar(20), i.id)
+       +
+       ',' + -- table id
+       CONVERT(varchar(20), i.indid)
+       +
+       ') -- ' + -- index id
+       object_name(i.id)
+       +
+       '.' + -- table name i.name -- index name
 FROM sysobjects o
     INNER JOIN sysindexes i ON (o.id = i.id)
 WHERE o.type = 'U'

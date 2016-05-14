@@ -58,14 +58,7 @@ import java.util.*;
 
 public class Interpreter {
 
-    public enum Option {
-
-        ANCHOR,
-        FORMAT,
-        NULL,
-        SEPARATOR,
-        WRAP
-    }
+    public enum Option { ANCHOR, FORMAT, NULL, SEPARATOR, WRAP }
 
     public static final int DEFAULT_OPERAND_STACK_SIZE = 100;
     public static final Set<String> predefinedAnonSubtemplateAttributes = new HashSet<String>() {
@@ -163,7 +156,10 @@ public class Interpreter {
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             pw.flush();
-            errMgr.runTimeError(this, scope, ErrorType.INTERNAL_ERROR, "internal error: "+sw.toString());
+            errMgr.runTimeError(this,
+                                scope,
+                                ErrorType.INTERNAL_ERROR,
+                                "internal error: "+sw.toString());
             return 0;
         }
     }
@@ -215,11 +211,11 @@ public class Interpreter {
                     break;
                 case Bytecode.INSTR_LOAD_PROP: nameIndex = getShort(code, ip);
                                                ip += Bytecode.OPND_SIZE_IN_BYTES;
-                                               o = operands[sp --];
+                                               o = operands[sp--];
                                                name = self.impl.strings[nameIndex];
                                                operands[++sp] = getObjectProperty(out, scope, o, name);
                                                break;
-                case Bytecode.INSTR_LOAD_PROP_IND: Object propName = operands[sp --];
+                case Bytecode.INSTR_LOAD_PROP_IND: Object propName = operands[sp--];
                                                    o = operands[sp];
                                                    operands[sp] = getObjectProperty(out, scope, o, propName);
                                                    break;
@@ -238,7 +234,7 @@ public class Interpreter {
                                          break;
                 case Bytecode.INSTR_NEW_IND: nargs = getShort(code, ip);
                                              ip += Bytecode.OPND_SIZE_IN_BYTES;
-                                             name = (String)operands[sp-nargs];
+                                             name = (String)operands[sp -nargs];
                                              st = self.groupThatCreatedThisInstance.getEmbeddedInstanceOf(this, scope, name);
                                              storeArgs(scope, nargs, st);
                                              sp -= nargs;
@@ -248,7 +244,7 @@ public class Interpreter {
                 case Bytecode.INSTR_NEW_BOX_ARGS: nameIndex = getShort(code, ip);
                                                   ip += Bytecode.OPND_SIZE_IN_BYTES;
                                                   name = self.impl.strings[nameIndex];
-                                                  Map<String, Object> attrs = (ArgumentsMap)operands[sp --];
+                                                  Map<String, Object> attrs = (ArgumentsMap)operands[sp--];
                     // look up in original hierarchy not enclosing template (variable group)
                     // see TestSubtemplates.testEvalSTFromAnotherGroup()
                                                   st = self.groupThatCreatedThisInstance.getEmbeddedInstanceOf(this, scope, name);
@@ -266,52 +262,52 @@ public class Interpreter {
                 case Bytecode.INSTR_SUPER_NEW_BOX_ARGS: nameIndex = getShort(code, ip);
                                                         ip += Bytecode.OPND_SIZE_IN_BYTES;
                                                         name = self.impl.strings[nameIndex];
-                                                        attrs = (ArgumentsMap)operands[sp --];
+                                                        attrs = (ArgumentsMap)operands[sp--];
                                                         super_new(scope, name, attrs);
                                                         break;
                 case Bytecode.INSTR_STORE_OPTION:
                     int optionIndex = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
-                    o = operands[sp --];    // value to store
+                    o = operands[sp--];    // value to store
                     options = (Object[])operands[sp]; // get options
                     options[optionIndex] = o; // store value into options on stack
                     break;
                 case Bytecode.INSTR_STORE_ARG: nameIndex = getShort(code, ip);
                                                name = self.impl.strings[nameIndex];
                                                ip += Bytecode.OPND_SIZE_IN_BYTES;
-                                               o = operands[sp --];
+                                               o = operands[sp--];
                                                attrs = (ArgumentsMap)operands[sp];
                                                attrs.put(name, o); // leave attrs on stack
                                                break;
-                case Bytecode.INSTR_WRITE: o = operands[sp --];
+                case Bytecode.INSTR_WRITE: o = operands[sp--];
                                            int n1 = writeObjectNoOptions(out, scope, o);
                                            n += n1;
                                            nwline += n1;
                                            break;
-                case Bytecode.INSTR_WRITE_OPT: options = (Object[])operands[sp --]; // get options
-                                               o = operands[sp --];                 // get option to write
+                case Bytecode.INSTR_WRITE_OPT: options = (Object[])operands[sp--]; // get options
+                                               o = operands[sp--];                 // get option to write
                                                int n2 = writeObjectWithOptions(out, scope, o, options);
                                                n += n2;
                                                nwline += n2;
                                                break;
-                case Bytecode.INSTR_MAP: st = (ST)operands[sp --]; // get prototype off stack
-                                         o = operands[sp --];      // get object to map prototype across
+                case Bytecode.INSTR_MAP: st = (ST)operands[sp--]; // get prototype off stack
+                                         o = operands[sp--];      // get object to map prototype across
                                          map(scope, o, st);
                                          break;
                 case Bytecode.INSTR_ROT_MAP:
                     int nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<ST> templates = new ArrayList<ST>();
-                    for (int i = nmaps-1; i>=0; i--) templates.add((ST)operands[sp-i]);
+                    for (int i = nmaps -1; i>=0; i--) templates.add((ST)operands[sp -i]);
                     sp -= nmaps;
-                    o = operands[sp --];
+                    o = operands[sp--];
                     if ( o!=null ) rot_map(scope, o, templates);
                     break;
-                case Bytecode.INSTR_ZIP_MAP: st = (ST)operands[sp --];
+                case Bytecode.INSTR_ZIP_MAP: st = (ST)operands[sp--];
                                              nmaps = getShort(code, ip);
                                              ip += Bytecode.OPND_SIZE_IN_BYTES;
                                              List<Object> exprs = new ObjectList();
-                                             for (int i = nmaps-1; i>=0; i--) exprs.add(operands[sp-i]);
+                                             for (int i = nmaps -1; i>=0; i--) exprs.add(operands[sp -i]);
                                              sp -= nmaps;
                                              operands[++sp] = zip_map(scope, exprs, st);
                                              break;
@@ -319,7 +315,7 @@ public class Interpreter {
                                         break;
                 case Bytecode.INSTR_BRF: addr = getShort(code, ip);
                                          ip += Bytecode.OPND_SIZE_IN_BYTES;
-                                         o = operands[sp --]; // <if(expr)>...<endif>
+                                         o = operands[sp--]; // <if(expr)>...<endif>
                                          if ( !testAttributeTrue(o) ) ip = addr; // jump
                                          break;
                 case Bytecode.INSTR_OPTIONS: operands[++sp] = new Object[Compiler.NUM_OPTIONS];
@@ -334,7 +330,7 @@ public class Interpreter {
                                               break;
                 case Bytecode.INSTR_LIST: operands[++sp] = new ObjectList();
                                           break;
-                case Bytecode.INSTR_ADD: o = operands[sp --];             // pop value
+                case Bytecode.INSTR_ADD: o = operands[sp--];             // pop value
                                          List<Object> list = (ObjectList)operands[sp]; // don't pop list
                                          addToList(scope, list, o);
                                          break;
@@ -351,23 +347,31 @@ public class Interpreter {
                                            break;
                 case Bytecode.INSTR_STRIP: operands[sp] = strip(scope, operands[sp]);
                                            break;
-                case Bytecode.INSTR_TRIM: o = operands[sp --];
+                case Bytecode.INSTR_TRIM: o = operands[sp--];
                                           if ( o.getClass()==String.class ) {
                                               operands[++sp] = ((String)o).trim();
                                           }
                                           else {
-                                              errMgr.runTimeError(this, scope, ErrorType.EXPECTING_STRING, "trim", o.getClass().getName());
+                                              errMgr.runTimeError(this,
+                                                                  scope,
+                                                                  ErrorType.EXPECTING_STRING,
+                                                                  "trim",
+                                                                  o.getClass().getName());
                                               operands[++sp] = o;
                                           }
                                           break;
                 case Bytecode.INSTR_LENGTH: operands[sp] = length(operands[sp]);
                                             break;
-                case Bytecode.INSTR_STRLEN: o = operands[sp --];
+                case Bytecode.INSTR_STRLEN: o = operands[sp--];
                                             if ( o.getClass()==String.class ) {
                                                 operands[++sp] = ((String)o).length();
                                             }
                                             else {
-                                                errMgr.runTimeError(this, scope, ErrorType.EXPECTING_STRING, "strlen", o.getClass().getName());
+                                                errMgr.runTimeError(this,
+                                                                    scope,
+                                                                    ErrorType.EXPECTING_STRING,
+                                                                    "strlen",
+                                                                    o.getClass().getName());
                                                 operands[++sp] = 0;
                                             }
                                             break;
@@ -375,12 +379,12 @@ public class Interpreter {
                                              break;
                 case Bytecode.INSTR_NOT: operands[sp] = !testAttributeTrue(operands[sp]);
                                          break;
-                case Bytecode.INSTR_OR: right = operands[sp --];
-                                        left = operands[sp --];
+                case Bytecode.INSTR_OR: right = operands[sp--];
+                                        left = operands[sp--];
                                         operands[++sp] = testAttributeTrue(left) || testAttributeTrue(right);
                                         break;
-                case Bytecode.INSTR_AND: right = operands[sp --];
-                                         left = operands[sp --];
+                case Bytecode.INSTR_AND: right = operands[sp--];
+                                         left = operands[sp--];
                                          operands[++sp] = testAttributeTrue(left) && testAttributeTrue(right);
                                          break;
                 case Bytecode.INSTR_INDENT:
@@ -428,7 +432,7 @@ public class Interpreter {
 //                  n += n1;
 //                  nwline += n1;
 //                  break;
-                default: errMgr.internalError(self, "invalid bytecode @ "+(ip-1)+": "+opcode, null);
+                default: errMgr.internalError(self, "invalid bytecode @ "+(ip -1)+": "+opcode, null);
                          self.impl.dump();
             }
             prevOpcode = opcode;
@@ -509,7 +513,10 @@ public class Interpreter {
                     // if no such attribute exists for arg.name, set parameter
                     // if no default value
                     if ( arg.defaultValueToken==null ) {
-                        errMgr.runTimeError(this, scope, ErrorType.NO_SUCH_ATTRIBUTE_PASS_THROUGH, arg.name);
+                        errMgr.runTimeError(this,
+                                            scope,
+                                            ErrorType.NO_SUCH_ATTRIBUTE_PASS_THROUGH,
+                                            arg.name);
                         attrs.put(arg.name, null);
                     }
                 }
@@ -592,10 +599,10 @@ public class Interpreter {
 
         int nformalArgs = 0;
         if ( st.impl.formalArguments!=null ) nformalArgs = st.impl.formalArguments.size();
-        int firstArg = sp-(nargs-1);
+        int firstArg = sp -(nargs -1);
         int numToStore = Math.min(nargs, nformalArgs);
         if ( st.impl.isAnonSubtemplate ) nformalArgs -= predefinedAnonSubtemplateAttributes.size();
-        if ( nargs < (nformalArgs-st.impl.numberOfArgsWithDefaultValues) || nargs> nformalArgs ) {
+        if ( nargs < (nformalArgs -st.impl.numberOfArgsWithDefaultValues) || nargs> nformalArgs ) {
             errMgr.runTimeError(this, scope, ErrorType.ARGUMENT_COUNT_MISMATCH, nargs, st.impl.name, nformalArgs);
         }
         if ( st.impl.formalArguments==null ) return;
@@ -625,7 +632,11 @@ public class Interpreter {
         int start = out.index(); // track char we're about to write
         int n = writeObject(out, scope, o, null);
         if ( debug ) {
-            EvalExprEvent e = new EvalExprEvent(scope, start, out.index()-1, getExprStartChar(scope), getExprStopChar(scope));
+            EvalExprEvent e = new EvalExprEvent(scope,
+                                                start,
+                                                out.index()-1,
+                                                getExprStartChar(scope),
+                                                getExprStopChar(scope));
             trackDebugEvent(scope, e);
         }
         return n;
@@ -654,7 +665,11 @@ public class Interpreter {
             out.popAnchorPoint();
         }
         if ( debug ) {
-            EvalExprEvent e = new EvalExprEvent(scope, start, out.index()-1, getExprStartChar(scope), getExprStopChar(scope));
+            EvalExprEvent e = new EvalExprEvent(scope,
+                                                start,
+                                                out.index()-1,
+                                                getExprStartChar(scope),
+                                                getExprStopChar(scope));
             trackDebugEvent(scope, e);
         }
         return n;
@@ -848,7 +863,11 @@ public class Interpreter {
         int nformalArgs = formalArgumentNames.length;
         if ( prototype.isAnonSubtemplate() ) nformalArgs -= predefinedAnonSubtemplateAttributes.size();
         if ( nformalArgs!= numExprs ) {
-            errMgr.runTimeError(this, scope, ErrorType.MAP_ARGUMENT_COUNT_MISMATCH, numExprs, nformalArgs);
+            errMgr.runTimeError(this,
+                                scope,
+                                ErrorType.MAP_ARGUMENT_COUNT_MISMATCH,
+                                numExprs,
+                                nformalArgs);
             // TODO just fill first n
             // truncate arg list to match smaller size
             int shorterSize = Math.min(formalArgumentNames.length, numExprs);
@@ -1083,7 +1102,10 @@ public class Interpreter {
             }
             catch (Exception e) {
                 stw = new AutoIndentWriter(sw);
-                errMgr.runTimeError(this, scope, ErrorType.WRITER_CTOR_ISSUE, out.getClass().getSimpleName());
+                errMgr.runTimeError(this,
+                                    scope,
+                                    ErrorType.WRITER_CTOR_ISSUE,
+                                    out.getClass().getSimpleName());
             }
             if ( debug && !scope.earlyEval ) {
                 scope = new InstanceScope(scope, scope.st);
@@ -1229,7 +1251,8 @@ public class Interpreter {
                 // eval.
                 String defArgTemplate = arg.defaultValueToken.getText();
                 if ( defArgTemplate.startsWith("{"+group.delimiterStartChar+"(") && defArgTemplate.endsWith(")"+group.delimiterStopChar+"}") ) {
-                    invokedST.rawSetAttribute(arg.name, toString(out, new InstanceScope(scope, invokedST), defaultArgST));
+                    invokedST.rawSetAttribute(arg.name,
+                                              toString(out, new InstanceScope(scope, invokedST), defaultArgST));
                 }
                 else {
                     invokedST.rawSetAttribute(arg.name, defaultArgST);

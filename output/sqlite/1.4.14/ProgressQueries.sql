@@ -12,30 +12,29 @@ SELECT
 FROM
     (
         SELECT
-            CONVERT(VARCHAR, SSISInstanceID)    AS InstanceID
-            , COUNT(CASE WHEN Status = 4
-AND
+            CONVERT(VARCHAR, SSISInstanceID)             AS InstanceID
+            , COUNT(CASE WHEN Status = 4 AND
                               CONVERT(DATE, LoadReportDBEndDate) <
                               CONVERT(DATE, GETDATE())
             THEN Status
-                    ELSE NULL END)    AS OldStatus4
+                    ELSE NULL END)             AS OldStatus4
 --, COUNT ( CASE WHEN Status = 4 AND LoadReportDBEndDate < GETDATE() THEN Status ELSE NULL END ) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
             THEN Status
-                    ELSE NULL END)    AS Status0
+                    ELSE NULL END)             AS Status0
             , COUNT(CASE WHEN Status = 1
             THEN Status
-                    ELSE NULL END)    AS Status1
+                    ELSE NULL END)             AS Status1
             , COUNT(CASE WHEN Status = 2
             THEN Status
-                    ELSE NULL END)    AS Status2
+                    ELSE NULL END)             AS Status2
             , COUNT(CASE WHEN Status = 3
             THEN Status
-                    ELSE NULL END)    AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+                    ELSE NULL END)             AS Status3
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
-                    ELSE NULL END)    AS Status4
+                    ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
@@ -94,11 +93,18 @@ SELECT
       ELSE SourceDB END AS SourceDB
 --, LoadStageDBStartDate
 --, LoadStageDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms, SUM(DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate)), 0), 114)    AS StageLoadTime
+    , CONVERT(VARCHAR(12),
+              DATEADD(ms, SUM(DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate)), 0),
+              114)    AS StageLoadTime
 --, LoadReportDBStartDate
 --, LoadReportDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms, SUM(DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate)), 0), 114)    AS ReportLoadTime
-    , CONVERT(VARCHAR(12), DATEADD(ms, SUM((DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate))) + SUM((DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate))), 0), 114)    AS ClientTotal
+    , CONVERT(VARCHAR(12),
+              DATEADD(ms, SUM(DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate)), 0),
+              114)    AS ReportLoadTime
+    , CONVERT(VARCHAR(12), DATEADD(ms,SUM((DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate))) +
+SUM((DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate))),
+                                   0), 114)    AS ClientTotal
 FROM ClientConnection
-GROUP BY Beta
-    , SourceDB;
+GROUP BY Beta, SourceDB
+
+;

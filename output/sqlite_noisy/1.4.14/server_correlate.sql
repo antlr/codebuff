@@ -1,8 +1,8 @@
 -- shows all listeners by server, name, environment and component
 -- useful for seeing if they are all tied back to a component name
 select distinct s.server_name,
-pc.name,
-e.environment_name
+pc.name
+                 , e.environment_name
                  , pc.component_id
 from    dbo.t_server s
 INNER JOIN dbo.t_environment e

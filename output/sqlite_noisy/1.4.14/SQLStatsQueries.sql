@@ -1,5 +1,5 @@
 Select * from sys.dm_exec_query_optimizer_info
-where counter in ( 'optimizations', 'elapsed time', 'trivial plan', 'tables', 'insert stmt', 'update stmt', 'delete stmt' )
+where counter in ( 'optimizations', 'elapsed time', 'trivial plan', 'tables', 'insert stmt', 'update stmt', 'delete stmt')
 
 
 ------------------------------------------------------------------------
@@ -70,7 +70,8 @@ FROM    sys.dm_exec_query_stats qs
     inner join
     sys.dm_exec_cached_plans as cp
     on qs.plan_handle = cp.plan_handle
-where cp.plan_handle = qs.plan_handle and qt.dbid is NULL
+where cp.plan_handle = qs.plan_handle
+and qt.dbid is NULL
 ORDER BY [usecounts], [statement] asc
 
 

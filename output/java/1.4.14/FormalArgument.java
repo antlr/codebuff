@@ -109,7 +109,7 @@ public class FormalArgument {
             return false;
         }
         // only check if there is a default value; that's all
-        return !((this.defaultValueToken!=null && other.defaultValueToken==null) ||(this.defaultValueToken==null && other.defaultValueToken!=null) );
+        return !((this.defaultValueToken!=null && other.defaultValueToken==null)||(this.defaultValueToken==null && other.defaultValueToken!=null));
     }
 
     @Override

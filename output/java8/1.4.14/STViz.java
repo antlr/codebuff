@@ -316,7 +316,9 @@ public class STViz {
                 templateEvent = (EvalTemplateEvent)events.get(events.size()-1);
             }
             if ( templateEvent!=null ) {
-                highlight(m.output, templateEvent.outputStartChar, templateEvent.outputStopChar);
+                highlight(m.output,
+                          templateEvent.outputStartChar,
+                          templateEvent.outputStopChar);
             }
             if ( currentScope.st.isAnonSubtemplate() ) {
                 Interval r = currentScope.st.impl.getTemplateRange();

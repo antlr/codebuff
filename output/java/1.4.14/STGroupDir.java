@@ -145,7 +145,8 @@ public class STGroupDir extends STGroup {
                 if ( is!=null ) is.close();
             }
             catch (IOException ioe) {
-                errMgr.internalError(null, "can't close template file stream "+name, ioe);
+                errMgr.internalError(null, "can't close template file stream "+
+name, ioe);
             }
         }
         loadGroupFile(prefix, root+parent+GROUP_FILE_EXTENSION);
@@ -163,7 +164,10 @@ prefix);
             f = new URL(root+prefix+unqualifiedFileName);
         }
         catch (MalformedURLException me) {
-            errMgr.runTimeError(null, null, ErrorType.INVALID_TEMPLATE_NAME, me, root+unqualifiedFileName);
+            errMgr.runTimeError(null,
+                                null,
+                                ErrorType.INVALID_TEMPLATE_NAME,
+                                me, root+unqualifiedFileName);
             return null;
         }
         ANTLRInputStream fs;

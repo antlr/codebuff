@@ -63,7 +63,7 @@ public class JTreeSTModel implements TreeModel {
             if ( st.debugState!=null && st.debugState.newSTEvent!=null ) {
                 String label = st.toString()+" @ "+st.debugState.newSTEvent.getFileName()+":" +
                                st.debugState.newSTEvent.getLine();
-                return "<html><b>"+
+                return "<html><b>" +
                        StringRenderer.escapeHTML(label)+"</b></html>";
             }
             else {

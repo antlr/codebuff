@@ -125,11 +125,17 @@ public class ErrorManager {
         listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope, arg));
     }
 
-    public void runTimeError(Interpreter interp, InstanceScope scope, ErrorType error, Throwable e, Object arg) {
+    public void runTimeError(Interpreter interp,
+                             InstanceScope scope,
+                             ErrorType error,
+                             Throwable e, Object arg) {
         listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope, e, arg));
     }
 
-    public void runTimeError(Interpreter interp, InstanceScope scope, ErrorType error, Object arg, Object arg2) {
+    public void runTimeError(Interpreter interp,
+                             InstanceScope scope,
+                             ErrorType error,
+                             Object arg, Object arg2) {
         listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope, null, arg, arg2));
     }
 

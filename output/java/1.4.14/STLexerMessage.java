@@ -54,7 +54,7 @@ public class STLexerMessage extends STMessage {
         int charPos = re.charPositionInLine;
         if ( templateToken!=null ) {
             int templateDelimiterSize = 1;
-            if ( templateToken.getType()==GroupParser.BIGSTRING ) {
+            if ( templateToken.getType() ==GroupParser.BIGSTRING ) {
                 templateDelimiterSize = 2;
             }
             line += templateToken.getLine()-1;

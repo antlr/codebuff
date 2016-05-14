@@ -69,7 +69,7 @@ public class BytecodeDisassembler {
 
     public int disassembleInstruction(StringBuilder buf, int ip) {
         int opcode = code.instrs[ip];
-        if ( ip>=code.codeSize ) {
+        if ( ip >=code.codeSize ) {
             throw new IllegalArgumentException("ip out of range: "+ip);
         }
         Bytecode.Instruction I = Bytecode.instructions[opcode];
@@ -87,7 +87,7 @@ public class BytecodeDisassembler {
         for (int i = 0; i < I.nopnds; i++) {
             int opnd = getShort(code.instrs, ip);
             ip += Bytecode.OPND_SIZE_IN_BYTES;
-            switch ( I.type[i] ) {
+            switch ( I.type [i] ) {
                 case STRING : operands.add(showConstPoolOperand(opnd));
                               break;
                 case ADDR :
@@ -111,7 +111,7 @@ public class BytecodeDisassembler {
         buf.append(poolIndex);
         String s = "<bad string index>";
         if ( poolIndex < code.strings.length ) {
-            if ( code.strings[poolIndex]==null ) s = "null";
+            if ( code.strings[poolIndex] ==null ) s = "null";
             else {
                 s = code.strings[poolIndex];
                 if ( code.strings[poolIndex]!=null ) {
@@ -126,9 +126,9 @@ public class BytecodeDisassembler {
     }
 
     public static int getShort(byte[] memory, int index) {
-        int b1 = memory[index] &0xFF; // mask off sign-extended bits
-        int b2 = memory[index+1] &0xFF;
-        int word = b1 <<(8*1)| b2;
+        int b1 = memory[index]&0xFF; // mask off sign-extended bits
+        int b2 = memory[index+1]&0xFF;
+        int word = b1<<(8*1) | b2;
         return word;
     }
 

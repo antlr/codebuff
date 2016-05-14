@@ -59,7 +59,12 @@ public class STRuntimeMessage extends STMessage {
                             Throwable e, Object arg) {
         this(interp, error, ip, scope, e, arg, null);
     }
-    public STRuntimeMessage(Interpreter interp, ErrorType error, int ip, InstanceScope scope, Throwable e, Object arg, Object arg2) {
+    public STRuntimeMessage(Interpreter interp,
+                            ErrorType error,
+                            int ip,
+                            InstanceScope scope,
+                            Throwable e,
+                            Object arg, Object arg2) {
         this(interp, error, ip, scope, e, arg, arg2, null);
     }
     public STRuntimeMessage(Interpreter interp, ErrorType error, int ip, InstanceScope scope, Throwable e, Object arg, Object arg2, Object arg3) {

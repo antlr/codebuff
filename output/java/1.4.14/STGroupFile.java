@@ -90,7 +90,10 @@ public class STGroupFile extends STGroup {
         this(fullyQualifiedFileName, encoding, '<', '>');
     }
 
-    public STGroupFile(String fullyQualifiedFileName, String encoding, char delimiterStartChar, char delimiterStopChar) {
+    public STGroupFile(String fullyQualifiedFileName,
+                       String encoding,
+                       char delimiterStartChar,
+                       char delimiterStopChar) {
         this(fullyQualifiedFileName, delimiterStartChar, delimiterStopChar);
         this.encoding = encoding;
     }
@@ -138,7 +141,7 @@ public class STGroupFile extends STGroup {
         // beneath it.
         if ( verbose ) System.out.println("loading group file "+url.toString());
         loadGroupFile("/", url.toString());
-        if ( verbose ) System.out.println("found "+templates.size()+" templates in "+url.toString()+" = " +
+        if ( verbose ) System.out.println("found "+templates.size()+" templates in "+url.toString()+" = "+
 templates.keySet());
     }
 

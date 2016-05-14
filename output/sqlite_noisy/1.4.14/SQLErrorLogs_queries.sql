@@ -2,11 +2,10 @@
 select * from SQLErrorLogs a
     join
                (
-               select ServerName, Date, spid, Message, max(seq_num) AS max_seq_num
+               select ServerName, Date, spid, Message, max (seq_num) AS max_seq_num
                    from SQLErrorLogs
 group by ServerName, Date, spid, Message
-having count(*) > 1
-               ) b
+having count(*) > 1) b
     on a.ServerName = b.ServerName
        and a.Date = b.Date
        and a.spid = b.spid
@@ -18,16 +17,15 @@ having count(*) > 1
 select * from SQLAgentErrorLogs a
     join
               (
-              select ServerName, Date, ErrorLevel, Message, max(seq_num) AS max_seq_num
+              select ServerName, Date, ErrorLevel, Message, max (seq_num) AS max_seq_num
                   from SQLAgentErrorLogs
 group by ServerName, Date, ErrorLevel, Message
-having count(*) > 1
-              ) b
-                  on a.ServerName = b.ServerName
-                     and a.Date = b.Date
-                     and a.ErrorLevel = b.ErrorLevel
+having count(*) > 1) b
+    on a.ServerName = b.ServerName
+       and a.Date = b.Date
+       and a.ErrorLevel = b.ErrorLevel
         and a.Message = b.Message
-                  and a.seq_num < b.max_seq_num
+    and a.seq_num < b.max_seq_num
 
 select * from tempdb.dboSQLAgentErrorLogsDestination
 

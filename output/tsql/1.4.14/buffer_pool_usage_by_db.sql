@@ -50,11 +50,9 @@ FROM sys.partitions AS p
         ON p.[object_id] = o.[object_id]
     INNER JOIN
     sys.indexes AS i
-        ON o.[object_id] = i.[object_id]
-           AND p.index_id = i.index_id
+        ON o.[object_id] = i.[object_id] AND p.index_id = i.index_id
 WHERE au.[type] IN
-      (1, 2, 3)
-      AND o.is_ms_shipped = 0
+      (1, 2, 3) AND o.is_ms_shipped = 0
 )
 SELECT
     src.[Object]

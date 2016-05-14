@@ -248,7 +248,11 @@ public class ST {
                 //else locals = Arrays.copyOf(locals, impl.formalArguments.size());
                 else {
                     Object[] copy = new Object[impl.formalArguments.size()];
-                    System.arraycopy(locals, 0, copy, 0, Math.min(locals.length, impl.formalArguments.size()));
+                    System.arraycopy(locals,
+                                     0,
+                                     copy,
+                                     0,
+                                     Math.min(locals.length, impl.formalArguments.size()));
                     locals = copy;
                 }
                 locals[arg.index] = EMPTY_ATTR;
@@ -304,7 +308,7 @@ public class ST {
         }
 
         String aggrName = aggrSpec.substring(0, dot);
-        String propString = aggrSpec.substring(dot+2, aggrSpec.length()-1);
+        String propString = aggrSpec.substring(dot +2, aggrSpec.length()-1);
         propString = propString.trim();
         String[] propNames = propString.split("\\ *,\\ *");
         if ( propNames==null || propNames.length==0 ) {
@@ -447,7 +451,10 @@ public class ST {
     }
 
     public int write(STWriter out, Locale locale, STErrorListener listener) {
-        Interpreter interp = new Interpreter(groupThatCreatedThisInstance, locale, new ErrorManager(listener), false);
+        Interpreter interp = new Interpreter(groupThatCreatedThisInstance,
+                                             locale,
+                                             new ErrorManager(listener),
+                                             false);
         InstanceScope scope = new InstanceScope(null, this);
         return interp.exec(out, scope);
     }
@@ -559,7 +566,7 @@ public class ST {
     @Override
     public String toString() {
         if ( impl==null ) return "bad-template()";
-        String name = impl.name+"()";
+        String name = impl.name +"()";
         if ( this.impl.isRegion ) {
             name = "@"+STGroup.getUnMangledTemplateName(name);
         }

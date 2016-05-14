@@ -71,8 +71,7 @@ commit_stmt
     ;
 
 compound_select_stmt
-    :   (K_WITH K_RECURSIVE? common_tables)? select_core ((K_UNION K_ALL? | K_INTERSECT | K_EXCEPT) select_core)+
-        (K_ORDER K_BY ordering_term (',' ordering_term)*)? (K_LIMIT expr ((K_OFFSET | ',') expr)?)?
+    :   (K_WITH K_RECURSIVE? common_tables)? select_core ((K_UNION K_ALL? | K_INTERSECT | K_EXCEPT) select_core)+ (K_ORDER K_BY ordering_term (',' ordering_term)*)? (K_LIMIT expr ((K_OFFSET | ',') expr)?)?
     ;
 
 common_tables
@@ -266,10 +265,12 @@ conflict_clause
     |   expr (K_ISNULL | K_NOTNULL | K_NOT K_NULL)
     |   expr K_IS K_NOT? expr
     |   expr K_NOT? K_BETWEEN expr K_AND expr
-    |   expr K_NOT? K_IN ('(' (select_stmt | exprs)? ')' | (database_name '.')? table_name)
+    |   expr K_NOT? K_IN
+        (   '(' (select_stmt | exprs)? ')'
+        |   (database_name '.')? table_name
+        )
     |   (K_NOT? K_EXISTS)? '(' select_stmt ')'
-    |   K_CASE expr? (K_WHEN expr K_THEN expr)+
-        (K_ELSE expr)? K_END
+    |   K_CASE expr? (K_WHEN expr K_THEN expr)+ (K_ELSE expr)? K_END
     |   raise_function
     ;
 
@@ -278,15 +279,15 @@ exprs
     ;
 
 foreign_key_clause
-    :   K_REFERENCES foreign_table ('(' column_names ')')? ((   K_ON (K_DELETE | K_UPDATE)
-(   K_SET K_NULL
-|   K_SET K_DEFAULT
-|   K_CASCADE
-|   K_RESTRICT
-|   K_NO K_ACTION
-)
-                                                            |   K_MATCH name
-                                                            ))* (K_NOT? K_DEFERRABLE (K_INITIALLY K_DEFERRED | K_INITIALLY K_IMMEDIATE)?)?
+    :   K_REFERENCES foreign_table ('(' column_names ')')? (   (   K_ON (K_DELETE | K_UPDATE)
+                                                                   (   K_SET K_NULL
+                                                                   |   K_SET K_DEFAULT
+                                                                   |   K_CASCADE
+                                                                   |   K_RESTRICT
+                                                                   |   K_NO K_ACTION
+                                                                   )
+                                                               |   K_MATCH name
+                                                               ))* (K_NOT? K_DEFERRABLE (K_INITIALLY K_DEFERRED | K_INITIALLY K_IMMEDIATE)?)?
     ;
 
 raise_function
@@ -323,11 +324,7 @@ common_table_expression
     :   table_name ('(' column_names ')')? K_AS '(' select_stmt ')'
     ;
 
-result_column
-    :   '*'
-    |   table_name '.' '*'
-    |   expr (K_AS? column_alias)?
-    ;
+result_column : '*' | table_name '.' '*' | expr (K_AS? column_alias)? ;
 
 table_or_subquery
     :   (database_name '.')? table_name (K_AS? table_alias)? (K_INDEXED K_BY index_name | K_NOT K_INDEXED)?
@@ -344,20 +341,14 @@ join_operator
     |   K_NATURAL? (K_LEFT K_OUTER? | K_INNER | K_CROSS)? K_JOIN
     ;
 
-join_constraint
-    :   K_ON expr
-    |   K_USING '(' column_names ')'
-    |
-    ;
+join_constraint : K_ON expr | K_USING '(' column_names ')' | ;
 
 select_core
     :   K_SELECT (K_DISTINCT | K_ALL)? result_column (',' result_column)* (K_FROM (table_or_subquery (',' table_or_subquery)* | join_clause))? (K_WHERE expr)? (K_GROUP K_BY exprs (K_HAVING expr)?)?
     |   K_VALUES '(' exprs ')' (',' '(' exprs ')')*
     ;
 
-compound_operator
-    : K_UNION | K_UNION K_ALL | K_INTERSECT | K_EXCEPT
-    ;
+compound_operator : K_UNION | K_UNION K_ALL | K_INTERSECT | K_EXCEPT ;
 
 cte_table_name
     :   table_name ('(' column_names ')')?
@@ -769,15 +760,15 @@ NUMERIC_LITERAL
     ;
 
 BIND_PARAMETER
-    :   '?' DIGIT*| [:@$] IDENTIFIER
+    :   '?' DIGIT* | [:@$] IDENTIFIER
     ;
 
 STRING_LITERAL : '\'' (~'\''| '\'\'')* '\'' ;
 BLOB_LITERAL : X STRING_LITERAL ;
-SINGLE_LINE_COMMENT : '--' ~[\r\n]* -> channel(HIDDEN) ;
+SINGLE_LINE_COMMENT : '--' ~[\r\n]*
+                      -> channel(HIDDEN) ;
 MULTILINE_COMMENT : '/*' .*? ('*/'| EOF) -> channel(HIDDEN) ;
-SPACES : [ \u000B\t\r\n]
-         -> channel(HIDDEN) ;
+SPACES : [ \u000B\t\r\n] -> channel(HIDDEN) ;
 UNEXPECTED_CHAR : . ;
 fragment
 DIGIT

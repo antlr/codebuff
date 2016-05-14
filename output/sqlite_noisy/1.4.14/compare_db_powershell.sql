@@ -1,47 +1,44 @@
 ------------------------------------------------------------------------------------------------------------------------
 -- all databases compared against DMart_Template_*
 
-SELECT @EmployeeList = COALESCE(@EmployeeList + ', ','') + CAST(Emp_UniqueID AS varchar(5))
+SELECT @EmployeeList = COALESCE(@EmployeeList+ ', ','') + CAST(Emp_UniqueID AS varchar(5))
 FROM SalesCallsEmployees
 WHERE SalCal_UniqueID = 1
 
-SELECT @dblistData = COALESCE(@dblistData + ', ','') + name
+SELECT @dblistData = COALESCE(@dblistData+ ', ','') + name
 FROM sys.databases
 WHERE name LIKE 'DMart%Data'
 AND name NOT LIKE '%Template%'
+
 GROUP BY name
 
-SELECT @dblistStage = COALESCE(@dblistStage + ', ','') + name
+SELECT @dblistStage = COALESCE(@dblistStage+ ', ','') + name
 FROM sys.databases
 WHERE name LIKE 'DMart%Stage'
 AND name NOT LIKE '%Template%'
+
 GROUP BY name
 
-SELECT  @cmd2
-=
-'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase DMart_Template_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
+SELECT  @cmd2 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase DMart_Template_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
 
-SELECT  @cmd3
-=
-'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase DMart_Template_Stage -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
+SELECT  @cmd3 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase DMart_Template_Stage -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
 -- CDC package
 
-SELECT @CDCData = COALESCE(@CDCData + ', ','') + name
+SELECT @CDCData = COALESCE(@CDCData+ ', ','') + name
 FROM sys.databases
 WHERE name LIKE 'DMart%CDC%Data'
 AND name NOT LIKE '%Template%'
+
 GROUP BY name
 
-SELECT  @CDCcmd
-=
-'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase DMart_TemplateCDC_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @CDCData + ' -Column -Log'
+SELECT  @CDCcmd = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase DMart_TemplateCDC_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @CDCData + ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
 -- XSQLUTIL18.dbo.Status
 
-SELECT @ServerList = COALESCE(@ServerList + ', ','') + RTRIM(LTRIM([server_name]))
+SELECT @ServerList = COALESCE(@ServerList+ ', ','') + RTRIM(LTRIM([server_name]))
 FROM    Status_dbo.t_server s
     INNER JOIN [t_server_type_assoc] sta on s.server_id = sta.server_id
     INNER JOIN [t_server_type] st on sta.type_id = sT.type_id
@@ -70,24 +67,22 @@ ORDER BY 1
 ------------------------------------------------------------------------------------------------------------------------
 -- PSQLSMC30
 
-SELECT @dblistData = COALESCE(@dblistData + ', ','') + name
+SELECT @dblistData = COALESCE(@dblistData+ ', ','') + name
 FROM sys.databases
 WHERE name LIKE '%SMC'
 AND name NOT LIKE '%Test%'
+
 GROUP BY name
 
-SELECT @dblistStage = COALESCE(@dblistStage + ', ','') + name
+SELECT @dblistStage = COALESCE(@dblistStage+ ', ','') + name
 FROM sys.databases
 WHERE name LIKE '%SMC'
 AND name NOT LIKE '%Test%'
+
 GROUP BY name
 
-SELECT  @cmd2
-=
-'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase RLCSMC -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
+SELECT  @cmd2 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME + ' -FirstDatabase RLCSMC -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
 
 -- use the Dev current version
 
-SELECT  @cmd3
-=
-'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + 'ISQLDEV610 -FirstDatabase SMCCurrent -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
+SELECT  @cmd3 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + 'ISQLDEV610 -FirstDatabase SMCCurrent -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'

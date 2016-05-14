@@ -21,11 +21,11 @@ GROUP BY Beta
 ORDER BY Status
     ASC
 , SSISInstanceID
-    ASC
+ASC
 , Beta
-    ASC
+ASC
 , LoadStageDBStartDate
-    ASC
+ASC
 
 -------------------------------------------
 
@@ -103,30 +103,30 @@ SELECT
 FROM
     (
         SELECT
-            CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
+            CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
             , COUNT(CASE WHEN Status = 4
 AND
                               CONVERT(DATE, LoadReportDBEndDate) <
                               CONVERT(DATE, GETDATE())
             THEN Status
-                    ELSE NULL END) AS OldStatus4
+                    ELSE NULL END)             AS OldStatus4
             , COUNT(CASE WHEN Status = 0
             THEN Status
-                    ELSE NULL END) AS Status0
+                    ELSE NULL END)             AS Status0
             , COUNT(CASE WHEN Status = 1
             THEN Status
-                    ELSE NULL END) AS Status1
+                    ELSE NULL END)             AS Status1
             , COUNT(CASE WHEN Status = 2
             THEN Status
-                    ELSE NULL END) AS Status2
+                    ELSE NULL END)             AS Status2
             , COUNT(CASE WHEN Status = 3
             THEN Status
-                    ELSE NULL END) AS Status3
+                    ELSE NULL END)             AS Status3
 --, COUNT ( CASE WHEN Status = 4 THEN Status ELSE NULL END ) AS Status4
             , COUNT(CASE WHEN Status = 4
 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
-                    ELSE NULL END) AS Status4
+                    ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
@@ -147,29 +147,29 @@ SELECT
 FROM
     (
         SELECT
-            CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
+            CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
             , COUNT(CASE WHEN Status = 4
 AND
                               CONVERT(DATE, LoadReportDBEndDate) <
                               CONVERT(DATE, GETDATE())
             THEN Status
-                    ELSE NULL END) AS OldStatus4
+                    ELSE NULL END)             AS OldStatus4
             , COUNT(CASE WHEN Status = 0
             THEN Status
-                    ELSE NULL END) AS Status0
+                    ELSE NULL END)             AS Status0
             , COUNT(CASE WHEN Status = 1
             THEN Status
-                    ELSE NULL END) AS Status1
+                    ELSE NULL END)             AS Status1
             , COUNT(CASE WHEN Status = 2
             THEN Status
-                    ELSE NULL END) AS Status2
+                    ELSE NULL END)             AS Status2
             , COUNT(CASE WHEN Status = 3
             THEN Status
-                    ELSE NULL END) AS Status3
+                    ELSE NULL END)             AS Status3
             , COUNT(CASE WHEN Status = 4
 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
-                    ELSE NULL END) AS Status4
+                    ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
@@ -278,16 +278,23 @@ WHERE ReportServer = 'PSLQRPT22'
 ---------------------------------------------
 
 UPDATE ClientConnection
-SET LoadStageDBStartDate = '2010-03-09 01:10:33.200', LoadStageDBEndDate = '2010-03-09 01:15:20.393', LoadReportDBStartDate = '2010-03-09 02:55:12.807', LoadReportDBEndDate = '2010-03-09 02:59:33.627'
-WHERE Beta = '0'
+SET LoadStageDBStartDate = '2010-03-09 01:10:33.200'
+, LoadStageDBEndDate    = '2010-03-09 01:15:20.393'
+    , LoadReportDBStartDate = '2010-03-09 02:55:12.807'
+    , LoadReportDBEndDate   = '2010-03-09 02:59:33.627'
+    WHERE Beta = '0'
 
 UPDATE ClientConnection_test
 SET SourceServer = 'IAPPBO510', CDCReportServer = 'IAPPBO510', Beta = '1'
 WHERE SourceDB = 'PADemoDU'
 
 UPDATE ClientConnection
-SET LoadStageDBStartDate = '2010-03-09 01:10:33.200', LoadStageDBEndDate = '2010-03-09 01:15:20.393', LoadReportDBStartDate = '2010-03-09 02:55:12.807', LoadReportDBEndDate = '2010-03-09 02:59:33.627', Status = '0'
-WHERE Beta = '0'
+SET LoadStageDBStartDate = '2010-03-09 01:10:33.200'
+, LoadStageDBEndDate    = '2010-03-09 01:15:20.393'
+    , LoadReportDBStartDate = '2010-03-09 02:55:12.807'
+    , LoadReportDBEndDate   = '2010-03-09 02:59:33.627'
+    , Status                = '0'
+    WHERE Beta = '0'
 
 UPDATE dbo.ClientConnection_test
 SET SourceServer = 'STGSQL613'
@@ -334,4 +341,9 @@ FROM ClientConnection_test
 ORDER BY Beta, SourceDB
 
 UPDATE dbo.ClientConnection_test
-SET LoanCurrentStartDate = '2013-04-21 14:39:24.897', LoanCurrentEndDate = '2013-04-26 14:39:24.897', LoanMasterStartDate = '2013-04-21 14:39:24.897', LoanMasterEndDate = '2013-04-26 14:39:24.897', LoanSecondaryStartDate = '2013-04-21 14:39:24.897', LoanSecondaryEndDate = '2013-04-26 14:39:24.897'
+SET LoanCurrentStartDate = '2013-04-21 14:39:24.897'
+, LoanCurrentEndDate    = '2013-04-26 14:39:24.897'
+    , LoanMasterStartDate = '2013-04-21 14:39:24.897'
+    , LoanMasterEndDate   = '2013-04-26 14:39:24.897'
+    , LoanSecondaryStartDate                = '2013-04-21 14:39:24.897'
+    , LoanSecondaryEndDate   = '2013-04-26 14:39:24.897'

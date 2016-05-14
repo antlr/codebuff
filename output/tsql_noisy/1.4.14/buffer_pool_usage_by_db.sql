@@ -28,7 +28,7 @@ WITH src AS
 (
     SELECT [Object]=o.name,
 [Type]=o.type_desc
-                          ,[Index]=COALESCE(i.name, ''),
+                          ,[Index]=COALESCE( i.name, ''),
 [Index_Type]=i.type_desc
                           , p.[object_id]
                           , p.index_id

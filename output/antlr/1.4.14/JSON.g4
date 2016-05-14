@@ -20,20 +20,11 @@ array
     |   '[' ']'
     ;
 
-value
-    :   STRING
-    |   NUMBER
-    |   object
-    |   array
-    |   'true'
-    |   'false'
-    |   'null'
-    ;
-
+value : STRING | NUMBER | object | array | 'true' | 'false' | 'null' ;
 STRING : '"' (ESC | ~["\\])* '"' ;
 fragment
 ESC
-    :   '\\' (["\\/bfnrt] | UNICODE)
+    :   '\\' (["\\/bfnrt]| UNICODE)
     ;
 
 fragment
@@ -46,8 +37,6 @@ HEX
     :   [0-9a-fA-F]
     ;
 
-
-
 NUMBER
     :   '-'? INT '.' [0-9]+ EXP?
     |   '-'? INT EXP
@@ -56,7 +45,7 @@ NUMBER
 
 fragment
 INT
-    :   '0'| [1-9] [0-9]*
+    :   '0' | [1-9] [0-9]*
     ;
 
 // no leading zeros
@@ -67,7 +56,5 @@ EXP
     ;
 
 // \- since - means "range" inside [...]
-
-
 
 WS :   [ \t\n\r]+ -> skip ;

@@ -2,8 +2,8 @@ SELECT SourceDB
         --, SourceServer
         --, ID
         --, DestServer
-    , DestDB,
-        PackageName
+    , DestDB
+    , PackageName
     , TaskName
         --, ErrorMessage
         --, ErrorDateTime
@@ -15,7 +15,8 @@ FROM dbo.DMartComponentLogging
 WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())
 AND DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
 AND DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
-AND ErrorMessage NOT LIKE '%Pre-Execute phase is beginning.  %'
+AND ErrorMessage
+NOT LIKE '%Pre-Execute phase is beginning.  %'
 AND ErrorMessage NOT LIKE '%Prepare for Execute phase is beginning.  %'
 AND ErrorMessage NOT LIKE '%The final commit for the data insertion%'
                           AND ErrorMessage NOT LIKE '%The buffer manager detected%'
@@ -30,7 +31,8 @@ FROM dbo.DMartComponentLogging
                    WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())
 AND DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
 AND DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
-AND ErrorMessage NOT LIKE '%Pre-Execute phase is beginning.  %'
+AND ErrorMessage
+NOT LIKE '%Pre-Execute phase is beginning.  %'
 AND ErrorMessage NOT LIKE '%Prepare for Execute phase is beginning.  %'
 AND ErrorMessage NOT LIKE '%The final commit for the data insertion%'
                           AND ErrorMessage NOT LIKE '%The buffer manager detected%'
@@ -44,8 +46,8 @@ AND ErrorMessage NOT LIKE '%The final commit for the data insertion%'
 -----------------------------------------------------------------------------
 
 SELECT DISTINCT dmcl.ClientID,
-       dmcl.SourceServer,
-       dmcl.SourceDB
+       dmcl.SourceServer
+                , dmcl.SourceDB
                 , dmcl.DestServer
                 , dmcl.DestDB
                 , dmcl.PackageName
@@ -63,7 +65,8 @@ FROM
 WHERE DATEPART(day, dmcl.ErrorDateTime) = DATEPART(day, GetDate())
 AND DATEPART(month, dmcl.ErrorDateTime) = DATEPART(month, GetDate())
 AND DATEPART(year, dmcl.ErrorDateTime) = DATEPART(year, GetDate())
-AND dmcl.ErrorMessage NOT LIKE '%Pre-Execute phase is beginning.  %'
+AND dmcl.ErrorMessage
+NOT LIKE '%Pre-Execute phase is beginning.  %'
 AND dmcl.ErrorMessage NOT LIKE '%Prepare for Execute phase is beginning.  %'
 AND dmcl.ErrorMessage NOT LIKE '%The final commit for the data insertion%'
                                AND dmcl.ErrorMessage NOT LIKE '%The buffer manager detected%'

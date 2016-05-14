@@ -26,23 +26,23 @@ SELECT SCHEMA_NAME(tbl.schema_id) as [Schema],
                                               , tbl.max_column_id_used as [Columns]
                                               , CAST(CASE idx.index_id WHEN 1 THEN 1 ELSE 0 END AS bit) AS [HasClusIdx]
                                               , Coalesce((Select sum(spart.rows) from sys.partitions spart
-                                                          Where spart.object_id = tbl.object_id and spart.index_id < 2), 0) AS [RowCount]
-                                              , Coalesce((
-Select Cast(v.low/1024.0 as float) * SUM(a.used_pages -CASE WHEN a.type <> 1 THEN a.used_pages WHEN p.index_id < 2 THEN a.data_pages ELSE 0 END)
-FROM   sys.indexes as i
-JOIN sys.partitions as p
-ON p.object_id = i.object_id and p.index_id = i.index_id
-      JOIN sys.allocation_units as a
-ON a.container_id = p.partition_id
-Where i.object_id = tbl.object_id), 0.0) AS [IndexKB]
-                                              , Coalesce((
-Select Cast(v.low/1024.0 as float) * SUM( CASE WHEN a.type <> 1 THEN a.used_pages WHEN p.index_id < 2 THEN a.data_pages ELSE 0 END )
-FROM   sys.indexes as i
-JOIN sys.partitions as p
-ON p.object_id = i.object_id and p.index_id = i.index_id
-      JOIN sys.allocation_units as a
-ON a.container_id = p.partition_id
-Where i.object_id = tbl.object_id), 0.0) AS [DataKB]
+                                                          Where spart.object_id = tbl.object_id
+                                                                and spart.index_id < 2), 0) AS [RowCount]
+                                              , Coalesce((Select Cast(v.low /1024.0 as float) * SUM(a.used_pages -CASE WHEN a.type <> 1 THEN a.used_pages WHEN p.index_id < 2 THEN a.data_pages
+                                                                                                                  ELSE 0 END)
+                                                          FROM   sys.indexes as i
+                                                          JOIN sys.partitions as p
+                                                          ON p.object_id = i.object_id and p.index_id = i.index_id
+                                                                 JOIN sys.allocation_units as a
+                                                          ON a.container_id = p.partition_id
+                                                          Where i.object_id = tbl.object_id), 0.0) AS [IndexKB]
+                                              , Coalesce((Select Cast(v.low /1024.0 as float) * SUM( CASE WHEN a.type <> 1 THEN a.used_pages WHEN p.index_id < 2 THEN a.data_pages ELSE 0 END )
+                                                          FROM   sys.indexes as i
+                                                          JOIN sys.partitions as p
+                                                          ON p.object_id = i.object_id and p.index_id = i.index_id
+                                                                 JOIN sys.allocation_units as a
+                                                          ON a.container_id = p.partition_id
+                                                          Where i.object_id = tbl.object_id), 0.0) AS [DataKB]
                                               , tbl.create_date
                                               , tbl.modify_date
 FROM   sys.tables AS tbl

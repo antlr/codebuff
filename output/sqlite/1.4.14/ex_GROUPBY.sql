@@ -1,10 +1,10 @@
-INSERT INTO girl(name, hair, did_date) VALUES ('Azure', 'Brunette', 0);
+INSERT INTO girl (name, hair, did_date) VALUES ('Azure', 'Brunette', 0);
 
-INSERT INTO girl(name, hair, did_date) VALUES ('Sarah', 'Brunette', 1);
+INSERT INTO girl (name, hair, did_date) VALUES ('Sarah', 'Brunette', 1);
 
-INSERT INTO girl(name, hair, did_date) VALUES ('Ashley', 'Brunette', 1);
+INSERT INTO girl (name, hair, did_date) VALUES ('Ashley', 'Brunette', 1);
 
-INSERT INTO girl(name, hair, did_date) VALUES ('Heather', 'Blonde', 1);
+INSERT INTO girl (name, hair, did_date) VALUES ('Heather', 'Blonde', 1);
 
 -- query 1
 

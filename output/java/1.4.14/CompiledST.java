@@ -160,7 +160,11 @@ public class CompiledST implements Cloneable {
                         String argSTname = fa.name+"_default_value";
                         Compiler c2 = new Compiler(group);
                         String defArgTemplate = Misc.strip(fa.defaultValueToken.getText(), 1);
-                        fa.compiledDefaultValue = c2.compile(group.getFileName(), argSTname, null, defArgTemplate, fa.defaultValueToken);
+                        fa.compiledDefaultValue = c2.compile(group.getFileName(),
+                                                             argSTname,
+                                                             null,
+                                                             defArgTemplate,
+fa.defaultValueToken);
                         fa.compiledDefaultValue.name = argSTname;
                         fa.compiledDefaultValue.defineImplicitlyDefinedTemplates(group);
                         break;

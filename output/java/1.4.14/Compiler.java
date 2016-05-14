@@ -55,14 +55,12 @@ public class Compiler {
                                                                                                                           put("null", Interpreter.Option.NULL);
                                                                                                                           put("separator", Interpreter.Option.SEPARATOR);
                                                                                                                           put("wrap", Interpreter.Option.WRAP);
-                                                                                                                      }
-                                                                           };
+                                                                                                                      }};
     public static final int NUM_OPTIONS = supportedOptions.size();
     public static final Map<String, String> defaultOptionValues = new HashMap<String, String>() {{
                                                                                                      put("anchor", "true");
                                                                                                      put("wrap", "\n");
-                                                                                                 }
-                                                                  };
+                                                                                                 }};
     public static Map<String, Short> funcs = new HashMap<String, Short>() {{
                                                                                put("first", Bytecode.INSTR_FIRST);
                                                                                put("last", Bytecode.INSTR_LAST);
@@ -73,8 +71,7 @@ public class Compiler {
                                                                                put("length", Bytecode.INSTR_LENGTH);
                                                                                put("strlen", Bytecode.INSTR_STRLEN);
                                                                                put("reverse", Bytecode.INSTR_REVERSE);
-                                                                           }
-                                             };
+                                                                           }};
 
     /** Name subtemplates {@code _sub1}, {@code _sub2}, ... */
     public static int subtemplateCount = 0;
@@ -109,10 +106,14 @@ public class Compiler {
                               String template,
                               Token templateToken) {
         ANTLRStringStream is = new ANTLRStringStream(template);
-        is.name = srcName!=null ?srcName :name;
+        is.name = srcName !=null ?srcName :name;
         STLexer lexer;
-        if ( templateToken!=null && templateToken.getType()== GroupParser.BIGSTRING_NO_NL ) {
-            lexer = new STLexer(group.errMgr, is, templateToken, group.delimiterStartChar, group.delimiterStopChar) {
+        if ( templateToken !=null && templateToken.getType()== GroupParser.BIGSTRING_NO_NL ) {
+            lexer = new STLexer(group.errMgr,
+                                is,
+                                templateToken,
+                                group.delimiterStartChar,
+                                group.delimiterStopChar) {
                 /** Throw out \n and indentation tokens inside BIGSTRING_NO_NL */
                         @Override
                         public Token nextToken() {
@@ -125,7 +126,11 @@ public class Compiler {
                     };
         }
         else {
-            lexer = new STLexer(group.errMgr, is, templateToken, group.delimiterStartChar, group.delimiterStopChar);
+            lexer = new STLexer(group.errMgr,
+                                is,
+                                templateToken,
+                                group.delimiterStartChar,
+                                group.delimiterStopChar);
         }
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         STParser p = new STParser(tokens, group.errMgr, templateToken);

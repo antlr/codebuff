@@ -4,8 +4,7 @@ select * from SQLSpaceStats a
         select Server_Name, dbname, flag, FileID, FileGroup, total_space, usedspace, freespace, freepct, Name, [FileName], LastUpdate, max(seq_num) AS max_seq_num
             from SQLSpaceStats
                                                            group by Server_Name, dbname, flag, FileID, FileGroup, total_space, usedspace, freespace, freepct, Name, LastUpdate, [FileName]
-                                                           having count(*) > 1
-        ) b
+                                                           having count(*) > 1) b
     on a.Server_Name = b.Server_Name
        and a.dbname = b.dbname and a.flag = b.flag
        and a.FileID = b.FileID
@@ -16,8 +15,7 @@ select * from SQLSpaceStats a
        AND a.freepct = b.freepct
        AND a.Name = b.Name
        AND a.[FileName] = b.[FileName]
-        AND a.LastUpdate = b.LastUpdate
-    AND a.seq_num < b.max_seq_num
+        AND a.LastUpdate = b.LastUpdate AND a.seq_num < b.max_seq_num
 
 ----------------------------------------------------------
 

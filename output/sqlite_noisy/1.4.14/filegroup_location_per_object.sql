@@ -2,7 +2,8 @@
 This script generates filegroup listing on a given database for each table within the database.
 */
 
-select 'Object Name' = case si.IndID when 1 then so.Name else si.Name end,
+select 'Object Name' = case si.IndID when 1 then so.Name
+                                             else si.Name end,
 'Object Type' = case when si.IndID < 2 then 'Table' else 'Index' end
         ,'Table Name' = case when si.IndID > 1 then so.Name else ' ' end,
 'FileGroup Name' = sfg.GroupName,

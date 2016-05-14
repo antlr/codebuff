@@ -36,7 +36,7 @@ public enum ErrorType {
     // COMPILE-TIME SYNTAX/SEMANTIC ERRORS SYNTAX_ERROR("%s"), TEMPLATE_REDEFINITION("redefinition of template %s"), EMBEDDED_REGION_REDEFINITION("region %s is embedded and thus already implicitly defined"), REGION_REDEFINITION("redefinition of region %s"), MAP_REDEFINITION("redefinition of dictionary %s"), ALIAS_TARGET_UNDEFINED("cannot alias %s to undefined template: %s"), TEMPLATE_REDEFINITION_AS_MAP("redefinition of template %s as a map"), LEXER_ERROR("%s"), NO_DEFAULT_VALUE("missing dictionary default value"), NO_SUCH_FUNCTION("no such function: %s"), NO_SUCH_REGION("template %s doesn't have a region called %s"), NO_SUCH_OPTION("no such option: %s"), INVALID_TEMPLATE_NAME("invalid template name or path: %s"), ANON_ARGUMENT_MISMATCH("anonymous template has %s arg(s) but mapped across %s value(s)"), REQUIRED_PARAMETER_AFTER_OPTIONAL("required parameters (%s) must appear before optional parameters"),
 
     // INTERNAL ERRORS INTERNAL_ERROR("%s"), WRITE_IO_ERROR("error writing output caused by"), CANT_LOAD_GROUP_FILE("can't load group file %s");
-public String message;
+    public String message;
     ErrorType(String m) {
         message = m;
     }

@@ -32,18 +32,18 @@ FROM SQLSpaceStats a
         HAVING count(*) > 1
     ) b
         ON a.Server_Name = b.Server_Name
-           AND a.dbname = b.dbname
-           AND a.flag = b.flag
-           AND a.FileID = b.FileID
-           AND a.FileGroup = b.FileGroup
-           AND a.total_space = b.total_space
-           AND a.usedspace = b.usedspace
-           AND a.freespace = b.freespace
-           AND a.freepct = b.freepct
-           AND a.Name = b.Name
-           AND a.[FileName] = b.[FileName]
-           AND a.LastUpdate = b.LastUpdate
-           AND a.seq_num < b.max_seq_num
+           AND a.dbname = b.dbname AND
+           a.flag = b.flag AND
+           a.FileID = b.FileID AND
+           a.FileGroup = b.FileGroup AND
+           a.total_space = b.total_space AND
+           a.usedspace = b.usedspace AND
+           a.freespace = b.freespace AND
+           a.freepct = b.freepct AND
+           a.Name = b.Name AND
+           a.[FileName] = b.[FileName] AND
+           a.LastUpdate = b.LastUpdate AND
+           a.seq_num < b.max_seq_num
 
 ----------------------------------------------------------
 

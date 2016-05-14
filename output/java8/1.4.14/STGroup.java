@@ -327,7 +327,11 @@ public class STGroup {
     public CompiledST defineTemplate(String templateName, String template) {
         if ( templateName.charAt(0)!='/' ) templateName = "/"+templateName;
         try {
-            CompiledST impl = defineTemplate(templateName, new CommonToken(GroupParser.ID, templateName), null, template, null);
+            CompiledST impl = defineTemplate(templateName,
+                                             new CommonToken(GroupParser.ID, templateName),
+                                             null,
+                                             template,
+                                             null);
             return impl;
         }
         catch (STException se) {
@@ -345,12 +349,16 @@ public class STGroup {
         List<FormalArgument> a = new ArrayList<FormalArgument>();
         for (String arg : args) {
             a.add(
-                new FormalArgument(arg));
+                new FormalArgument(arg)
+            );
         }
         return defineTemplate(name, new CommonToken(GroupParser.ID, name), a, template, null);
     }
 
-    public CompiledST defineTemplate(String fullyQualifiedTemplateName, Token nameT, List<FormalArgument> args, String template, Token templateToken) {
+    public CompiledST defineTemplate(String fullyQualifiedTemplateName,
+                                     Token nameT,
+                                     List<FormalArgument> args,
+                                     String template, Token templateToken) {
         if ( verbose ) System.out.println("defineTemplate("+fullyQualifiedTemplateName+")");
         if ( fullyQualifiedTemplateName==null || fullyQualifiedTemplateName.length()==0 ) {
             throw new IllegalArgumentException("empty template name");
@@ -361,7 +369,11 @@ public class STGroup {
         template = Misc.trimOneStartingNewline(template);
         template = Misc.trimOneTrailingNewline(template);
         // compile, passing in templateName as enclosing name for any embedded regions
-        CompiledST code = compile(getFileName(), fullyQualifiedTemplateName, args, template, templateToken);
+        CompiledST code = compile(getFileName(),
+                                  fullyQualifiedTemplateName,
+                                  args,
+                                  template,
+                                  templateToken);
         code.name = fullyQualifiedTemplateName;
         rawDefineTemplate(fullyQualifiedTemplateName, code, nameT);
         code.defineArgDefaultValueTemplates(this);
@@ -390,7 +402,11 @@ public class STGroup {
         CompiledST code = compile(getFileName(), enclosingTemplateName, null, template, templateToken);
         String mangled = getMangledRegionName(enclosingTemplateName, name);
         if ( lookupTemplate(mangled)==null ) {
-            errMgr.compileTimeError(ErrorType.NO_SUCH_REGION, templateToken, regionT, enclosingTemplateName, name);
+            errMgr.compileTimeError(ErrorType.NO_SUCH_REGION,
+                                    templateToken,
+                                    regionT,
+                                    enclosingTemplateName,
+                                    name);
             return new CompiledST();
         }
         code.name = mangled;
@@ -431,7 +447,10 @@ public class STGroup {
                     return;
                 }
                 else if ( code.regionDefType==ST.RegionType.IMPLICIT || prev.regionDefType==ST.RegionType.EXPLICIT ) {
-                         errMgr.compileTimeError(ErrorType.REGION_REDEFINITION, null, defT, getUnMangledTemplateName(name));
+                         errMgr.compileTimeError(ErrorType.REGION_REDEFINITION,
+                                                 null,
+                                                 defT,
+                                                 getUnMangledTemplateName(name));
                          return;
                 }
             }

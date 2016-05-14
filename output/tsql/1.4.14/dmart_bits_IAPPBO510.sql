@@ -8,17 +8,25 @@ SELECT
     , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate), 0), 114) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate), 0), 114) AS ReportLoadTime
+    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate,
+                                                LoadReportDBEndDate), 0), 114) AS ReportLoadTime
 FROM ClientConnection
-GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate, LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate
+GROUP BY Beta
+    , Status
+    , SSISInstanceID
+    , SourceDB
+    , LoadStageDBStartDate
+    , LoadStageDBEndDate
+    , LoadReportDBStartDate
+    , LoadReportDBEndDate
 ORDER BY Status
     ASC
 , SSISInstanceID
-    ASC
+ASC
 , Beta
-    ASC
+ASC
 , LoadStageDBStartDate
-    ASC
+ASC
 
 -------------------------------------------
 
@@ -257,7 +265,8 @@ SELECT
     , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
+    , DATEDIFF(minute, LoadReportDBStartDate,
+               LoadReportDBEndDate) AS ReportLoadTime
 FROM ClientConnection
 ORDER BY Beta, 3
 ----------------
@@ -272,7 +281,10 @@ WHERE ReportServer = 'PSLQRPT22'
 ---------------------------------------------
 
 UPDATE ClientConnection
-SET LoadStageDBStartDate = '2010-03-09 01:10:33.200', LoadStageDBEndDate = '2010-03-09 01:15:20.393', LoadReportDBStartDate = '2010-03-09 02:55:12.807', LoadReportDBEndDate = '2010-03-09 02:59:33.627'
+SET LoadStageDBStartDate = '2010-03-09 01:10:33.200'
+    , LoadStageDBEndDate = '2010-03-09 01:15:20.393'
+    , LoadReportDBStartDate = '2010-03-09 02:55:12.807'
+    , LoadReportDBEndDate = '2010-03-09 02:59:33.627'
 WHERE Beta = '0'
 
 UPDATE ClientConnection_test
@@ -280,11 +292,21 @@ SET SourceServer = 'IAPPBO510', CDCReportServer = 'IAPPBO510', Beta = '1'
 WHERE SourceDB = 'PADemoDU'
 
 UPDATE ClientConnection
-SET LoadStageDBStartDate = '2010-03-09 01:10:33.200', LoadStageDBEndDate = '2010-03-09 01:15:20.393', LoadReportDBStartDate = '2010-03-09 02:55:12.807', LoadReportDBEndDate = '2010-03-09 02:59:33.627', Status = '0'
+SET LoadStageDBStartDate = '2010-03-09 01:10:33.200'
+    , LoadStageDBEndDate = '2010-03-09 01:15:20.393'
+    , LoadReportDBStartDate = '2010-03-09 02:55:12.807'
+    , LoadReportDBEndDate = '2010-03-09 02:59:33.627'
+    , Status = '0'
 WHERE Beta = '0'
 
 UPDATE dbo.ClientConnection_test
-SET SourceServer = 'STGSQL613', StageDB = 'DMart_PADemoLP_Stage', CDCReportDB = 'DMart_CDCTest_Data', SourceDB = 'PADemoLP2', ClientID = '10024', StageServer = 'STGSQLDOC710', CDCReportServer = 'STGSQLDOC710'
+SET SourceServer = 'STGSQL613'
+    , StageDB = 'DMart_PADemoLP_Stage'
+    , CDCReportDB = 'DMart_CDCTest_Data'
+    , SourceDB = 'PADemoLP2'
+    , ClientID = '10024'
+    , StageServer = 'STGSQLDOC710'
+    , CDCReportServer = 'STGSQLDOC710'
 
 UPDATE ClientConnection_test
 SET Beta = 1
@@ -322,4 +344,9 @@ FROM ClientConnection_test
 ORDER BY Beta, SourceDB
 
 UPDATE dbo.ClientConnection_test
-SET LoanCurrentStartDate = '2013-04-21 14:39:24.897', LoanCurrentEndDate = '2013-04-26 14:39:24.897', LoanMasterStartDate = '2013-04-21 14:39:24.897', LoanMasterEndDate = '2013-04-26 14:39:24.897', LoanSecondaryStartDate = '2013-04-21 14:39:24.897', LoanSecondaryEndDate = '2013-04-26 14:39:24.897'
+SET LoanCurrentStartDate = '2013-04-21 14:39:24.897'
+    , LoanCurrentEndDate = '2013-04-26 14:39:24.897'
+    , LoanMasterStartDate = '2013-04-21 14:39:24.897'
+    , LoanMasterEndDate = '2013-04-26 14:39:24.897'
+    , LoanSecondaryStartDate = '2013-04-21 14:39:24.897'
+    , LoanSecondaryEndDate = '2013-04-26 14:39:24.897'

@@ -18,8 +18,8 @@ public class GrammarInvariance {
 		// SQL
 		LeaveOneOutValidator sqliteValidator = new LeaveOneOutValidator(SQLITE_CLEAN_DESCR.corpusDir, SQLITE_CLEAN_DESCR);
 		LeaveOneOutValidator tsqlValidator = new LeaveOneOutValidator(TSQL_CLEAN_DESCR.corpusDir, TSQL_CLEAN_DESCR);
-		Triple<List<Formatter>, List<Float>, List<Float>> sqliteResults = sqliteValidator.validateDocuments(false, true);
-		Triple<List<Formatter>, List<Float>, List<Float>> tsqlResults = tsqlValidator.validateDocuments(false, true);
+		Triple<List<Formatter>, List<Float>, List<Float>> sqliteResults = sqliteValidator.validateDocuments(false, null);
+		Triple<List<Formatter>, List<Float>, List<Float>> tsqlResults = tsqlValidator.validateDocuments(false, null);
 		List<Formatter> sqliteFormatters = sqliteResults.a;
 		List<Formatter> tsqlFormatters = tsqlResults.a;
 
@@ -48,8 +48,8 @@ public class GrammarInvariance {
 		distances.clear();
 		LeaveOneOutValidator javaValidator = new LeaveOneOutValidator(JAVA_DESCR.corpusDir, JAVA_DESCR);
 		LeaveOneOutValidator java8Validator = new LeaveOneOutValidator(JAVA8_DESCR.corpusDir, JAVA8_DESCR);
-		Triple<List<Formatter>, List<Float>, List<Float>> javaResults = javaValidator.validateDocuments(false, true);
-		Triple<List<Formatter>, List<Float>, List<Float>> java8Results = java8Validator.validateDocuments(false, true);
+		Triple<List<Formatter>, List<Float>, List<Float>> javaResults = javaValidator.validateDocuments(false, null);
+		Triple<List<Formatter>, List<Float>, List<Float>> java8Results = java8Validator.validateDocuments(false, null);
 		List<Formatter> javaFormatters = javaResults.a;
 		List<Formatter> java8Formatters = java8Results.a;
 

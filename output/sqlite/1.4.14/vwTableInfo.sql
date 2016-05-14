@@ -29,19 +29,17 @@ WHERE pr.principal_id = tbl.principal_id), SCHEMA_NAME(tbl.schema_id)) AS [Owner
     , CAST(CASE idx.index_id
            WHEN 1
                THEN 1
-           ELSE 0
-           END AS bit) AS [HasClusIdx]
+           ELSE 0 END AS bit) AS [HasClusIdx]
     , Coalesce((
 SELECT sum(spart.rows)
 FROM sys.partitions spart
 WHERE spart.object_id = tbl.object_id AND
       spart.index_id < 2), 0) AS [RowCount]
-    , Coalesce((SELECT Cast(v.low / 1024.0
-AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1
-           THEN a.used_pages WHEN p.index_id < 2
-           THEN a.data_pages
-                              ELSE 0
-                              END)
+    , Coalesce((SELECT Cast(v.low / 1024.0 AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1
+                                                       THEN a.used_pages WHEN p.index_id < 2
+                                                           THEN a.data_pages
+                                                                          ELSE 0
+                                                           END)
                 FROM sys.indexes AS i
                     JOIN sys.partitions AS p
                         ON p.object_id = i.object_id AND
@@ -49,12 +47,10 @@ AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1
                      JOIN sys.allocation_units AS a
                         ON a.container_id = p.partition_id
                 WHERE i.object_id = tbl.object_id), 0.0) AS [IndexKB]
-    , Coalesce((SELECT Cast(v.low / 1024.0
-AS FLOAT) * SUM(CASE WHEN a.type <> 1
-                   THEN a.used_pages WHEN p.index_id < 2
-                   THEN a.data_pages
-               ELSE 0
-               END)
+    , Coalesce((SELECT Cast(v.low / 1024.0 AS FLOAT) * SUM(CASE WHEN a.type <> 1
+                                                               THEN a.used_pages WHEN p.index_id < 2
+                                                               THEN a.data_pages
+                                                           ELSE 0 END)
                 FROM sys.indexes AS i
                     JOIN sys.partitions AS p
                         ON p.object_id = i.object_id AND
@@ -69,5 +65,5 @@ FROM sys.tables AS tbl
         ON (idx.object_id = tbl.object_id AND
             idx.index_id < 2)
                INNER JOIN master_dbo.spt_values v
-        ON (v.number = 1
-            AND v.type = 'E')
+        ON (v.number = 1 AND
+            v.type = 'E')

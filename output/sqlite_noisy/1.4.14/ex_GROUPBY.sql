@@ -1,11 +1,11 @@
 
-INSERT INTO girl(name, hair, did_date) VALUES ('Azure','Brunette',0);
+INSERT INTO girl (name,hair,did_date) VALUES ('Azure','Brunette',0);
 
-INSERT INTO girl(name, hair, did_date) VALUES ('Sarah','Brunette',1);
+INSERT INTO girl (name,hair,did_date) VALUES ('Sarah','Brunette',1);
 
-INSERT INTO girl(name, hair, did_date) VALUES ('Ashley','Brunette',1);
+INSERT INTO girl (name,hair,did_date) VALUES ('Ashley','Brunette',1);
 
-INSERT INTO girl(name, hair, did_date) VALUES ('Heather','Blonde',1);
+INSERT INTO girl (name,hair,did_date) VALUES ('Heather','Blonde',1);
 
 
 
@@ -38,7 +38,7 @@ GROUP BY g.hair
 
 SELECT g.hair
     , (COUNT(*)) AS girl_count
-    , (COUNT( CASE WHEN did_date = 1 THEN did_date ELSE NULL END )) AS did_date_count
-    , (COUNT( CASE WHEN did_date = 0 THEN did_date ELSE NULL END )) AS did_not_date_count
+    , (COUNT( CASE WHEN did_date = 1 THEN did_date ELSE NULL END)) AS did_date_count
+    , (COUNT( CASE WHEN did_date = 0 THEN did_date ELSE NULL END)) AS did_not_date_count
 FROM girl g
 GROUP BY g.hair

@@ -128,8 +128,12 @@ public class ObjectModelAdaptor implements ModelAdaptor {
             return method;
         }
         catch (NoSuchMethodException ex) {
+
+
         }
         catch (SecurityException ex) {
+
+
         }
         return null;
     }
@@ -143,8 +147,12 @@ public class ObjectModelAdaptor implements ModelAdaptor {
             return field;
         }
         catch (NoSuchFieldException ex) {
+
+
         }
         catch (SecurityException ex) {
+
+
         }
         return null;
     }

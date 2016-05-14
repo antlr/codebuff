@@ -21,9 +21,9 @@ when 6 then 1 else 0 end AS bit) AS [IsOffline]
 FROM    sys.filegroups AS g
     INNER JOIN
     sys.master_files AS s
-    ON (
-       (s.type = 2
-or s.type = 0) and s.database_id = db_id() and (s.drop_lsn IS NULL))
+    ON ((s.type = 2
+or s.type = 0) and s.database_id = db_id()
+        and (s.drop_lsn IS NULL))
     AND (s.data_space_id = g.data_space_id)
 ORDER BY [FileGroup_Name] ASC, [Name] ASC
 

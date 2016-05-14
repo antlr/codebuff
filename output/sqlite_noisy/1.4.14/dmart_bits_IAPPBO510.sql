@@ -58,7 +58,7 @@ SET Status = 0
 UPDATE ClientConnection_test
 SET Beta = '0'
 --WHERE Beta = '1'
-WHERE SourceDB IN ('PADemoDU', 'RLC', 'EliLillyFCU', 'GTE32')
+WHERE SourceDB IN ('PADemoDU', 'RLC', 'EliLillyFCU', 'GTE32' )
 
 SELECT ClientID
     , Status,

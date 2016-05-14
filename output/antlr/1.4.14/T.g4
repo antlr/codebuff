@@ -1,6 +1,5 @@
 grammar T;
 
-fragment
-F
-    :   X
+a
+    :   A
     ;

@@ -36,11 +36,7 @@ import static org.antlr.codebuff.misc.BuffUtils.map;
 
 public class LeaveOneOutValidator {
 	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
-
-	public static String outputDir = "output";
-
 	final Random random = new Random();
-
 
 	public String rootDir;
 	public LangDescriptor language;
@@ -52,28 +48,28 @@ public class LeaveOneOutValidator {
 	}
 
 	public Triple<Formatter,Float,Float> validateOneDocument(String fileToExclude,
-	                                                         boolean saveOutput,
+	                                                         String outputDir,
 	                                                         boolean collectAnalysis)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
 		return validate(language, documents, fileToExclude,
-		                Formatter.DEFAULT_K, saveOutput, true, collectAnalysis);
+		                Formatter.DEFAULT_K, outputDir, true, collectAnalysis);
 	}
 
 	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(boolean computeEditDistance,
-	                                                       boolean saveOutput)
+	                                                       String outputDir)
 		throws Exception
 	{
 		return validateDocuments(Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_HPOS,
-		                         computeEditDistance, saveOutput);
+		                         computeEditDistance, outputDir);
 	}
 
 	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(FeatureMetaData[] injectWSFeatures,
 	                                                                         FeatureMetaData[] alignmentFeatures,
 	                                                                         boolean computeEditDistance,
-	                                                                         boolean saveOutput)
+	                                                                         String outputDir)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
@@ -85,7 +81,7 @@ public class LeaveOneOutValidator {
 			Triple<Formatter,Float,Float> results =
 				validate(language, documents, documents.get(i).fileName,
 				         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
-				         saveOutput, computeEditDistance, false);
+				         outputDir, computeEditDistance, false);
 			formatters.add(results.a);
 			float editDistance = results.b;
 			distances.add(editDistance);
@@ -99,14 +95,14 @@ public class LeaveOneOutValidator {
 	                                                     List<InputDocument> documents,
 	                                                     String fileToExclude,
 	                                                     int k,
-	                                                     boolean saveOutput,
+	                                                     String outputDir,
 	                                                     boolean computeEditDistance,
 	                                                     boolean collectAnalysis)
 		throws Exception
 	{
 		return validate(language, documents, fileToExclude,
 		                k, Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_HPOS,
-		                saveOutput, computeEditDistance, collectAnalysis);
+		                outputDir, computeEditDistance, collectAnalysis);
 	}
 
 	public static Triple<Formatter,Float,Float> validate(LangDescriptor language,
@@ -115,7 +111,7 @@ public class LeaveOneOutValidator {
 	                                                     int k,
 	                                                     FeatureMetaData[] injectWSFeatures,
 	                                                     FeatureMetaData[] alignmentFeatures,
-	                                                     boolean saveOutput,
+	                                                     String outputDir,
 	                                                     boolean computeEditDistance,
 	                                                     boolean collectAnalysis)
 		throws Exception
@@ -141,7 +137,7 @@ public class LeaveOneOutValidator {
 		}
 		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
 		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
-		if ( saveOutput ) {
+		if ( outputDir!=null ) {
 			File dir = new File(outputDir+"/"+language.name+"/"+Tool.version);
 			if ( !dir.exists() ) {
 				dir.mkdirs();
@@ -170,7 +166,7 @@ public class LeaveOneOutValidator {
 			LangDescriptor language = languages[i];
 			String corpus = corpusDirs[i];
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpus, language);
-			Triple<List<Formatter>,List<Float>,List<Float>> results = validator.validateDocuments(true, true);
+			Triple<List<Formatter>,List<Float>,List<Float>> results = validator.validateDocuments(true, "/tmp");
 			List<Formatter> formatters = results.a;
 			List<Float> distances = results.b;
 			List<Float> errors = results.c;

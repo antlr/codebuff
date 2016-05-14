@@ -17,7 +17,6 @@ SELECT
     , DatabaseRole
 FROM SQLDBUsers
 WHERE ServerLogin LIKE '%Orphaned%'
-      AND DataBaseUserID NOT IN
-          ('cdc', 'guest', 'INFORMATION_SCHEMA', 'sys')
+      AND DataBaseUserID NOT IN ('cdc', 'guest', 'INFORMATION_SCHEMA', 'sys')
       AND ServerName NOT LIKE 'PSQLRPT21'
 ORDER BY 1, 3, 4

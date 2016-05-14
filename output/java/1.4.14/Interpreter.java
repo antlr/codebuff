@@ -58,14 +58,7 @@ import java.util.*;
 
 public class Interpreter {
 
-    public enum Option {
-
-        ANCHOR,
-        FORMAT,
-        NULL,
-        SEPARATOR,
-        WRAP
-    }
+    public enum Option { ANCHOR, FORMAT, NULL, SEPARATOR, WRAP }
 
     public static final int DEFAULT_OPERAND_STACK_SIZE = 100;
     public static final Set<String> predefinedAnonSubtemplateAttributes = new HashSet<String>() {
@@ -165,7 +158,9 @@ public class Interpreter {
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             pw.flush();
-            errMgr.runTimeError(this, scope, ErrorType.INTERNAL_ERROR, "internal error: "+sw.toString());
+            errMgr.runTimeError(this,
+                                scope,
+                                ErrorType.INTERNAL_ERROR, "internal error: "+sw.toString());
             return 0;
         }
     }
@@ -184,7 +179,7 @@ public class Interpreter {
         Object[] options;
         byte[] code = self.impl.instrs;        // which code block are we executing
         int ip = 0;
-        while ( ip <self.impl.codeSize ) {
+        while ( ip<self.impl.codeSize ) {
             if ( trace|| debug ) trace(scope, ip);
             short opcode = code[ip];
             //count[opcode]++;
@@ -245,7 +240,7 @@ public class Interpreter {
                 case Bytecode.INSTR_NEW_IND:
                     nargs = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
-                    name = (String) operands[ sp - nargs];
+                    name = (String) operands[ sp- nargs];
                     st = self.groupThatCreatedThisInstance.getEmbeddedInstanceOf(this, scope, name);
                     storeArgs(scope, nargs, st);
                     sp -= nargs;
@@ -316,7 +311,7 @@ public class Interpreter {
                     int nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<ST> templates = new ArrayList<ST>();
-                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[ sp - i]);
+                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[ sp- i]);
                     sp -= nmaps;
                     o = operands[sp--];
                     if ( o !=null ) rot_map(scope, o, templates);
@@ -326,7 +321,7 @@ public class Interpreter {
                     nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<Object> exprs = new ObjectList();
-                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[ sp - i]);
+                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[ sp- i]);
                     sp -= nmaps;
                     operands[++sp] = zip_map(scope, exprs, st);
                     break;
@@ -385,7 +380,11 @@ public class Interpreter {
                         operands[++sp] = ((String)o).trim();
                     }
                     else {
-                        errMgr.runTimeError(this, scope, ErrorType.EXPECTING_STRING, "trim", o.getClass().getName());
+                        errMgr.runTimeError(this,
+                                            scope,
+                                            ErrorType.EXPECTING_STRING,
+                                            "trim",
+                                            o.getClass().getName());
                         operands[++sp] = o;
                     }
                     break;
@@ -398,7 +397,11 @@ public class Interpreter {
                         operands[++sp] = ((String)o).length();
                     }
                     else {
-                        errMgr.runTimeError(this, scope, ErrorType.EXPECTING_STRING, "strlen", o.getClass().getName());
+                        errMgr.runTimeError(this,
+                                            scope,
+                                            ErrorType.EXPECTING_STRING,
+                                            "strlen",
+                                            o.getClass().getName());
                         operands[++sp] = 0;
                     }
                     break;
@@ -426,11 +429,11 @@ public class Interpreter {
                 case Bytecode.INSTR_DEDENT: out.popIndentation();
                                             break;
                 case Bytecode.INSTR_NEWLINE: try {
-                                                 if ( prevOpcode== Bytecode.INSTR_NEWLINE || prevOpcode== Bytecode.INSTR_INDENT || nwline>0) {
+                                                 if ( prevOpcode== Bytecode.INSTR_NEWLINE|| prevOpcode== Bytecode.INSTR_INDENT || nwline>0) {
                                                      out.write(Misc.newline);
                                                  }
                                                  nwline = 0;
-                                                 }
+                                             }
                                              catch (IOException ioe) {
                                                  errMgr.IOError(self, ErrorType.WRITE_IO_ERROR, ioe);
                                              }
@@ -633,8 +636,8 @@ public class Interpreter {
         if ( st.impl.formalArguments!=null ) nformalArgs = st.impl.formalArguments.size();
         int firstArg = sp - (nargs -1);
         int numToStore = Math.min(nargs, nformalArgs);
-        if ( st.impl.isAnonSubtemplate) nformalArgs-= predefinedAnonSubtemplateAttributes.size();
-        if ( nargs <(nformalArgs - st.impl.numberOfArgsWithDefaultValues)|| nargs> nformalArgs ) {
+        if ( st.impl.isAnonSubtemplate) nformalArgs -= predefinedAnonSubtemplateAttributes.size();
+        if ( nargs<(nformalArgs - st.impl.numberOfArgsWithDefaultValues) || nargs> nformalArgs ) {
             errMgr.runTimeError(this, scope, ErrorType.ARGUMENT_COUNT_MISMATCH, nargs, st.impl.name, nformalArgs);
         }
         if ( st.impl.formalArguments==null ) return;
@@ -684,12 +687,12 @@ public class Interpreter {
                 optionStrings[i] = toString(out, scope, options[i]);
             }
         }
-        if ( options !=null && options[Option.ANCHOR.ordinal()] !=null ) {
+        if ( options !=null && options[Option.ANCHOR.ordinal()]!=null ) {
             out.pushAnchorPoint();
         }
 
         int n = writeObject(out, scope, o, optionStrings);
-        if ( options !=null && options[Option.ANCHOR.ordinal()] !=null ) {
+        if ( options !=null && options[Option.ANCHOR.ordinal()]!=null ) {
             out.popAnchorPoint();
         }
         if ( debug ) {
@@ -706,14 +709,14 @@ public class Interpreter {
     protected int writeObject(STWriter out, InstanceScope scope, Object o, String[] options) {
         int n = 0;
         if ( o==null ) {
-            if ( options !=null && options[Option.NULL.ordinal()] !=null ) {
+            if ( options !=null && options[Option.NULL.ordinal()]!=null ) {
                 o = options[Option.NULL.ordinal()];
             }
             else return 0;
         }
         if ( o instanceof ST) {
             scope = new InstanceScope(scope, (ST)o);
-            if ( options !=null && options[Option.WRAP.ordinal()] !=null ) {
+            if ( options !=null && options[Option.WRAP.ordinal()]!=null ) {
                 // if we have a wrap string, then inform writer it
                 // might need to wrap
                 try {
@@ -748,7 +751,8 @@ public class Interpreter {
         while ( it.hasNext() ) {
             Object iterValue = it.next();
             // Emit separator if we're beyond first value
-            boolean needSeparator = seenAValue&& separator !=null &&            // we have a separator and (iterValue !=null ||           // either we have a value options[Option.NULL.ordinal()] !=null); // or no value but null option
+            boolean needSeparator = seenAValue&& separator !=null &&            // we have a separator and
+                                    (iterValue !=null ||           // either we have a value options[Option.NULL.ordinal()]!=null); // or no value but null option
             if ( needSeparator ) n += out.writeSeparator(separator);
             int nw = writeObject(out, scope, iterValue, options);
             if ( nw>0) seenAValue = true;
@@ -766,7 +770,7 @@ public class Interpreter {
         if ( r !=null ) v = r.toString(o, formatString, locale);
         else v = o.toString();
         int n;
-        if ( options !=null && options[Option.WRAP.ordinal()] !=null ) {
+        if ( options !=null && options[Option.WRAP.ordinal()]!=null ) {
             n = out.write(v, options[Option.WRAP.ordinal()]);
         }
         else {
@@ -885,9 +889,13 @@ public class Interpreter {
         // todo: track formal args not names for efficient filling of locals
         String[] formalArgumentNames = formalArguments.keySet().toArray(new String[formalArguments.size()]);
         int nformalArgs = formalArgumentNames.length;
-        if ( prototype.isAnonSubtemplate() ) nformalArgs-= predefinedAnonSubtemplateAttributes.size();
+        if ( prototype.isAnonSubtemplate() ) nformalArgs -= predefinedAnonSubtemplateAttributes.size();
         if ( nformalArgs != numExprs ) {
-            errMgr.runTimeError(this, scope, ErrorType.MAP_ARGUMENT_COUNT_MISMATCH, numExprs, nformalArgs);
+            errMgr.runTimeError(this,
+                                scope,
+                                ErrorType.MAP_ARGUMENT_COUNT_MISMATCH,
+                                numExprs,
+                                nformalArgs);
             // TODO just fill first n
             // truncate arg list to match smaller size
             int shorterSize = Math.min(formalArgumentNames.length, numExprs);
@@ -1099,7 +1107,7 @@ public class Interpreter {
         else if ( v instanceof Object[] ) i = ((Object[])v).length;
         else if ( v.getClass().isArray() ) i = Array.getLength(v);
         else if ( v instanceof Iterable || v instanceof Iterator ) {
-            Iterator<?> it = v instanceof Iterable ? ((Iterable<?>)v).iterator() : (Iterator<?>)v;
+            Iterator<?> it = v instanceof Iterable? ((Iterable<?>)v).iterator() : (Iterator<?>)v;
             i = 0;
             while ( it.hasNext() ) {
                 it.next();
@@ -1122,7 +1130,10 @@ public class Interpreter {
             }
             catch (Exception e) {
                 stw = new AutoIndentWriter(sw);
-                errMgr.runTimeError(this, scope, ErrorType.WRITER_CTOR_ISSUE, out.getClass().getSimpleName());
+                errMgr.runTimeError(this,
+                                    scope,
+                                    ErrorType.WRITER_CTOR_ISSUE,
+                                    out.getClass().getSimpleName());
             }
             if ( debug&& !scope.earlyEval ) {
                 scope = new InstanceScope(scope, scope.st);
@@ -1251,7 +1262,7 @@ public class Interpreter {
         }
         for (FormalArgument arg : invokedST.impl.formalArguments.values()) {
             // if no value for attribute and default arg, inject default arg into self
-            if ( invokedST.locals[arg.index] != ST.EMPTY_ATTR || arg.defaultValueToken==null ) {
+            if ( invokedST.locals[arg.index]!= ST.EMPTY_ATTR || arg.defaultValueToken==null ) {
                 continue;
             }
             //System.out.println("setting def arg "+arg.name+" to "+arg.defaultValueToken);
@@ -1267,8 +1278,9 @@ public class Interpreter {
                 // rather than setting x to the template for later
                 // eval.
                 String defArgTemplate = arg.defaultValueToken.getText();
-                if ( defArgTemplate.startsWith("{"+group.delimiterStartChar+"(")&& defArgTemplate.endsWith(")"+group.delimiterStopChar+"}") ) {
-                    invokedST.rawSetAttribute(arg.name, toString(out, new InstanceScope(scope, invokedST), defaultArgST));
+                if ( defArgTemplate.startsWith("{"+group.delimiterStartChar+"(") && defArgTemplate.endsWith(")"+group.delimiterStopChar+"}") ) {
+                    invokedST.rawSetAttribute(arg.name,
+                                              toString(out, new InstanceScope(scope, invokedST), defaultArgST));
                 }
                 else {
                     invokedST.rawSetAttribute(arg.name, defaultArgST);
@@ -1369,8 +1381,7 @@ public class Interpreter {
                 printForTrace(tr, scope, iterValue);
             }
             tr.append(" ]");
-        }
-        else {
+        } else {
             tr.append(" "+o);
         }
     }
@@ -1406,9 +1417,9 @@ public class Interpreter {
     }
 
     public static int getShort(byte[] memory, int index) {
-        int b1 = memory[index] & 0xFF; // mask off sign-extended bits
-        int b2 = memory[ index+1] & 0xFF;
-        return b1 <<(8* 1)| b2;
+        int b1 = memory[index]& 0xFF; // mask off sign-extended bits
+        int b2 = memory[ index+1]& 0xFF;
+        return b1<<(8* 1) | b2;
     }
 
     protected static class ObjectList extends ArrayList<Object> {

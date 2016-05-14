@@ -110,30 +110,30 @@ public class Trainer {
 	public static final int INDEX_PREV_FIRST_ON_LINE            = 1; // a \n right before this token?
 	public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR  = 2;
 	public static final int INDEX_CUR_TOKEN_TYPE                = 3;
-//	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
 	public static final int INDEX_MATCHING_TOKEN_STARTS_LINE    = 4;
-	public static final int INDEX_FIRST_ON_LINE		            = 5; // a \n right before this token?
-	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6; // -1 if we don't know; false means list but not big list
-	public static final int INDEX_LIST_ELEMENT_TYPE             = 7; // see LIST_PREFIX, etc...
-	public static final int INDEX_CUR_TOKEN_CHILD_INDEX         = 8; // left ancestor
-	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 9;
-	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 19; // left ancestor
-	public static final int INDEX_ANCESTORS_PARENT_RULE         = 11;
-	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 12;
-	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 13;
-	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 14;
-	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 15;
-	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 16;
-	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 17;
-	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 18;
-	public static final int INDEX_ANCESTORS_PARENT5_RULE        = 19;
-	public static final int INDEX_ANCESTORS_PARENT5_CHILD_INDEX = 20;
+	public static final int INDEX_MATCHING_TOKEN_ENDS_LINE      = 5;
+	public static final int INDEX_FIRST_ON_LINE		            = 6; // a \n right before this token?
+	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 7; // -1 if we don't know; false means list but not big list
+	public static final int INDEX_LIST_ELEMENT_TYPE             = 8; // see LIST_PREFIX, etc...
+	public static final int INDEX_CUR_TOKEN_CHILD_INDEX         = 9; // left ancestor
+	public static final int INDEX_EARLIEST_LEFT_ANCESTOR        = 10;
+	public static final int INDEX_ANCESTORS_CHILD_INDEX         = 11; // left ancestor
+	public static final int INDEX_ANCESTORS_PARENT_RULE         = 12;
+	public static final int INDEX_ANCESTORS_PARENT_CHILD_INDEX  = 13;
+	public static final int INDEX_ANCESTORS_PARENT2_RULE        = 14;
+	public static final int INDEX_ANCESTORS_PARENT2_CHILD_INDEX = 15;
+	public static final int INDEX_ANCESTORS_PARENT3_RULE        = 16;
+	public static final int INDEX_ANCESTORS_PARENT3_CHILD_INDEX = 17;
+	public static final int INDEX_ANCESTORS_PARENT4_RULE        = 18;
+	public static final int INDEX_ANCESTORS_PARENT4_CHILD_INDEX = 19;
+	public static final int INDEX_ANCESTORS_PARENT5_RULE        = 20;
+	public static final int INDEX_ANCESTORS_PARENT5_CHILD_INDEX = 21;
 
-	public static final int INDEX_INFO_FILE                     = 21;
-	public static final int INDEX_INFO_LINE                     = 22;
-	public static final int INDEX_INFO_CHARPOS                  = 23;
+	public static final int INDEX_INFO_FILE                     = 22;
+	public static final int INDEX_INFO_LINE                     = 23;
+	public static final int INDEX_INFO_CHARPOS                  = 24;
 
-	public static final int NUM_FEATURES                        = 24;
+	public static final int NUM_FEATURES                        = 25;
 	public static final int ANALYSIS_START_TOKEN_INDEX          = 1; // we use current and previous token in context so can't start at index 0
 
 	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
@@ -142,13 +142,14 @@ public class Trainer {
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(BOOL,  new String[] {"Pair", "strt\\n"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Pair", "end\\n"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(BOOL,  new String[] {"Big", "list"}, 2),
 		new FeatureMetaData(INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(INT,   new String[] {"token", "child index"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
 		FeatureMetaData.UNUSED,
-		FeatureMetaData.UNUSED,
+		new FeatureMetaData(RULE,  new String[] {"", "parent"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
@@ -168,6 +169,7 @@ public class Trainer {
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
+		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 4),
 		new FeatureMetaData(BOOL,  new String[] {"Big", "list"}, 1),
@@ -196,6 +198,7 @@ public class Trainer {
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
 		new FeatureMetaData(BOOL,  new String[] {"Pair", "strt\\n"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Pair", "end\\n"}, 1),
 		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(INT,   new String[] {"List", "elem."}, 1),
@@ -570,16 +573,13 @@ public class Trainer {
 			}
 		}
 
-		int matchingSymbolStartsLine = getMatchingSymbolStartsLine(corpus, doc, node);
-
 		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
 
-		int[] features = getContextFeatures(tokenToNodeMap, doc, i);
+		int[] features = getContextFeatures(corpus, tokenToNodeMap, doc, i);
 
 		setListInfoFeatures(corpus.tokenToListInfo, features, curToken);
 
 		features[INDEX_PREV_FIRST_ON_LINE]         = prevTokenStartsLine ? 1 : 0;
-		features[INDEX_MATCHING_TOKEN_STARTS_LINE] = matchingSymbolStartsLine;
 		features[INDEX_FIRST_ON_LINE]              = curTokenStartsNewLine ? 1 : 0;
 
 		return features;
@@ -588,7 +588,8 @@ public class Trainer {
 	/** Get the token type and tree ancestor features. These are computed
 	 *  the same for both training and formatting.
 	 */
-	public static int[] getContextFeatures(Map<Token, TerminalNode> tokenToNodeMap,
+	public static int[] getContextFeatures(Corpus corpus,
+	                                       Map<Token, TerminalNode> tokenToNodeMap,
 	                                       InputDocument doc,
 	                                       int i)
 	{
@@ -644,6 +645,9 @@ public class Trainer {
 		features[INDEX_ANCESTORS_PARENT4_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent4);
 		features[INDEX_ANCESTORS_PARENT5_RULE]        = earliestLeftAncestorParent5!=null ? rulealt(earliestLeftAncestorParent5) : -1;
 		features[INDEX_ANCESTORS_PARENT5_CHILD_INDEX] = getChildIndexOrListMembership(earliestLeftAncestorParent5);
+
+		features[INDEX_MATCHING_TOKEN_STARTS_LINE] = getMatchingSymbolStartsLine(corpus, doc, node);
+		features[INDEX_MATCHING_TOKEN_ENDS_LINE]   = getMatchingSymbolEndsLine(corpus, doc, node);
 
 		features[INDEX_INFO_FILE]    = 0; // dummy; _toString() dumps filename w/o this value; placeholder for col in printout
 		features[INDEX_INFO_LINE]    = curToken.getLine();
@@ -722,6 +726,28 @@ public class Trainer {
 			}
 			else { // matchingLeftToken must be first in file
 				return 1;
+			}
+		}
+		return NOT_PAIR;
+	}
+
+	public static int getMatchingSymbolEndsLine(Corpus corpus,
+	                                            InputDocument doc,
+	                                            TerminalNode node)
+	{
+		TerminalNode matchingLeftNode = getMatchingLeftSymbol(corpus, doc, node);
+		if ( matchingLeftNode != null ) {
+			Token matchingLeftToken = matchingLeftNode.getSymbol();
+			int i = matchingLeftToken.getTokenIndex();
+			doc.tokens.seek(i);
+			Token tokenAfterMatchingToken = doc.tokens.LT(2); // LT(1) is current token
+//			System.out.printf("doc=%s node=%s, pair=%s, after=%s\n",
+//			                  new File(doc.fileName).getName(), node.getSymbol(), matchingLeftToken, tokenAfterMatchingToken);
+			if ( tokenAfterMatchingToken!=null ) {
+				if ( tokenAfterMatchingToken.getType()==Token.EOF ) {
+					return 1;
+				}
+				return tokenAfterMatchingToken.getLine()>matchingLeftToken.getLine() ? 1 : 0;
 			}
 		}
 		return NOT_PAIR;
