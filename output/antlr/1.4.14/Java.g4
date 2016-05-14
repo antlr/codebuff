@@ -164,7 +164,8 @@ memberDeclaration
  */
 
 methodDeclaration
-    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')* ('throws' qualifiedNameList)? (methodBody | ';')
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
+        ('throws' qualifiedNameList)? (methodBody | ';')
     ;
 
 genericMethodDeclaration
@@ -209,7 +210,8 @@ constantDeclarator
 // see matching of [] comment in methodDeclaratorRest
 
 interfaceMethodDeclaration
-    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')* ('throws' qualifiedNameList)? ';'
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
+        ('throws' qualifiedNameList)? ';'
     ;
 
 genericInterfaceMethodDeclaration
@@ -233,7 +235,8 @@ variableInitializer
     ;
 
 arrayInitializer
-    :   '{' (variableInitializer (',' variableInitializer)* (',')?)? '}'
+    :   '{' (variableInitializer (',' variableInitializer)*
+             (',')?)? '}'
     ;
 
 enumConstantName
@@ -278,7 +281,8 @@ formalParameters
     ;
 
 formalParameterList
-    :   formalParameter (',' formalParameter)* (',' lastFormalParameter)?
+    :   formalParameter (',' formalParameter)*
+        (',' lastFormalParameter)?
     |   lastFormalParameter
     ;
 
@@ -560,7 +564,8 @@ innerCreator
 arrayCreatorRest
     :   '['
         (   ']' ('[' ']')* arrayInitializer
-        |   expression ']' ('[' expression ']')* ('[' ']')*
+        |   expression ']' ('[' expression ']')*
+            ('[' ']')*
         )
     ;
 

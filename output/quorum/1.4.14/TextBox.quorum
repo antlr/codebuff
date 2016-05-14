@@ -205,6 +205,7 @@ class TextBox is Panel, KeyboardListener
             end
             responseStr = preText + ke:ToText(ke:keyCode, ShiftPressed) + postText
             textChanged = true
+
             cursorIndex = cursorIndex + 1
             cursorMoved = true
         elseif (ke:keyCode >= ke:A and ke:keyCode <= ke:Z) or IsPunctuation(ke:keyCode)
@@ -219,6 +220,7 @@ class TextBox is Panel, KeyboardListener
             end
             responseStr = preText + ke:ToText(ke:keyCode, ShiftPressed) + postText
             textChanged = true
+
             cursorIndex = cursorIndex + 1
             cursorMoved = true
         elseif ke:keyCode = ke:SPACE
@@ -233,6 +235,7 @@ class TextBox is Panel, KeyboardListener
             end
             responseStr = preText + " " + postText
             textChanged = true
+
             cursorIndex = cursorIndex + 1
             cursorMoved = true
         elseif ke:keyCode = ke:LEFT
@@ -261,6 +264,7 @@ class TextBox is Panel, KeyboardListener
                 responseStr = preText + postText
                 cursorIndex = cursorIndex -1
                 textChanged = true
+
                 cursorMoved = true
             end
 
@@ -281,6 +285,7 @@ class TextBox is Panel, KeyboardListener
                 // re-evaluate the cursor's position because the text has moved.
 
                 textChanged = true
+
                 cursorMoved = true
             end
         end

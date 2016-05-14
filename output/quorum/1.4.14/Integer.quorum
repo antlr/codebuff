@@ -46,7 +46,7 @@ class Integer is Object
                   SetValueNative(i)
               end
 
-              private system action SetValueNative(integer i)
+    private system action SetValueNative(integer i)
 
     /*
         This action gets the value from the integer object.

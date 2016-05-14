@@ -209,7 +209,7 @@ public class AutoIndentWriter implements STWriter {
                          out.write(c);
                          charPosition++;
                          charIndex++;
-                     }
+                }
             }
         }
         return n;
@@ -230,7 +230,7 @@ public class AutoIndentWriter implements STWriter {
         int indentWidth = n;
         if ( anchors_sp>=0 && anchors[anchors_sp]> indentWidth ) {
             int remainder = anchors[anchors_sp]-indentWidth;
-            for (int i = 1; i<=remainder; i++) out.write(' ');
+            for (int i = 1; i<= remainder; i++) out.write(' ');
             n += remainder;
         }
         charPosition += n;

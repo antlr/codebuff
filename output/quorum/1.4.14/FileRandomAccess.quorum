@@ -148,7 +148,7 @@ class FileRandomAccess is FileRandomAccessBlueprint
      */
 
 
-                       system action Close()
+    system action Close()
 
     /*
         Get the current position in the file. With random access files, it is
@@ -185,7 +185,7 @@ class FileRandomAccess is FileRandomAccessBlueprint
      */
 
 
-                       system action GetPosition() returns number
+    system action GetPosition() returns number
 
     // The native implementation of SetPosition
 
@@ -271,7 +271,7 @@ class FileRandomAccess is FileRandomAccessBlueprint
      */
 
 
-                       system action IsAtEndOfFile() returns boolean
+    system action IsAtEndOfFile() returns boolean
 
     /*
         This is a convenience action. Calling this action is the same as

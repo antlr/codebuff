@@ -149,7 +149,7 @@ public class CompilationState {
         //System.out.println("before insert of "+opcode+"("+s+"):"+ Arrays.toString(impl.instrs));
         ensureCapacity(1+Bytecode.OPND_SIZE_IN_BYTES);
         int instrSize = 1 +Bytecode.OPND_SIZE_IN_BYTES;
-        System.arraycopy(impl.instrs, addr, impl.instrs, addr+instrSize, ip- addr); // make room for opcode, opnd
+        System.arraycopy(impl.instrs, addr, impl.instrs, addr+instrSize, ip-addr); // make room for opcode, opnd
         int save = ip;
         ip = addr;
         emit1(null, opcode, s);

@@ -564,6 +564,7 @@ class List<Type> is ListBlueprint<Type>
                      integer i = 0
                      ListNode<Type> current = head
                      ListNode<Type> result = undefined
+
                      repeat while current not= undefined
                          Type type = current:value
 

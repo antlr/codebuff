@@ -106,7 +106,7 @@ public class Compiler {
                               String template,
                               Token templateToken) {
         ANTLRStringStream is = new ANTLRStringStream(template);
-        is.name = srcName !=null ?srcName :name;
+        is.name = srcName !=null ? srcName : name;
         STLexer lexer;
         if ( templateToken !=null && templateToken.getType()== GroupParser.BIGSTRING_NO_NL ) {
             lexer = new STLexer(group.errMgr,

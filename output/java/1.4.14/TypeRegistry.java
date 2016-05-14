@@ -135,7 +135,7 @@ public class TypeRegistry <V> implements Map<Class<?>, V> {
                 j++;
             }
             assert j>0;
-            if ( j!=1 ) {
+            if ( j!= 1 ) {
                 StringBuilder builder = new StringBuilder();
                 builder.append(String.format("The class '%s' does not match a single item in the registry. The %d ambiguous matches are:", keyClass.getName(), j));
                 for (int i = 0; i< j; i++) {

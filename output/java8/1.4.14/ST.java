@@ -287,7 +287,7 @@ public class ST {
         }
         else {
                  multi.add(value);
-             }
+        }
         return this;
     }
 
@@ -420,7 +420,7 @@ public class ST {
             // must convert curvalue existing to list
                  multi = new AttributeList(); // make list to hold multiple values
                  multi.add(curvalue);                 // add previous single-valued attribute
-             }
+        }
         return multi;
     }
 

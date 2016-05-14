@@ -66,7 +66,6 @@ FROM opsinfo_ops_dbo.clients
 WHERE client_name LIKE '%Merrimack%'
 ----------------------------------------------
 
-
 SELECT
     Client_id
     , SourceServer
@@ -144,7 +143,6 @@ WHERE SourceDB = 'HiwayCU'
 UPDATE ClientConnection
 SET Client_ID = '228'
 WHERE SourceDB = 'RLC'
-
 
 SELECT
     SUM(StageLoadTime)

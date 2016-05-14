@@ -121,7 +121,7 @@ private system action StopNative()
 
 
 private action ComputeNoteSeconds(number length) returns number
-   number beatsPerSecond = beatsPerMinute /60.0
+   number beatsPerSecond = beatsPerMinute / 60.0
    number ticksPerSecond = beatsPerSecond * quarterNote
    number noteLen = length / ticksPerSecond
    return noteLen

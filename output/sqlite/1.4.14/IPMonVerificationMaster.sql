@@ -6,7 +6,7 @@ FROM t_server t
     INNER JOIN
 t_server_type_assoc tsta ON t.server_id = tsta.server_id
 WHERE t.active = 1
-      AND tsta.type_id IN ( '1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+      AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
       AND t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
@@ -24,7 +24,7 @@ WHERE t.active = 1
                                  t_server_type_assoc tsta ON t.server_id = tsta.server_id
                             WHERE l.name LIKE '%PING%' AND
                                   t.environment_id = 0
-                                  AND tsta.type_id IN ( '1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+                                  AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
                                   AND g.groupname IN ('Prod Ping')
                                   AND t.active = 1
       )
@@ -40,7 +40,7 @@ FROM t_server t
     INNER JOIN
      t_server_type_assoc tsta ON t.server_id = tsta.server_id
 WHERE t.active = 1
-      AND tsta.type_id IN ( '1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+      AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
       AND t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
@@ -58,7 +58,7 @@ WHERE t.active = 1
                t_server_type_assoc tsta ON t.server_id = tsta.server_id
           WHERE l.name LIKE '%Remote Procedure Call%'
                 AND t.environment_id = 0
-                AND tsta.type_id IN ( '1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+                AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
                 AND g.groupname IN ('Prod O/S Services')
                 AND t.active = 1
       ) UNION
@@ -72,7 +72,7 @@ FROM t_server t
     INNER JOIN
      t_server_type_assoc tsta ON t.server_id = tsta.server_id
 WHERE t.active = 1
-      AND tsta.type_id IN ( '1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+      AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
       AND t.environment_id = 0
       -- exclude servers that don't meet the requirements
       AND t.server_name NOT IN
@@ -90,7 +90,7 @@ WHERE t.active = 1
                t_server_type_assoc tsta ON t.server_id = tsta.server_id
           WHERE l.name LIKE '%Task Scheduler%' AND
                 t.environment_id = 0
-                AND tsta.type_id IN ( '1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+                AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
                 AND g.groupname IN ('Prod O/S Services')
                 AND t.active = 1
       ) UNION    ALL
@@ -231,7 +231,7 @@ FROM t_server t
     INNER JOIN
      t_server_type_assoc tsta ON t.server_id = tsta.server_id
 WHERE t.active = 1
-      AND tsta.type_id IN ( '2', '4', '30', '31')
+      AND tsta.type_id IN ('2', '4', '30', '31')
       --Web, Connection, FTP, Internal FTP server
       AND t.environment_id = 0
       -- exclude servers that don't meet the requirements
@@ -253,7 +253,7 @@ AND t.server_name NOT IN
 --where l.name like '%IIS Admin Service%'
                                      WHERE l.name LIKE '%IIS Admin%' AND
                                            t.environment_id = 0
-                                           AND tsta.type_id IN ( '2', '4', '30', '31')
+                                           AND tsta.type_id IN ('2', '4', '30', '31')
           --Web, Connection, FTP, Internal FTP server
                                            AND g.groupname IN ('Prod IIS Services')
                                            AND t.active = 1)
@@ -309,7 +309,7 @@ FROM t_server t
     INNER JOIN
      t_server_type_assoc tsta ON t.server_id = tsta.server_id
 WHERE t.active = 1
-      AND tsta.type_id IN ( '4', '30', '31') --Connection, FTP or Internal FTP
+      AND tsta.type_id IN ('4', '30', '31') --Connection, FTP or Internal FTP
       AND t.environment_id = 0
       AND t.server_name NOT IN (
           SELECT DISTINCT l.address
@@ -323,7 +323,7 @@ WHERE t.active = 1
                INNER JOIN
                t_server_type_assoc tsta ON t.server_id = tsta.server_id
           WHERE l.name LIKE '%ftp' AND
-                t.environment_id = 0 AND tsta.type_id IN ( '4', '30', '31')
+                t.environment_id = 0 AND tsta.type_id IN ('4', '30', '31')
           --Connection, FTP or Internal FTP
                 AND g.groupname IN ('Prod FTP Port')
                 AND t.active = 1

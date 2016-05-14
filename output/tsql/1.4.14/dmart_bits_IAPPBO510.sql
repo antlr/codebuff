@@ -107,8 +107,8 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
-            , COUNT(CASE WHEN Status = 4
-AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -124,8 +124,8 @@ AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status3
 --, COUNT ( CASE WHEN Status = 4 THEN Status ELSE NULL END ) AS Status4
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
@@ -149,8 +149,8 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
-            , COUNT(CASE WHEN Status = 4
-AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -165,8 +165,8 @@ AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection

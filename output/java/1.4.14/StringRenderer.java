@@ -88,7 +88,7 @@ public class StringRenderer implements AttributeRenderer {
                 default:
                     boolean control = c<' '; // 32
                     boolean aboveASCII = c>126;
-                    if ( control|| aboveASCII ) {
+                    if ( control || aboveASCII ) {
                         buf.append("&#");
                         buf.append((int)c);
                         buf.append(";");

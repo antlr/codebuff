@@ -14,7 +14,8 @@ FROM
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
             , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+                              CONVERT(DATE, LoadReportDBEndDate) <
+                              CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
 --, COUNT ( CASE WHEN Status = 4 AND LoadReportDBEndDate < GETDATE() THEN Status ELSE NULL END ) AS OldStatus4

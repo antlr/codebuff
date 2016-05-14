@@ -95,7 +95,7 @@ public class JTreeScopeStackModel implements TreeModel {
                         i++;
                     }
                 }
-                if ( locations.length() >0 ) {
+                if ( locations.length()>0 ) {
                     descr = a+" = "+attrs.get(a)+" @ "+locations.toString();
                 }
                 else {

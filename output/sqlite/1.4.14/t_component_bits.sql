@@ -23,7 +23,7 @@ SELECT DISTINCT
     s.server_id
        , s.server_name
     , pca.proc_controller_id
-       , pc.name --, csa.server_id, c.component_name, c.component_id
+    , pc.name --, csa.server_id, c.component_name, c.component_id
 FROM dbo.t_server s
     INNER JOIN dbo.t_proc_controller_assoc pca
         ON pca.server_id = s.server_id
@@ -57,7 +57,7 @@ SELECT DISTINCT
     s.server_name
        , pc.name
     , e.environment_name
-       , pc.component_id
+    , pc.component_id
 FROM dbo.t_server s
     INNER JOIN dbo.t_environment e
         ON s.environment_id = e.environment_id
@@ -89,7 +89,7 @@ SELECT DISTINCT
     s.server_name
        , s.server_id
     , c.component_name
-       , c.component_id
+    , c.component_id
        , q.queue_name
        , q.queue_id
        , cqa.assoc_id
@@ -108,7 +108,7 @@ SELECT DISTINCT
     s.server_name
        , s.server_id
     , q.queue_name
-       , q.queue_id
+    , q.queue_id
        , qsa.LastUpdate
 FROM dbo.t_server s
     INNER JOIN dbo.t_queue_server_assoc qsa
@@ -129,7 +129,7 @@ SELECT DISTINCT
     q.queue_name
        , qsa.queue_id
     , s.server_name
-       , qsa.LastUpdate
+    , qsa.LastUpdate
 FROM dbo.t_queue q
     INNER JOIN dbo.t_queue_server_assoc qsa
         ON q.queue_id = qsa.queue_id

@@ -6,7 +6,6 @@ WHERE counter IN ('optimizations', 'elapsed time', 'trivial plan', 'tables', 'in
 ------------------------------------------------------------------------
 -- Retrieve Parallel Statements With the Highest Worker Time
 
-
 SELECT
     qs.total_worker_time
     , qs.total_elapsed_time

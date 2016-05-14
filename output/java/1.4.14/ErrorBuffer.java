@@ -36,6 +36,7 @@ import java.util.List;
 
 public class ErrorBuffer implements STErrorListener {
     public List<STMessage> errors = new ArrayList<STMessage>();
+
     @Override
     public void compileTimeError(STMessage msg) {
         errors.add(msg);

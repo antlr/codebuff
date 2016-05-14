@@ -700,7 +700,7 @@ LongSuffix
 
 fragment
 LongLongSuffix
-    :   'll'| 'LL'
+    :   'll' | 'LL'
     ;
 
 fragment
@@ -735,7 +735,7 @@ ExponentPart
 
 fragment
 Sign
-    :   '+'| '-'
+    :   '+' | '-'
     ;
 
 fragment
@@ -762,7 +762,7 @@ HexadecimalDigitSequence
 
 fragment
 FloatingSuffix
-    :   'f'| 'l' | 'F' | 'L'
+    :   'f' | 'l' | 'F' | 'L'
     ;
 
 fragment
@@ -811,7 +811,7 @@ HexadecimalEscapeSequence
 StringLiteral : EncodingPrefix? '"' SCharSequence? '"' ;
 fragment
 EncodingPrefix
-    :   'u8'| 'u' | 'U' | 'L'
+    :   'u8' | 'u' | 'U' | 'L'
     ;
 
 fragment

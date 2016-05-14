@@ -3,11 +3,13 @@ http://www.sqlservercentral.com/articles/T-SQL/62159/
 */
 
 CREATE
-TABLE [dbo].[Items]([ItemId] [int]
+TABLE [dbo].[Items]
+([ItemId] [int]
 NOT NULL, [Item] [varchar](100)
 
               NOT NULL)
-CREATE TABLE [dbo].[PriceHistory]([ItemId] [int]
+CREATE TABLE [dbo].[PriceHistory]
+([ItemId] [int]
 NOT NULL, [PriceStartDate] [datetime]
 NOT NULL, [Price] [decimal](10, 2)
 

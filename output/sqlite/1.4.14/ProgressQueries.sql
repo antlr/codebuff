@@ -88,7 +88,8 @@ SELECT
     CASE WHEN CAST(Beta AS VARCHAR) IS NULL
         THEN 'Grand Total'
     ELSE CAST(Beta AS VARCHAR) END AS Beta
-    , CASE WHEN SourceDB IS NULL
+    , CASE
+      WHEN SourceDB IS NULL
           THEN 'Beta Group Total'
       ELSE SourceDB END AS SourceDB
 --, LoadStageDBStartDate

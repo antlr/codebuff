@@ -32,14 +32,11 @@ ORDER BY LastUpdate
     DESC
 --------------------------------------------------------------------------
 
-SELECT 'dbcc showcontig (' + CONVERT(varchar(20), i.id)
-       +
+SELECT 'dbcc showcontig (' + CONVERT(varchar(20), i.id) +
        ',' + -- table id
-       CONVERT(varchar(20), i.indid)
-       +
+       CONVERT(varchar(20), i.indid) +
        ') -- ' + -- index id
-       object_name(i.id)
-       +
+       object_name(i.id) +
        '.' + -- table name i.name -- index name
 FROM sysobjects o
     INNER JOIN sysindexes i ON (o.id = i.id)

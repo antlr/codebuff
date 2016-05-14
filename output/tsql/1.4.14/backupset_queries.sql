@@ -94,7 +94,7 @@ UNION
 
 SELECT
     CONVERT(CHAR(100), SERVERPROPERTY('Servername'))    AS Server
-    , master_dbo_sysdatabases.NAME AS database_name
+    , master_dbo_sysdatabases.NAME                                AS database_name
     , NULL    AS [Last Data Backup Date]
     , 9999    AS [Backup Age (Hours)]
 FROM master_dbo_sysdatabases

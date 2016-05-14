@@ -93,6 +93,7 @@ GROUP BY msdb_dbo_backupset_database_name
 UNION
 
 --Databases without any backup history
+
 SELECT
     CONVERT(CHAR(100), SERVERPROPERTY('Servername'))    AS Server
     , master_dbo_sysdatabases.NAME AS database_name

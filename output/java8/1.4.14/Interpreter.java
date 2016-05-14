@@ -507,7 +507,7 @@ public class Interpreter {
                     // Else, the attribute has an existing value, set arg.
                     else if ( o!= ST.EMPTY_ATTR ) {
                              attrs.put(arg.name, o);
-                         }
+                    }
                 }
                 catch (STNoSuchAttributeException nsae) {
                     // if no such attribute exists for arg.name, set parameter
@@ -966,7 +966,7 @@ public class Interpreter {
         if ( v instanceof List ) return ((List<?>)v).get(((List<?>)v).size()-1);
         else if ( v.getClass().isArray() ) {
                  return Array.get(v, Array.getLength(v)-1);
-             }
+        }
         Object last = v;
         v = convertAnythingIteratableToIterator(scope, v);
         if ( v instanceof Iterator ) {

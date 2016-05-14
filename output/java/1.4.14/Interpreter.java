@@ -240,7 +240,7 @@ public class Interpreter {
                 case Bytecode.INSTR_NEW_IND:
                     nargs = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
-                    name = (String) operands[ sp- nargs];
+                    name = (String) operands[ sp-nargs];
                     st = self.groupThatCreatedThisInstance.getEmbeddedInstanceOf(this, scope, name);
                     storeArgs(scope, nargs, st);
                     sp -= nargs;
@@ -311,7 +311,7 @@ public class Interpreter {
                     int nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<ST> templates = new ArrayList<ST>();
-                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[ sp- i]);
+                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[ sp-i]);
                     sp -= nmaps;
                     o = operands[sp--];
                     if ( o !=null ) rot_map(scope, o, templates);
@@ -321,7 +321,7 @@ public class Interpreter {
                     nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<Object> exprs = new ObjectList();
-                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[ sp- i]);
+                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[ sp-i]);
                     sp -= nmaps;
                     operands[++sp] = zip_map(scope, exprs, st);
                     break;
@@ -1417,9 +1417,9 @@ public class Interpreter {
     }
 
     public static int getShort(byte[] memory, int index) {
-        int b1 = memory[index]& 0xFF; // mask off sign-extended bits
-        int b2 = memory[ index+1]& 0xFF;
-        return b1<<(8* 1) | b2;
+        int b1 = memory[index]&0xFF; // mask off sign-extended bits
+        int b2 = memory[ index+1]&0xFF;
+        return b1<<(8*1) | b2;
     }
 
     protected static class ObjectList extends ArrayList<Object> {

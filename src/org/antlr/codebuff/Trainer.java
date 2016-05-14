@@ -42,14 +42,13 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  *  For each feature vector, features[i], injectWhitespace[i] and align[i] tell us
  *  the decisions associated with that context in a corpus file.
  *  After calling {@link #computeFeatureVectors()}, those lists
- *  are available.
  *
  *  There is no shared state computed by this object, only static defs
  *  of feature types and category constants.
  */
 public class Trainer {
-	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 1.0/7; // 7 features; allow one fault
-	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12; // allow 12% mismatch
+	public static final double MAX_WS_CONTEXT_DIFF_THRESHOLD = 0.12; //1.0/7;
+	public static final double MAX_ALIGN_CONTEXT_DIFF_THRESHOLD = 0.12;
 	public static final double MAX_CONTEXT_DIFF_THRESHOLD2 = 0.50;
 
 	/** When computing child indexes, we use this value for any child list
@@ -1151,6 +1150,15 @@ public class Trainer {
 				return CHILD_INDEX_LIST_ELEMENT;
 			}
 		}
+		// check to see if we are 2nd or beyond repeated token
+//		if ( t instanceof TerminalNode ) {
+//			List<TerminalNode> repeatedTokens =
+//				((ParserRuleContext) parent).getTokens(((TerminalNode) t).getSymbol().getType());
+//			if ( repeatedTokens.size()>1 && repeatedTokens.indexOf(t)>0 ) {
+//				return CHILD_INDEX_LIST_ELEMENT;
+//			}
+//		}
+
 		return getChildIndex(t);
 	}
 

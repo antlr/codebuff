@@ -88,37 +88,37 @@ public class ObjectModelAdaptor implements ModelAdaptor {
         if ( memberName==null ) {
             throw new NullPointerException("memberName");
         }
-        synchronized ( membersCache ) {
-                                      Map<String, Member> members = membersCache.get(clazz);
-                                      Member member;
-                                      if ( members!=null ) {
-                                          member = members.get(memberName);
-                                          if ( member!=null ) {
-                                              return member != INVALID_MEMBER ?member : null;
-                                          }
-                                      }
-                                      else {
-                                          members = new HashMap<String, Member>();
-                                          membersCache.put(clazz, members);
-                                      }
+        synchronized ( membersCache) {
+                                     Map<String, Member> members = membersCache.get(clazz);
+                                     Member member;
+                                     if ( members!=null ) {
+                                         member = members.get(memberName);
+                                         if ( member!=null ) {
+                                             return member != INVALID_MEMBER ?member : null;
+                                         }
+                                     }
+                                     else {
+                                         members = new HashMap<String, Member>();
+                                         membersCache.put(clazz, members);
+                                     }
 
             // try getXXX and isXXX properties, look up using reflection
-                                      String methodSuffix =
-                                          Character.toUpperCase(memberName.charAt(0))+
-                                          memberName.substring(1, memberName.length());
-                                      member = tryGetMethod(clazz, "get"+methodSuffix);
-                                      if ( member==null ) {
-                                          member = tryGetMethod(clazz, "is"+methodSuffix);
-                                          if ( member==null ) {
-                                              member = tryGetMethod(clazz, "has"+methodSuffix);
-                                          }
-                                      }
-                                      if ( member==null ) {
+                                     String methodSuffix =
+                                         Character.toUpperCase(memberName.charAt(0))+
+                                         memberName.substring(1, memberName.length());
+                                     member = tryGetMethod(clazz, "get"+methodSuffix);
+                                     if ( member==null ) {
+                                         member = tryGetMethod(clazz, "is"+methodSuffix);
+                                         if ( member==null ) {
+                                             member = tryGetMethod(clazz, "has"+methodSuffix);
+                                         }
+                                     }
+                                     if ( member==null ) {
                 // try for a visible field
-                                          member = tryGetField(clazz, memberName);
-                                      }
-                                      members.put(memberName, member !=null ?member : INVALID_MEMBER);
-                                      return member;
+                                         member = tryGetField(clazz, memberName);
+                                     }
+                                     members.put(memberName, member !=null ?member : INVALID_MEMBER);
+                                     return member;
         }
     }
 

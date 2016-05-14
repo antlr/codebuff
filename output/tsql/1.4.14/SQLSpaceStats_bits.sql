@@ -31,8 +31,8 @@ FROM SQLSpaceStats a
         , [FileName]
         HAVING count(*) > 1
     ) b
-        ON a.Server_Name = b.Server_Name
-           AND a.dbname = b.dbname AND
+        ON a.Server_Name = b.Server_Name AND
+           a.dbname = b.dbname AND
            a.flag = b.flag AND
            a.FileID = b.FileID AND
            a.FileGroup = b.FileGroup AND

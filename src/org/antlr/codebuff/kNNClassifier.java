@@ -142,7 +142,8 @@ public abstract class kNNClassifier {
 				d = new MutableDouble(0.0);
 				catSimilarities.put(y, d);
 			}
-			d.add(1.0 - kNN[i].distance);
+			double emphasizedDistance = Math.pow(kNN[i].distance, 1.0/3); // cube root
+			d.add(1.0 - emphasizedDistance);
 		}
 		return catSimilarities;
 	}
@@ -189,6 +190,7 @@ public abstract class kNNClassifier {
 		else {
 			displayCat = Formatter.getHPosCategoryStr(cat);
 		}
+		displayCat = displayCat!=null ? displayCat : "none";
 
 		StringBuilder buf = new StringBuilder();
 		buf.append(Trainer.featureNameHeader(FEATURES));

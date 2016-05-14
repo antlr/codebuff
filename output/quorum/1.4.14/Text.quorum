@@ -635,6 +635,7 @@ class Text is Object
                integer length = me:GetSize()
                Text delim
                delim:SetValue(delimiter)
+
                integer delimLength = delim:GetSize()
                text newString = ""
                boolean afterDelim = false

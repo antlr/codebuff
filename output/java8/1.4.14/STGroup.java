@@ -487,8 +487,9 @@ public class STGroup {
 
     public static String getUnMangledTemplateName(String mangledName) {
         String t = mangledName.substring("/region__".length(), mangledName.lastIndexOf("__"));
-        String r = mangledName.substring(mangledName.lastIndexOf("__")+2, mangledName.length());
-        return t+'.'+r;
+        String r = mangledName.substring(mangledName.lastIndexOf("__") +2, mangledName.length());
+        return t+
+               '.' +r;
     }
 
     /** Define a map for this group.

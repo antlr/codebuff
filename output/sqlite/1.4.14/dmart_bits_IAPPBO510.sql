@@ -104,8 +104,7 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
-            , COUNT(CASE WHEN Status = 4
-AND
+            , COUNT(CASE WHEN Status = 4 AND
                               CONVERT(DATE, LoadReportDBEndDate) <
                               CONVERT(DATE, GETDATE())
             THEN Status
@@ -123,8 +122,8 @@ AND
             THEN Status
                     ELSE NULL END)             AS Status3
 --, COUNT ( CASE WHEN Status = 4 THEN Status ELSE NULL END ) AS Status4
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
@@ -148,8 +147,7 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
-            , COUNT(CASE WHEN Status = 4
-AND
+            , COUNT(CASE WHEN Status = 4 AND
                               CONVERT(DATE, LoadReportDBEndDate) <
                               CONVERT(DATE, GETDATE())
             THEN Status
@@ -166,8 +164,8 @@ AND
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END)             AS Status3
-            , COUNT(CASE WHEN Status = 4
-AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
@@ -294,7 +292,7 @@ SET LoadStageDBStartDate = '2010-03-09 01:10:33.200'
     , LoadReportDBStartDate = '2010-03-09 02:55:12.807'
     , LoadReportDBEndDate   = '2010-03-09 02:59:33.627'
     , Status                = '0'
-    WHERE Beta = '0'
+WHERE Beta = '0'
 
 UPDATE dbo.ClientConnection_test
 SET SourceServer = 'STGSQL613'

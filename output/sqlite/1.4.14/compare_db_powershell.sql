@@ -62,8 +62,8 @@ ORDER BY server_name
 
 --print @ServerList
 
-SELECT @cmd = 'E:\Dexma\powershell_bits\Compare-DbamaintSchema.ps1 ' + '-ServerList '
-+ @ServerList +
+SELECT @cmd = 'E:\Dexma\powershell_bits\Compare-DbamaintSchema.ps1 ' + '-ServerList ' +
+              @ServerList +
               ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------

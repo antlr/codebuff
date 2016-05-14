@@ -54,6 +54,7 @@ public class ObjectModelAdaptor implements ModelAdaptor {
     }
 
     protected static final Map<Class<?>, Map<String, Member>> membersCache = new HashMap<Class<?>, Map<String, Member>>();
+
     @Override
     public synchronized Object getProperty(Interpreter interp, ST self, Object o, Object property, String propertyName) throws STNoSuchPropertyException {
         if ( o==null ) {
