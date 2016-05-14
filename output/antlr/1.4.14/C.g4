@@ -469,8 +469,7 @@ statement
     |   selectionStatement
     |   iterationStatement
     |   jumpStatement
-    |   ('__asm' | '__asm__') ('volatile' | '__volatile__') '(' (logicalOrExpression (',' logicalOrExpression)*)?
-        (':' (logicalOrExpression (',' logicalOrExpression)*)?)* ')' ';'
+    |   ('__asm' | '__asm__') ('volatile' | '__volatile__') '(' (logicalOrExpression (',' logicalOrExpression)*)? (':' (logicalOrExpression (',' logicalOrExpression)*)?)* ')' ';'
     ;
 
 labeledStatement
@@ -632,7 +631,7 @@ NotEqual : '!=' ;
 Arrow : '->' ;
 Dot : '.' ;
 Ellipsis : '...' ;
-Identifier : IdentifierNondigit (IdentifierNondigit | Digit)* ;
+Identifier :   IdentifierNondigit (IdentifierNondigit | Digit)* ;
 fragment
 IdentifierNondigit
     :   Nondigit
@@ -680,10 +679,14 @@ BinaryConstant
 
 fragment
 DecimalConstant
-    :   NonzeroDigit Digit* ;
+    :   NonzeroDigit Digit*
+    ;
+
 fragment
 OctalConstant
-    :   '0' OctalDigit* ;
+    :   '0' OctalDigit*
+    ;
+
 fragment
 HexadecimalConstant
     :   HexadecimalPrefix HexadecimalDigit+
@@ -726,7 +729,7 @@ LongSuffix
 
 fragment
 LongLongSuffix
-    :   'll'| 'LL'
+    :   'll' | 'LL'
     ;
 
 fragment
@@ -760,7 +763,7 @@ ExponentPart
 
 fragment
 Sign
-    :   '+'| '-'
+    :   '+' | '-'
     ;
 
 fragment
@@ -787,12 +790,12 @@ HexadecimalDigitSequence
 
 fragment
 FloatingSuffix
-    :   'f'| 'l' | 'F' | 'L'
+    :   'f' | 'l' | 'F' | 'L'
     ;
 
 fragment
 CharacterConstant
-    :   '\'' CCharSequence '\''| 'L\'' CCharSequence '\'' | 'u\'' CCharSequence '\'' | 'U\'' CCharSequence '\''
+    :   '\'' CCharSequence '\'' | 'L\'' CCharSequence '\'' | 'u\'' CCharSequence '\'' | 'U\'' CCharSequence '\''
     ;
 
 fragment
@@ -830,10 +833,10 @@ HexadecimalEscapeSequence
     :   '\\x' HexadecimalDigit+
     ;
 
-StringLiteral : EncodingPrefix? '"' SCharSequence? '"' ;
+StringLiteral :   EncodingPrefix? '"' SCharSequence? '"' ;
 fragment
 EncodingPrefix
-    :   'u8'| 'u' | 'U' | 'L'
+    :   'u8' | 'u' | 'U' | 'L'
     ;
 
 fragment
@@ -846,20 +849,9 @@ SChar
     :   ~["\\\r\n] | EscapeSequence
     ;
 
-LineDirective : '#' Whitespace? DecimalConstant Whitespace? StringLiteral ~[\r\n]* -> skip
-              ;
-
-PragmaDirective : '#' Whitespace? 'pragma' Whitespace ~[\r\n]* -> skip
-                ;
-
-Whitespace :   [ \t]+ -> skip
-           ;
-
-Newline : ('\r' '\n'? | '\n') -> skip
-        ;
-
-BlockComment : '/*' .*? '*/' -> skip
-             ;
-
-LineComment : '//' ~[\r\n]* -> skip
-            ;
+LineDirective : '#' Whitespace? DecimalConstant Whitespace? StringLiteral ~[\r\n]* -> skip ;
+PragmaDirective : '#' Whitespace? 'pragma' Whitespace ~[\r\n]* -> skip ;
+Whitespace :   [ \t]+ -> skip ;
+Newline : ('\r' '\n'? | '\n') -> skip ;
+BlockComment : '/*' .*? '*/' -> skip ;
+LineComment : '//' ~[\r\n]* -> skip ;

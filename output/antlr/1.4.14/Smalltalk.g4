@@ -8,7 +8,8 @@
 grammar Smalltalk;
 
 script
-    :   sequence EOF ;
+    :   sequence EOF
+    ;
 
 sequence
     :   temps? ws statements?
@@ -19,7 +20,8 @@ ws
     ;
 
 temps
-    :   PIPE (ws IDENTIFIER)+ ws PIPE ;
+    :   PIPE (ws IDENTIFIER)+ ws PIPE
+    ;
 
 statements
     :   answer ws                      # StatementAnswer
@@ -62,7 +64,8 @@ assignment
     ;
 
 variable
-    :   IDENTIFIER ;
+    :   IDENTIFIER
+    ;
 
 binarySend
     :   unarySend binaryTail?
@@ -87,7 +90,8 @@ keywordPair
 operand : literal | reference | subexpression ;
 
 subexpression
-    :   OPEN_PAREN ws expression ws CLOSE_PAREN ;
+    :   OPEN_PAREN ws expression ws CLOSE_PAREN
+    ;
 
 literal
     :   runtimeLiteral
@@ -101,17 +105,20 @@ runtimeLiteral
     ;
 
 block
-    :   BLOCK_START blockParamList? ws sequence? BLOCK_END ;
+    :   BLOCK_START blockParamList? ws sequence? BLOCK_END
+    ;
 
 blockParamList
     :   (ws BLOCK_PARAM)+
     ;
 
 dynamicDictionary
-    :   DYNDICT_START ws expressions? ws DYNARR_END ;
+    :   DYNDICT_START ws expressions? ws DYNARR_END
+    ;
 
 dynamicArray
-    :   DYNARR_START ws expressions? ws DYNARR_END ;
+    :   DYNARR_START ws expressions? ws DYNARR_END
+    ;
 
 parsetimeLiteral
     :   pseudoVariable
@@ -129,7 +136,8 @@ numberExp
     ;
 
 charConstant
-    :   CHARACTER_CONSTANT ;
+    :   CHARACTER_CONSTANT
+    ;
 
 hex
     :   MINUS? HEX HEXDIGIT+
@@ -144,17 +152,20 @@ stFloat
     ;
 
 pseudoVariable
-    :   RESERVED_WORD ;
+    :   RESERVED_WORD
+    ;
 
 string
-    :   STRING ;
+    :   STRING
+    ;
 
 symbol
     :   HASH bareSymbol
     ;
 
 primitive
-    :   LT ws KEYWORD ws DIGIT+ ws GT ;
+    :   LT ws KEYWORD ws DIGIT+ ws GT
+    ;
 
 bareSymbol
     :   (IDENTIFIER | BINARY_SELECTOR)
@@ -170,7 +181,8 @@ literalArrayRest
     :   ws (   (   parsetimeLiteral
                |   bareLiteralArray
                |   bareSymbol
-               ) ws)* CLOSE_PAREN ;
+               ) ws)* CLOSE_PAREN
+    ;
 
 bareLiteralArray
     :   OPEN_PAREN literalArrayRest
@@ -185,7 +197,8 @@ unaryMessage
     ;
 
 unarySelector
-    :   IDENTIFIER ;
+    :   IDENTIFIER
+    ;
 
 keywords
     :   KEYWORD+
@@ -230,14 +243,14 @@ RESERVED_WORD
     |   'super'
     ;
 
+
+
 IDENTIFIER :   [a-zA-Z]+ [a-zA-Z0-9_]* ;
 DIGIT :   [0-9] ;
 HEXDIGIT :   [0-9a-fA-F] ;
 KEYWORD : IDENTIFIER COLON ;
 BLOCK_PARAM : COLON IDENTIFIER ;
-CHARACTER_CONSTANT : DOLLAR (HEXDIGIT | DOLLAR)
-                   ;
-
+CHARACTER_CONSTANT : DOLLAR (HEXDIGIT | DOLLAR) ;
 BLOCK_START : '[' ;
 BLOCK_END : ']' ;
 CLOSE_PAREN : ')' ;

@@ -30,13 +30,13 @@ import static org.antlr.codebuff.Trainer.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.Trainer.INDEX_FIRST_ON_LINE;
-import static org.antlr.codebuff.Trainer.INDEX_MATCHING_TOKEN_DIFF_LINE;
+import static org.antlr.codebuff.Trainer.INDEX_MATCHING_TOKEN_STARTS_LINE;
 import static org.antlr.codebuff.Trainer.INDEX_PREV_FIRST_ON_LINE;
 import static org.antlr.codebuff.Trainer.MAX_ALIGN_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD;
 import static org.antlr.codebuff.Trainer.earliestAncestorStartingWithToken;
 import static org.antlr.codebuff.Trainer.getContextFeatures;
-import static org.antlr.codebuff.Trainer.getMatchingSymbolOnDiffLine;
+import static org.antlr.codebuff.Trainer.getMatchingSymbolStartsLine;
 import static org.antlr.codebuff.Trainer.getRealTokens;
 import static org.antlr.codebuff.Trainer.getTokensOnPreviousLine;
 import static org.antlr.codebuff.Trainer.indexTree;
@@ -204,7 +204,7 @@ public class Formatter {
 			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
 			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
-			featuresForAlign[INDEX_MATCHING_TOKEN_DIFF_LINE] = getMatchingSymbolOnDiffLine(corpus, testDoc, node, line);
+//			featuresForAlign[INDEX_MATCHING_TOKEN_STARTS_LINE] = getMatchingSymbolStartsLine(corpus, testDoc, node);
 
 			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.hpos, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
@@ -341,17 +341,15 @@ public class Formatter {
 		doc.tokens.seek(tokenIndexInStream); // seek so that LT(1) is tokens.get(i);
 		Token prevToken = doc.tokens.LT(-1);
 
-		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(corpus, doc, node, line);
-
 		boolean curTokenStartsNewLine = line>prevToken.getLine();
 
 		int[] features = getContextFeatures(tokenToNodeMap, doc, tokenIndexInStream);
 
 		setListInfoFeatures(tokenToListInfo, features, curToken);
 
-		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
-		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
-		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
+		features[INDEX_PREV_FIRST_ON_LINE]         = prevTokenStartsLine ? 1 : 0;
+		features[INDEX_MATCHING_TOKEN_STARTS_LINE] = getMatchingSymbolStartsLine(corpus, testDoc, node);
+		features[INDEX_FIRST_ON_LINE]              = curTokenStartsNewLine ? 1 : 0;
 
 		return features;
 	}

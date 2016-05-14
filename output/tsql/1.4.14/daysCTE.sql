@@ -10,7 +10,10 @@ WITH daysCte (d) AS
 SELECT
     d
     , DATEPART(wk, d) AS week_number
-    , DATENAME(dw, d) AS day_name
-    , DATENAME(m, d) AS month_name
-    , DATENAME(q, d) AS [quarter]
+    , DATENAME(dw, d
+      ) AS day_name
+    , DATENAME(m, d
+      ) AS month_name
+    , DATENAME(q, d
+      ) AS [quarter]
 FROM daysCte

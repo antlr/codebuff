@@ -26,8 +26,10 @@ GROUP BY g.hair, g.did_date
 
 SELECT g.hair,
        (COUNT (*)) AS girl_count
-             , (COUNT ( NULLIF(did_date, 0) )) AS did_date_count
-             , (COUNT ( NULLIF(did_date, 1) )) AS did_not_date_count
+             , (COUNT ( NULLIF(did_date, 0
+                    ))) AS did_date_count
+             , (COUNT ( NULLIF(did_date, 1
+                    ))) AS did_not_date_count
 FROM girl g
 GROUP BY g.hair
 

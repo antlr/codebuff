@@ -3,7 +3,7 @@ WITH daysCte (d) AS
  UNION ALL
 
  SELECT DATEADD(D, 1, d) FROM daysCte
- WHERE DATEPART(yyyy, d) <= 2012 -- stop year
+ WHERE DATEPART(yyyy, d) < = 2012 -- stop year
                )
 
 

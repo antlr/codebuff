@@ -251,7 +251,9 @@ FLOAT_EXP
 
 fragment
 HEXD
-    :   [0-9a-fA-F] ;
+    :   [0-9a-fA-F]
+    ;
+
 HEX : '0' [xX] HEXD+ ;
 BIN : '0' [bB] [10]+ ;
 LONG : '-'? [0-9]+ [lL]? ;
@@ -264,9 +266,7 @@ CHAR_NAMED : '\\'
 |   'tab'
 |   'formfeed'
 |   'backspace'
-             )
-           ;
-
+             ) ;
 CHAR_ANY : '\\' . ;
 NIL : 'nil' ;
 BOOLEAN
@@ -277,7 +277,7 @@ SYMBOL
     :   '.'| '/' | NAME
     ;
 
-NS_SYMBOL : NAME '/' SYMBOL ;
+NS_SYMBOL :   NAME '/' SYMBOL ;
 PARAM_NAME : '%' ([1-9] [0-9]*| '&')? ;
 
 // Fragments
@@ -289,7 +289,9 @@ NAME
 
 fragment
 SYMBOL_HEAD
-    :   ~[0-9^`;"#~@:/%(){} \n\r\t\\,\[\]] // FIXME: could be WS ;
+    :   ~[0-9^`;"#~@:/%(){} \n\r\t\\,\[\]] // FIXME: could be WS
+    ;
+
 fragment
 SYMBOL_REST
     :   SYMBOL_HEAD | [0-9.]
@@ -300,11 +302,12 @@ SYMBOL_REST
 
 fragment
 WS
-    :   [ \n\r\t\,] ;
+    :   [ \n\r\t\,]
+    ;
+
 fragment
 COMMENT
     :   ';' ~[\r\n]*
     ;
 
-TRASH : (WS | COMMENT) -> channel(HIDDEN)
-      ;
+TRASH : (WS | COMMENT) -> channel(HIDDEN) ;

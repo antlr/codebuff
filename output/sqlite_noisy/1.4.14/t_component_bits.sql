@@ -206,12 +206,12 @@ set description = ''
 where server_name = 'xvm002'
 
 -- insert server id's into the t_monitoring table
-insert into t_monitoring (server_id)select distinct s.server_id
-                                    from   dbo.t_server s
-                                           LEFT OUTER JOIN dbo.t_server_type_assoc sta
+insert into t_monitoring (server_id )select distinct s.server_id
+                                     from   dbo.t_server s
+                                            LEFT OUTER JOIN dbo.t_server_type_assoc sta
 ON sta.server_id = s.server_id
-                                           LEFT OUTER JOIN dbo.t_server_type st
+                                            LEFT OUTER JOIN dbo.t_server_type st
 ON st.type_id = sta.type_id
-                                    where s.active = '1'
-                                          and st.type_id not like '18'
-                                                                  and s.server_name not like '%dexma.com'
+                                     where s.active = '1'
+                                           and st.type_id not like '18'
+                                                                   and s.server_name not like '%dexma.com'

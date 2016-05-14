@@ -51,12 +51,14 @@ public interface STWriter {
      *  With auto-indentation and wrapping, more chars than {@code str.length()}
      *  can be emitted.  No wrapping is done.
      */
-    int write(String str)throws IOException;
+    int write(String str)
+        throws IOException;
 
     /** Same as write, but wrap lines using the indicated string as the
      *  wrap character (such as {@code "\n"}).
      */
-    int write(String str, String wrap)throws IOException;
+    int write(String str, String wrap)
+        throws IOException;
 
     /**
      * Because we evaluate ST instance by invoking
@@ -70,12 +72,14 @@ public interface STWriter {
      * {@link STWriter#write(String str, String wrap)}. Can't pass to
      * {@link Interpreter#exec}.
      */
-    int writeWrap(String wrap)throws IOException;
+    int writeWrap(String wrap)
+        throws IOException;
 
     /** Write a separator.  Same as {@link #write(String)} except that a {@code "\n"}
      *  cannot be inserted before emitting a separator.
      */
-    int writeSeparator(String str)throws IOException;
+    int writeSeparator(String str)
+        throws IOException;
 
     /** Return the absolute char index into the output of the char
      *  we're about to write.  Returns 0 if no char written yet.

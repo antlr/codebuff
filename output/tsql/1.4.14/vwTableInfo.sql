@@ -41,7 +41,8 @@ SELECT
                SELECT
                    Cast(v.low / 1024.0 AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1
                                                                           THEN a.used_pages WHEN p.index_id <
-                                                                                                 2 THEN a.data_pages ELSE 0 END)
+                                                                                                 2
+                                                                          THEN a.data_pages ELSE 0 END)
                FROM sys.indexes AS i
                    JOIN sys.partitions AS p
                        ON p.object_id = i.object_id
@@ -53,7 +54,8 @@ SELECT
                SELECT
                    Cast(v.low / 1024.0 AS FLOAT) * SUM(CASE WHEN a.type <> 1
 THEN a.used_pages WHEN p.index_id <
-                       2 THEN a.data_pages ELSE 0 END)
+                       2
+THEN a.data_pages ELSE 0 END)
                FROM sys.indexes AS i
                    JOIN sys.partitions AS p
                        ON p.object_id = i.object_id

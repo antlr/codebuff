@@ -8,20 +8,20 @@ SELECT
                           1, CHARINDEX('|', line) - 1))) AS drivename
     , ROUND(CAST(RTRIM(LTRIM(SUBSTRING(line, CHARINDEX('|', line) + 1
                      ,
-                                       (CHARINDEX('%', line) - 1) - CHARINDEX('|', line))))AS FLOAT),
+                                       (CHARINDEX('%', line) - 1) - CHARINDEX('|', line)))) AS FLOAT),
             0) AS 'capacity(MB)'
     , ROUND(CAST(RTRIM(LTRIM(SUBSTRING(line, CHARINDEX('%', line) + 1
                      ,
-                                       (CHARINDEX('*', line) - 1) - CHARINDEX('%', line))))AS FLOAT),
+                                       (CHARINDEX('*', line) - 1) - CHARINDEX('%', line)))) AS FLOAT),
             0) AS 'freespace(MB)'
     , ROUND(CAST(RTRIM(LTRIM(SUBSTRING(line, CHARINDEX('|', line) + 1
                              ,
-                                       (CHARINDEX('%', line) - 1) - CHARINDEX('|', line))))AS FLOAT) / 1024
+                                       (CHARINDEX('%', line) - 1) - CHARINDEX('|', line)))) AS FLOAT) / 1024
     ,
             0) AS 'capacity(GB)'
     , ROUND(CAST(RTRIM(LTRIM(SUBSTRING(line, CHARINDEX('%', line) + 1
                              ,
-                                       (CHARINDEX('*', line) - 1) - CHARINDEX('%', line))))AS FLOAT) / 1024
+                                       (CHARINDEX('*', line) - 1) - CHARINDEX('%', line)))) AS FLOAT) / 1024
     ,
             0) AS 'freespace(GB)'
 FROM DriveInfo

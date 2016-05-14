@@ -163,7 +163,8 @@ memberDeclaration
  */
 
 methodDeclaration
-    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')* ('throws' qualifiedNameList)? (methodBody | ';')
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
+        ('throws' qualifiedNameList)? (methodBody | ';')
     ;
 
 genericMethodDeclaration
@@ -208,7 +209,8 @@ constantDeclarator
 // see matching of [] comment in methodDeclaratorRest
 
 interfaceMethodDeclaration
-    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')* ('throws' qualifiedNameList)? ';'
+    :   (typeSpec | 'void') Identifier formalParameters ('[' ']')*
+        ('throws' qualifiedNameList)? ';'
     ;
 
 genericInterfaceMethodDeclaration
@@ -228,10 +230,12 @@ variableDeclaratorId
     ;
 
 variableInitializer
-    :   arrayInitializer | expression ;
+    :   arrayInitializer | expression
+    ;
 
 arrayInitializer
-    :   '{' (variableInitializer (',' variableInitializer)* (',')?)? '}'
+    :   '{' (variableInitializer (',' variableInitializer)*
+             (',')?)? '}'
     ;
 
 enumConstantName
@@ -276,7 +280,8 @@ formalParameters
     ;
 
 formalParameterList
-    :   formalParameter (',' formalParameter)* (',' lastFormalParameter)?
+    :   formalParameter (',' formalParameter)*
+        (',' lastFormalParameter)?
     |   lastFormalParameter
     ;
 
@@ -435,7 +440,7 @@ resourceSpecification
     ;
 
 resources
-    :   r+= resource (sep= ';' r+= resource)*
+    :   r                         += resource (sep= ';' r                         += resource)*
     ;
 
 resource
@@ -564,7 +569,8 @@ innerCreator
 arrayCreatorRest
     :   '['
         (   ']' ('[' ']')* arrayInitializer
-        |   expression ']' ('[' expression ']')* ('[' ']')*
+        |   expression ']' ('[' expression ']')*
+            ('[' ']')*
         )
     ;
 
@@ -581,8 +587,8 @@ nonWildcardTypeArguments
     ;
 
 typeArgumentsOrDiamond
-    :   '<' '>'                       # Diamond
-    |   typeArguments                       # NonDiamondTypeArguments
+    :   '<' '>'                         # Diamond
+    |   typeArguments                         # NonDiamondTypeArguments
     ;
 
 nonWildcardTypeArgumentsOrDiamond
@@ -689,11 +695,13 @@ BinaryIntegerLiteral
 
 fragment
 IntegerTypeSuffix
-    :   [lL] ;
+    :   [lL]
+    ;
+
 fragment
 DecimalNumeral
     :   '0'
-    |   NonZeroDigit (Digits? | Underscores Digits)
+    |   NonZeroDigit (Digits?| Underscores Digits)
     ;
 
 fragment
@@ -703,15 +711,17 @@ Digits
 
 fragment
 Digit
-    :   '0' | NonZeroDigit
+    :   '0'| NonZeroDigit
     ;
 
 fragment
 NonZeroDigit
-    :   [1-9] ;
+    :   [1-9]
+    ;
+
 fragment
 DigitOrUnderscore
-    :   Digit |'_'
+    :   Digit | '_'
     ;
 
 fragment
@@ -731,10 +741,12 @@ HexDigits
 
 fragment
 HexDigit
-    :   [0-9a-fA-F] ;
+    :   [0-9a-fA-F]
+    ;
+
 fragment
 HexDigitOrUnderscore
-    :   HexDigit |'_'
+    :   HexDigit | '_'
     ;
 
 fragment
@@ -749,10 +761,12 @@ OctalDigits
 
 fragment
 OctalDigit
-    :   [0-7] ;
+    :   [0-7]
+    ;
+
 fragment
 OctalDigitOrUnderscore
-    :   OctalDigit |'_'
+    :   OctalDigit | '_'
     ;
 
 fragment
@@ -767,10 +781,12 @@ BinaryDigits
 
 fragment
 BinaryDigit
-    :   [01] ;
+    :   [01]
+    ;
+
 fragment
 BinaryDigitOrUnderscore
-    :   BinaryDigit |'_'
+    :   BinaryDigit | '_'
     ;
 
 // §3.10.2 Floating-Point Literals
@@ -782,7 +798,7 @@ FloatingPointLiteral
 
 fragment
 DecimalFloatingPointLiteral
-    :   Digits '.' Digits? ExponentPart? FloatTypeSuffix? |'.' Digits ExponentPart? FloatTypeSuffix? | Digits ExponentPart FloatTypeSuffix? | Digits FloatTypeSuffix
+    :   Digits '.' Digits? ExponentPart? FloatTypeSuffix?| '.' Digits ExponentPart? FloatTypeSuffix? | Digits ExponentPart FloatTypeSuffix? | Digits FloatTypeSuffix
     ;
 
 fragment
@@ -792,7 +808,9 @@ ExponentPart
 
 fragment
 ExponentIndicator
-    :   [eE] ;
+    :   [eE]
+    ;
+
 fragment
 SignedInteger
     :   Sign? Digits
@@ -800,10 +818,14 @@ SignedInteger
 
 fragment
 Sign
-    :   [+-] ;
+    :   [+-]
+    ;
+
 fragment
 FloatTypeSuffix
-    :   [fFdD] ;
+    :   [fFdD]
+    ;
+
 fragment
 HexadecimalFloatingPointLiteral
     :   HexSignificand BinaryExponent FloatTypeSuffix?
@@ -822,11 +844,13 @@ BinaryExponent
 
 fragment
 BinaryExponentIndicator
-    :   [pP] ;
+    :   [pP]
+    ;
 
 // §3.10.3 Boolean Literals
+
 BooleanLiteral
-    :   'true' |'false'
+    :   'true'| 'false'
     ;
 
 // §3.10.4 Character Literals
@@ -838,9 +862,11 @@ CharacterLiteral
 
 fragment
 SingleCharacter
-    :   ~['\\] ;
+    :   ~['\\]
+    ;
 
 // §3.10.5 String Literals
+
 StringLiteral : '"' StringCharacters? '"' ;
 fragment
 StringCharacters
@@ -849,7 +875,7 @@ StringCharacters
 
 fragment
 StringCharacter
-    :   ~["\\] | EscapeSequence
+    :   ~["\\]| EscapeSequence
     ;
 
 // §3.10.6 Escape Sequences for Character and String Literals
@@ -875,9 +901,11 @@ UnicodeEscape
 
 fragment
 ZeroToThree
-    :   [0-3] ;
+    :   [0-3]
+    ;
 
 // §3.10.7 The Null Literal
+
 NullLiteral : 'null' ;
 
 // §3.11 Separators
@@ -928,7 +956,7 @@ RSHIFT_ASSIGN : '>>=' ;
 URSHIFT_ASSIGN : '>>>=' ;
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
-Identifier : JavaLetter JavaLetterOrDigit* ;
+Identifier :   JavaLetter JavaLetterOrDigit* ;
 fragment
 JavaLetter
     :   [a-zA-Z$_] // these are the "java letters" below 0xFF
@@ -939,7 +967,9 @@ JavaLetter
     |   // covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF
         [\uD800-\uDBFF] [\uDC00-\uDFFF]
         {Character.isJavaIdentifierStart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
-        */ ;
+        */
+    ;
+
 fragment
 JavaLetterOrDigit
     :   [a-zA-Z0-9$_] // these are the "java letters or digits" below 0xFF
@@ -950,11 +980,13 @@ JavaLetterOrDigit
     |   // covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF
         [\uD800-\uDBFF] [\uDC00-\uDFFF]
         {Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
-        */ ;
+        */
+    ;
 
 //
 // Additional symbols not defined in the lexical specification
 //
+
 AT : '@' ;
 ELLIPSIS : '...' ;
 

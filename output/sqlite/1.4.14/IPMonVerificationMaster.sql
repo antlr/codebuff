@@ -32,7 +32,6 @@ WHERE t.active = 1
                                   AND t.active = 1)
 
 UNION
-
 ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
@@ -68,7 +67,6 @@ WHERE t.active = 1
                 AND g.groupname IN ('Prod O/S Services')
                 AND t.active = 1)
 UNION
-
 ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
@@ -133,9 +131,7 @@ WHERE t.active = 1
                 AND tsta.type_id IN ('8')
                 AND g.groupname IN ('Prod O/S Services')
                 AND t.active = 1)
-UNION
-
-ALL
+UNION ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
     t.server_name
@@ -270,9 +266,7 @@ AND t.server_name NOT IN
           --Web, Connection, FTP, Internal FTP server
                                            AND g.groupname IN ('Prod IIS Services')
                                            AND t.active = 1)
-UNION
-
-ALL
+UNION ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
     t.server_name
@@ -312,9 +306,7 @@ FROM t_server t
     INNER JOIN
      t_server_type_assoc tsta ON t.server_id = tsta.server_id
 WHERE tsta.type_id IN ('4')
-UNION
-
-ALL
+UNION ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
     t.server_name

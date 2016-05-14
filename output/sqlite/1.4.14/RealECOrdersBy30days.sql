@@ -28,7 +28,8 @@ THEN 'DaysBetween'
                    THEN 'DaysBetween'
                END) AS SixtyToNinety
        , COUNT(CASE WHEN DATEDIFF(day, do_date_initiated, do_date_received) >=
-                         90 THEN 'DaysBetween'
+                         90
+                   THEN 'DaysBetween'
                END) AS NinetyPlus
 FROM document_orders
 WHERE do_document_category LIKE '%REALEC%'

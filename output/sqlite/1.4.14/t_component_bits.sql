@@ -242,7 +242,7 @@ WHERE server_name = 'xvm002'
 
 -- insert server id's into the t_monitoring table
 
-INSERT INTO t_monitoring (server_id)
+INSERT INTO t_monitoring (server_id )
     SELECT DISTINCT s.server_id
     FROM dbo.t_server s
         LEFT OUTER JOIN dbo.t_server_type_assoc sta

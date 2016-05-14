@@ -1394,7 +1394,9 @@ BinaryIntegerLiteral
 
 fragment
 IntegerTypeSuffix
-    :   [lL] ;
+    :   [lL]
+    ;
+
 fragment
 DecimalNumeral
     :   '0'
@@ -1417,7 +1419,9 @@ Digit
 
 fragment
 NonZeroDigit
-    :   [1-9] ;
+    :   [1-9]
+    ;
+
 fragment
 DigitsAndUnderscores
     :   DigitOrUnderscore+
@@ -1425,7 +1429,7 @@ DigitsAndUnderscores
 
 fragment
 DigitOrUnderscore
-    :   Digit |'_'
+    :   Digit | '_'
     ;
 
 fragment
@@ -1445,7 +1449,9 @@ HexDigits
 
 fragment
 HexDigit
-    :   [0-9a-fA-F] ;
+    :   [0-9a-fA-F]
+    ;
+
 fragment
 HexDigitsAndUnderscores
     :   HexDigitOrUnderscore+
@@ -1453,7 +1459,7 @@ HexDigitsAndUnderscores
 
 fragment
 HexDigitOrUnderscore
-    :   HexDigit |'_'
+    :   HexDigit | '_'
     ;
 
 fragment
@@ -1468,7 +1474,9 @@ OctalDigits
 
 fragment
 OctalDigit
-    :   [0-7] ;
+    :   [0-7]
+    ;
+
 fragment
 OctalDigitsAndUnderscores
     :   OctalDigitOrUnderscore+
@@ -1476,7 +1484,7 @@ OctalDigitsAndUnderscores
 
 fragment
 OctalDigitOrUnderscore
-    :   OctalDigit |'_'
+    :   OctalDigit | '_'
     ;
 
 fragment
@@ -1491,7 +1499,9 @@ BinaryDigits
 
 fragment
 BinaryDigit
-    :   [01] ;
+    :   [01]
+    ;
+
 fragment
 BinaryDigitsAndUnderscores
     :   BinaryDigitOrUnderscore+
@@ -1499,7 +1509,7 @@ BinaryDigitsAndUnderscores
 
 fragment
 BinaryDigitOrUnderscore
-    :   BinaryDigit |'_'
+    :   BinaryDigit | '_'
     ;
 
 // §3.10.2 Floating-Point Literals
@@ -1524,7 +1534,9 @@ ExponentPart
 
 fragment
 ExponentIndicator
-    :   [eE] ;
+    :   [eE]
+    ;
+
 fragment
 SignedInteger
     :   Sign? Digits
@@ -1532,10 +1544,14 @@ SignedInteger
 
 fragment
 Sign
-    :   [+-] ;
+    :   [+-]
+    ;
+
 fragment
 FloatTypeSuffix
-    :   [fFdD] ;
+    :   [fFdD]
+    ;
+
 fragment
 HexadecimalFloatingPointLiteral
     :   HexSignificand BinaryExponent FloatTypeSuffix?
@@ -1554,11 +1570,13 @@ BinaryExponent
 
 fragment
 BinaryExponentIndicator
-    :   [pP] ;
+    :   [pP]
+    ;
 
 // §3.10.3 Boolean Literals
+
 BooleanLiteral
-    :   'true' |'false'
+    :   'true'| 'false'
         ;
 
 // §3.10.4 Character Literals
@@ -1570,9 +1588,11 @@ CharacterLiteral
 
 fragment
 SingleCharacter
-    :   ~['\\] ;
+    :   ~['\\]
+    ;
 
 // §3.10.5 String Literals
+
 StringLiteral : '"' StringCharacters? '"' ;
 fragment
 StringCharacters
@@ -1603,9 +1623,11 @@ OctalEscape
 
 fragment
 ZeroToThree
-    :   [0-3] ;
+    :   [0-3]
+    ;
 
 // This is not in the spec but prevents having to preprocess the input
+
 fragment
 UnicodeEscape
     :   '\\' 'u' HexDigit HexDigit HexDigit HexDigit
@@ -1665,7 +1687,7 @@ RSHIFT_ASSIGN : '>>=' ;
 URSHIFT_ASSIGN : '>>>=' ;
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
-Identifier :   JavaLetter JavaLetterOrDigit* ;
+Identifier : JavaLetter JavaLetterOrDigit* ;
 fragment
 JavaLetter
     :   [a-zA-Z$_] // these are the "java letters" below 0x7F
@@ -1692,4 +1714,5 @@ ELLIPSIS : '...' ;
 //
 WS :   [ \t\r\n\u000C]+ -> skip ;
 COMMENT : '/*' .*? '*/' -> skip ;
-LINE_COMMENT : '//' ~[\r\n]* -> skip ;
+LINE_COMMENT : '//' ~[\r\n]*
+               -> skip ;

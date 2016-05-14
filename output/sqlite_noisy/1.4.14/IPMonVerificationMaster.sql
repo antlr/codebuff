@@ -25,35 +25,32 @@ AND t.environment_id = 0
                               AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
 AND g.groupname IN ('Prod Ping')
     AND t.active = 1)
-UNION
-
-ALL
----------------------------------------------------------------------------------------------------
-SELECT DISTINCT t.server_name, t.server_id, 'Remote Procedure Call' AS missingmonitors
-FROM    t_server t
-    INNER JOIN
-        t_server_type_assoc tsta ON t.server_id = tsta.server_id
-WHERE t.active = 1
+UNION ALL
+--------------------------------------------------------------------------------------------------- SELECT DISTINCT t.server_name, t.server_id, 'Remote Procedure Call' AS missingmonitors
+                                                                                                    FROM    t_server t
+                                                                                                        INNER JOIN
+                                                                                                            t_server_type_assoc tsta ON t.server_id = tsta.server_id
+                                                                                                    WHERE t.active = 1
 AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
 AND t.environment_id = 0
        -- exclude servers that don't meet the requirements
-    AND t.server_name NOT IN (
+                                                                                                        AND t.server_name NOT IN (
 'XWEBUTIL12'
-                             , 'XWEBUTIL13'
-                             , 'EWEBPROD1'
-                             , 'XSQLUTIL11')
-AND t.server_name NOT IN (SELECT DISTINCT l.address
-                          FROM    ipmongroups g
-                          INNER JOIN
-                                  ipmongroupmembers m ON g.groupid = m.groupid INNER JOIN
-                                  ipmonmonitors l ON m.monitorid = l.monitorid INNER JOIN
-                                  t_server t ON l.address = t.server_name INNER JOIN
-                                  t_server_type_assoc tsta ON t.server_id = tsta.server_id
-                          WHERE l.name LIKE '%Remote Procedure Call%'
+                                                                                                                                 , 'XWEBUTIL13'
+                                                                                                                                 , 'EWEBPROD1'
+                                                                                                                                 , 'XSQLUTIL11')
+                                                                                                    AND t.server_name NOT IN (SELECT DISTINCT l.address
+                                                                                                                              FROM    ipmongroups g
+                                                                                                                              INNER JOIN
+                                                                                                                                      ipmongroupmembers m ON g.groupid = m.groupid INNER JOIN
+                                                                                                                                      ipmonmonitors l ON m.monitorid = l.monitorid INNER JOIN
+                                                                                                                                      t_server t ON l.address = t.server_name INNER JOIN
+                                                                                                                                      t_server_type_assoc tsta ON t.server_id = tsta.server_id
+                                                                                                                              WHERE l.name LIKE '%Remote Procedure Call%'
 AND t.environment_id = 0
-                              AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
-                          AND g.groupname IN ('Prod O/S Services')
-    AND t.active = 1)UNION ALL
+                                                                                                                                  AND tsta.type_id IN ('1', '2', '3', '4', '5', '6', '7', '8', '9', '15', '22', '24', '26', '29')
+                                                                                                                              AND g.groupname IN ('Prod O/S Services')
+                                                                                                        AND t.active = 1)UNION ALL
 --------------------------------------------------------------------------------------------------- SELECT DISTINCT t.server_name, t.server_id, 'Task Scheduler' AS missingmonitors
                                                                                                     FROM    t_server t
                                                                                                         INNER JOIN

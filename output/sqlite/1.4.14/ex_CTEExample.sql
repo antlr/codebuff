@@ -10,7 +10,8 @@ CREATE TABLE [dbo].[PriceHistory]([ItemId] [int]
                                       NOT NULL, [PriceStartDate] [datetime]
                                                     NOT NULL, [Price] [decimal](10, 2)
 
-                                                                  NOT NULL)
+                                                                  NOT NULL
+)
 
 SELECT
     currow.Item

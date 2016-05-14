@@ -2,6 +2,7 @@ package org.antlr.codebuff.walkers;
 
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.HashBag;
+import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
@@ -130,10 +131,10 @@ public class CollectTokenDependencies implements ParseTreeListener {
 	}
 
 	/** Map a rule name to a bag of (a,b) tuples that counts occurrences */
-	protected Map<String,HashBag<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
+	protected Map<RuleAltKey,HashBag<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
 
 	/** Track repeated token refs per rule */
-	protected Map<String,Set<Integer>> ruleToRepeatedTokensSet = new HashMap<>();
+	protected Map<RuleAltKey,Set<Integer>> ruleToRepeatedTokensSet = new HashMap<>();
 
 	/** We need parser vocabulary so we can filter for literals like '{' vs ID */
 	protected Vocabulary vocab;
@@ -152,6 +153,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 		// Find all ordered unique pairs of literals;
 		// no (a,a) pairs and only literals like '{', 'begin', '}', ...
 		// Add a for (a,a) into ruleToRepeatedTokensSet for later filtering
+		RuleAltKey ruleAltKey = new RuleAltKey(ruleName, ctx.getAltNumber());
 		for (int i=0; i<tnodes.size(); i++) {
 			for (int j = i+1; j<tnodes.size(); j++) {
 				TerminalNode a = tnodes.get(i);
@@ -164,19 +166,19 @@ public class CollectTokenDependencies implements ParseTreeListener {
 				}
 
 				if ( atype==btype ) {
-					Set<Integer> repeatedTokensSet = ruleToRepeatedTokensSet.get(ruleName);
+					Set<Integer> repeatedTokensSet = ruleToRepeatedTokensSet.get(ruleAltKey);
 					if ( repeatedTokensSet==null ) {
 						repeatedTokensSet = new HashSet<>();
-						ruleToRepeatedTokensSet.put(ruleName, repeatedTokensSet);
+						ruleToRepeatedTokensSet.put(ruleAltKey, repeatedTokensSet);
 					}
 					repeatedTokensSet.add(atype);
 				}
 				else {
 					Pair<Integer, Integer> pair = new Pair<>(atype, btype);
-					HashBag<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleName);
+					HashBag<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
 					if ( pairsBag==null ) {
 						pairsBag = new HashBag<>();
-						ruleToPairsBag.put(ruleName, pairsBag);
+						ruleToPairsBag.put(ruleAltKey, pairsBag);
 					}
 					pairsBag.add(pair);
 				}
@@ -186,28 +188,45 @@ public class CollectTokenDependencies implements ParseTreeListener {
 
 	/** Return the list of token dependences for each rule in a Map.
 	 */
-	public Map<String, List<Pair<Integer, Integer>>> getDependencies() {
+	public Map<RuleAltKey, List<Pair<Integer, Integer>>> getDependencies() {
 		return stripPairsWithRepeatedTokens();
 	}
 
+	/** Look for matching common single character literals.
+	 *  If bliteral is single char, prefer aliteral that is
+	 *  also a single char.
+	 *  Otherwise, just pick first aliteral
+	 */
 	public static int getMatchingLeftTokenType(Token curToken,
 	                                           List<Integer> viableMatchingLeftTokenTypes,
 	                                           Vocabulary vocab)
 	{
 		int matchingLeftTokenType = viableMatchingLeftTokenTypes.get(0); // by default just pick first
+		// see if we have a matching common pair of punct
+		String bliteral = vocab.getLiteralName(curToken.getType());
 		for (int ttype : viableMatchingLeftTokenTypes) {
 			String aliteral = vocab.getLiteralName(ttype);
-			String bliteral = vocab.getLiteralName(curToken.getType());
 			if ( aliteral!=null && aliteral.length()==3 &&
-				 bliteral!=null && bliteral.length()==3 ) {
+				 bliteral!=null && bliteral.length()==3 )
+			{
 				char leftChar = aliteral.charAt(1);
 				char rightChar = bliteral.charAt(1);
 				if (rightChar < 255 && CommonPairs[rightChar] == leftChar) {
-					matchingLeftTokenType = ttype;
-					break;
+					return ttype;
 				}
 			}
 		}
+		// not common pair, but give preference if we find two single-char vs ';' and 'fragment' for example
+		for (int ttype : viableMatchingLeftTokenTypes) {
+			String aliteral = vocab.getLiteralName(ttype);
+			if ( aliteral!=null && aliteral.length()==3 &&
+				 bliteral!=null && bliteral.length()==3 )
+			{
+				return ttype;
+			}
+		}
+
+		// oh well, just return first one
 		return matchingLeftTokenType;
 	}
 
@@ -221,22 +240,22 @@ public class CollectTokenDependencies implements ParseTreeListener {
 	 *
 	 *  elementValueArrayInitializer: 1:'{','}'
 	*/
-	protected Map<String,List<Pair<Integer,Integer>>> stripPairsWithRepeatedTokens() {
-		Map<String,List<Pair<Integer,Integer>>> ruleToPairsWoRepeats = new HashMap<>();
+	protected Map<RuleAltKey,List<Pair<Integer,Integer>>> stripPairsWithRepeatedTokens() {
+		Map<RuleAltKey,List<Pair<Integer,Integer>>> ruleToPairsWoRepeats = new HashMap<>();
 		// For each rule
-		for (String ruleName : ruleToPairsBag.keySet()) {
-			Set<Integer> ruleRepeatedTokens = ruleToRepeatedTokensSet.get(ruleName);
-			HashBag<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleName);
+		for (RuleAltKey ruleAltKey : ruleToPairsBag.keySet()) {
+			Set<Integer> ruleRepeatedTokens = ruleToRepeatedTokensSet.get(ruleAltKey);
+			HashBag<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
 			// If there are repeated tokens for this rule
 			if ( ruleRepeatedTokens!=null ) {
 				// Remove all (a,b) for b in repeated token set
 				List<Pair<Integer, Integer>> pairsWoRepeats =
 					BuffUtils.filter(pairsBag.keySet(),
                                      p -> !ruleRepeatedTokens.contains(p.a) && !ruleRepeatedTokens.contains(p.b));
-				ruleToPairsWoRepeats.put(ruleName, pairsWoRepeats);
+				ruleToPairsWoRepeats.put(ruleAltKey, pairsWoRepeats);
 			}
 			else {
-				ruleToPairsWoRepeats.put(ruleName, new ArrayList<>(pairsBag.keySet()));
+				ruleToPairsWoRepeats.put(ruleAltKey, new ArrayList<>(pairsBag.keySet()));
 			}
 		}
 		return ruleToPairsWoRepeats;

@@ -17,7 +17,8 @@ grammar MASM;
 
 
 compilationUnit
-    :   (segments | directive_exp1)* 'end' Identifier ;
+    :   (segments | directive_exp1)* 'end' Identifier
+    ;
 
 segments
     :   Identifier 'segments' 'para' 'public' (code | proc)* Identifier 'ends'
@@ -77,7 +78,8 @@ binary_exp3
     ;
 
 unuary_exp3
-    :   operato Identifier ;
+    :   operato Identifier
+    ;
 
 binary_exp4
     :   operator register Separator (register | memory)
@@ -108,7 +110,8 @@ unuary_exp4
     ;
 
 unuary_exp5
-    :   interruption Integer ;
+    :   interruption Integer
+    ;
 
 binary_exp10
     :   in register Separator (register | Integer)
@@ -182,7 +185,8 @@ o
     ;
 
 op
-    :   PUSH ;
+    :   PUSH
+    ;
 
 ope
     :   POP
@@ -227,7 +231,8 @@ ope
     ;
 
 oper
-    :   XCHG ;
+    :   XCHG
+    ;
 
 opera
     :   POPAD
@@ -377,7 +382,8 @@ b
     ;
 
 call
-    :   CALL ;
+    :   CALL
+    ;
 
 interruption
     :   INT
@@ -387,10 +393,12 @@ interruption
     ;
 
 in
-    :   IN ;
+    :   IN
+    ;
 
 out
-    :   OUT ;
+    :   OUT
+    ;
 
 re
     :   REP
@@ -454,11 +462,14 @@ ty
     ;
 
 question
-    :   QUESTION ;
+    :   QUESTION
+    ;
 
 time
-    :   TIMES ;
-Identifier : Letter ('_'| Letter | Digit)* ;
+    :   TIMES
+    ;
+
+Identifier :   Letter ('_'| Letter | Digit)* ;
 DS : 'ds' ;
 ES : 'es' ;
 CS : 'cs' ;
@@ -714,16 +725,14 @@ NEAR : 'near' ;
 PROC : 'proc' ;
 QUESTION : '?' ;
 TIMES : 'times' ;
-Hexnum : HexDigit+ ('h'| 'H')
-       ;
-
-Integer : Digit+ ;
-Octalnum : ('0'..'7')+ ('o'| 'O')
-         ;
-
+Hexnum :   HexDigit+ ('h'| 'H') ;
+Integer :   Digit+ ;
+Octalnum :   ('0'..'7')+ ('o'| 'O') ;
 fragment
 HexDigit
-    : ('0'..'9'| 'a'..'f' | 'A'..'F') ;
+    : ('0'..'9'| 'a'..'f' | 'A'..'F')
+    ;
+
 FloatingPointLiteral
     :   ('0'..'9')+ '.' ('0'..'9')* Exponent?
     |   '.' ('0'..'9')+ Exponent?
@@ -735,19 +744,18 @@ Exponent
     : ('e'| 'E') ('+'| '-')? ('0'..'9')+
     ;
 
-String : ' \'' ('\\' .| ~('\\' | '\''))* '\'' ;
+String : ' \'' ('\\' . | ~('\\' | '\''))* '\'' ;
 fragment
 Letter
-    : ('a'..'z'| 'A'..'Z') ;
+    : ('a'..'z'| 'A'..'Z')
+    ;
+
 fragment
 Digit
-    :   '0'..'9' ;
-Etiqueta : Identifier (':')
-         ;
+    :   '0'..'9'
+    ;
 
+Etiqueta :   Identifier (':') ;
 Separator : ',' ;
-WS : (' '| '\t' | '\n' | '\r') -> skip
-   ;
-
-LINE_COMMENT : ';' ~('\n' | '\r')* '\r'? '\n' -> skip
-             ;
+WS : (' '| '\t' | '\n' | '\r') -> skip ;
+LINE_COMMENT : ';' ~('\n' | '\r')* '\r'? '\n' -> skip ;

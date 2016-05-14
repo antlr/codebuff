@@ -2,6 +2,7 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -66,10 +67,8 @@ public class Trainer {
 	public static final int LIST_SUFFIX         = 4;
 	public static final int LIST_MEMBER         = 1_111_111_111;
 
-	// Feature values for pair on diff lines feature
+	// Feature values for pair starts lines feature either T/F or:
 	public static final int NOT_PAIR = -1;
-	public static final int PAIR_ON_SAME_LINE = 0;
-	public static final int PAIR_ON_DIFF_LINE = 1;
 
 	// Categories for newline, whitespace. CAT_INJECT_NL+n<<8 or CAT_INJECT_WS+n<<8
 	public static final int CAT_NO_WS = 0;
@@ -111,7 +110,8 @@ public class Trainer {
 	public static final int INDEX_PREV_FIRST_ON_LINE            = 1; // a \n right before this token?
 	public static final int INDEX_PREV_EARLIEST_RIGHT_ANCESTOR  = 2;
 	public static final int INDEX_CUR_TOKEN_TYPE                = 3;
-	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
+//	public static final int INDEX_MATCHING_TOKEN_DIFF_LINE      = 4; // during ws prediction, indicates current line on same as matching symbol
+	public static final int INDEX_MATCHING_TOKEN_STARTS_LINE    = 4;
 	public static final int INDEX_FIRST_ON_LINE		            = 5; // a \n right before this token?
 	public static final int INDEX_MEMBER_OVERSIZE_LIST          = 6; // -1 if we don't know; false means list but not big list
 	public static final int INDEX_LIST_ELEMENT_TYPE             = 7; // see LIST_PREFIX, etc...
@@ -141,7 +141,7 @@ public class Trainer {
 		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
-		FeatureMetaData.UNUSED, // can't use "paired token on diff line as we are computing '\n' here
+		new FeatureMetaData(BOOL,  new String[] {"Pair", "strt\\n"}, 1),
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(BOOL,  new String[] {"Big", "list"}, 2),
 		new FeatureMetaData(INT,   new String[] {"List", "elem."}, 1),
@@ -158,8 +158,8 @@ public class Trainer {
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
-		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
+		new FeatureMetaData(INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
@@ -185,19 +185,19 @@ public class Trainer {
 		new FeatureMetaData(INT,   new String[] {"parent^4", "child index"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"", "parent^5"}, 1),
 		new FeatureMetaData(INT,   new String[] {"parent^5", "child index"}, 1),
-		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
-		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
+		new FeatureMetaData(INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
 	public static FeatureMetaData[] FEATURES_ALL = {
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(-1)"}, 1),
-		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
-		new FeatureMetaData(INT,   new String[] {"Pair", "dif\\n"}, 1),
-		new FeatureMetaData(BOOL, new String[] {"Strt", "line"}, 1),
-		new FeatureMetaData(BOOL, new String[] {"Big", "list"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Pair", "strt\\n"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 1),
+		new FeatureMetaData(BOOL,  new String[] {"Big", "list"}, 1),
 		new FeatureMetaData(INT,   new String[] {"List", "elem."}, 1),
 		new FeatureMetaData(INT,   new String[] {"token", "child index"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"LT(1)", "left ancestor"}, 1),
@@ -212,8 +212,8 @@ public class Trainer {
 		new FeatureMetaData(INT,   new String[] {"parent^4", "child index"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"", "parent^5"}, 1),
 		new FeatureMetaData(INT,   new String[] {"parent^5", "child index"}, 1),
-		new FeatureMetaData(INFO_FILE, new String[] {"", "file"}, 0),
-		new FeatureMetaData(INFO_LINE, new String[] {"", "line"}, 0),
+		new FeatureMetaData(INFO_FILE,    new String[] {"", "file"}, 0),
+		new FeatureMetaData(INFO_LINE,    new String[] {"", "line"}, 0),
 		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
@@ -570,7 +570,7 @@ public class Trainer {
 			}
 		}
 
-		int matchingSymbolOnDiffLine = getMatchingSymbolOnDiffLine(corpus, doc, node, curToken.getLine());
+		int matchingSymbolStartsLine = getMatchingSymbolStartsLine(corpus, doc, node);
 
 		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
 
@@ -578,9 +578,9 @@ public class Trainer {
 
 		setListInfoFeatures(corpus.tokenToListInfo, features, curToken);
 
-		features[INDEX_PREV_FIRST_ON_LINE]       = prevTokenStartsLine ? 1 : 0;
-		features[INDEX_MATCHING_TOKEN_DIFF_LINE] = matchingSymbolOnDiffLine;
-		features[INDEX_FIRST_ON_LINE]            = curTokenStartsNewLine ? 1 : 0;
+		features[INDEX_PREV_FIRST_ON_LINE]         = prevTokenStartsLine ? 1 : 0;
+		features[INDEX_MATCHING_TOKEN_STARTS_LINE] = matchingSymbolStartsLine;
+		features[INDEX_FIRST_ON_LINE]              = curTokenStartsNewLine ? 1 : 0;
 
 		return features;
 	}
@@ -699,7 +699,30 @@ public class Trainer {
 		if (matchingLeftNode != null) {
 //			System.out.println(node.getPayload()+" matches with "+matchingLeftNode.getSymbol());
 			int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
-			return matchingLeftTokenLine != line ? PAIR_ON_DIFF_LINE : PAIR_ON_SAME_LINE;
+			return matchingLeftTokenLine != line ? 1 : 0;
+		}
+		return NOT_PAIR;
+	}
+
+	public static int getMatchingSymbolStartsLine(Corpus corpus,
+	                                              InputDocument doc,
+												  TerminalNode node)
+	{
+		TerminalNode matchingLeftNode = getMatchingLeftSymbol(corpus, doc, node);
+		if ( matchingLeftNode != null ) {
+			Token matchingLeftToken = matchingLeftNode.getSymbol();
+			int i = matchingLeftToken.getTokenIndex();
+			if ( i==0 ) return 1; // first token is considered first on line
+			doc.tokens.seek(i);
+			Token tokenBeforeMatchingToken = doc.tokens.LT(-1);
+//			System.out.printf("doc=%s node=%s, pair=%s, before=%s\n",
+//			                  new File(doc.fileName).getName(), node.getSymbol(), matchingLeftToken, tokenBeforeMatchingToken);
+			if ( tokenBeforeMatchingToken!=null ) {
+				return matchingLeftToken.getLine()>tokenBeforeMatchingToken.getLine() ? 1 : 0;
+			}
+			else { // matchingLeftToken must be first in file
+				return 1;
+			}
 		}
 		return NOT_PAIR;
 	}
@@ -796,11 +819,13 @@ public class Trainer {
 		Token curToken = node.getSymbol();
 		if (corpus.ruleToPairsBag != null) {
 			String ruleName = doc.parser.getRuleNames()[curTokensParentRuleIndex];
-			List<Pair<Integer, Integer>> pairs = corpus.ruleToPairsBag.get(ruleName);
+			RuleAltKey ruleAltKey = new RuleAltKey(ruleName, parent.getAltNumber());
+			List<Pair<Integer, Integer>> pairs = corpus.ruleToPairsBag.get(ruleAltKey);
 			if ( pairs!=null ) {
 				// Find appropriate pair given current token
 				// If more than one pair (a,b) with b=current token pick first one
 				// or if a common pair like ({,}), then give that one preference.
+				// or if b is punctuation, prefer a that is punct
 				List<Integer> viableMatchingLeftTokenTypes = viableLeftTokenTypes(parent, curToken, pairs);
 				Vocabulary vocab = doc.parser.getVocabulary();
 				if ( !viableMatchingLeftTokenTypes.isEmpty() ) {

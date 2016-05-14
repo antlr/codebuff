@@ -177,7 +177,8 @@ public class Misc {
             if ( connection instanceof JarURLConnection ) {
                 JarURLConnection jarURLConnection = (JarURLConnection)connection;
                 URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {
-jarURLConnection.getJarFileURL() });
+jarURLConnection.getJarFileURL()
+                                                                   });
                 try {
                     return urlClassLoader.findResource(jarURLConnection.getEntryName())!=null;
                 }

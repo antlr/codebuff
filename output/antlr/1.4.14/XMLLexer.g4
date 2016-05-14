@@ -36,10 +36,7 @@ CDATA : '<![CDATA[' .*? ']]>' ;
 /** Scarf all DTD stuff, Entity Declarations like <!ENTITY ...>,
  *  and Notation Declarations <!NOTATION ...>
  */
-DTD
-    :   '<!' .*? '>' -> skip
-    ;
-
+DTD : '<!' .*? '>' -> skip ;
 EntityRef : '&' Name ';' ;
 CharRef
     :   '&#' DIGIT+ ';'
@@ -47,25 +44,17 @@ CharRef
     ;
 
 SEA_WS : (' '| '\t' | '\r'? '\n')+ ;
-OPEN : '<' -> pushMode(INSIDE)
-     ;
-
-XMLDeclOpen : '<?xml' S -> pushMode(INSIDE)
-            ;
-
-SPECIAL_OPEN : '<?' Name ->more, pushMode(PROC_INSTR)
-             ;
-
+OPEN : '<' -> pushMode(INSIDE) ;
+XMLDeclOpen : '<?xml' S -> pushMode(INSIDE) ;
+SPECIAL_OPEN : '<?' Name ->more , pushMode(PROC_INSTR) ;
 TEXT : ~[<&]+ ;        // match any 16 bit char other than < and &
 
 // ----------------- Everything INSIDE of a tag ---------------------
+
 mode INSIDE;
-CLOSE : '>' -> popMode
-;
-SPECIAL_CLOSE : '?>' -> popMode
-; // close <?xml...?>
-SLASH_CLOSE : '/>' -> popMode
-;
+CLOSE : '>' -> popMode ;
+SPECIAL_CLOSE : '?>' -> popMode ; // close <?xml...?>
+SLASH_CLOSE : '/>' -> popMode ;
 SLASH : '/' ;
 EQUALS : '=' ;
 STRING
@@ -73,9 +62,7 @@ STRING
     |   '\'' ~[<']* '\''
     ;
 Name : NameStartChar NameChar* ;
-S :   [ \t\r\n] -> skip
-;
-
+S :   [ \t\r\n] -> skip ;
 fragment
 HEXDIGIT
 :   [a-fA-F0-9]
@@ -111,7 +98,5 @@ NameStartChar
 // ----------------- Handle <? ... ?> ---------------------
 
 mode PROC_INSTR;
-PI : '?>' -> popMode
-   ; // close <?...?>
-IGNORE : . -> more
-       ;
+PI : '?>' -> popMode ; // close <?...?>
+IGNORE : . -> more ;

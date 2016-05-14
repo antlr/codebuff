@@ -33,7 +33,9 @@ value
 STRING : '"' (ESC | ~["\\])* '"' ;
 fragment
 ESC
-    :   '\\' (["\\/bfnrt]| UNICODE) ;
+    :   '\\' (["\\/bfnrt] | UNICODE)
+    ;
+
 fragment
 UNICODE
     :   'u' HEX HEX HEX HEX
@@ -41,7 +43,11 @@ UNICODE
 
 fragment
 HEX
-    :   [0-9a-fA-F] ;
+    :   [0-9a-fA-F]
+    ;
+
+
+
 NUMBER
     :   '-'? INT '.' [0-9]+ EXP?
     |   '-'? INT EXP
@@ -62,5 +68,6 @@ EXP
 
 // \- since - means "range" inside [...]
 
-WS :   [ \t\n\r]+ -> skip
-   ;
+
+
+WS :   [ \t\n\r]+ -> skip ;

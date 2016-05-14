@@ -1,4 +1,4 @@
-SELECT CAST(cast(g.name as varbinary(256))AS sysname) AS [FileGroup_Name]
+SELECT CAST(cast(g.name as varbinary(256)) AS sysname) AS [FileGroup_Name]
     , s.name AS [Name]
     , CAST(CASE s.file_id
     WHEN 1 THEN 1
@@ -6,10 +6,10 @@ SELECT CAST(cast(g.name as varbinary(256))AS sysname) AS [FileGroup_Name]
     , CAST( CASE when s.growth = 0 THEN ( CASE WHEN s.type = 2 THEN 0 ELSE 99 END ) ELSE s.is_percent_growth END AS int) AS [GrowthType]
     , s.physical_name AS [FileName]
     , s.size * CONVERT(float, 8) AS [Size]
-    , CASE when s.max_size = -1 then -1 else s.max_size * CONVERT(float, 8)END AS [MaxSize]
+    , CASE when s.max_size = -1 then -1 else s.max_size * CONVERT(float, 8) END AS [MaxSize]
     , s.file_id AS [ID]
     ,
-        'Server[@Name=' + quotename(CAST(serverproperty('Servername')AS sysname), '''') + ']' + '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name as varbinary(256))AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
+        'Server[@Name=' + quotename(CAST(serverproperty('Servername') AS sysname), '''') + ']' + '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name as varbinary(256)) AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
     , CAST(CASE s.is_percent_growth
     WHEN 1 THEN s.growth ELSE s.growth * 8 END AS float) AS [Growth]
     , s.is_media_read_only AS [IsReadOnlyMedia]

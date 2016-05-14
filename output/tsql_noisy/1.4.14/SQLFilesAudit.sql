@@ -4,7 +4,7 @@ SELECT CAST(cast(g.name as varbinary(256)) AS sysname) AS [FileGroup_Name]
 WHEN 1 THEN 1 ELSE 0 END AS bit) AS [IsPrimaryFile]
     , CAST(CASE when s.growth = 0 THEN ( CASE WHEN s.type = 2 THEN 0
                                               ELSE 99
-                                         END) ELSE s.is_percent_growth END AS int) AS [GrowthType]
+                                         END ) ELSE s.is_percent_growth END AS int) AS [GrowthType]
     , s.physical_name AS [FileName]
     , s.size * CONVERT(float, 8) AS [Size]
     , CASE when s.max_size = -1 then -1 else s.max_size * CONVERT(float, 8) END AS [MaxSize]

@@ -2,6 +2,7 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
+import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.codebuff.walkers.CollectSiblingLists;
 import org.antlr.codebuff.walkers.CollectTokenDependencies;
@@ -47,7 +48,7 @@ public class Corpus {
 	 */
 	public Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
 
-	public Map<String, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
+	public Map<RuleAltKey, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
 	public Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats;
 	public Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats;
 	public Map<ParentSiblingListKey, Integer> splitListForms;
@@ -99,9 +100,9 @@ public class Corpus {
 		tokenToListInfo = collectSiblingLists.getTokenToListInfo();
 
 		if ( false ) {
-			for (String ruleName : ruleToPairsBag.keySet()) {
-				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleName);
-				System.out.print(ruleName+": ");
+			for (RuleAltKey ruleAltKey : ruleToPairsBag.keySet()) {
+				List<Pair<Integer, Integer>> pairs = ruleToPairsBag.get(ruleAltKey);
+				System.out.print(ruleAltKey+" -> ");
 				for (Pair<Integer, Integer> p : pairs) {
 					System.out.print(vocab.getDisplayName(p.a)+","+vocab.getDisplayName(p.b)+" ");
 				}

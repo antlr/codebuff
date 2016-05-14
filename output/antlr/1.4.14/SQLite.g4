@@ -71,7 +71,8 @@ commit_stmt
     ;
 
 compound_select_stmt
-    :   (K_WITH K_RECURSIVE? common_tables)? select_core ((K_UNION K_ALL? | K_INTERSECT | K_EXCEPT) select_core)+ (K_ORDER K_BY ordering_term (',' ordering_term)*)? (K_LIMIT expr ((K_OFFSET | ',') expr)?)?
+    :   (K_WITH K_RECURSIVE? common_tables)? select_core ((K_UNION K_ALL? | K_INTERSECT | K_EXCEPT) select_core)+
+        (K_ORDER K_BY ordering_term (',' ordering_term)*)? (K_LIMIT expr ((K_OFFSET | ',') expr)?)?
     ;
 
 common_tables
@@ -267,7 +268,8 @@ conflict_clause
     |   expr K_NOT? K_BETWEEN expr K_AND expr
     |   expr K_NOT? K_IN ('(' (select_stmt | exprs)? ')' | (database_name '.')? table_name)
     |   (K_NOT? K_EXISTS)? '(' select_stmt ')'
-    |   K_CASE expr? (K_WHEN expr K_THEN expr)+ (K_ELSE expr)? K_END
+    |   K_CASE expr? (K_WHEN expr K_THEN expr)+
+        (K_ELSE expr)? K_END
     |   raise_function
     ;
 
@@ -276,15 +278,15 @@ exprs
     ;
 
 foreign_key_clause
-    :   K_REFERENCES foreign_table ('(' column_names ')')? (   (   K_ON (K_DELETE | K_UPDATE)
-                                                                   (   K_SET K_NULL
-                                                                   |   K_SET K_DEFAULT
-                                                                   |   K_CASCADE
-                                                                   |   K_RESTRICT
-                                                                   |   K_NO K_ACTION
-                                                                   )
-                                                               |   K_MATCH name
-                                                               ))* (K_NOT? K_DEFERRABLE (K_INITIALLY K_DEFERRED | K_INITIALLY K_IMMEDIATE)?)?
+    :   K_REFERENCES foreign_table ('(' column_names ')')? ((   K_ON (K_DELETE | K_UPDATE)
+(   K_SET K_NULL
+|   K_SET K_DEFAULT
+|   K_CASCADE
+|   K_RESTRICT
+|   K_NO K_ACTION
+)
+                                                            |   K_MATCH name
+                                                            ))* (K_NOT? K_DEFERRABLE (K_INITIALLY K_DEFERRED | K_INITIALLY K_IMMEDIATE)?)?
     ;
 
 raise_function
@@ -353,7 +355,9 @@ select_core
     |   K_VALUES '(' exprs ')' (',' '(' exprs ')')*
     ;
 
-compound_operator : K_UNION | K_UNION K_ALL | K_INTERSECT | K_EXCEPT ;
+compound_operator
+    : K_UNION | K_UNION K_ALL | K_INTERSECT | K_EXCEPT
+    ;
 
 cte_table_name
     :   table_name ('(' column_names ')')?
@@ -770,10 +774,10 @@ BIND_PARAMETER
 
 STRING_LITERAL : '\'' (~'\''| '\'\'')* '\'' ;
 BLOB_LITERAL : X STRING_LITERAL ;
-SINGLE_LINE_COMMENT : '--' ~[\r\n]*
-                      -> channel(HIDDEN) ;
+SINGLE_LINE_COMMENT : '--' ~[\r\n]* -> channel(HIDDEN) ;
 MULTILINE_COMMENT : '/*' .*? ('*/'| EOF) -> channel(HIDDEN) ;
-SPACES : [ \u000B\t\r\n] -> channel(HIDDEN) ;
+SPACES : [ \u000B\t\r\n]
+         -> channel(HIDDEN) ;
 UNEXPECTED_CHAR : . ;
 fragment
 DIGIT

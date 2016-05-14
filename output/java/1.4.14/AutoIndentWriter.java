@@ -131,7 +131,8 @@ public class AutoIndentWriter implements STWriter {
     /** Write out a string literal or attribute expression or expression element. */
 
     @Override
-    public int write(String str) throws IOException {
+    public int write(String str)
+        throws IOException {
         int n = 0;
         int nll = newline.length();
         int sl = str.length();
@@ -163,7 +164,8 @@ public class AutoIndentWriter implements STWriter {
     }
 
     @Override
-    public int writeSeparator(String str) throws IOException {
+    public int writeSeparator(String str)
+        throws IOException {
         return write(str);
     }
 
@@ -176,13 +178,15 @@ public class AutoIndentWriter implements STWriter {
      */
 
     @Override
-    public int write(String str, String wrap) throws IOException {
+    public int write(String str, String wrap)
+        throws IOException {
         int n = writeWrap(wrap);
         return n+write(str);
     }
 
     @Override
-    public int writeWrap(String wrap) throws IOException {
+    public int writeWrap(String wrap)
+        throws IOException {
         int n = 0;
         // if want wrap and not already at start of line (last char was \n)
         // and we have hit or exceeded the threshold
@@ -215,7 +219,8 @@ public class AutoIndentWriter implements STWriter {
         return n;
     }
 
-    public int indent() throws IOException {
+    public int indent()
+        throws IOException {
         int n = 0;
         for (String ind : indents) {
             if ( ind!=null ) {
