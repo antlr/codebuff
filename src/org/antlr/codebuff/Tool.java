@@ -9,9 +9,11 @@ import org.antlr.codebuff.validation.TokenPositionAnalysis;
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -20,14 +22,17 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.misc.Triple;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -38,6 +43,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.antlr.codebuff.misc.BuffUtils.filter;
+import static org.antlr.v4.runtime.atn.PredictionMode.SLL;
 
 /** Grammar must have WS/comments on hidden channel
  *
@@ -144,20 +150,24 @@ public class Tool {
 			stop = System.nanoTime();
 			Formatter formatter = val.a;
 			output = formatter.getOutput();
-			float editDistance = val.b;
-			System.out.println("Levenshtein distance: "+editDistance);
+			System.out.println("output len = "+output.length());
+			float editDistance = normalizedLevenshteinDistance(testDoc.content, output);
+			System.out.println("normalized Levenshtein distance: "+editDistance);
 			analysisPerToken = formatter.getAnalysisPerToken();
 
 			CommonTokenStream original_tokens = tokenize(testDoc.content, lang.lexerClass);
 			List<Token> wsTokens = filter(original_tokens.getTokens(),
 			                              t -> t.getText().matches("\\s+"));
 			String originalWS = tokenText(wsTokens);
+			System.out.println("origin ws tokens len: "+originalWS.length());
 			CommonTokenStream formatted_tokens = tokenize(output, lang.lexerClass);
 			wsTokens = filter(formatted_tokens.getTokens(),
 			                  t -> t.getText().matches("\\s+"));
 			String formattedWS = tokenText(wsTokens);
+			System.out.println("formatted ws tokens len: "+formattedWS.length());
 			editDistance = levenshteinDistance(originalWS, formattedWS);
-			System.out.println("Levenshtein distance of ws: "+editDistance);
+			editDistance /= Math.max(testDoc.content.length(), output.length());
+			System.out.println("Levenshtein distance of ws normalized to output len: "+editDistance);
 
 			ClassificationAnalysis analysis = new ClassificationAnalysis(testDoc, analysisPerToken);
 			System.out.println(analysis);
@@ -192,9 +202,9 @@ public class Tool {
 			System.out.println("len orig, formatted="+testDoc.content.length()+", "+output.length());
 			System.out.println("ws len orig, formatted="+originalWS.length()+", "+formattedWS.length());
 
-			float editDistance = levenshteinDistance(originalWS, formattedWS);
+			float editDistance = normalizedLevenshteinDistance(originalWS, formattedWS);
 			System.out.println("Levenshtein distance of ws: "+editDistance);
-			editDistance = levenshteinDistance(testDoc.content, output);
+			editDistance = normalizedLevenshteinDistance(testDoc.content, output);
 			System.out.println("Levenshtein distance: "+editDistance);
 		}
 
@@ -293,28 +303,44 @@ public class Tool {
 
 		doc.parser = getParser(language.parserClass, doc.tokens);
 		doc.parser.setBuildParseTree(true);
+
+		// two-stage parsing. Try with SLL first
+		doc.parser.getInterpreter().setPredictionMode(SLL);
+		doc.parser.setErrorHandler(new BailErrorStrategy());
 		doc.parser.removeErrorListeners();
-		doc.parser.addErrorListener(
-			new ANTLRErrorListener() {
-				@Override
-				public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-					System.err.println(recognizer.getInputStream().getSourceName()+" line " + line + ":" + charPositionInLine + " " + msg);
-				}
 
-				@Override
-				public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
-				}
-
-				@Override
-				public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
-				}
-
-				@Override
-				public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
-				}
-			});
 		Method startRule = language.parserClass.getMethod(language.startRuleName);
-		doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
+		try {
+			doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
+		}
+		catch (InvocationTargetException ex) {
+			if ( ex.getCause() instanceof ParseCancellationException ) {
+				doc.tokens.reset(); // rewind input stream
+				// back to standard listeners/handlers
+				doc.parser.addErrorListener(
+					new ANTLRErrorListener() {
+						@Override
+						public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+							System.err.println(recognizer.getInputStream().getSourceName()+" line " + line + ":" + charPositionInLine + " " + msg);
+						}
+
+						@Override
+						public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
+						}
+
+						@Override
+						public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
+						}
+
+						@Override
+						public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
+						}
+					});
+				doc.parser.setErrorHandler(new DefaultErrorStrategy());
+				doc.parser.getInterpreter().setPredictionMode(PredictionMode.LL);
+				doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
+			}
+		}
 
 		return doc;
 	}
@@ -436,6 +462,12 @@ public class Tool {
 	 *  "It is always at least the difference of the sizes of the two strings."
 	 *  "It is at most the length of the longer string."
 	 */
+	public static float normalizedLevenshteinDistance(String s, String t) {
+		float d = levenshteinDistance(s, t);
+		int max = Math.max(s.length(), t.length());
+		return d / (float)max;
+	}
+
 	public static float levenshteinDistance(String s, String t) {
 	    // degenerate cases
 	    if (s.equals(t)) return 0;
@@ -474,10 +506,7 @@ public class Tool {
 	    }
 
 	    int d = v1[t.length()];
-//		int min = Math.abs(s.length()-t.length());
-		int max = Math.max(s.length(), t.length());
-		return d / (float)max;
-//		return d;
+		return d;
 	}
 
 	/* Compare whitespace and give an approximate Levenshtein distance /
@@ -585,10 +614,19 @@ public class Tool {
 //	}
 
 	public static String tokenText(List<Token> tokens) {
+		return tokenText(tokens, null);
+	}
+
+	public static String tokenText(List<Token> tokens, String separator) {
 		if ( tokens==null ) return "";
 		StringBuilder buf = new StringBuilder();
+		boolean first = true;
 		for (Token t : tokens) {
+			if ( separator!=null && !first ) {
+				buf.append(separator);
+			}
 			buf.append(t.getText());
+			first = false;
 		}
 		return buf.toString();
 	}

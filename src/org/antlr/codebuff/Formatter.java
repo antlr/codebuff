@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import static org.antlr.codebuff.Tool.levenshteinDistance;
+import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
 import static org.antlr.codebuff.Tool.tokenText;
 import static org.antlr.codebuff.Tool.tokenize;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
@@ -46,7 +46,7 @@ public class Formatter {
 	public static final int COL_ALARM_THRESHOLD = 80;
 	public static final int DEFAULT_K = 11;
 
-	public final Corpus corpus;
+	public Corpus corpus;
 
 	public StringBuilder output;
 	public CodeBuffTokenStream originalTokens; // copy of tokens with line/col info
@@ -68,11 +68,11 @@ public class Formatter {
 	 */
 	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo;
 
-	public CodekNNClassifier nlwsClassifier;
-	public CodekNNClassifier alignClassifier;
+	public CodekNNClassifier wsClassifier;
+	public CodekNNClassifier hposClassifier;
 	public int k;
-	public FeatureMetaData[] injectWSFeatures = FEATURES_INJECT_WS;
-	public FeatureMetaData[] alignmentFeatures = FEATURES_HPOS;
+	public FeatureMetaData[] wsFeatures = FEATURES_INJECT_WS;
+	public FeatureMetaData[] hposFeatures = FEATURES_HPOS;
 
 	public InputDocument originalDoc; // used only for debugging
 	public InputDocument testDoc;
@@ -83,12 +83,12 @@ public class Formatter {
 	public int charPosInLine = 0;
 
 	public Formatter(Corpus corpus, int indentSize, int k,
-	                 FeatureMetaData[] injectWSFeatures, FeatureMetaData[] alignmentFeatures)
+	                 FeatureMetaData[] wsFeatures, FeatureMetaData[] hposFeatures)
 	{
 		this(corpus, indentSize);
 		this.k = k;
-		this.injectWSFeatures = injectWSFeatures;
-		this.alignmentFeatures = alignmentFeatures;
+		this.wsFeatures = wsFeatures;
+		this.hposFeatures = hposFeatures;
 	}
 
 	public Formatter(Corpus corpus, int indentSize) {
@@ -106,8 +106,23 @@ public class Formatter {
 		return analysis;
 	}
 
+	/** Free anything we can to reduce memory footprint after a format().
+	 *  keep analysis, testDoc as they are used for results.
+	 */
+	public void releaseMemory() {
+		corpus = null;
+		realTokens = null;
+		originalTokens = null;
+		tokenToNodeMap = null;
+		originalTokenToNodeMap = null;
+		tokenToListInfo = null;
+		wsClassifier = null;
+		hposClassifier = null;
+	}
+
 	/** Format the document. Does not affect/alter doc. */
 	public String format(InputDocument doc, boolean collectAnalysis) throws Exception {
+		if ( testDoc!=null ) throw new IllegalArgumentException("can't call format > once");
 		// for debugging we need a map from original token with actual line:col to tree node. used by token analysis
 		originalDoc = doc;
 		originalTokenToNodeMap = indexTree(doc.tree);
@@ -118,8 +133,8 @@ public class Formatter {
 		this.realTokens = getRealTokens(testDoc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
 		wipeCharPositionInfoAndWhitespaceTokens(testDoc.tokens); // all except for first token
-		nlwsClassifier = new CodekNNClassifier(corpus, injectWSFeatures);
-		alignClassifier = new CodekNNClassifier(corpus, alignmentFeatures);
+		wsClassifier = new CodekNNClassifier(corpus, wsFeatures);
+		hposClassifier = new CodekNNClassifier(corpus, hposFeatures);
 
 		analysis = new Vector<>(testDoc.tokens.size());
 		analysis.setSize(testDoc.tokens.size());
@@ -147,6 +162,8 @@ public class Formatter {
 			processToken(i, tokenIndexInStream, collectAnalysis);
 		}
 
+		releaseMemory();
+
 		return output.toString();
 	}
 
@@ -161,7 +178,7 @@ public class Formatter {
 		                  t -> t.getText().matches("\\s+"));
 		String formattedWS = tokenText(wsTokens);
 
-		float editDistance = levenshteinDistance(originalWS, formattedWS);
+		float editDistance = normalizedLevenshteinDistance(originalWS, formattedWS);
 		return editDistance;
 	}
 
@@ -176,8 +193,8 @@ public class Formatter {
 		int[] featuresForAlign = new int[features.length];
 		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
-		int injectNL_WS = nlwsClassifier.classify2(k, features, corpus.injectWhitespace,
-		                                           Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+		int injectNL_WS = wsClassifier.classify2(k, features, corpus.injectWhitespace,
+		                                         Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
 
 		int newlines = 0;
 		int ws = 0;
@@ -204,7 +221,7 @@ public class Formatter {
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 //			featuresForAlign[INDEX_MATCHING_TOKEN_STARTS_LINE] = getMatchingSymbolStartsLine(corpus, testDoc, node);
 
-			alignOrIndent = alignClassifier.classify2(k, featuresForAlign, corpus.hpos, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = hposClassifier.classify2(k, featuresForAlign, corpus.hpos, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
 			if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
 				align(alignOrIndent, node);
@@ -426,13 +443,13 @@ public class Formatter {
 		String alignAnalysis = "";
 		if ( collectAnalysis ) { // this can be slow
 			newlineAnalysis = newlinePredictionString+"\n"+
-				nlwsClassifier.getPredictionAnalysis(testDoc, k, features, corpus.injectWhitespace,
-				                                     MAX_WS_CONTEXT_DIFF_THRESHOLD);
+				wsClassifier.getPredictionAnalysis(testDoc, k, features, corpus.injectWhitespace,
+				                                   MAX_WS_CONTEXT_DIFF_THRESHOLD);
 			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 				alignAnalysis =
 					alignPredictionString+"\n"+
-						alignClassifier.getPredictionAnalysis(testDoc, k, featuresForAlign, corpus.hpos,
-						                                      MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+						hposClassifier.getPredictionAnalysis(testDoc, k, featuresForAlign, corpus.hpos,
+						                                     MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 			}
 		}
 		TokenPositionAnalysis a = new TokenPositionAnalysis(curToken, injectNL_WS, newlineAnalysis, alignOrIndent, alignAnalysis);

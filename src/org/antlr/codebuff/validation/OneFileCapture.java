@@ -17,12 +17,13 @@ import java.util.List;
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
-import static org.antlr.codebuff.Tool.levenshteinDistance;
+import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
 import static org.antlr.codebuff.Tool.version;
 
 public class OneFileCapture {
@@ -31,6 +32,7 @@ public class OneFileCapture {
 			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
+			JAVA_GUAVA_DESCR,
 			ANTLR4_DESCR,
 			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
@@ -53,7 +55,7 @@ public class OneFileCapture {
 			Formatter formatter = new Formatter(corpus, language.indentSize);
 			String output = formatter.format(testDoc, false);
 			//		System.out.println(output);
-			float editDistance = levenshteinDistance(testDoc.content, output);
+			float editDistance = normalizedLevenshteinDistance(testDoc.content, output);
 			System.out.println(fileName+" edit distance "+editDistance);
 			selfEditDistances.add(editDistance);
 		}
@@ -67,7 +69,7 @@ public class OneFileCapture {
 			Formatter formatter = new Formatter(corpus, language.indentSize);
 			String output = formatter.format(testDoc, false);
 			//		System.out.println(output);
-			float editDistance = levenshteinDistance(testDoc.content, output);
+			float editDistance = normalizedLevenshteinDistance(testDoc.content, output);
 			System.out.println(fileName+"+corpus edit distance "+editDistance);
 			corpusEditDistances.add(editDistance);
 		}

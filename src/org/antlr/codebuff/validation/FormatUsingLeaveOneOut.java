@@ -19,6 +19,7 @@ public class FormatUsingLeaveOneOut extends LeaveOneOutValidator {
 			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
+//			JAVA_GUAVA_DESCR,
 			ANTLR4_DESCR,
 //			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,

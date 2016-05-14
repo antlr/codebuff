@@ -11,7 +11,7 @@ import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.levenshteinDistance;
+import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
 
 public class GrammarInvariance {
 	public static void main(String[] args) throws Exception {
@@ -27,7 +27,7 @@ public class GrammarInvariance {
 		for (int i = 0; i<sqliteFormatters.size(); i++) {
 			Formatter sqlite = sqliteFormatters.get(i);
 			Formatter tsql = tsqlFormatters.get(i);
-			float editDistance = levenshteinDistance(sqlite.getOutput(), tsql.getOutput());
+			float editDistance = normalizedLevenshteinDistance(sqlite.getOutput(), tsql.getOutput());
 			distances.add(editDistance);
 			System.out.println(sqlite.testDoc.fileName+" edit distance "+editDistance);
 		}
@@ -56,7 +56,7 @@ public class GrammarInvariance {
 		for (int i = 0; i<javaFormatters.size(); i++) {
 			Formatter java = javaFormatters.get(i);
 			Formatter java8 = java8Formatters.get(i);
-			float editDistance = levenshteinDistance(java.getOutput(), java8.getOutput());
+			float editDistance = normalizedLevenshteinDistance(java.getOutput(), java8.getOutput());
 			distances.add(editDistance);
 			System.out.println(java.testDoc.fileName+" edit distance "+editDistance);
 		}

@@ -22,12 +22,13 @@ import java.util.Random;
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
-import static org.antlr.codebuff.Tool.levenshteinDistance;
 import static org.antlr.codebuff.Tool.load;
+import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
 import static org.antlr.codebuff.Tool.version;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.map;
@@ -57,6 +58,7 @@ public class SubsetValidator {
 			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
+			JAVA_GUAVA_DESCR,
 			ANTLR4_DESCR,
 //			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
@@ -157,7 +159,7 @@ public class SubsetValidator {
 		String output = formatter.format(testDoc, false);
 		float editDistance = 0;
 		if ( computeEditDistance ) {
-			editDistance = levenshteinDistance(testDoc.content, output);
+			editDistance = normalizedLevenshteinDistance(testDoc.content, output);
 		}
 		ClassificationAnalysis analysis = new ClassificationAnalysis(testDoc, formatter.getAnalysisPerToken());
 //		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
