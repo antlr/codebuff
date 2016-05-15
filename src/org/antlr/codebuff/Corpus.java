@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.kdtree.KDTree;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.RuleAltKey;
@@ -33,6 +34,9 @@ public class Corpus {
 	public static final int INDEX_FEATURE_ALIGN_WITH_PREVIOUS = 1;
 
 	List<InputDocument> documents; // A list of all input docs to train on
+
+	public KDTree kdtree;
+	public int nextIndex = 0;
 
 	public List<InputDocument> documentsPerExemplar; // an entry for each featureVector
 	public List<int[]> featureVectors;
@@ -136,6 +140,8 @@ public class Corpus {
 		featureVectors = new ArrayList<>();
 		injectWhitespace = new ArrayList<>();
 		hpos = new ArrayList<>();
+
+		kdtree = new KDTree();
 
 		for (InputDocument doc : documents) {
 			if ( showFileNames ) System.out.println(doc);

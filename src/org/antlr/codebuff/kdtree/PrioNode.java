@@ -18,4 +18,9 @@ public final class PrioNode<T> {
 		this.priority = priority;
 		this.data = data;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%5.3f %s", priority, data.toString());
+	}
 }

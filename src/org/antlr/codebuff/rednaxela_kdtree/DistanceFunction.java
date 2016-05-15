@@ -1,4 +1,4 @@
-package org.antlr.codebuff.kdtree;
+package org.antlr.codebuff.rednaxela_kdtree;
 
 public interface DistanceFunction {
 	public double distance(double[] p1, double[] p2);

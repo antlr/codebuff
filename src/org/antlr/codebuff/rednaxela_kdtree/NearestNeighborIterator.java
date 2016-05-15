@@ -1,4 +1,4 @@
-package org.antlr.codebuff.kdtree;
+package org.antlr.codebuff.rednaxela_kdtree;
 
 import java.util.Arrays;
 import java.util.Iterator;

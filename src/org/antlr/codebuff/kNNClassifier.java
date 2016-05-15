@@ -1,5 +1,7 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.kdtree.Exemplar;
+import org.antlr.codebuff.kdtree.PrioNode;
 import org.antlr.codebuff.misc.ClassifierResultCacheKey;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.MutableDouble;
@@ -67,6 +69,11 @@ public abstract class kNNClassifier {
 	}
 
 	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+		Iterable<? extends PrioNode<Exemplar>> results = corpus.kdtree.search(unknown, k);
+		for (PrioNode<Exemplar> prioNode : results) {
+			Exemplar exemplar = prioNode.data;
+			System.out.println(exemplar);
+		}
 		ClassifierResultCacheKey key = new ClassifierResultCacheKey(unknown, Y);
 		Integer catI = classifyCache.get(key);
 		nClassifyCalls++;
@@ -87,6 +94,15 @@ public abstract class kNNClassifier {
 
 		classifyCache.put(key, cat);
 		return cat;
+	}
+
+	public int classify3(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
+		Iterable<? extends PrioNode<Exemplar>> results = corpus.kdtree.search(unknown, k);
+		for (PrioNode<Exemplar> prioNode : results) {
+			Exemplar exemplar = prioNode.data;
+			System.out.println(exemplar);
+		}
+		return 0;
 	}
 
 	public static int getCategoryWithMostVotes(HashBag<Integer> votes) {

@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.kdtree.Exemplar;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.RuleAltKey;
@@ -283,6 +284,9 @@ public class Trainer {
 		featureVectors.set(i, features);
 		injectWhitespace.set(i, injectNL_WS);
 		hpos.set(i, aligned);
+
+		// add to the overall kdtree in the corpus loading this doc
+		corpus.kdtree.add(new Exemplar(corpus, features, corpus.nextIndex++));
 	}
 
 	public static int getInjectWSCategory(CommonTokenStream tokens, int i) {
