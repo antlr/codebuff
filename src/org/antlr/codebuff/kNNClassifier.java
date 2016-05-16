@@ -207,13 +207,13 @@ public abstract class kNNClassifier {
 	}
 
 	public Neighbor[] kNN(int[] unknown, int k, double distanceThreshold) {
-		Neighbor[] distances = distances(unknown, distanceThreshold);
+		Neighbor[] distances = distances(unknown, k, distanceThreshold);
 		Arrays.sort(distances,
 		            (Neighbor o1, Neighbor o2) -> Double.compare(o1.distance, o2.distance));
 		return Arrays.copyOfRange(distances, 0, Math.min(k, distances.length));
 	}
 
-	public Neighbor[] distances(int[] unknown, double distanceThreshold) {
+	public Neighbor[] distances(int[] unknown, int k, double distanceThreshold) {
 		int curTokenRuleIndex = unknown[Trainer.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
 		int prevTokenRuleIndex = unknown[Trainer.INDEX_EARLIEST_LEFT_ANCESTOR];
 		int pr = Trainer.unrulealt(prevTokenRuleIndex)[0];
@@ -227,22 +227,32 @@ public abstract class kNNClassifier {
 		if ( vectorIndexesMatchingTokenContext==null ) {
 			// no matching contexts for this feature, must rely on full training set
 			int n = corpus.featureVectors.size(); // num training samples
+			int num0 = 0; // how many 0-distance elements have we seen? If k we can stop!
 			for (int i = 0; i<n; i++) {
 				int[] x = corpus.featureVectors.get(i);
 				double d = distance(x, unknown);
 				if ( d<=distanceThreshold ) {
 					Neighbor neighbor = new Neighbor(corpus, d, i);
 					distances.add(neighbor);
+					if ( d==0.0 ) {
+						num0++;
+						if ( num0==k ) break;
+					}
 				}
 			}
 		}
 		else {
+			int num0 = 0; // how many 0-distance elements have we seen? If k we can stop!
 			for (Integer vectorIndex : vectorIndexesMatchingTokenContext) {
 				int[] x = corpus.featureVectors.get(vectorIndex);
 				double d = distance(x, unknown);
 				if ( d<=distanceThreshold ) {
 					Neighbor neighbor = new Neighbor(corpus, d, vectorIndex);
 					distances.add(neighbor);
+					if ( d==0.0 ) {
+						num0++;
+						if ( num0==k ) break;
+					}
 				}
 			}
 		}
