@@ -119,13 +119,13 @@ public class BuffUtils {
 		return diffs;
 	}
 
-	public static Double median(List<Double> data) {
+	public static double median(List<Double> data) {
 		Collections.sort(data);
 		int n = data.size();
 		return data.get(n/2);
 	}
 
-	public static Double mean(Collection<Double> data) {
+	public static double mean(Collection<Double> data) {
 		double sum = 0.0;
 		for (Double d : data) {
 			sum += d;
