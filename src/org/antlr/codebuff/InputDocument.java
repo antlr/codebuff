@@ -4,10 +4,13 @@ import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenSource;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class InputDocument {
 	public LangDescriptor language;
@@ -16,6 +19,7 @@ public class InputDocument {
 	public List<String> lines; // used for debugging; a cache of lines in this.content
 	public int index;
 	public ParserRuleContext tree;
+	public Map<Token, TerminalNode> tokenToNodeMap = null;
 
 	public Parser parser;
 	public CodeBuffTokenStream tokens;
@@ -39,6 +43,13 @@ public class InputDocument {
 			return lines.get(line-1);
 		}
 		return null;
+	}
+
+	public void setTree(ParserRuleContext root) {
+		this.tree = root;
+		if ( root!=null ) {
+			tokenToNodeMap = Trainer.indexTree(root);
+		}
 	}
 
 	public Class<? extends Parser> getParserClass() {

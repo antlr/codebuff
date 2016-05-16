@@ -50,9 +50,9 @@ public class CollectSiblingLists extends VisitSiblingLists {
 	public CodeBuffTokenStream tokens;
 
 	// reuse object so the maps above fill from multiple files during training
-	public void setTokens(CodeBuffTokenStream tokens, ParserRuleContext root) {
+	public void setTokens(CodeBuffTokenStream tokens, ParserRuleContext root, Map<Token, TerminalNode> tokenToNodeMap) {
 		this.tokens = tokens;
-		tokenToNodeMap = Trainer.indexTree(root);
+		this.tokenToNodeMap = tokenToNodeMap;
 	}
 
 	public void visitNonSingletonWithSeparator(ParserRuleContext ctx, List<? extends ParserRuleContext> siblings, Token separator) {

@@ -9,7 +9,6 @@ import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Pair;
-import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.File;
@@ -38,6 +37,13 @@ public class Corpus {
 	public List<int[]> featureVectors;
 	public List<Integer> injectWhitespace;
 	public List<Integer> hpos;
+
+	public void addExemplar(InputDocument doc, int[] features, int ws, int hpos) {
+		documentsPerExemplar.add(doc);
+		featureVectors.add(features);
+		injectWhitespace.add(ws);
+		this.hpos.add(hpos);
+	}
 
 	public String rootDir;
 	public LangDescriptor language;
@@ -71,7 +77,10 @@ public class Corpus {
 	public void train() throws Exception { train(true); }
 
 	public void train(boolean shuffleFeatureVectors) throws Exception {
+		long start = System.nanoTime();
 		collectTokenPairsAndSplitListInfo();
+		long stop = System.nanoTime();
+		System.out.printf("collectTokenPairsAndSplitListInfo %dms\n", (stop-start)/1_000_000);
 
 		trainOnSampleDocs();
 
@@ -89,7 +98,7 @@ public class Corpus {
 		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
 		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 		for (InputDocument doc : documents) {
-			collectSiblingLists.setTokens(doc.tokens, doc.tree);
+			collectSiblingLists.setTokens(doc.tokens, doc.tree, doc.tokenToNodeMap);
 			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
@@ -139,32 +148,10 @@ public class Corpus {
 
 		for (InputDocument doc : documents) {
 			if ( showFileNames ) System.out.println(doc);
-			Triple<List<int[]>, List<Integer>, List<Integer>> results = process(doc);
-			List<int[]> features = results.a;
-			List<Integer> ws = results.b;
-			List<Integer> al = results.c;
-
-			for (int i=0; i<features.size(); i++) {
-				documentsPerExemplar.add(doc);
-				int[] featureVec = features.get(i);
-				injectWhitespace.add(ws.get(i));
-				hpos.add(al.get(i));
-				featureVectors.add(featureVec);
-			}
+			// Parse document, save feature vectors to the doc
+			Trainer trainer = new Trainer(this, doc, language.indentSize);
+			trainer.computeFeatureVectors();
 		}
-	}
-
-	/** Parse document, save feature vectors to the doc */
-	public Triple<List<int[]>,List<Integer>,List<Integer>> process(InputDocument doc) {
-		Trainer trainer = new Trainer(this, doc, language.indentSize);
-		trainer.computeFeatureVectors();
-
-		Triple<List<int[]>,List<Integer>,List<Integer>> results =
-			new Triple<>(trainer.getFeatureVectors(),
-						 trainer.getInjectWhitespace(),
-						 trainer.getHPos());
-//		System.out.println(results.a.size()+" "+doc.tokens.size()+" tokens "+doc.fileName);
-		return results;
 	}
 
 	/** Feature vectors in X are lumped together as they are read in each

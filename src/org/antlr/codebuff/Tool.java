@@ -311,7 +311,7 @@ public class Tool {
 
 		Method startRule = language.parserClass.getMethod(language.startRuleName);
 		try {
-			doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
+			doc.setTree((ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null));
 		}
 		catch (InvocationTargetException ex) {
 			if ( ex.getCause() instanceof ParseCancellationException ) {
@@ -338,7 +338,7 @@ public class Tool {
 					});
 				doc.parser.setErrorHandler(new DefaultErrorStrategy());
 				doc.parser.getInterpreter().setPredictionMode(PredictionMode.LL);
-				doc.tree = (ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null);
+				doc.setTree((ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null));
 			}
 		}
 
