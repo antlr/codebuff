@@ -148,7 +148,7 @@ public class Corpus {
 
 		for (InputDocument doc : documents) {
 			if ( showFileNames ) System.out.println(doc);
-			// Parse document, save feature vectors to the doc
+			// Parse document, add feature vectors to this corpus
 			Trainer trainer = new Trainer(this, doc, language.indentSize);
 			trainer.computeFeatureVectors();
 		}

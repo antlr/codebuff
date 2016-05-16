@@ -261,9 +261,6 @@ public class Trainer {
 
 		// track feature -> injectws, align decisions for token i
 		corpus.addExemplar(doc, features, injectNL_WS, aligned);
-//		featureVectors.set(i, features);
-//		injectWhitespace.set(i, injectNL_WS);
-//		hpos.set(i, aligned);
 	}
 
 	public static int getInjectWSCategory(CommonTokenStream tokens, int i) {
