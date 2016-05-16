@@ -1,7 +1,5 @@
 package org.antlr.codebuff;
 
-import org.antlr.codebuff.kdtree.Exemplar;
-import org.antlr.codebuff.kdtree.PrioNode;
 import org.antlr.codebuff.misc.ClassifierResultCacheKey;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.MutableDouble;
@@ -69,11 +67,6 @@ public abstract class kNNClassifier {
 	}
 
 	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		Iterable<? extends PrioNode<Exemplar>> results = corpus.kdtree.search(unknown, k);
-		for (PrioNode<Exemplar> prioNode : results) {
-			Exemplar exemplar = prioNode.data;
-			System.out.println(exemplar);
-		}
 		ClassifierResultCacheKey key = new ClassifierResultCacheKey(unknown, Y);
 		Integer catI = classifyCache.get(key);
 		nClassifyCalls++;
@@ -94,15 +87,6 @@ public abstract class kNNClassifier {
 
 		classifyCache.put(key, cat);
 		return cat;
-	}
-
-	public int classify3(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		Iterable<? extends PrioNode<Exemplar>> results = corpus.kdtree.search(unknown, k);
-		for (PrioNode<Exemplar> prioNode : results) {
-			Exemplar exemplar = prioNode.data;
-			System.out.println(exemplar);
-		}
-		return 0;
 	}
 
 	public static int getCategoryWithMostVotes(HashBag<Integer> votes) {
@@ -149,7 +133,7 @@ public abstract class kNNClassifier {
 	// we have 2 votes of similarity .8 and 1 of similarity of 1, 1.6 vs 6.
 	// The votes still outweigh the similarity in this case. For a tie, however,
 	// the weights will matter.
-	public Map<Integer,MutableDouble> getCategoryToSimilarityMap(Neighbor[] kNN, int k, List<Integer> Y) {
+	public static Map<Integer,MutableDouble> getCategoryToSimilarityMap(Neighbor[] kNN, int k, List<Integer> Y) {
 		Map<Integer,MutableDouble> catSimilarities = new HashMap<>();
 		for (int i = 0; i<k && i<kNN.length; i++) {
 			int y = Y.get(kNN[i].corpusVectorIndex);
@@ -164,7 +148,7 @@ public abstract class kNNClassifier {
 		return catSimilarities;
 	}
 
-	public int getCategoryWithMaxValue(Map<Integer,MutableDouble> catSimilarities) {
+	public static int getCategoryWithMaxValue(Map<Integer,MutableDouble> catSimilarities) {
 		double max = Integer.MIN_VALUE;
 		int catWithMaxSimilarity = -1;
 		for (Integer category : catSimilarities.keySet()) {

@@ -1,5 +1,6 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.kdtree.KDTreeClassifier;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.validation.TokenPositionAnalysis;
 import org.antlr.codebuff.walkers.IdentifyOversizeLists;
@@ -68,6 +69,7 @@ public class Formatter {
 	 */
 	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo;
 
+	public KDTreeClassifier wsClassifier2;
 	public CodekNNClassifier wsClassifier;
 	public CodekNNClassifier hposClassifier;
 	public int k;
@@ -136,6 +138,8 @@ public class Formatter {
 		wsClassifier = new CodekNNClassifier(corpus, wsFeatures);
 		hposClassifier = new CodekNNClassifier(corpus, hposFeatures);
 
+		wsClassifier2 = new KDTreeClassifier(corpus, wsFeatures);
+
 		analysis = new Vector<>(testDoc.tokens.size());
 		analysis.setSize(testDoc.tokens.size());
 
@@ -195,6 +199,12 @@ public class Formatter {
 
 		int injectNL_WS = wsClassifier.classify2(k, features, corpus.injectWhitespace,
 		                                         Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+
+		int injectNL_WS2 = wsClassifier2.classify(k, features, corpus.injectWhitespace, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+
+		System.out.println(injectNL_WS+"=="+injectNL_WS2);
+		injectNL_WS = injectNL_WS2;
+
 
 		int newlines = 0;
 		int ws = 0;
@@ -445,6 +455,10 @@ public class Formatter {
 			newlineAnalysis = newlinePredictionString+"\n"+
 				wsClassifier.getPredictionAnalysis(testDoc, k, features, corpus.injectWhitespace,
 				                                   MAX_WS_CONTEXT_DIFF_THRESHOLD);
+			newlineAnalysis = newlinePredictionString+"\n"+
+				wsClassifier2.getPredictionAnalysis(testDoc, k, features, corpus.injectWhitespace,
+				                                   MAX_WS_CONTEXT_DIFF_THRESHOLD);
+
 			if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 				alignAnalysis =
 					alignPredictionString+"\n"+

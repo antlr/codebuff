@@ -35,7 +35,7 @@ public class Corpus {
 
 	List<InputDocument> documents; // A list of all input docs to train on
 
-	public KDTree kdtree;
+	public KDTree<Integer> kdtree;
 	public int nextIndex = 0;
 
 	public List<InputDocument> documentsPerExemplar; // an entry for each featureVector
@@ -141,7 +141,7 @@ public class Corpus {
 		injectWhitespace = new ArrayList<>();
 		hpos = new ArrayList<>();
 
-		kdtree = new KDTree();
+		kdtree = new KDTree<>(Trainer.NUM_FEATURES);
 
 		for (InputDocument doc : documents) {
 			if ( showFileNames ) System.out.println(doc);

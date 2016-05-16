@@ -1,3 +1,0 @@
-Pulled code from http://robowiki.net/wiki/User:Duyn/BucketKdTree
-License is RoboWiki Public Code License (RWPCL) - Version 1.1
-http://robowiki.net/wiki/RWPCL
