@@ -23,7 +23,7 @@ public abstract class kNNClassifier {
 
 	public boolean dumpVotes = false;
 
-	public static Map<Pair<FeatureVectorAsObject,List<Integer>>,Integer> classifyCache = new HashMap<>();
+	public static Map<Pair<FeatureVectorAsObject,Integer>,Integer> classifyCache = new HashMap<>();
 	public static int nClassifyCalls=0;
 	public static int nClassifyCacheHits=0;
 
@@ -67,7 +67,8 @@ public abstract class kNNClassifier {
 	}
 
 	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		Pair<FeatureVectorAsObject,List<Integer>> key = new Pair<>(new FeatureVectorAsObject(unknown), Y);
+		Pair<FeatureVectorAsObject,Integer> key = new Pair<>(new FeatureVectorAsObject(unknown),
+		                                                     Y==corpus.injectWhitespace? 0 : 1);
 		Integer catI = classifyCache.get(key);
 		nClassifyCalls++;
 		if ( catI!=null ) {

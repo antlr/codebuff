@@ -169,12 +169,12 @@ public class LeaveOneOutValidator {
 						  tms,
 						  fms,
 						  tokensPerMS, testDoc.tokens.size());
-		System.out.printf("classify calls %d, hits %d rate %f\n",
-		                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
-		                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
-		System.out.printf("kNN calls %d, hits %d rate %f\n",
-						  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
-						  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
+//		System.out.printf("classify calls %d, hits %d rate %f\n",
+//		                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
+//		                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
+//		System.out.printf("kNN calls %d, hits %d rate %f\n",
+//						  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
+//						  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
 		return new Triple<>(formatter, editDistance, analysis.getErrorRate());
 	}
 
