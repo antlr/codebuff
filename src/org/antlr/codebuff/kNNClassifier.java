@@ -52,20 +52,6 @@ public abstract class kNNClassifier {
 		nNNCacheHits=0;
 	}
 
-	/**
-	 * Walk all training samples and compute distance(). Return indexes of k
-	 * smallest distance values.  Categories can be any negative or positive
-	 * integer (and 0).
-	 */
-	public int classify(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		HashBag<Integer> votes = votes(k, unknown, Y, distanceThreshold);
-		if ( votes.size()==0 ) {
-			// try with less strict match threshold to get some indication of alignment
-			votes = votes(k, unknown, Y, MAX_CONTEXT_DIFF_THRESHOLD2);
-		}
-		return getCategoryWithMostVotes(votes);
-	}
-
 	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
 		Pair<FeatureVectorAsObject,Integer> key = new Pair<>(new FeatureVectorAsObject(unknown),
 		                                                     Y==corpus.injectWhitespace? 0 : 1);
