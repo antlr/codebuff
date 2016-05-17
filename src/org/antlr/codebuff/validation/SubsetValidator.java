@@ -3,7 +3,6 @@ package org.antlr.codebuff.validation;
 import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.misc.Triple;
@@ -151,7 +150,7 @@ public class SubsetValidator {
 	                                                     boolean computeEditDistance)
 		throws Exception
 	{
-		kNNClassifier.resetCache();
+//		kNNClassifier.resetCache();
 		Corpus corpus = new Corpus(documents, language);
 		corpus.train();
 //		System.out.printf("%d feature vectors\n", corpus.featureVectors.size());

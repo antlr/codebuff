@@ -125,6 +125,18 @@ public class BuffUtils {
 		return data.get(n/2);
 	}
 
+	public static double max(List<Double> data) {
+		Collections.sort(data);
+		int n = data.size();
+		return data.get(n-1);
+	}
+
+	public static double min(List<Double> data) {
+		Collections.sort(data);
+		int n = data.size();
+		return data.get(0);
+	}
+
 	public static double mean(Collection<Double> data) {
 		double sum = 0.0;
 		for (Double d : data) {

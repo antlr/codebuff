@@ -27,7 +27,6 @@ class SystemHelper
         help:Sleep(1000) //one second
     */
 
-
     system action Sleep(integer milliseconds)
 
     /*

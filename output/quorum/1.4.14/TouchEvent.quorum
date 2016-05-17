@@ -9,6 +9,8 @@ releasing their finger from the screen, or moving their finger across the screen
 class TouchEvent 
     
     /* This value represents the event that a finger is first touching the screen. */
+
+
     public constant integer BEGAN = 0
 
     /* This value represents that a finger is moving across the screen. */

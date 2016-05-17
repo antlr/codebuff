@@ -52,6 +52,7 @@ public class CompilationState {
      * {@code impl.}{@link CompiledST#instrs instrs} array; this is next address
      * to write to. Byte-addressable memory.
      */
+
     int ip = 0;
 
 
@@ -114,7 +115,7 @@ public class CompilationState {
             int j = opAST.getTokenStopIndex();
             int p = ((CommonToken)tokens.get(i)).getStartIndex();
             int q = ((CommonToken)tokens.get(j)).getStopIndex();
-            if ( !(p< 0 || q< 0) ) impl.sourceMap[ip] = new Interval(p, q);
+            if ( !(p<0 || q<0) ) impl.sourceMap[ip] = new Interval(p, q);
         }
         impl.instrs[ip++] = (byte)opcode;
     }
@@ -174,7 +175,7 @@ public class CompilationState {
     }
 
     protected void ensureCapacity(int n) {
-        if ( (ip+n)>= impl.instrs.length ) { // ensure room for full instruction
+        if ( (ip+n)>=impl.instrs.length ) { // ensure room for full instruction
             byte[] c = new byte[impl.instrs.length*2];
             System.arraycopy(impl.instrs, 0, c, 0, impl.instrs.length);
             impl.instrs = c;

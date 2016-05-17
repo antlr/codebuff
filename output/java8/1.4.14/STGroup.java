@@ -188,7 +188,7 @@ public class STGroup {
     public ST getInstanceOf(String name) {
         if ( name==null ) return null;
         if ( verbose ) System.out.println(getName()+".getInstanceOf("+name+")");
-        if ( name.charAt(0)!='/' ) name = "/"+name;
+        if ( name.charAt(0) !='/' ) name = "/"+name;
         CompiledST c = lookupTemplate(name);
         if ( c!=null ) {
             return createStringTemplate(c);
@@ -198,7 +198,7 @@ public class STGroup {
 
     protected ST getEmbeddedInstanceOf(Interpreter interp, InstanceScope scope, String name) {
         String fullyQualifiedName = name;
-        if ( name.charAt(0)!='/' ) {
+        if ( name.charAt(0) !='/' ) {
             fullyQualifiedName = scope.st.impl.prefix+name;
         }
         if ( verbose ) System.out.println("getEmbeddedInstanceOf("+fullyQualifiedName+")");
@@ -239,13 +239,13 @@ public class STGroup {
      */
 
     public boolean isDefined(String name) {
-        return lookupTemplate(name)!=null;
+        return lookupTemplate(name) !=null;
     }
 
     /** Look up a fully-qualified name. */
 
     public CompiledST lookupTemplate(String name) {
-        if ( name.charAt(0)!='/' ) name = "/"+name;
+        if ( name.charAt(0) !='/' ) name = "/"+name;
         if ( verbose ) System.out.println(getName()+".lookupTemplate("+name+")");
         CompiledST code = rawGetTemplate(name);
         if ( code==NOT_FOUND_ST ) {
@@ -277,6 +277,7 @@ public class STGroup {
         for (STGroup imp : imports) {
             imp.unload();
         }
+
         for (STGroup imp : importsToClearOnUnload) {
             imports.remove(imp);
         }
@@ -319,13 +320,13 @@ public class STGroup {
     }
 
     public boolean isDictionary(String name) {
-        return dictionaries.get(name)!=null;
+        return dictionaries.get(name) !=null;
     }
 
     /** for testing */
 
     public CompiledST defineTemplate(String templateName, String template) {
-        if ( templateName.charAt(0)!='/' ) templateName = "/"+templateName;
+        if ( templateName.charAt(0) !='/' ) templateName = "/"+templateName;
         try {
             CompiledST impl = defineTemplate(templateName,
                                              new CommonToken(GroupParser.ID, templateName),
@@ -344,7 +345,7 @@ public class STGroup {
     /** for testing */
 
     public CompiledST defineTemplate(String name, String argsS, String template) {
-        if ( name.charAt(0)!='/' ) name = "/"+name;
+        if ( name.charAt(0) !='/' ) name = "/"+name;
         String[] args = argsS.split(",");
         List<FormalArgument> a = new ArrayList<FormalArgument>();
         for (String arg : args) {
@@ -477,7 +478,7 @@ public class STGroup {
      */
 
     public static String getMangledRegionName(String enclosingTemplateName, String name) {
-        if ( enclosingTemplateName.charAt(0)!='/' ) {
+        if ( enclosingTemplateName.charAt(0) !='/' ) {
             enclosingTemplateName = '/'+enclosingTemplateName;
         }
         return "/region__"+enclosingTemplateName+"__"+name;
@@ -817,7 +818,7 @@ public class STGroup {
 
     public String show() {
         StringBuilder buf = new StringBuilder();
-        if ( imports.size()!= 0 ) buf.append(" : "+imports);
+        if ( imports.size() != 0 ) buf.append(" : "+imports);
         for (String name : templates.keySet()) {
             CompiledST c = rawGetTemplate(name);
             if ( c.isAnonSubtemplate || c==NOT_FOUND_ST ) continue;
@@ -846,7 +847,7 @@ public class STGroup {
         load();
         HashSet<String> result = new HashSet<String>();
         for (Map.Entry<String, CompiledST> e : templates.entrySet()) {
-            if ( e.getValue()!= NOT_FOUND_ST ) {
+            if ( e.getValue() != NOT_FOUND_ST ) {
                 result.add(e.getKey());
             }
         }

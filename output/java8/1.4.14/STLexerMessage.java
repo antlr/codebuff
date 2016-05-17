@@ -59,7 +59,7 @@ public class STLexerMessage extends STMessage {
                 templateDelimiterSize = 2;
             }
             line += templateToken.getLine()-1;
-            charPos += templateToken.getCharPositionInLine() +templateDelimiterSize;
+            charPos += templateToken.getCharPositionInLine()+templateDelimiterSize;
         }
 
         String filepos = line+":"+charPos;

@@ -14,7 +14,6 @@ class KeyboardProcessor
     /*  The Update action will check if any keyboard events have occured, and if
         there are any, it will add them to the events list. */
 
-
     system action Update
     List<KeyboardEvent> events
     List<KeyboardListener> listeners
@@ -52,6 +51,7 @@ class KeyboardProcessor
             Iterator<KeyboardListener> listenIterator = listeners:GetIterator()
             KeyboardEvent currentEvent = undefined
             KeyboardListener currentListener = undefined
+
             repeat while not events:IsEmpty()
                 currentEvent = events:RemoveFromFront()
                 repeat while listenIterator:HasNext()

@@ -484,6 +484,7 @@ end
 
 action UpdateAll(number secondsSinceUpdate)
    Update(secondsSinceUpdate)
+
    integer counter = 0
    repeat GetItemCount() times
        GetChildAsItem(counter):UpdateAll(secondsSinceUpdate)

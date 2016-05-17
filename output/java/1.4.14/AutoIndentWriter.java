@@ -109,7 +109,7 @@ public class AutoIndentWriter implements STWriter {
 
     @Override
     public void pushAnchorPoint() {
-        if ( (anchors_sp+1) >= anchors.length ) {
+        if ( (anchors_sp+1) >=anchors.length ) {
             int[] a = new int[anchors.length*2];
             System.arraycopy(anchors, 0, a, 0, anchors.length-1);
             anchors = a;

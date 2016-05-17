@@ -6,6 +6,7 @@ ORDER BY 1
 
 /* Get columns */
 
+
 SELECT
     tab.name table_name
     , col.name column_name
@@ -35,6 +36,7 @@ ORDER BY 1, 3
 
 /* Get check constraints */
 
+
 SELECT
     tab.name table_name
     , obj.name constraint_name
@@ -48,6 +50,7 @@ WHERE obj.xtype = 'C'
 ORDER BY 1, 2
 
 /* Get primary key constraints */
+
 
 SELECT
     tab.name table_name
@@ -65,6 +68,7 @@ ORDER BY 1, 2, 4
 
 /* Get unique key constraints */
 
+
 SELECT
     tab.name table_name
     , ind.name constraint_name
@@ -80,6 +84,7 @@ WHERE ind.status & 1000 = 1000
 ORDER BY 1, 2, 4
 
 /* Get foreign key constraints */
+
 
 SELECT
     child_table          child_table
@@ -209,6 +214,7 @@ WHERE child_pos = parent_pos AND obj.id = constraint_id
 ORDER BY 1, 2, 4
 
 /* Get indexes except primary keys and keys enforcing unique constraints */
+
 
 SELECT
     tab.name table_name

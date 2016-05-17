@@ -39,13 +39,14 @@ public class CorpusConsistency {
 		Corpus corpus = new Corpus(language.corpusDir, language);
 		corpus.train();
 		// a map of feature vector to list of exemplar indexes of that feature
-		MultiMap<FeatureVectorAsObject,Integer> contextToIndex = new MultiMap<>();
-		MultiMap<FeatureVectorAsObject,Integer> featuresToHPosCat = new MultiMap<>();
+		MultiMap<FeatureVectorAsObject,Integer> wsContextToIndex = new MultiMap<>();
+		MultiMap<FeatureVectorAsObject,Integer> hposContextToIndex = new MultiMap<>();
 
 		int n = corpus.featureVectors.size();
 		for (int i = 0; i<n; i++) {
 			int[] features = corpus.featureVectors.get(i);
-			contextToIndex.map(new FeatureVectorAsObject(features), i);
+			wsContextToIndex.map(new FeatureVectorAsObject(features, Trainer.FEATURES_INJECT_WS), i);
+			hposContextToIndex.map(new FeatureVectorAsObject(features, Trainer.FEATURES_HPOS), i);
 		}
 
 		int num_ambiguous_ws_vectors = 0;
@@ -54,8 +55,8 @@ public class CorpusConsistency {
 		// Dump output grouped by ws vs hpos then feature vector then category
 		if ( report ) System.out.println(" --- INJECT WS ---");
 		List<Double> ws_entropies = new ArrayList<>();
-		for (FeatureVectorAsObject fo : contextToIndex.keySet()) {
-			List<Integer> exemplarIndexes = contextToIndex.get(fo);
+		for (FeatureVectorAsObject fo : wsContextToIndex.keySet()) {
+			List<Integer> exemplarIndexes = wsContextToIndex.get(fo);
 
 			// we have group by feature vector, now group by cat with that set for ws
 			MultiMap<Integer,Integer> wsCatToIndexes = new MultiMap<>();
@@ -86,8 +87,8 @@ public class CorpusConsistency {
 
 		if ( report ) System.out.println(" --- HPOS ---");
 		List<Double> hpos_entropies = new ArrayList<>();
-		for (FeatureVectorAsObject fo : contextToIndex.keySet()) {
-			List<Integer> exemplarIndexes = contextToIndex.get(fo);
+		for (FeatureVectorAsObject fo : hposContextToIndex.keySet()) {
+			List<Integer> exemplarIndexes = hposContextToIndex.get(fo);
 
 			// we have group by feature vector, now group by cat with that set for hpos
 			MultiMap<Integer,Integer> hposCatToIndexes = new MultiMap<>();
@@ -117,7 +118,8 @@ public class CorpusConsistency {
 		}
 		System.out.println();
 		System.out.println(language.name);
-		System.out.println("There are "+contextToIndex.size()+" unique feature vectors out of "+n);
+		System.out.println("There are "+wsContextToIndex.size()+" unique ws feature vectors out of "+n);
+		System.out.println("There are "+hposContextToIndex.size()+" unique hpos feature vectors out of "+n);
 		float prob_ws_ambiguous = num_ambiguous_ws_vectors/(float) n;
 		System.out.printf("num_ambiguous_ws_vectors   = %5d/%5d = %5.3f\n", num_ambiguous_ws_vectors, n, prob_ws_ambiguous);
 		float prob_hpos_ambiguous = num_ambiguous_hpos_vectors/(float) n;

@@ -21,7 +21,8 @@ compilationUnit
     ;
 
 segments
-    :   Identifier 'segments' 'para' 'public' (code | proc)* Identifier 'ends'
+    :   Identifier 'segments' 'para' 'public' (code | proc)*
+        Identifier 'ends'
     ;
 
 proc

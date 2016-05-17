@@ -313,7 +313,7 @@ public class ST {
                                                    aggrSpec);
         }
 
-        if ( values.length!= propNames.length ) {
+        if ( values.length!=propNames.length ) {
             throw new IllegalArgumentException("number of properties and values mismatch for aggregate attribute format: "+aggrSpec);
         }
 

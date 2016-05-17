@@ -13,25 +13,28 @@ import java.util.Map;
 
 import static org.antlr.codebuff.Trainer.CAT_INJECT_NL;
 import static org.antlr.codebuff.Trainer.CAT_INJECT_WS;
+import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
+import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.Trainer.MAX_CONTEXT_DIFF_THRESHOLD2;
 
 /** A kNN (k-Nearest Neighbor) classifier */
 public abstract class kNNClassifier {
 	protected final Corpus corpus;
 	protected final FeatureMetaData[] FEATURES;
+	protected List<Integer> Y;
 	protected final int maxDistanceCount;
 
 	public boolean dumpVotes = false;
 
-	public static Map<Pair<FeatureVectorAsObject,Integer>,Integer> classifyCache = new HashMap<>();
+	public Map<FeatureVectorAsObject,Integer> classifyCache = new HashMap<>();
 	public static int nClassifyCalls=0;
 	public static int nClassifyCacheHits=0;
 
-	public static Map<FeatureVectorAsObject, Neighbor[]> neighborCache = new HashMap<>();
+	public Map<FeatureVectorAsObject, Neighbor[]> neighborCache = new HashMap<>();
 	public static int nNNCalls=0;
 	public static int nNNCacheHits=0;
 
-	public kNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES) {
+	public kNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES, List<Integer> Y) {
 		this.corpus = corpus;
 		this.FEATURES = FEATURES;
 		assert FEATURES.length <= Trainer.NUM_FEATURES;
@@ -40,9 +43,10 @@ public abstract class kNNClassifier {
 			n += FEATURE.mismatchCost;
 		}
 		maxDistanceCount = n;
+		this.Y = Y;
 	}
 
-	public static void resetCache() {
+	public void resetCache() {
 		classifyCache.clear();
 		neighborCache.clear();
 		nClassifyCacheHits = 0;
@@ -52,9 +56,8 @@ public abstract class kNNClassifier {
 		nNNCacheHits=0;
 	}
 
-	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		Pair<FeatureVectorAsObject,Integer> key = new Pair<>(new FeatureVectorAsObject(unknown),
-		                                                     Y==corpus.injectWhitespace? 0 : 1);
+	public int classify2(int k, int[] unknown, double distanceThreshold) {
+		FeatureVectorAsObject key = new FeatureVectorAsObject(unknown, FEATURES);
 		Integer catI = classifyCache.get(key);
 		nClassifyCalls++;
 		if ( catI!=null ) {
@@ -150,7 +153,7 @@ public abstract class kNNClassifier {
 	}
 
 	public String getPredictionAnalysis(InputDocument doc, int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		FeatureVectorAsObject key = new FeatureVectorAsObject(unknown);
+		FeatureVectorAsObject key = new FeatureVectorAsObject(unknown, FEATURES);
 		Neighbor[] kNN = neighborCache.get(key);
 		nNNCalls++;
 		if ( kNN==null ) {
@@ -205,13 +208,41 @@ public abstract class kNNClassifier {
 		int prevTokenRuleIndex = unknown[Trainer.INDEX_EARLIEST_LEFT_ANCESTOR];
 		int pr = Trainer.unrulealt(prevTokenRuleIndex)[0];
 		int cr = Trainer.unrulealt(curTokenRuleIndex)[0];
-		Pair<Integer, Integer> key =  new Pair<>(pr, cr);
-		List<Integer> vectorIndexesMatchingTokenContext = corpus.curAndPrevTokenRuleIndexToVectorsMap.get(key);
+
+		List<Integer> vectorIndexesMatchingContext = null;
+
+		// look for exact match and take result even if < k results.  If we have exact matches they always win let's say
+		if ( FEATURES==FEATURES_INJECT_WS ) {
+			vectorIndexesMatchingContext = corpus.wsFeaturesToExemplarIndexes.get(new FeatureVectorAsObject(unknown, FEATURES));
+		}
+		else if ( FEATURES==FEATURES_HPOS ) {
+			vectorIndexesMatchingContext = corpus.hposFeaturesToExemplarIndexes.get(new FeatureVectorAsObject(unknown, FEATURES));
+		}
+		// else might be specialized feature set for testing so ignore these caches in that case
+
+		if ( FEATURES==FEATURES_INJECT_WS && // can't use this cache if we are testing out different feature sets
+			(vectorIndexesMatchingContext==null || vectorIndexesMatchingContext.size()<=3) ) // must have at 4 or more dist=0.0 for WS else we search wider
+		{
+			// ok, not exact. look for match with prev and current rule index
+			Pair<Integer, Integer> key = new Pair<>(pr, cr);
+			vectorIndexesMatchingContext = corpus.curAndPrevTokenRuleIndexToExemplarIndexes.get(key);
+		}
+		if ( FEATURES==FEATURES_HPOS &&
+			 (vectorIndexesMatchingContext==null || vectorIndexesMatchingContext.size()<k) )
+		{
+			// can't use this cache if we are testing out different feature sets
+			if ( FEATURES==FEATURES_INJECT_WS || FEATURES==FEATURES_HPOS ) {
+				// ok, not exact. look for match with prev and current rule index
+				Pair<Integer, Integer> key = new Pair<>(pr, cr);
+				vectorIndexesMatchingContext = corpus.curAndPrevTokenRuleIndexToExemplarIndexes.get(key);
+			}
+		}
+
 		if ( distanceThreshold==MAX_CONTEXT_DIFF_THRESHOLD2 ) { // couldn't find anything, open it all up.
-			vectorIndexesMatchingTokenContext = null;
+			vectorIndexesMatchingContext = null;
 		}
 		List<Neighbor> distances = new ArrayList<>();
-		if ( vectorIndexesMatchingTokenContext==null ) {
+		if ( vectorIndexesMatchingContext==null ) {
 			// no matching contexts for this feature, must rely on full training set
 			int n = corpus.featureVectors.size(); // num training samples
 			int num0 = 0; // how many 0-distance elements have we seen? If k we can stop!
@@ -230,7 +261,7 @@ public abstract class kNNClassifier {
 		}
 		else {
 			int num0 = 0; // how many 0-distance elements have we seen? If k we can stop!
-			for (Integer vectorIndex : vectorIndexesMatchingTokenContext) {
+			for (Integer vectorIndex : vectorIndexesMatchingContext) {
 				int[] x = corpus.featureVectors.get(vectorIndex);
 				double d = distance(x, unknown);
 				if ( d<=distanceThreshold ) {

@@ -94,6 +94,7 @@ public class AutoIndentWriter implements STWriter {
 
     @Override
     public void setLineWidth(int lineWidth) {
+
         this.lineWidth = lineWidth;
     }
 

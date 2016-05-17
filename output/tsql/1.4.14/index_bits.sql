@@ -17,13 +17,12 @@ FROM SQLIndexRebuilds a
             , max(seq_num) AS max_seq_num
         FROM SQLIndexRebuilds
         GROUP BY ServerName, DBName, SQLStatement, IndexType, FragPercent
-        HAVING count(*) > 1
-    ) b ON a.ServerName = b.ServerName AND
-           a.DBName = b.DBName AND
-           a.SQLStatement = b.SQLStatement AND
-           a.IndexType = b.IndexType AND
-           a.FragPercent = b.FragPercent AND
-           a.seq_num < b.max_seq_num
+        HAVING count(*) > 1) b ON a.ServerName = b.ServerName AND
+                                  a.DBName = b.DBName AND
+                                  a.SQLStatement = b.SQLStatement AND
+                                  a.IndexType = b.IndexType AND
+                                  a.FragPercent = b.FragPercent AND
+                                  a.seq_num < b.max_seq_num
 
 --------------------------------------------------------------------------
 
@@ -97,8 +96,8 @@ ORDER BY dbname
 --------------------------------------------------------------------------
 
 SELECT
-    o.name      AS TableName
-    , i.name      AS IndexName
+    o.name                                          AS TableName
+    , i.name                                          AS IndexName
     , i.type_desc AS IndexType
     , STATS_DATE(i.[object_id], i.index_id) AS StatisticsDate
 FROM sys.indexes i

@@ -52,6 +52,7 @@ public class CompilationState {
      * {@code impl.}{@link CompiledST#instrs instrs} array; this is next address
      * to write to. Byte-addressable memory.
      */
+
     int ip = 0;
 
 
@@ -66,6 +67,7 @@ public class CompilationState {
         impl.name = name;
         impl.prefix = Misc.getPrefix(name);
     }
+
 
     public int defineString(String s) {
         return stringtable.add(s);

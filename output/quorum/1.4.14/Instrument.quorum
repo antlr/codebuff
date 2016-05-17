@@ -27,6 +27,7 @@ class Instrument
     private text name = ""
     private integer value = 0
     private boolean nameSet = false
+
     private boolean valueSet = false
     
     /*

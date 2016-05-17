@@ -55,9 +55,9 @@ SELECT
     , src.Index_Type
     , buffer_pages = COUNT_BIG(b.page_id)
     , buffer_mb = COUNT_BIG(b.page_id) / 128
-FROM src INNER
-    JOIN sys.dm_os_buffer_descriptors AS b
-        ON src.allocation_unit_id = b.allocation_unit_id
+FROM src
+    INNER JOIN sys.dm_os_buffer_descriptors AS b
+              ON src.allocation_unit_id = b.allocation_unit_id
 WHERE b.database_id = DB_ID()
 GROUP BY src.[Object]
     , src.[Type]

@@ -18,6 +18,8 @@ ORDER BY DATEDIFF(day, do_date_initiated,
     DESC
 
 
+
+
 SELECT
     'ZeroToThirty' = COUNT(CASE WHEN DATEDIFF(day, do_date_initiated,
                                               do_date_received) BETWEEN 0 AND 29

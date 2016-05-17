@@ -9,10 +9,18 @@ FROM IPMonGroupMembers
 ORDER BY 1, 2
 ----------------------------------------
 
+
+
+
+
 SELECT *
 FROM IPMonGroups
 ORDER BY 4
 ----------------------------------------
+
+
+
+
 
 SELECT *
 FROM IPMonMonitors
@@ -31,6 +39,10 @@ SELECT *
 FROM IPMonTypeAssoc
 ORDER BY 1
 ----------------------------------------
+
+
+
+
 
 SELECT *
 FROM t_server_type
@@ -143,9 +155,17 @@ FROM t_server
 WHERE Active = 1
 ORDER BY 2
 
+
+
+
+
 SELECT *
 FROM t_server_type
 ORDER BY 1
+
+
+
+
 
 SELECT *
 FROM t_server_type_assoc

@@ -1210,7 +1210,8 @@ NEWLINE :   WS? ('\r'? '\n' | COLON ' ') WS? ;
 COMMENT :   WS? ('\'' | COLON? REM ' ')
             (   LINE_CONTINUATION
             |   ~('\n' | '\r')
-            )* -> skip ;
+            )*
+            -> skip ;
 WS :   [ \t]+ ;
 
 

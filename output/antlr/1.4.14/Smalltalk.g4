@@ -175,7 +175,8 @@ literalArray
     ;
 
 literalArrayRest
-    :   ws ((parsetimeLiteral | bareLiteralArray | bareSymbol) ws)* CLOSE_PAREN
+    :   ws ((parsetimeLiteral | bareLiteralArray | bareSymbol) ws)*
+        CLOSE_PAREN
     ;
 
 bareLiteralArray

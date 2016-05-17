@@ -22,6 +22,8 @@ class Properties
     /*
     This is a public constant for the operating system property name.
     */
+
+
     public constant text operatingSystem = "os.name"
 
     /*

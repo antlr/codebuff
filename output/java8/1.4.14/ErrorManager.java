@@ -81,6 +81,7 @@ public class ErrorManager {
         this.listener = listener;
     }
 
+
     public void compileTimeError(ErrorType error, Token templateToken, Token t) {
         CharStream input = t.getInputStream();
         String srcName = null;

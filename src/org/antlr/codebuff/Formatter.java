@@ -133,8 +133,8 @@ public class Formatter {
 		this.realTokens = getRealTokens(testDoc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
 		wipeCharPositionInfoAndWhitespaceTokens(testDoc.tokens); // all except for first token
-		wsClassifier = new CodekNNClassifier(corpus, wsFeatures);
-		hposClassifier = new CodekNNClassifier(corpus, hposFeatures);
+		wsClassifier = new CodekNNClassifier(corpus, wsFeatures, corpus.injectWhitespace);
+		hposClassifier = new CodekNNClassifier(corpus, hposFeatures, corpus.hpos);
 
 		analysis = new Vector<>(testDoc.tokens.size());
 		analysis.setSize(testDoc.tokens.size());
@@ -193,8 +193,7 @@ public class Formatter {
 		int[] featuresForAlign = new int[features.length];
 		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
-		int injectNL_WS = wsClassifier.classify2(k, features, corpus.injectWhitespace,
-		                                         Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+		int injectNL_WS = wsClassifier.classify2(k, features, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
 
 		int newlines = 0;
 		int ws = 0;
@@ -221,7 +220,7 @@ public class Formatter {
 			// if we decide to inject a newline, we better recompute this value before classifying alignment
 //			featuresForAlign[INDEX_MATCHING_TOKEN_STARTS_LINE] = getMatchingSymbolStartsLine(corpus, testDoc, node);
 
-			alignOrIndent = hposClassifier.classify2(k, featuresForAlign, corpus.hpos, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = hposClassifier.classify2(k, featuresForAlign, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
 			if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
 				align(alignOrIndent, node);

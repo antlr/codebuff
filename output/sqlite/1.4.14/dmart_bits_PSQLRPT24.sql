@@ -62,6 +62,7 @@ ORDER BY ErrorDateTime
 
 
 
+
 SELECT
     CASE WHEN SSISInstanceID IS NULL
         THEN 'Total'

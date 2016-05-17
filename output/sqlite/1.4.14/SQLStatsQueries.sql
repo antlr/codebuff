@@ -10,7 +10,8 @@ SELECT
     qs.total_worker_time
     , qs.total_elapsed_time
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
-                (CASE WHEN qs.statement_end_offset = -1
+                (CASE
+                 WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
                      ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS query_text
     , qt.dbid
@@ -38,7 +39,8 @@ SELECT
     , qt.objectid
     , qt.text
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
-                (CASE WHEN qs.statement_end_offset = -1
+                (CASE
+                 WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
                      ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS statement
 FROM sys.dm_exec_query_stats qs
@@ -62,7 +64,8 @@ SELECT
     , qt.objectid
     , qt.text
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
-                (CASE WHEN qs.statement_end_offset = -1
+                (CASE
+                 WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
                      ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS statement
     , qs.sql_handle
@@ -81,7 +84,8 @@ ORDER BY [usecounts], [statement]
 
 SELECT qs.total_worker_time / qs.execution_count AS [Avg CPU Time]
        , SUBSTRING(qt.text, qs.statement_start_offset / 2,
-                   (CASE WHEN qs.statement_end_offset = -1
+                   (CASE
+                    WHEN qs.statement_end_offset = -1
                         THEN len(convert(nvarchar(max), qt.text)) * 2
                         ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS query_text
        , qt.dbid
@@ -98,7 +102,8 @@ ORDER BY [Avg CPU Time]
 SELECT
     qs.execution_count
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
-                (CASE WHEN qs.statement_end_offset = -1
+                (CASE
+                 WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
                      ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS query_text
     , qt.dbid

@@ -51,6 +51,7 @@ SELECT
     , p.permission_state_desc
     , rm.role_name
 FROM perms_cte p LEFT OUTER JOIN
+
      (
          SELECT
              role_principal_id

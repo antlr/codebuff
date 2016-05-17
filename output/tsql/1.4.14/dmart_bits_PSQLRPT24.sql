@@ -6,12 +6,14 @@ SELECT
     , SSISInstanceID AS SSISIID
     , LoadStageDBStartDate
     , LoadStageDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate), 0),
+    , CONVERT(VARCHAR(12), DATEADD(ms,
+                                   DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate), 0),
               114) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate,
-                                                LoadReportDBEndDate), 0),
+    , CONVERT(VARCHAR(12), DATEADD(ms,
+                                   DATEDIFF(ms, LoadReportDBStartDate,
+                                            LoadReportDBEndDate), 0),
               114) AS ReportLoadTime
 FROM ClientConnection
 GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate, LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate, SourceServer
@@ -62,6 +64,7 @@ WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GETDATE())
 ORDER BY ErrorDateTime
     DESC
 ----------------------------------------------
+
 
 
 
@@ -152,7 +155,8 @@ FROM
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
             , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
+                              CONVERT(DATE, EndTimeExtract) <
+                              CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -194,7 +198,8 @@ FROM
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
             , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+                              CONVERT(DATE, LoadReportDBEndDate) <
+                              CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -272,12 +277,14 @@ SELECT
     , ReportDB
     , LoadStageDBStartDate
     , LoadStageDBEndDate
-    , CONVERT(varchar(12), DATEADD(ms, DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate), 0),
+    , CONVERT(varchar(12), DATEADD(ms,
+                                   DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate), 0),
               114) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , CONVERT(varchar(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate,
-                                                LoadReportDBEndDate), 0),
+    , CONVERT(varchar(12), DATEADD(ms,
+                                   DATEDIFF(ms, LoadReportDBStartDate,
+                                            LoadReportDBEndDate), 0),
               114) AS ReportLoadTime
 FROM ClientConnection
 --WHERE ReportServer = 'PSQLRPT22'
@@ -343,8 +350,7 @@ FROM
          --           LoadReportDBEndDate) AS ReportLoadTime
         FROM ClientConnectionCDC
 --WHERE     Beta != '2'
-        WHERE Status != 0
-    ) AS t
+        WHERE Status != 0) AS t
 ----------------------------------------------
 
 SELECT *

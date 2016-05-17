@@ -5,6 +5,7 @@ import com.google.common.collect.ListMultimap;
 import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.Tool;
+import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.LangDescriptor;
@@ -137,7 +138,7 @@ public class Entropy {
 		for (int i = 0; i<numContexts; i++) {
 			int[] X = corpus.featureVectors.get(i);
 			int y = corpus.injectWhitespace.get(i);
-			wsByFeatureVectorGroup.put(new FeatureVectorAsObject(X), y);
+			wsByFeatureVectorGroup.put(new FeatureVectorAsObject(X, Trainer.FEATURES_INJECT_WS), y);
 		}
 
 		return wsByFeatureVectorGroup;
@@ -149,7 +150,7 @@ public class Entropy {
 		for (int i = 0; i<numContexts; i++) {
 			int[] X = corpus.featureVectors.get(i);
 			int y = corpus.hpos.get(i);
-			hposByFeatureVectorGroup.put(new FeatureVectorAsObject(X), y);
+			hposByFeatureVectorGroup.put(new FeatureVectorAsObject(X, Trainer.FEATURES_HPOS), y);
 		}
 
 		return hposByFeatureVectorGroup;
@@ -163,8 +164,8 @@ public class Entropy {
 			int[] X = corpus.featureVectors.get(i);
 			int y1  = corpus.injectWhitespace.get(i);
 			int y2  = corpus.hpos.get(i);
-			wsByFeatureVectorGroup.put(new FeatureVectorAsObject(X), y1);
-			hposByFeatureVectorGroup.put(new FeatureVectorAsObject(X), y2);
+			wsByFeatureVectorGroup.put(new FeatureVectorAsObject(X, Trainer.FEATURES_INJECT_WS), y1);
+			hposByFeatureVectorGroup.put(new FeatureVectorAsObject(X, Trainer.FEATURES_HPOS), y2);
 		}
 		List<Double> wsEntropies = new ArrayList<>();
 		List<Double> hposEntropies = new ArrayList<>();

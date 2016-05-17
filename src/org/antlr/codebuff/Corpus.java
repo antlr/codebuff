@@ -4,16 +4,17 @@ import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.codebuff.misc.SiblingListStats;
+import org.antlr.codebuff.validation.FeatureVectorAsObject;
 import org.antlr.codebuff.walkers.CollectSiblingLists;
 import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
+import org.antlr.v4.runtime.misc.MultiMap;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -52,7 +53,9 @@ public class Corpus {
 	 *  The key is (previous token's rule index, current token's rule index). It yields
 	 *  a list of vectors with same key. Created by {@link #buildTokenContextIndex}.
 	 */
-	public Map<Pair<Integer,Integer>, List<Integer>> curAndPrevTokenRuleIndexToVectorsMap;
+	public MultiMap<Pair<Integer,Integer>, Integer> curAndPrevTokenRuleIndexToExemplarIndexes;
+	public MultiMap<FeatureVectorAsObject, Integer> wsFeaturesToExemplarIndexes;
+	public MultiMap<FeatureVectorAsObject, Integer> hposFeaturesToExemplarIndexes;
 
 	public Map<RuleAltKey, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
 	public Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats;
@@ -189,19 +192,18 @@ public class Corpus {
 	}
 
 	public void buildTokenContextIndex() {
-		curAndPrevTokenRuleIndexToVectorsMap = new HashMap<>();
+		curAndPrevTokenRuleIndexToExemplarIndexes = new MultiMap<>();
+		wsFeaturesToExemplarIndexes = new MultiMap<>();
+		hposFeaturesToExemplarIndexes = new MultiMap<>();
 		for (int i = 0; i<featureVectors.size(); i++) {
-			int curTokenRuleIndex = featureVectors.get(i)[Trainer.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
-			int prevTokenRuleIndex = featureVectors.get(i)[Trainer.INDEX_EARLIEST_LEFT_ANCESTOR];
+			int[] features = featureVectors.get(i);
+			int curTokenRuleIndex = features[Trainer.INDEX_PREV_EARLIEST_RIGHT_ANCESTOR];
+			int prevTokenRuleIndex = features[Trainer.INDEX_EARLIEST_LEFT_ANCESTOR];
 			int pr = Trainer.unrulealt(prevTokenRuleIndex)[0];
 			int cr = Trainer.unrulealt(curTokenRuleIndex)[0];
-			Pair<Integer, Integer> key = new Pair<>(pr, cr);
-			List<Integer> vectorIndexes = curAndPrevTokenRuleIndexToVectorsMap.get(key);
-			if ( vectorIndexes==null ) {
-				vectorIndexes = new ArrayList<>();
-				curAndPrevTokenRuleIndexToVectorsMap.put(key, vectorIndexes);
-			}
-			vectorIndexes.add(i);
+			curAndPrevTokenRuleIndexToExemplarIndexes.map(new Pair<>(pr, cr), i);
+			wsFeaturesToExemplarIndexes.map(new FeatureVectorAsObject(features,   Trainer.FEATURES_INJECT_WS), i);
+			hposFeaturesToExemplarIndexes.map(new FeatureVectorAsObject(features, Trainer.FEATURES_HPOS), i);
 		}
 	}
 }

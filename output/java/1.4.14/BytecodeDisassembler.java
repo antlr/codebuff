@@ -97,6 +97,7 @@ public class BytecodeDisassembler {
                          break;
             }
         }
+
         for (int i = 0; i < operands.size(); i++) {
             String s = operands.get(i);
             if ( i>0 ) buf.append(", ");
@@ -116,7 +117,7 @@ public class BytecodeDisassembler {
                 s = code.strings[poolIndex];
                 if ( code.strings[poolIndex]!=null ) {
                     s = Misc.replaceEscapes(s);
-                    s = '"'+s+'"';
+                    s = '"'+s+ '"';
                 }
             }
         }

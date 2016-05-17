@@ -6,7 +6,7 @@ import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
 import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
-import org.antlr.codebuff.kNNClassifier;
+import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.misc.Utils;
@@ -53,86 +53,94 @@ public class LeaveOneOutValidator {
 	}
 
 	public Triple<Formatter,Float,Float> validateOneDocument(String fileToExclude,
-															 String outputDir,
-															 boolean collectAnalysis)
+	                                                         String outputDir,
+	                                                         boolean collectAnalysis)
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
 		return validate(language, documents, fileToExclude,
-						Formatter.DEFAULT_K, outputDir, true, collectAnalysis);
+		                Formatter.DEFAULT_K, outputDir, true, collectAnalysis);
 	}
 
 	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(boolean computeEditDistance,
-																			 String outputDir)
+	                                                                         String outputDir)
 		throws Exception
 	{
 		return validateDocuments(Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_HPOS,
-								 computeEditDistance, outputDir);
+		                         computeEditDistance, outputDir);
 	}
 
 	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(FeatureMetaData[] injectWSFeatures,
-																			 FeatureMetaData[] alignmentFeatures,
-																			 boolean computeEditDistance,
-																			 String outputDir)
+	                                                                         FeatureMetaData[] alignmentFeatures,
+	                                                                         boolean computeEditDistance,
+	                                                                         String outputDir)
 		throws Exception
 	{
-		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-		long start = System.nanoTime();
-		List<InputDocument> documents = load(allFiles, language);
-		long stop = System.nanoTime();
-		System.out.printf("Load/parse all docs time %d ms\n", (stop-start)/1_000_000);
 		List<Formatter> formatters = new ArrayList<>();
 		List<Float> distances = new ArrayList<>();
 		List<Float> errors = new ArrayList<>();
-		for (int i = 0; i<documents.size(); i++) {
-			Triple<Formatter,Float,Float> results =
-				validate(language, documents, documents.get(i).fileName,
-						 Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
-						 outputDir, computeEditDistance, false);
-			formatters.add(results.a);
-			float editDistance = results.b;
-			distances.add(editDistance);
-			Float errorRate = results.c;
-			errors.add(errorRate);
+		try {
+			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
+			long start = System.nanoTime();
+			List<InputDocument> documents = load(allFiles, language);
+			long stop = System.nanoTime();
+			System.out.printf("Load/parse all docs time %d ms\n", (stop-start)/1_000_000);
+			for (int i = 0; i<documents.size(); i++) {
+				Triple<Formatter, Float, Float> results =
+					validate(language, documents, documents.get(i).fileName,
+					         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
+					         outputDir, computeEditDistance, false);
+				formatters.add(results.a);
+				float editDistance = results.b;
+				distances.add(editDistance);
+				Float errorRate = results.c;
+				errors.add(errorRate);
+			}
 		}
-		int medianTrainingTime = (int)median(trainingTimes);
-		double medianFormattingPerMS = median(formattingTokensPerMS);
-		System.out.printf("Median training time %dms\n", medianTrainingTime);
-		System.out.printf("Median formatting time tokens per ms %5.4fms\n", medianFormattingPerMS);
+		finally {
+			int medianTrainingTime = (int)median(trainingTimes);
+			double medianFormattingPerMS = median(formattingTokensPerMS);
+			System.out.printf("Median training time %dms\n",
+			                  medianTrainingTime);
+			System.out.printf("Median formatting time tokens per ms %5.4fms, min %5.4f max %5.4f\n",
+			                  medianFormattingPerMS,
+			                  BuffUtils.min(formattingTokensPerMS),
+			                  BuffUtils.max(formattingTokensPerMS));
+		}
 		return new Triple<>(formatters,distances,errors);
 	}
 
 	public Triple<Formatter,Float,Float> validate(LangDescriptor language,
-												  List<InputDocument> documents,
-												  String fileToExclude,
-												  int k,
-												  String outputDir,
-												  boolean computeEditDistance,
-												  boolean collectAnalysis)
+	                                              List<InputDocument> documents,
+	                                              String fileToExclude,
+	                                              int k,
+	                                              String outputDir,
+	                                              boolean computeEditDistance,
+	                                              boolean collectAnalysis)
 		throws Exception
 	{
 		return validate(language, documents, fileToExclude,
-						k, Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_HPOS,
-						outputDir, computeEditDistance, collectAnalysis);
+		                k, Trainer.FEATURES_INJECT_WS, Trainer.FEATURES_HPOS,
+		                outputDir, computeEditDistance, collectAnalysis);
 	}
 
 	public Triple<Formatter,Float,Float> validate(LangDescriptor language,
-												  List<InputDocument> documents,
-												  String fileToExclude,
-												  int k,
-												  FeatureMetaData[] injectWSFeatures,
-												  FeatureMetaData[] alignmentFeatures,
-												  String outputDir,
-												  boolean computeEditDistance,
-												  boolean collectAnalysis)
+	                                              List<InputDocument> documents,
+	                                              String fileToExclude,
+	                                              int k,
+	                                              FeatureMetaData[] injectWSFeatures,
+	                                              FeatureMetaData[] alignmentFeatures,
+	                                              String outputDir,
+	                                              boolean computeEditDistance,
+	                                              boolean collectAnalysis)
 		throws Exception
 	{
 		final String path = new File(fileToExclude).getCanonicalPath();
 		List<InputDocument> others = filter(documents, d -> !d.fileName.equals(path));
 		List<InputDocument> excluded = filter(documents, d -> d.fileName.equals(path));
 		assert others.size() == documents.size() - 1;
-		kNNClassifier.resetCache();
+//		kNNClassifier.resetCache();
 		if ( excluded.size()==0 ) {
 			System.err.println("Doc not in corpus: "+path);
 			return null;
@@ -166,9 +174,9 @@ public class LeaveOneOutValidator {
 		float tokensPerMS = testDoc.tokens.size() / (float) fms;
 		formattingTokensPerMS.add((double)tokensPerMS);
 		System.out.printf("Training time = %d ms, formatting %d ms, %5.3f tokens/ms (%d tokens)\n",
-						  tms,
-						  fms,
-						  tokensPerMS, testDoc.tokens.size());
+		                  tms,
+		                  fms,
+		                  tokensPerMS, testDoc.tokens.size());
 //		System.out.printf("classify calls %d, hits %d rate %f\n",
 //		                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
 //		                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);

@@ -72,8 +72,12 @@ public class Interpreter {
 
     Object[] operands = new Object[DEFAULT_OPERAND_STACK_SIZE];
     /** Stack pointer register. */
+
+
     int sp = -1;
     /** The number of characters written on this template line so far. */
+
+
     int nwline = 0;
 
     /** Render template with respect to this group.
@@ -240,7 +244,7 @@ public class Interpreter {
                 case Bytecode.INSTR_NEW_IND:
                     nargs = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
-                    name = (String) operands[ sp-nargs];
+                    name = (String) operands[sp-nargs];
                     st = self.groupThatCreatedThisInstance.getEmbeddedInstanceOf(this, scope, name);
                     storeArgs(scope, nargs, st);
                     sp -= nargs;
@@ -311,7 +315,7 @@ public class Interpreter {
                     int nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<ST> templates = new ArrayList<ST>();
-                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[ sp-i]);
+                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[sp-i]);
                     sp -= nmaps;
                     o = operands[sp--];
                     if ( o !=null ) rot_map(scope, o, templates);
@@ -321,7 +325,7 @@ public class Interpreter {
                     nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<Object> exprs = new ObjectList();
-                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[ sp-i]);
+                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[sp-i]);
                     sp -= nmaps;
                     operands[++sp] = zip_map(scope, exprs, st);
                     break;
@@ -402,7 +406,7 @@ public class Interpreter {
                                             ErrorType.EXPECTING_STRING,
                                             "strlen",
                                             o.getClass().getName());
-                        operands[++sp] = 0;
+                        operands[++sp] =0;
                     }
                     break;
                 case Bytecode.INSTR_REVERSE:
@@ -432,7 +436,7 @@ public class Interpreter {
                                                  if ( prevOpcode== Bytecode.INSTR_NEWLINE|| prevOpcode== Bytecode.INSTR_INDENT || nwline>0) {
                                                      out.write(Misc.newline);
                                                  }
-                                                 nwline = 0;
+                                                 nwline =0;
                                              }
                                              catch (IOException ioe) {
                                                  errMgr.IOError(self, ErrorType.WRITE_IO_ERROR, ioe);
@@ -643,7 +647,7 @@ public class Interpreter {
         if ( st.impl.formalArguments==null ) return;
         Iterator<String> argNames = st.impl.formalArguments.keySet().iterator();
         for (int i = 0; i < numToStore; i++) {
-            Object o = operands[ firstArg+i];    // value to store
+            Object o = operands[firstArg+i];    // value to store
             String argName = argNames.next();
             st.rawSetAttribute(argName, o);
         }
@@ -1108,7 +1112,7 @@ public class Interpreter {
         else if ( v.getClass().isArray() ) i = Array.getLength(v);
         else if ( v instanceof Iterable || v instanceof Iterator ) {
             Iterator<?> it = v instanceof Iterable? ((Iterable<?>)v).iterator() : (Iterator<?>)v;
-            i = 0;
+            i =0;
             while ( it.hasNext() ) {
                 it.next();
                 i++;
@@ -1418,7 +1422,7 @@ public class Interpreter {
 
     public static int getShort(byte[] memory, int index) {
         int b1 = memory[index]&0xFF; // mask off sign-extended bits
-        int b2 = memory[ index+1]&0xFF;
+        int b2 = memory[index+1]&0xFF;
         return b1<<(8*1) | b2;
     }
 

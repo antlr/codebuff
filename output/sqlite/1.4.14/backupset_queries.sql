@@ -53,23 +53,23 @@ FROM (
          WHERE msdb_backupset_type = 'D'
          GROUP BY msdb_dbo_backupset_database_name
 ) AS A
-    LEFT JOIN
-    (
-        SELECT
-            CONVERT(CHAR(100), SERVERPROPERTY('Servername'))             AS Server
-            , msdb_dbo_backupset_database_name
-            , msdb_dbo_backupset_backup_start_date
-            , msdb_dbo_backupset_backup_finish_date
-            , msdb_dbo_backupset_expiration_date
-            , msdb_dbo_backupset_backup_size
-            , msdb_dbg_backupmediafamily.logical_device_name
-            , msdb_dbg_backupmediafamily.physical_device_name
-            , msdb_dbo_backupset_name AS backupset_name
-            , msdb_dbo_backupset_description
-        FROM msdb_dbg_backupmediafamily INNER
-            JOIN msdb_dbo_backupset
-                ON msdb_dbg_backupmediafamily_media_set_id = msdb_dbo_backupset_media_set_id
-        WHERE msdb_backupset_type = 'D') AS B
+    LEFT JOIN (
+                  SELECT
+                      CONVERT(CHAR(100), SERVERPROPERTY('Servername'))             AS Server
+                      , msdb_dbo_backupset_database_name
+                      , msdb_dbo_backupset_backup_start_date
+                      , msdb_dbo_backupset_backup_finish_date
+                      , msdb_dbo_backupset_expiration_date
+                      , msdb_dbo_backupset_backup_size
+                      , msdb_dbg_backupmediafamily.logical_device_name
+                      , msdb_dbg_backupmediafamily.physical_device_name
+                      , msdb_dbo_backupset_name AS backupset_name
+                      , msdb_dbo_backupset_description
+                  FROM msdb_dbg_backupmediafamily INNER
+                      JOIN msdb_dbo_backupset
+                          ON msdb_dbg_backupmediafamily_media_set_id = msdb_dbo_backupset_media_set_id
+                  WHERE msdb_backupset_type = 'D'
+              ) AS B
         ON A.[server] = B.[server] AND
            A.[database_name] = B.[database_name] AND
            A.[last_db_backup_date] = B.[backup_finish_date]

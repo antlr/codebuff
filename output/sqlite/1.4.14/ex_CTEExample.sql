@@ -21,13 +21,12 @@ SELECT
     , currow.Price AS RangePrice
     , currow.PriceStartDate AS StartDate
     , nextrow.PriceStartDate AS EndDate
-FROM PriceCompare currow
-    LEFT JOIN PriceCompare nextrow
-        ON currow.rownum = nextrow.rownum - 1
-           AND currow.ItemId = nextrow.ItemId
-              LEFT JOIN PriceCompare prevrow
-        ON currow.rownum = prevrow.rownum + 1
-           AND currow.ItemId = prevrow.ItemId
+FROM PriceCompare currow LEFT JOIN PriceCompare nextrow
+                             ON currow.rownum = nextrow.rownum - 1
+                                AND currow.ItemId = nextrow.ItemId
+                                   LEFT JOIN PriceCompare prevrow
+                             ON currow.rownum = prevrow.rownum + 1
+                                AND currow.ItemId = prevrow.ItemId
 
 INSERT INTO Items VALUES (1, 'vacuum cleaner')
 INSERT INTO Items VALUES (2, 'washing machine')

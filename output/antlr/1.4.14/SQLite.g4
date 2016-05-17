@@ -31,7 +31,8 @@
 grammar SQLite;
 
 parse
-    :   (sql_stmt_list | error)* EOF
+    :   (sql_stmt_list | error)*
+        EOF
     ;
 
 error

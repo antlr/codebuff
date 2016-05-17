@@ -27,10 +27,12 @@ package org.antlr.codebuff;
  current token more heavily than tokens farther away.
  */
 
+import java.util.List;
+
 public class CodekNNClassifier extends kNNClassifier {
 
-	public CodekNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES) {
-		super(corpus, FEATURES);
+	public CodekNNClassifier(Corpus corpus, FeatureMetaData[] FEATURES, List<Integer> Y) {
+		super(corpus, FEATURES, Y);
 	}
 
 	/**

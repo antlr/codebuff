@@ -78,6 +78,7 @@ ORDER BY Beta, 3
 
 ----------------
 
+
 SELECT *
 FROM ClientConnection
 WHERE ReportServer = 'PSQLRPT22'

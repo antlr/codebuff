@@ -31,6 +31,7 @@ class QueueBlueprint <Type> is Addable<Type>, Container, Copyable, Iterative<Typ
         Attribute: Parameter value The item to be added to the queue. 
     */
 
+
     blueprint action AddToEnd(Type value)
 
     /*
