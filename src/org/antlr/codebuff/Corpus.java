@@ -77,10 +77,7 @@ public class Corpus {
 	public void train() throws Exception { train(true); }
 
 	public void train(boolean shuffleFeatureVectors) throws Exception {
-		long start = System.nanoTime();
 		collectTokenPairsAndSplitListInfo();
-		long stop = System.nanoTime();
-		System.out.printf("collectTokenPairsAndSplitListInfo %dms\n", (stop-start)/1_000_000);
 
 		trainOnSampleDocs();
 

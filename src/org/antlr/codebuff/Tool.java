@@ -213,12 +213,12 @@ public class Tool {
 			controller.show();
 //			System.out.println(output);
 			System.out.printf("formatting time %ds\n", (stop-start)/1_000_000);
-//			System.out.printf("classify calls %d, hits %d rate %f\n",
-//			                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
-//			                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
-//			System.out.printf("kNN calls %d, hits %d rate %f\n",
-//			                  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
-//			                  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
+			System.out.printf("classify calls %d, hits %d rate %f\n",
+			                  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
+			                  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
+			System.out.printf("kNN calls %d, hits %d rate %f\n",
+			                  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
+			                  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
 		}
 	}
 

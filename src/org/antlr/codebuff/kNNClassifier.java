@@ -1,8 +1,8 @@
 package org.antlr.codebuff;
 
-import org.antlr.codebuff.misc.ClassifierResultCacheKey;
 import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.MutableDouble;
+import org.antlr.codebuff.validation.FeatureVectorAsObject;
 import org.antlr.v4.runtime.misc.Pair;
 
 import java.util.ArrayList;
@@ -23,11 +23,11 @@ public abstract class kNNClassifier {
 
 	public boolean dumpVotes = false;
 
-	public static Map<ClassifierResultCacheKey,Integer> classifyCache = new HashMap<>();
+	public static Map<FeatureVectorAsObject,Integer> classifyCache = new HashMap<>();
 	public static int nClassifyCalls=0;
 	public static int nClassifyCacheHits=0;
 
-	public static Map<ClassifierResultCacheKey, Neighbor[]> neighborCache = new HashMap<>();
+	public static Map<FeatureVectorAsObject, Neighbor[]> neighborCache = new HashMap<>();
 	public static int nNNCalls=0;
 	public static int nNNCacheHits=0;
 
@@ -67,7 +67,7 @@ public abstract class kNNClassifier {
 	}
 
 	public int classify2(int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		ClassifierResultCacheKey key = new ClassifierResultCacheKey(unknown, Y);
+		FeatureVectorAsObject key = new FeatureVectorAsObject(unknown);
 		Integer catI = classifyCache.get(key);
 		nClassifyCalls++;
 		if ( catI!=null ) {
@@ -163,7 +163,7 @@ public abstract class kNNClassifier {
 	}
 
 	public String getPredictionAnalysis(InputDocument doc, int k, int[] unknown, List<Integer> Y, double distanceThreshold) {
-		ClassifierResultCacheKey key = new ClassifierResultCacheKey(unknown, Y);
+		FeatureVectorAsObject key = new FeatureVectorAsObject(unknown);
 		Neighbor[] kNN = neighborCache.get(key);
 		nNNCalls++;
 		if ( kNN==null ) {

@@ -99,7 +99,13 @@ public class LeaveOneOutValidator {
 		int medianTrainingTime = (int)median(trainingTimes);
 		double medianFormattingPerMS = median(formattingTokensPerMS);
 		System.out.printf("Median training time %dms\n", medianTrainingTime);
-		System.out.printf("Median formatting time per ms %5.4fms\n", medianFormattingPerMS);
+		System.out.printf("Median formatting time tokens per ms %5.4fms\n", medianFormattingPerMS);
+		System.out.printf("classify calls %d, hits %d rate %f\n",
+						  kNNClassifier.nClassifyCalls, kNNClassifier.nClassifyCacheHits,
+						  kNNClassifier.nClassifyCacheHits/(float) kNNClassifier.nClassifyCalls);
+		System.out.printf("kNN calls %d, hits %d rate %f\n",
+						  kNNClassifier.nNNCalls, kNNClassifier.nNNCacheHits,
+						  kNNClassifier.nNNCacheHits/(float) kNNClassifier.nNNCalls);
 		return new Triple<>(formatters,distances,errors);
 	}
 
