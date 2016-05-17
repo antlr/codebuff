@@ -1,0 +1,33 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The EndOfFileError class is an error or exception that is thrown when 
+an attempt is made to read from a file when the end of the file has been reached.
+For example, reading an empty file will quickly result in an EndOfFileError.
+Attribute: Example
+
+use Libraries.Language.Errors.EndOfFileError
+use Libraries.Containers.File
+
+class Main
+   action Main
+      File file
+      check
+        file:OpenForRead("empty.txt")
+        text line1 = file:ReadLine()
+        text line2 = file:ReadLine() // will raise EndOfFileError
+      detect e is EndOfFileError
+        output "Reached end of file: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+
+
+class EndOfFileError is Error
+    on create
+        SetErrorMessage("EndOfFileError: The end of the file has been reached.")
+    end
+end

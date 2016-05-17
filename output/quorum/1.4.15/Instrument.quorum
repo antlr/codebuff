@@ -1,0 +1,121 @@
+package Libraries.Sound
+
+/*
+    This class represents a MIDI instrument. A MIDI instrument consists of a
+    number and a name. For a complete list of MIDI instruments specified by the
+    General MIDI standard, see:
+
+    http://www.midi.org/techspecs/gm1sound.php
+
+    On most systems, these will be the only instruments available.
+
+    Attribute: Author Jeff Wilson
+
+    Attribute: Example
+    use Libraries.Sound.Instrument
+    use Libraries.Sound.Music
+
+    Music music
+    Instrument piano = music:GetInstrument(0)
+
+    output piano:GetName()
+    output piano:GetValue()
+*/
+
+
+class Instrument
+    private text name = ""
+    private integer value = 0
+    private boolean nameSet = false
+
+    private boolean valueSet = false
+    
+    /*
+        Get the name of the instrument.
+        
+        Attribute: Returns the name of the instrument.
+
+        Attribute: Example
+        use Libraries.Sound.Instrument
+        use Libraries.Sound.Music
+
+        Music music
+        Instrument piano = music:GetInstrument(0)
+
+        output piano:GetName()
+        output piano:GetValue()
+    */
+
+
+    public action GetName returns text
+        return name
+    end
+    
+    /*
+        Sets the name of the instrument. This should only be called by helper
+        music classes.
+       
+        Attribute: Parameter name the name to set.
+
+        Attribute: Example
+        use Libraries.Sound.Instrument
+        use Libraries.Sound.Music
+
+        Music music
+        Instrument piano = music:GetInstrument(0)
+
+        piano:SetName("piano")
+    */
+
+
+    public action SetName(text name)
+        if not nameSet
+            me:name = name
+            nameSet = true
+        end
+    end
+
+    /*
+        Get the number of this instrument.
+
+        Attribute: Returns the number of this instrument.
+
+        Attribute: Example
+        use Libraries.Sound.Instrument
+        use Libraries.Sound.Music
+
+        Music music
+        Instrument piano = music:GetInstrument(0)
+
+        output piano:GetName()
+        output piano:GetValue()
+    */
+
+
+    public action GetValue returns integer
+        return value
+    end
+
+    /*
+        Sets the number of this instrument. This should only be called by helper
+        music classes.
+
+        Attribute: Parameter value the number to set.
+
+        Attribute: Example
+        use Libraries.Sound.Instrument
+        use Libraries.Sound.Music
+
+        Music music
+        Instrument piano = music:GetInstrument(0)
+
+        piano:SetValue(0)
+    */
+
+
+    public action SetValue(integer value)
+        if not valueSet
+            me:value = value
+        end
+    end
+end

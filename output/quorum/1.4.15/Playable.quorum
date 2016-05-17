@@ -1,0 +1,195 @@
+package Libraries.Sound
+
+use Libraries.Sound.MusicEvent
+/*
+    This class represents any kind of playable event in a music track. Playable
+    events include any event that will sound one or more notes on the track.
+
+    A Playable object has many properties, including:
+    
+    Pitch bends: A pitch bend can be constant, or occur before a note is played. Pitch bends are described using
+    cents in the positive or negative direction. Bends between -200 and +200 cents are supported.
+
+    Start time: The time at which the playing begins for this particular event. Start times are given using the constants defined
+    in the Music class. In this implementation, start times are given as a delta time. In other words, it is the time *after*
+    the last note was entered. For example, if we enter one note at time music:quarterNote and another at time music:wholeNote, the second note will be
+    played at time music:quarterNote + music:wholeNote after the first one.
+    
+    Length: The duration that this note will sound. Lengths are also specified using the constants defined in the Music class.
+
+    Volume: How loud the sound is (also known as velocity in MIDI terms). Volume is specified as a number between 0.0 and 1.0, inclusive.
+
+    Attribute: Author Jeff Wilson
+*/
+
+
+class Playable is MusicEvent
+
+    private integer constantPitchBend = 0
+    private integer prePitchBend = 0
+    private integer prePitchBendLength = 0
+    private integer startTime = 96 // HARDCODED so we don't have to load the music class again.
+
+    private number length = 384 // HARDCODED so we don't have to load the music class again.
+
+    private number volume = 1.0
+    
+    /*
+        Get the constant pitch bend of this event in cents. 
+
+        Attribute: Returns the pitch bend
+    */
+
+
+    public action GetConstantPitchBend returns integer
+        return constantPitchBend
+    end
+
+    /*
+        Sets the constant pitch bend of this event in cents.
+        
+        Attribute: Paramter constantBend the bend in cents (-200 to +200).
+    */
+
+
+    public action SetConstantPitchBend(integer constantBend)
+        me:constantPitchBend = constantBend
+    end
+
+    /*
+        Get the pre pitch bend of this event in cents.
+       
+        Attribute: Returns the pre pitch bend in cents.
+    */
+
+
+    public action GetPrePitchBend returns integer
+        return prePitchBend
+    end
+
+    /*
+        Sets the pre pitch bend of this event in cents.
+
+        Attribute: Parameter preBend the pre pitch bend in cents (-200 to +200).
+    */
+
+
+    public action SetPrePitchBend(integer preBend)
+        me:prePitchBend = preBend
+    end
+
+    /*
+        Get the duration of pre pitch bend. The duration specifies how long it takes
+        the bend to reach its target note.
+
+        Attribute: Returns the duration of the pre pitch bend.
+    */
+
+
+    public action GetPrePitchBendLength returns integer
+        return prePitchBendLength
+    end
+
+    /*
+        Set the duration of the pre pitch bend. The duration specifies how long it takes
+        the bend to reach its target note.
+
+        Attribute: Parameter preBendLength the duration of the pre pitch bend.
+    */
+
+
+    public action SetPrePitchBendLength(integer preBendLength)
+        me:prePitchBendLength = preBendLength
+    end
+
+    /*
+        Get the start time of the note.
+
+        Attribute: Returns the start time
+    */
+
+
+    public action GetStartTime() returns integer
+        return startTime
+    end
+    
+    /*
+        Set the start time of the note.
+
+        Attribute: Parameter time the start time.
+    */
+
+
+    public action SetStartTime(integer time)
+        me:startTime = time
+    end
+
+    /*
+        Get the length of the note.
+
+        Attribute: Returns the length
+    */
+
+
+    public action GetLength returns number
+        return length
+    end
+
+    /*
+        Set the length of the note.
+
+        Attribute: Parameter len the length of the note.
+    */
+
+
+    public action SetLength(number len)
+        me:length = len
+    end
+
+    /*
+        Get the volume of the note.
+
+        Attribute: Returns the volume of the note.
+    */
+
+
+    public action GetVolume returns number
+        return volume
+    end
+
+    /*
+        Set the volume of the note.
+
+        Attribute: Parameter vol the volume of the note. (0.0 to 1.0).
+    */
+
+
+    public action SetVolume(number vol)
+        if vol < 0.0
+            vol = 0.0
+        elseif vol > 1.0
+            vol = 1.0
+        end
+
+        me:volume = vol
+    end
+
+    /*
+        Perform a deep copy of this object.
+        
+        Attribute: Returns the new Playable
+    */
+
+
+    public action Copy returns Object
+        Playable p
+        p:SetEventType(parent:MusicEvent:eventType)
+        p:SetConstantPitchBend(constantPitchBend)
+        p:SetPrePitchBend(prePitchBend)
+        p:SetPrePitchBendLength(prePitchBendLength)
+        p:SetStartTime(startTime)
+        p:SetLength(length)
+        p:SetVolume(volume)
+        return p
+    end
+end

@@ -1,0 +1,314 @@
+package Libraries.Language.Types
+
+use Libraries.Language.Object
+use Libraries.Language.Support.CompareResult
+use Libraries.Language.Errors.CastError
+
+/*
+The Number class is the object representation of the primitive type number. 
+
+
+Attribute: Example
+
+class Main
+   action Main
+      number age = 15.5
+      Number result = test(age)
+   end
+   action test(Number num) returns Number
+        return num
+   end
+end
+*/
+
+
+class Number is Object
+    //The value this Number class represents
+
+
+    private number value = 0.0
+
+    /*
+        This action sets the value of the number object.
+
+        Attribute: Parameter i The number value.
+
+        Attribute: Example
+
+        Number age
+        age:SetValue(15.5)
+    */
+
+
+    action SetValue(number i)
+        value = i
+        SetValueNative(i)
+    end
+
+    /*
+        This action gets the maximum number value, (2-2^-52)*2^1023.
+
+        Attribute: Returns The maximum number value.
+
+        Attribute: Example
+
+        number i = 3.5
+        output i:GetMaximumValue()
+    */
+
+
+    system action GetMaximumValue returns number
+
+    /*
+        This action gets the minimum negative number value (-1.7976931348623157E308).
+
+        Attribute: Returns The minimum number value.
+
+        Attribute: Example
+
+        number i = 3.5
+        output i:GetMinimumValue()
+    */
+
+
+    system action GetMinimumValue returns number
+
+    /*
+        This action gets the minimum number value (4.9e-324). This 
+        is the smallest possible positive number.
+
+        Attribute: Returns The minimum number value.
+
+        Attribute: Example
+
+        number i = 3.5
+        output i:GetMinimumPositiveValue()
+    */
+
+
+    system action GetMinimumPositiveValue returns number
+
+    /*
+        This action gets the positive infinity number value(0x7ff0000000000000L).
+
+        Attribute: Returns The positive infinity of a number.
+
+        Attribute: Example
+
+        number i = 3.5
+        output i:GetPositiveInfinityValue()
+    */
+
+
+    system action GetPositiveInfinityValue returns number
+
+    /*
+        This action gets the number of bits representing a number value.
+
+        Attribute: Returns The number of bits of a number value.
+
+        Attribute: Example
+
+        number i = 3.5
+        output i:GetNumberOfBits()
+    */
+
+
+    system action GetNumberOfBits returns integer
+
+    /*
+        This action gets the negative infinity of a number value(0xfff0000000000000L).
+
+        Attribute: Returns Negative infinity of a number value.
+
+        Attribute: Example
+
+        number i = 3.5
+        output i:GetNegativeInfinityValue()
+    */
+
+
+    system action GetNegativeInfinityValue returns number
+
+    /*
+        This action gets the not-a-number representation of a number value.
+
+        Attribute: Returns The Not-a-Number of a number value.
+
+        Attribute: Example
+
+        number i = 3.5
+        output i:GetNotANumberValue()
+    */
+
+
+    system action GetNotANumberValue returns number
+
+
+    private system action SetValueNative(number val)
+
+    /*
+        This action gets the value from the number object and casts it to
+        an integer.
+
+        Attribute: Returns The value of the object converted to an integer.
+
+        Attribute: Example
+
+        Number age
+        integer result = age:GetInteger()
+    */
+
+
+             action GetInteger returns integer
+                 return cast(integer, value)
+             end
+
+    /*
+        This action gets the value from the number object.
+
+        Attribute: Returns The value of the object.
+
+        Attribute: Example
+
+        Number age
+        number result = age:GetValue()
+    */
+
+
+             action GetValue returns number
+                 return value
+             end
+
+    /*
+        This action gets the value from the number object and casts it to
+        a text value.
+
+        Attribute: Returns The value of the object converted to text.
+
+        Attribute: Example
+
+        Number age
+        text result = age:GetText()
+    */
+
+
+             action GetText returns text
+                 return cast(text, value)
+             end
+
+    /*
+        This action compares two object values and returns a CompareResult.
+        The compare result is either larger if this hash code is larger than
+        the object passed as a parameter, smaller, or equal.
+
+        Attribute: Parameter object The object to compare to.
+        Attribute: Returns The Comprare result, Smaller, Equal, or Larger. 
+
+        Attribute: Example
+        use Libraries.Language.Support.CompareResult
+        Number o
+        Number t
+        CompareResult result = o:Compare(t)
+    */
+
+
+             action Compare(Object object) returns CompareResult
+                 CompareResult result
+                 number thisOne = me:value
+                 Number b = cast(Number, object)
+                 number other = b:GetValue()
+                 if thisOne = other
+                     result:result = result:EQUAL
+                 elseif thisOne < other
+                     result:result = result:SMALLER
+                 else
+                     result:result = result:LARGER
+                 end
+
+                 return result
+             end
+
+    /*
+        This action determines if two objects are equal based on their
+        values.
+
+        Attribute: Parameter object The to be compared.
+
+        Attribute: Returns True if the values are equal and false if they
+        are not equal. 
+
+        Attribute: Example
+
+        Number o
+        Number t
+        boolean result = o:Equals(t)
+    */
+
+
+             action Equals(Object object) returns boolean
+                 number myValue = GetValue()
+                 Number t = undefined
+                 t = cast(Number, object)
+                 number otherValue = t:GetValue()
+                 return myValue = otherValue
+             end
+
+    /*
+        This action returns true if the number is infinite.
+
+        Attribute: Returns True if the number is infinitely large and false if it is not. 
+
+        Attribute: Example
+
+        number i = 333.999999999999999999
+        boolean result = i:IsInfinite()
+    */
+
+
+    system action IsInfinite() returns boolean
+
+    /*
+        This action returns true if the number is not a number(NaN).
+
+        Attribute: Returns True if NaN. 
+
+        Attribute: Example
+
+        number i = 3.5
+        boolean result = i:IsNotANumber()
+    */
+
+
+    system action IsNotANumber() returns boolean
+
+    /*
+        This action gets the hex representation of the number value.
+
+        Attribute: Returns The hex representation of the number. 
+
+        Attribute: Example
+
+        number i = 3
+        text result = i:GetHex()
+    */
+
+
+    system action GetHex() returns text
+
+    /*
+        This action gets the hash code for an object. In this case, GetHashCode
+        is overriden and matches the integer value of the equivalent primitive
+        in the Java programming language.
+
+        Attribute: Returns The integer hash code of the object.
+
+        Attribute: Example
+
+        Object o
+        integer hash = o:GetHashCode()
+    */
+
+
+    system action GetHashCode() returns integer
+end

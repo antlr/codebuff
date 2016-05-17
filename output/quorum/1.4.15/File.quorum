@@ -1,0 +1,1022 @@
+package Libraries.System
+
+use Libraries.Containers.Array
+use Libraries.Containers.Blueprints.Indexed
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.System.Blueprints.FileReaderBlueprint
+use Libraries.System.Blueprints.FileWriterBlueprint
+use Libraries.System.Blueprints.FileRandomAccessBlueprint
+use Libraries.System.Path
+use Libraries.System.FileReader
+use Libraries.System.FileWriter
+use Libraries.System.FileRandomAccess
+use Libraries.Language.Errors.FileNotFoundError
+use Libraries.System.DateTime
+
+/*
+The File class is used to access and gather information about files on disk.
+This class can represent either a file or a directory, and provides actions for
+both manipulation and gathering of file data (such as file name, last time
+modified, etc). This class is not used for modifying the contents of files,
+but actions are provided that allow this functionality through other classes,
+such as OpenForRead(). For more information on modifying the contents of files,
+see the FileReader, FileWriter and FileRandomAccess classes.
+
+Upon creation of a File instance, the File object refers to the program's working
+directory. The "working directory" of a program is the directory in which a program
+looks for files. The path that the File instance refers to can be changed using
+two actions: SetWorkingDirectory and SetPath. The File class only permits setting
+paths in a relative manner. Paths are relative to the working directory of the
+given instance of File, which may be changed using the SetWorkingDirectory
+action. The working directory must be an absolute path and must refer to a
+directory. See the examples below for common use cases of File.
+
+Attribute: Author Jeff Wilson
+Attribute: Example
+use Libraries.System.File
+
+class Main
+    action main
+        // Read the contents of a file and output them to the screen.
+        // This file is in our program's directory.
+        File inputFile
+        inputFile:SetPath("hello.txt")
+        output inputFile:Read() // read and output  all contents to screen.
+        
+        // Write text to a file, erasing all old contents.
+        // This file is located in the C:\Windows folder.
+        File outputFile
+        outputFile:SetWorkingDirectory("C:\Windows")
+        outputFile:SetPath("secret_file.txt")
+        outputFile:Write("hello there. this is a new file.")
+        
+        // Print the working directory of a new File instance. This is, by default,
+        // the folder in which our program is stored, i.e.
+        // C:\Users\jeff\My Documents\NetBeansProjects\TestProject
+        File newFile
+        output newFile:GetWorkingDirectory() // this action always returns the working directory.
+
+        // To get the paths a particular File instance refers to, we use the
+        // GetPath() and GetAbsolutePath() actions.
+        File someFile
+        someFile:SetWorkingDirectory("C:\Users\jeff")
+        someFile:SetPath("settings.txt")
+        output someFile:GetPath() // prints settings.txt.
+        output someFile:GetAbsolutePath() // prints C:\Users\jeff\settings.txt
+        output someFile:GetWorkingDirectory() // prints C:\Users\jeff
+
+        // Find out if this file is a directory or not.
+        File mysteryFile
+        mysteryFile:SetPath("images") // assuming a file or directory exists in our working directory called 'images'.
+        output "The mystery file object is a file: " + mysteryFile:IsFile()
+        output "The mystery file object is a directory: " + mysteryFile:IsDirectory()
+    end
+*/
+
+
+class File
+    /*
+     * Keep track of each reader/writer/random accessor so that we know which
+     * to handle in Close().
+     */
+    private FileReader reader = undefined
+private FileWriter writer = undefined
+private FileRandomAccess randomAccess = undefined
+
+
+private system action CalculateListingPrefixNative returns text
+    /*
+     * This action gets the "last modified" date/time from the system in UNIX
+     * timestamp format.
+     */
+private system action GetLastModifiedNative returns number
+
+    /*
+     * This action gets the directory listing from the system delimited by
+     * a pipe symbol. 
+     */
+
+private system action GetDirectoryListingNative returns text
+
+    /*
+     * Get the full-path name of the parent directory as a string.
+     */
+private system action GetParentDirectoryNative returns text
+
+    /*
+     *This action gets the system's newline character. This varies from
+     * platform to platform and is difficult to detect manually. On some
+     * systems, it may simply be "\n" (UNIX), and on others, it may be
+     * "\r\n" (Windows).
+     */
+private system action GetSystemNewline returns text
+
+    /*
+     * Get the path on the native side.
+     */
+private system action GetPathNative returns text
+
+    /*
+     * Set the path on the native side.
+     */
+private system action SetPathNative(text path)
+
+    /*
+     * Get the user's current working directory.
+     */
+private system action GetWorkingDirectoryNative returns text
+
+    /*
+     * Set the working directory for this File object. True is returned if
+     * the new working directory corresponds to an existing directory on
+     * the system.
+     */
+private system action SetWorkingDirectoryNative(text path) returns boolean
+
+    /*
+     * Compute the absolute path represented by this File object on the native
+     * side.
+     */
+
+
+private system action GetAbsolutePathNative returns text
+    
+    /*
+     * Used for constructing new File objects in GetDirectoryListing.
+     */
+private system action GetWorkingDirectoryFromPath(text path) returns text
+private system action GetPathFromPath(text path) returns text
+
+    /*
+        This action returns the "working directory" of our program. The
+        "working directory" is the directory our program looks in by default
+        when looking for files that aren't specified by an absolute path. For
+        example, if we wish to open the path "dictionary.txt," this would
+        refer to a file named "dictionary.txt" in our working directory. By
+        default, the working directory is the directory where the program is
+        stored.
+        
+        Attribute: Returns The directory our application is working in.
+     
+        Attribute: Example
+        use Libraries.System.File
+
+        File myFileObject
+        output "The working directory of this program is " + myFileObject:GetPath()
+     */
+
+
+action GetWorkingDirectory() returns text
+   return GetWorkingDirectoryNative()
+end
+
+
+action SetWorkingDirectory(text path)
+   boolean result = SetWorkingDirectoryNative(path)
+        //if not result
+        //    FileNotFoundError e
+        //    e:SetErrorMessage("The working directory specified does not exist, or does not correspond to a directory: " + path)
+        //    alert(e)
+        //end
+
+end
+
+    /*
+        Get the path associated with this File object. If a File class
+        is instantiated and the action SetPath
+        has been called, then this will return an empty string. Otherwise, it
+        will return the relative path set for this File instance. (Relative to
+        the current working directory).
+
+        Attribute: Returns the path this file represents, or an empty string.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Set a path and get it back. This File object ultimately represents the
+        // path "/Users/jeff/Music"
+        File someFile
+        someFile:SetWorkingDirectory("/Users/jeff/")
+        someFile:SetPath("Music")
+        output someFile:GetPath() // prints "Music"
+     */
+
+
+action GetPath returns text
+   return GetPathNative()
+end
+
+    /*
+        Get the ABSOLUTE path this File object represents. Essentially, this is
+        the same concept as GetPath, but the path is "absolute", that is, it is
+        NOT dependent on the working directory of a File object. The absolute path
+        is the working directory of File and the path of File concatenated together.
+
+        Attribute: Returns the absolute path this File object represents.
+
+        Attribute: Example
+        use Libraries.System.File
+        // Construct a file object to refer to "C:\Windows\System32".
+        File sys
+        sys:SetWorkingDirectory("C:\Windows")
+        sys:SetPath("System32")
+        output sys:GetPath() // prints "System32"
+        output sys:GetAbsolutePath() // prints "C:\Windows\System32"
+    */
+
+
+action GetAbsolutePath returns text
+   return GetAbsolutePathNative()
+end
+
+    /*
+        Set the path this File represents. This path is what is called a
+        "relative" path, that is, it does not represent a concrete path to
+        some file. This path is relative to the working directory of this
+        File object (see SetWorkingDirectory()). 
+
+        Attribute: Parameter path The relative path we wish to use for this File object.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.Path
+
+        // This File object will be constructed to refer to the "Program Files" directory
+        // on a Windows system. The working directory of "C:\" tells File to look for the path
+        // "Program Files" starting at "C:\". The full path then becomes "C:\Program Files".
+
+        File programFilesDir
+        programFilesDir:SetWorkingDirectory("C:\")
+        programFilesDir:SetPath("Program Files")
+        output "Is it a directory? " + programFilesDir:IsDirectory() // on Windows systems, prints "Is it a directory? true"
+     */
+
+
+action SetPath(text path)
+   SetPathNative(path)
+end
+
+    /*
+        Test whether or not the path this File object refers to exists, that is,
+        whether or not the path refers to a valid file or directory.
+
+        Attribute: Returns True if the file or directory exists; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Does a folder called "Windows" exist under C:\? On Windows systems, it will;
+        // on other systems, it will not.
+        File winDir
+        winDir:SetWorkingDirectory("C:\")
+        winDir:SetPath("Windows")
+        output "Does 'C:\Windows' exist?  " + winDir:Exists() // on Windows systems, will output  "Does 'C:\Windows' exist? true"
+     */
+
+
+    system action Exists returns boolean
+
+    /*
+        Determine whether or not the path this File object refers to is a "file,"
+        that is, an entity on the file system that is not a directory.
+
+        Attribute: Returns True if the path of this File object is a file; False if it is a directory or the path is invalid. (see Exists()).
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Is C:\Windows a file?
+        File winDir
+        winDir:SetWorkingDirectory("C:\Windows")
+        output "Is C:\Windows a file? " + winDir:IsFile() // Will output  'Is C:\Windows a file? false'
+
+        // Is C:\Windows\System32\kernel32.dll a file?
+        File kernel32
+        kernel32:SetWorkingDirectory("C:\Windows\system32\")
+        kernel32:SetPath("ernel32.dll")
+        output "Is C:\Windows\System32\kernel32.dll a file? " + kernel32:IsFile() // On Windows systems, will output  "Is C:\Windows\System32\kernel32.dll a file? true"
+     */
+
+
+    system action IsFile returns boolean
+
+    /*
+        Test whether or not the path this File object refers to is a "directory."
+        A directory is a folder on the file system that contains other files or
+        directories.
+
+        Attribute: Returns True if the path of this File object is a directory; False if it is a directory or the path is invalid. (see Exists())
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // On most systems, the path './' refers to the current directory.
+        // Is the current directory a directory?
+        File currentDir
+        currentDir:SetPath("./")
+        output "Are we in a directory? " + currentDir:IsDirectory() // On most systems, will output  "Are we in a directory? true"
+
+        // On Windows systems, is "C:\" a directory?
+        File cDrive
+        cDrive:SetWorkingDirectory("C:\")
+        output "Is C:\ a directory? " + cDrive:IsDirectory() // On Windows systems, will output  "Is C:\ a directory? true"
+     */
+
+
+    system action IsDirectory returns boolean
+
+    /*
+        Test whether or not the path this File object refers to is a file with
+        the "hidden" attribute set. "Hidden" files set an attribute, called
+        "hidden," which hides them from the user by default. This attribute
+        is not supported by all operating systems, so it is possible that
+        this action will always return false on some systems.
+
+        Attribute: Returns True if the path of this File object is a file with the hidden attribute; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // On Windows systems, the "user32.dll" file is hidden.
+        File user32
+        user32:SetWorkingDirectory("C:\Windows\System32")
+        user32:SetPath("user32.dll")
+        output "Is user32.dll hidden? " + user32:IsHidden() // On Windows systems, will output  "Is user32.dll hidden? true"
+     */
+
+
+    system action IsHidden returns boolean
+
+    /*
+        Obtain the last part of the path name for this File object. This will
+        be the last file or directory in the path. For example, if we had a File
+        object that represented the path
+
+        C:\Users\jeff\My Documents
+
+        this action would return "My Documents." Similarly, if we had a File object
+        that represented the path
+
+        C:\Users\jeff\My Documents\homework.doc
+
+        this action would return "homework.doc". This action always returns the
+        last thing in the path, so if our path is simply "C:\", this action will
+        return "C:\". If our path is "/", this action will return an empty
+        string ("").
+
+        Attribute: Returns The last portion of the path name. This may be a file name, directory name, or drive letter.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Get the file name from this path.
+        text path = "C:\Program Files\Sodbeans\bin\sodbeans.exe"
+        File file
+        file:SetWorkingDirectory("C:\Program Files\Sodbeans\bin\")
+        file:SetPath("sodbeans.exe")
+        output file:GetFileName() // will output  "sodbeans.exe". (on any system)
+     */
+
+
+    system action GetFileName returns text
+
+    /*
+        Obtain the file extension of the path this File object represents.
+        A file extension is any text after the last '.' character in a path;
+        files and directories can have extensions. For example, the path
+
+        C:\Users\jeff\hello.txt
+
+        has the extension "txt". Similarly, the path below, although it
+        represents a directory on Macintosh systems, has the extension "app".
+
+        /Applications/Sodbeans.app
+
+        If no '.' character exists in the path, there is no extension in the
+        path, and an empty string is returned.
+
+        Attribute: Returns The file extension or "" if no extension is present. The '.' character will not be present in the return value.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Get the extension of a music file.
+        File musicFile
+        musicFile:SetWorkingDirectory("C:\Users\jeff\Music")
+        musicFile:SetPath("Untitled.mp3")
+        output musicFile:GetFileExtension() // prints "mp3" on all systems.
+
+        // Get the extension of a directory.
+        File appDir
+        appDir:SetWorkingDirectory("/Applications/")
+        appDir:SetPath("TextEdit.app")
+        output appDir:GetFileExtension() // prints "app" on all systems.
+     */
+
+
+    system action GetFileExtension returns text
+
+    /*
+        Get the parent directory of this particular File object. The parent
+        directory is the directory immediately above the file or directory this File object
+        points in to. For example, if our File object represents the path
+
+        C:\Program Files\Sodbeans
+
+        the parent directory is "C:\Program Files"
+
+        If our File object represents a file, such as
+
+        /Users/jeff/hello.txt
+
+        the parent directory is /Users/jeff. In general, it is the path up to
+        the last forward or backward slash. If there is no parent directory, as
+        in the case of paths such as "C:\" or "/", undefined is returned.
+
+        Attribute: Returns The parent directory of this File object as a new File object, or undefined if no parent exists.
+        
+        Attribute: Example
+        use Libraries.System.File
+
+        // Get the parent directory of our working directory (remember, File points to our working directory if we don't set a path).
+        File workingDir
+        File parentDir = workingDir:GetParentDirectory()
+
+        // Is there a parent directory?
+        if parentDir not= undefined
+            output parentDir:GetPath()
+        else
+            output "There is no parent to our working directory."
+        end
+     */
+
+
+action GetParentDirectory returns File
+   text parentPath = GetParentDirectoryNative() // will be an absolute path.
+        
+        // We can't create a parent object if there is no parent... (e.g., path is "C:\" on windows or "/" on *nix)
+
+
+   if parentPath = ""
+       return undefined
+   end
+
+   File parentFile
+   parentFile:SetWorkingDirectory(parentPath)
+   return parentFile
+end
+
+    /*
+        Obtain the amount of unallocated hard drive space on the drive this
+        path represents. For example, if our path starts with "C:\" on
+        Windows systems, this will return the amount of free disk space on
+        the "C" drive. On Unix and Mac OS X systems, the drive being referenced depends
+        greatly on the system configuration.
+
+        Attribute: Returns the amount of unallocated hard drive space in bytes. This value will always be a whole number.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // How much disk space is available on C in gigabytes?
+        File cDir
+        cDir:SetWorkingDirectory("C:\")
+        number amount = cDir:GetFreeDiskSpace() / 1024 / 1024 / 1024 // conversion from bytes to kilobytes, kilobytes to megabytes, megabytes to gigabytes
+        output "Drive C has " + amount + " GB free."
+
+        // How much disk space is available on the root drive? (Mac and Unix/Linux only).
+        File root
+        root:SetWorkingDirectory"/")
+        amount = root:GetFreeDiskSpace() / 1024 / 1024 / 1024 // conversion from bytes to kilobytes, kilobytes to megabytes, megabytes to gigabytes
+        output "The root drive has " + amount + " GB free."
+     */
+
+
+    system action GetFreeDiskSpace returns number
+
+    /*
+        Obtain the total amount of hard drive space on the drive this path
+        represents. This is the total capacity of the disk.
+        For example, if our path starts with "C:\" on
+        Windows systems, this will return the capacity of the "C" drive.
+        On Unix and Mac OS X systems, the drive being referenced depends
+        greatly on the system configuration.
+
+        Attribute: Returns the capacity of the hard disk in bytes. This value will always be a whole number.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // How much disk space is available on C in gigabytes?
+        File cDir
+        cDir:SetWorkingDirectory("C:\")
+        number amount = cDir:GetTotalDiskSpace() / 1024 / 1024 / 1024 // conversion from bytes to kilobytes, kilobytes to megabytes, megabytes to gigabytes
+        output "Drive C has a total capacity of " + amount + " GB."
+
+        // How much disk space is available on the root drive? (Mac and Unix/Linux only).
+        File root
+        root:SetWorkingDirectory("/")
+        amount = root:GetTotalDiskSpace() / 1024 / 1024 / 1024 // conversion from bytes to kilobytes, kilobytes to megabytes, megabytes to gigabytes
+        output "The root drive has a total capacity of  " + amount + " GB."
+     */
+
+
+    system action GetTotalDiskSpace returns number
+
+    /*
+        Get the total size of the file represented by this File object. This is the total
+        number of bytes this file contains, but doesn't necessarily say how much disk space
+        this file takes on disk. This action only returns a meaningful value for files; for directories, the value is
+        always 0.
+
+        Attribute: Returns the file size in bytes. This may be 0 if the file does not exist, the path is a directory, or the path is invalid.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // How big is the "notepad" program on Windows?
+        File notepad
+        notepad:SetWorkingDirectory("C:\Windows")
+        notepad:SetPath("notepad.exe")
+        output "Notepad is " + notepad:GetFileSize() + " bytes."
+     */
+
+
+    system action GetFileSize returns number
+
+    /*
+        Obtain a list of files and directories in the directory specified by this File object. If this File object does not represent
+        a directory, undefined is returned.
+
+        Attribute: Returns an indexable collection of File objects representing files and folders in the path of this File object. Returns undefined if this File object does not point to a directory.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.Containers.Array
+
+        // Get the first item (alphabetical order) listed in C:\.
+        File cDrive
+        cDrive:SetWorkingDirectory("C:\")
+        Array<File> items = cDrive:GetDirectoryListing()
+        File f0 = items:Get(0)
+        output f0:GetPath()
+     */
+
+
+action GetDirectoryListing returns Array<File>
+        //// BROKEN - FIX ME ////
+
+   if me:IsDirectory()
+       Text listingString
+       listingString:SetValue(GetDirectoryListingNative())
+
+            // Each object in the directory listing is delimited by a newline
+            // character. An example listing might be, for the path, "/Users/jeff",
+            //
+            // "/Users/jeff/Documents"
+            // "/Users/jeff/Music"
+            // ... etc ... 
+
+       Array<File> files
+            //empty directory
+
+       if listingString:IsEmpty()
+           return files
+       end
+
+       Array<text> paths = listingString:Split(GetSystemNewline())
+       Iterator<text> i = paths:GetIterator()
+       repeat while i:HasNext()
+           text p = i:Next()
+           File fileToAdd
+           text workingDirectory = GetWorkingDirectoryFromPath(p)
+           text path = GetPathFromPath(p)
+           fileToAdd:SetWorkingDirectory(workingDirectory)
+           fileToAdd:SetPath(path)
+           files:Add(fileToAdd)
+       end
+       return files
+   else
+       return undefined
+   end
+end
+
+    /*
+        Obtain the date and time this file or directory was last modified. Typically,
+        this is the date and time either the contents of the file (or directory) changed,
+        or it was renamed.
+
+        Attribute: Returns the modified date and time as a DateTime object, or undefined if the path represented by this File object does not exist.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.DateTime
+
+        // When was "Program Files" last modified?
+        File programFiles
+        programFiles:SetWorkingDirectory("C:\Program Files")
+        DateTime date
+        if date not= undefined
+            output "Program files was last modified on" + date:GetMonth() + "/" + date:GetDayOfMonth() + "/" + date:GetYear()
+        else
+            output "Program files does not have any data. This is likely not a Windows system."
+        end
+     */
+
+
+action GetLastModifiedDate returns DateTime
+   if me:Exists()
+       DateTime date
+       number unixTimeStamp = GetLastModifiedNative()
+       date:SetEpochTime(unixTimeStamp)
+       return date
+   else
+       return undefined
+   end
+end
+
+    /*
+        Delete the path specified by this File object. This operation does not send items to the appropriate recycle bin or trash can
+        folder on the system, and it cannot be easily undone (if at all). This operation can only be used to delete single files
+        or empty directories.
+
+        Attribute: Returns True if the operation succeeds; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Create a directory and delete it.
+        File myDir
+        myDIr:SetWorkingDirectory("C:\Users\jeff\My DOcuments\")
+        myDir:SetPath("A_New_Folder")
+        myDir:CreateDirectory()
+        boolean ok = myDir:Delete() // delete it
+
+        if ok
+            output "deletion succeeded."
+        else
+            output "deletion failed."
+        end
+     */
+
+
+    system action Delete returns boolean
+
+    /*
+        Create the directory specified in the path by this File object. This can only be used to create a single directory; it is not possible
+        to create an entire path using this action. As an example, if the path "C:\blah\bb" does not already exist under "C:\", we cannot
+        create all three directories in this path:
+
+        C:\blah\bb\foo
+
+        Rather, we would create each individually (see example below).
+
+        Attribute: Returns True if directory creation succeeds; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Create a directory in /Users/jeff called "oldMusic".
+        File oldMusicDir
+        oldMusicDir:SetWorkingDirectory("/Users/jeff")
+        oldMusicDir:SetPath("oldMusic")
+        oldMusicDir:CreateDirectory()
+     */
+
+
+    system action CreateDirectory returns boolean
+
+    /*
+        Create the directory specified in the path by this File object. This can 
+        be used to create a single directory and all parents. As an example, 
+        if the path "C:\blah\bb" does not already exist under "C:\", this method
+        creates all three in this path:
+
+        C:\blah\bb\foo
+
+        Attribute: Returns True if directory creation succeeds; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Create a directory in /Users/jeff called "oldMusic".
+        File oldMusicDir
+        oldMusicDir:SetWorkingDirectory("/Users/jeff")
+        oldMusicDir:SetPath("oldMusic")
+        oldMusicDir:CreateDirectories()
+     */
+
+
+    system action CreateDirectories returns boolean
+
+    /*
+        Move the file (or directory) specified to the new path specified.
+        The behavior of this action is highly dependent on the platform
+        and file system; always check the return value to ensure success.
+
+        Attribute: Parameter newPath the new path to move the file to. May be an absolute path or a relative path.
+
+        Attribute: Returns True if the move succeeds; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Move a file from one directory to another.
+        File f
+        f:SetWorkingDirectory("/Users/jeff/Music/")
+        f:SetPath("Untitled.mp3")
+        boolean moveSucceeded = f:Move("/Users/jeff/oldMusic/Untitled.mp3")
+        if moveSucceeded
+            output "Move succeeded."
+        else
+            output "Move failed."
+        end
+
+        // Move can also be used to rename a file.
+        File renameMe
+        renameMe:SetWorkingDirectory("/Users/jeff/Music/")
+        renameMe:SetPath("Untitled.mp3")
+        moveSucceeded = renameMe:Move("/Users/jeff/Music/Toccata and Fugue.mp3")
+        if moveSucceeded
+            output "Move succeeded."
+        else
+            output "Move failed."
+        end
+     */
+
+
+    system action Move(text newPath) returns boolean
+
+    /*
+        Copy the file (or directory) specified to the new location specified.
+        The behavior of this action is highly dependent on the platform
+        and file system; always check the return value to ensure success.
+
+        Attribute: Parameter copy the new location to copy the file to. Must be a valid file.
+
+        Attribute: Returns True if the move succeeds; false otherwise.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Move a file from one directory to another.
+        File f
+        f:SetPath("Untitled.mp3")
+
+        File copy
+        copy:SetPath("Jeff.mp3")
+        boolean moveSucceeded = f:Copy(copy)
+        if moveSucceeded
+            output "Copy succeeded."
+        else
+            output "Copy failed."
+        end
+     */
+
+
+    system action Copy(File copy) returns boolean
+
+    /*
+        Open this file for sequential reading. See the documentation of
+        FileReaderBlueprint for more information on sequential reading.
+
+        Attribute: Returns A FileReaderBlueprint that may be used to read this
+        file sequentially.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.Blueprints.FileReaderBlueprint
+
+        // Open a file for sequential reading and output all of its contents.
+        File f
+        f:SetWorkingDirectory("/Users/jeff/")
+        f:SetPath("dictionary.txt")
+        FileReaderBlueprint reader = f:OpenForRead()
+        output reader:Read()
+        f:Close() // we're done with the file, see Close() documentation.
+     */
+
+
+action OpenForRead returns FileReaderBlueprint
+   if me:IsFile()
+       FileReader r
+       reader = r
+       reader:OpenForRead(me)
+       return reader
+   end
+   return undefined
+end
+
+    /*
+        Open this file for sequential writing. See the documentation of
+        FileWriterBlueprint for more information on sequential writing.
+
+        Attribute: Returns A FileWriterBlueprint that may be used to write this
+        file sequentially.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.Blueprints.FileWriterBlueprint
+
+        // Open a file for sequential writing and write a few lines.
+        File f
+        f:SetWorkingDirectory("/Users/jeff/")
+        f:SetPath("dictionary.txt")
+        FileWriterBlueprint writer = f:OpenForWrite()
+
+        // Create a small dictionary.
+        writer:WriteLine("abstraction")
+        writer:WriteLine("kafkaesque")
+        writer:WriteLine("quarry")
+
+        f:Close() // we're done with the file, see Close() documentation.
+     */
+
+
+action OpenForWrite returns FileWriterBlueprint
+   if me:IsDirectory()
+       return undefined
+   else
+       FileWriter w
+       writer = w
+       writer:OpenForWrite(me)
+       return writer
+   end
+end
+
+    /*
+        Open this file for sequential writing. This differs from the OpenForWrite()
+        action, as the previous contents of the file (if any) are preserved. See
+        the documentation of FileWriterBlueprint for more information on sequential
+        writing.
+
+        Attribute: Returns A fileWriterBlueprint that supports sequential file writing.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.Blueprints.FileWriterBlueprint
+
+        // Open a file for sequential writing and write a few lines, preserving the old contents.
+        File f
+        f:SetWorkingDirectory("/Users/jeff/")
+        f:SetPath("dictionary.txt")
+        FileWriterBlueprint writer = f:OpenForWriteAppend()
+
+        // Add a few new words to our dictionary.
+        writer:WriteLine("concrete")
+        writer:WriteLine("freudian")
+        writer:WriteLine("steep")
+
+        f:Close() // we're done with the file, see Close() documentation.
+     */
+
+
+action OpenForWriteAppend returns FileWriterBlueprint
+   if me:IsDirectory()
+       return undefined
+   else
+       FileWriter w
+       writer = w
+       writer:OpenForWriteAppend(me)
+       return writer
+   end
+end
+
+    /*
+        Open this file for random access. "Random access" implies that reading
+        and/or writing to the file can occur in a non-sequential fashion. See
+        FileRandomAccessBlueprint's documentaiton for more information.
+
+        Attribute: Returns A FileRandomAccessBlueprint, sufficient for random access to the file's contents.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.Blueprints.FileWriterBlueprint
+
+        // Open a file for sequential writing and write a few lines.
+        File f
+        f:SetWorkingDirectory("/Users/jeff/")
+        f:SetPath("dictionary.txt")
+        FileWriterBlueprint writer = f:OpenForWrite()
+
+        // Create a small dictionary.
+        writer:WriteLine("abstraction")
+        writer:WriteLine("kafkaesque")
+        writer:WriteLine("quarry")
+
+        f:Close() // we're done with the file, see Close() documentation.
+     */
+
+
+action OpenForRandomAccess returns FileRandomAccessBlueprint
+   if me:IsFile()
+       FileRandomAccess ra
+       randomAccess = ra
+       randomAccess:OpenForRandomAccess(me)
+       return randomAccess
+   end
+   return undefined
+end
+
+    /*
+        If this file has been opened for reading, writing, or random access
+        (see the actions OpenForRead(), OpenForWrite(), OpenForWriteAppend()
+        and OpenForRandomAccess()), this action should be called to "close"
+        the file. "Closing" a file means releasing it back to the operating
+        system so that other programs may use it.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.Blueprints.FileWriterBlueprint
+
+        // Open a file for sequential writing and write a few lines. Then, close it.
+        File f
+        f:SetWorkingDirectory("/Users/jeff/")
+        f:SetPath("dictionary.txt")
+        FileWriterBlueprint writer = f:OpenForWrite()
+
+        // Create a small dictionary.
+        writer:WriteLine("abstraction")
+        writer:WriteLine("kafkaesque")
+        writer:WriteLine("quarry")
+
+        f:Close() // we're done with the file
+     */
+
+
+action Close
+        // Close any open readers/writers/accessors. If the user mistakenly
+        // opened up several, we can close them.
+
+   if reader not= undefined
+       reader:Close()
+   end
+
+   if writer not= undefined
+       writer:Close()
+   end
+
+   if randomAccess not= undefined
+       randomAccess:Close()
+   end
+end
+
+    /*
+        Read all of the contents of a file immediately into a string. When using
+        this action, it is not required to call Close(). If the file does not
+        exist, a FileNotFoundError will be raised. If the file cannot be opened
+        for other reasons, an InputOutputError will be raised.
+
+        Attribute: Returns everything in the file.
+
+        Attribute: Example
+        use Libraries.System.File
+
+        // Open our dictionary and read all the contents at once. Print them.
+        File dict
+        dict:SetWorkingDirectory("/Users/jeff/")
+        dict:SetPath("dictionary.txt")
+        output dict:Read() //output  all the contents to screen.
+     */
+
+
+action Read returns text
+   FileReader r
+   r:OpenForRead(me)
+   text result = r:Read()
+   r:Close()
+   return result
+end
+
+    /*
+        Write all text contained in 'textToWrite' to the specified file. This will
+        erase all previous contents of the file. If the file cannot be created,
+        an InputOutputError will be raised.
+
+        Attribute: Example
+        use Libraries.System.File
+        use Libraries.System.Blueprints.FileWriterBlueprint
+
+        // Write a single line to the file.
+        File f
+        f:SetWorkingDirectory("/Users/jeff/")
+        f:SetPath("ASimpleMessage.txt")
+        text message = "Anything I put in here will magically appear in the file."
+        f:Write(message)
+
+        // It is also possible to write multiple lines, like so:
+        f:SetWorkingDirectory("/Users/jeff/")
+        f:SetPath("AComplexMessage.txt")
+        message ="This is the first line
+and here's another."
+        f:Write(message)
+     */
+
+
+action Write(text textToWrite)
+   FileWriter w
+   w:OpenForWrite(me)
+   w:Write(textToWrite)
+   w:Close()
+end
+end

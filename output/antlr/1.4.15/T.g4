@@ -1,0 +1,5 @@
+grammar T;
+
+a
+    :   A
+    ;

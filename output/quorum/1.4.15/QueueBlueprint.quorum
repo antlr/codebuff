@@ -1,0 +1,53 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.Copyable
+use Libraries.Containers.Blueprints.Addable
+use Libraries.Containers.Blueprints.Iterative
+use Libraries.Containers.Blueprints.Container
+
+/*
+
+Inheriting from the QueueBlueprint class provides a basic blueprint for a
+queue data structure.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.QueueBlueprint
+
+class MyQueue<Type> is QueueBlueprint<Type>
+    action AddToEnd(Type value)
+        //implement here
+    end
+end
+*/
+
+
+class QueueBlueprint <Type> is Addable<Type>, Container, Copyable, Iterative<Type>
+    /*
+        This action adds an item to the end of the queue.
+
+        Attribute: Parameter value The item to be added to the queue. 
+    */
+
+    blueprint action AddToEnd(Type value)
+
+    /*
+        This action gets the item at the front of the queue(the item will remain in the queue). 
+
+        Attribute: Returns The item at the front of the queue.
+    */
+
+
+                     blueprint action GetFromFront() returns Type
+
+    /*
+        This action removes the item at the front of the queue. 
+
+        Attribute: Returns The item at the front of the queue. 
+    */
+
+
+                     blueprint action RemoveFromFront() returns Type
+end
