@@ -32,7 +32,6 @@
 package org.stringtemplate.v4.gui;
 
 import javax.swing.*;
-
 import java.awt.*;
 
 /**

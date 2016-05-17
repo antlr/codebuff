@@ -278,13 +278,13 @@ public class STLexer implements TokenSource {
     protected Token inside() {
         while ( true ) {
             switch (c) {
-                case ' ':
-                case '\t':
-                case '\n':
-                case '\r':
+                case ' ' :
+                case '\t' :
+                case '\n' :
+                case '\r' :
                     consume();
                     return SKIP;
-                case '.':
+                case '.' :
                     consume();
                     if ( input.LA(1)=='.' && input.LA(2)=='.' ) {
                         consume();
@@ -292,34 +292,34 @@ public class STLexer implements TokenSource {
                         return newToken(ELLIPSIS);
                     }
                     return newToken(DOT);
-                case ',':
+                case ',' :
                     consume();
                     return newToken(COMMA);
-                case ':':
+                case ':' :
                     consume();
                     return newToken(COLON);
-                case ';':
+                case ';' :
                     consume();
                     return newToken(SEMI);
-                case '(':
+                case '(' :
                     consume();
                     return newToken(LPAREN);
-                case ')':
+                case ')' :
                     consume();
                     return newToken(RPAREN);
-                case '[':
+                case '[' :
                     consume();
                     return newToken(LBRACK);
-                case ']':
+                case ']' :
                     consume();
                     return newToken(RBRACK);
-                case '=':
+                case '=' :
                     consume();
                     return newToken(EQUALS);
-                case '!':
+                case '!' :
                     consume();
                     return newToken(BANG);
-                case '@':
+                case '@' :
                     consume();
                     if ( c=='e' && input.LA(2)=='n' && input.LA(3)=='d' ) {
                         consume();
@@ -328,17 +328,17 @@ public class STLexer implements TokenSource {
                         return newToken(REGION_END);
                     }
                     return newToken(AT);
-                case '"':
+                case '"' :
                     return mSTRING();
-                case '&':
+                case '&' :
                     consume();
                     match('&');
                     return newToken(AND); // &&
-                case '|':
+                case '|' :
                     consume();
                     match('|');
                     return newToken(OR); // ||
-                case '{':
+                case '{' :
                     return subTemplate();
                 default:
                     if ( c==delimiterStopChar ) {
@@ -424,16 +424,16 @@ public class STLexer implements TokenSource {
         if ( c=='u' ) return UNICODE();
         String text;
         switch (c) {
-            case '\\':
+            case '\\' :
                 LINEBREAK();
                 return SKIP;
-            case 'n':
+            case 'n' :
                 text = "\n";
                 break;
-            case 't':
+            case 't' :
                 text = "\t";
                 break;
-            case ' ':
+            case ' ' :
                 text = " ";
                 break;
             default:
@@ -574,13 +574,13 @@ public class STLexer implements TokenSource {
                 sawEscape = true;
                 consume();
                 switch (c) {
-                    case 'n':
+                    case 'n' :
                         buf.append('\n');
                         break;
-                    case 'r':
+                    case 'r' :
                         buf.append('\r');
                         break;
-                    case 't':
+                    case 't' :
                         buf.append('\t');
                         break;
                     default:
@@ -649,7 +649,7 @@ public class STLexer implements TokenSource {
     }
 
     public static boolean isIDLetter(char c) {
-        return c>='a' && c <='z' || c>='A' && c <='Z' || c>='0' && c <='9' || c=='_' || c=='/';
+        return c >='a' && c <='z' || c >='A' && c <='Z' || c >='0' && c <='9' || c=='_' || c=='/';
     }
 
     public static boolean isWS(char c) {
@@ -657,7 +657,7 @@ public class STLexer implements TokenSource {
     }
 
     public static boolean isUnicodeLetter(char c) {
-        return c>='a' && c <='f' || c>='A' && c <='F' || c>='0' && c <='9';
+        return c >='a' && c <='f' || c >='A' && c <='F' || c >='0' && c <='9';
     }
 
     public Token newToken(int ttype) {

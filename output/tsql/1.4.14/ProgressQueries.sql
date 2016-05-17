@@ -48,14 +48,12 @@ SELECT
     , SSISInstanceID AS SSISIID
     , LoadStageDBStartDate
     , LoadStageDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms,
-                                   DATEDIFF(ms, LoadStageDBStartDate,
-                                            LoadStageDBEndDate), 0), 114) AS StageLoadTime
+    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadStageDBStartDate,
+                                                LoadStageDBEndDate), 0), 114) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , CONVERT(VARCHAR(12), DATEADD(ms,
-                                   DATEDIFF(ms, LoadReportDBStartDate,
-                                            LoadReportDBEndDate), 0), 114) AS ReportLoadTime
+    , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate,
+                                                LoadReportDBEndDate), 0), 114) AS ReportLoadTime
 FROM ClientConnection
 GROUP BY Beta
     , Status

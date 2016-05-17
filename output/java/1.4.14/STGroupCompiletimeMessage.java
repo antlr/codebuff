@@ -71,6 +71,7 @@ public class STGroupCompiletimeMessage extends STMessage {
         if ( srcName!=null ) {
             return srcName+" "+filepos+": "+String.format(error.message, arg, arg2);
         }
+
         return filepos+": "+String.format(error.message, arg, arg2);
     }
 }

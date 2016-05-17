@@ -12,13 +12,13 @@ ELSE 99 END)
            ELSE s.is_percent_growth END AS INT)    AS [GrowthType]
     , s.physical_name AS [FileName]
     , s.size * CONVERT(float, 8)    AS [Size]
-    , CASE
-      WHEN s.max_size = -1
+    , CASE WHEN s.max_size = -1
           THEN -1 ELSE s.max_size * CONVERT(float, 8)
           END                                              AS [MaxSize]
     , s.file_id AS [ID]
     , 'Server[@Name=' +
-      quotename(CAST(serverproperty('Servername') AS sysname), '''') +
+      quotename(CAST(serverproperty('Servername') AS sysname), '''')
+      +
       ']' + '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name AS varbinary(256)) AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
     , CAST(CASE s.is_percent_growth
            WHEN 1

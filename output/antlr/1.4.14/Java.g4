@@ -991,5 +991,4 @@ ELLIPSIS : '...' ;
 //
 WS :   [ \t\r\n\u000C]+ -> channel(HIDDEN) // CodeBuff needs to see all whitespace (even after comments) ;
 COMMENT : '/*' .*? '*/' -> channel(HIDDEN) ;
-LINE_COMMENT : '//' ~[\r\n]*
-               -> channel(HIDDEN) ;
+LINE_COMMENT : '//' ~[\r\n]* -> channel(HIDDEN) ;

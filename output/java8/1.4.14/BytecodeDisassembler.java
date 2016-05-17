@@ -103,7 +103,6 @@ public class BytecodeDisassembler {
                     break;
             }
         }
-
         for (int i = 0; i < operands.size(); i++) {
             String s = operands.get(i);
             if ( i>0 ) buf.append(", ");

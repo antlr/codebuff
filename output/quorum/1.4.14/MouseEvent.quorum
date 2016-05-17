@@ -10,8 +10,6 @@ scrolling the mouse wheel.
 class MouseEvent
     
     /* A code used for eventType to indicate that the mouse was clicked. */
-
-
     public constant integer CLICKED_MOUSE = 1
 
     /* A code used for eventType to indicate that the mouse was moved. */

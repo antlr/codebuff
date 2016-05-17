@@ -277,7 +277,6 @@ fullyQualifiedName+")");
         for (STGroup imp : imports) {
             imp.unload();
         }
-
         for (STGroup imp : importsToClearOnUnload) {
             imports.remove(imp);
         }
@@ -489,7 +488,7 @@ fullyQualifiedTemplateName+")");
     public static String getUnMangledTemplateName(String mangledName) {
         String t = mangledName.substring("/region__".length(), mangledName.lastIndexOf("__"));
         String r = mangledName.substring(mangledName.lastIndexOf("__")+2, mangledName.length());
-        return t+ '.'+r;
+        return t+'.'+r;
     }
 
     /** Define a map for this group.
@@ -681,7 +680,7 @@ fileName +
         }
 
         String templateName = Misc.getFileNameNoSuffix(unqualifiedFileName);
-        if ( prefix !=null && prefix.length() >0 ) templateName = prefix+templateName;
+        if ( prefix !=null && prefix.length()>0 ) templateName = prefix+templateName;
         CompiledST impl = rawGetTemplate(templateName);
         impl.prefix = prefix;
         return impl;

@@ -29,10 +29,6 @@ ASC
 
 -------------------------------------------
 
-
-
-
-
 SELECT
     ClientID
     , Status
@@ -55,6 +51,7 @@ SELECT
     , LoanSecondaryEndDate
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
+
 UPDATE ClientConnection_test
 SET Status = 0
 
@@ -85,6 +82,7 @@ SELECT
     , LoanSecondaryEndDate
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
+
 UPDATE ClientConnection
 SET Beta = '1', SSISInstanceID = 0
 WHERE SourceDB = 'PADemoDU'
@@ -339,6 +337,7 @@ SELECT
     , LoanSecondaryEndDate
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
+
 UPDATE dbo.ClientConnection_test
 SET LoanCurrentStartDate = '2013-04-21 14:39:24.897'
 , LoanCurrentEndDate   = '2013-04-26 14:39:24.897'

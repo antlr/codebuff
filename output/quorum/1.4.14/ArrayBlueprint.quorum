@@ -31,7 +31,6 @@ class ArrayBlueprint<Type> is ListBlueprint<Type>
         Attribute: Returns True if the array is resizable and false if it is not.
     */
 
-
     blueprint action GetAutoResize returns boolean
 
     /*

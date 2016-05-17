@@ -24,8 +24,6 @@ end
 
 
 class CompareResult
-
-
     public integer LARGER = 1
     public integer EQUAL = 0
     public integer SMALLER = - 1

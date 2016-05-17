@@ -166,7 +166,6 @@ public class STViz {
                                                        if ( depth!=1 ) {
                                                            return;
                                                        }
-
                                                        int dot = toEventPosition((JTextComponent)e.getSource(), e.getDot());
                                                        currentEvent = findEventAtOutputLocation(allEvents, dot);
                                                        if ( currentEvent==null ) currentScope = tmodel.root.event.scope;
@@ -212,7 +211,6 @@ public class STViz {
                                                                  if ( depth!=1 ) {
                                                                      return;
                                                                  }
-
                                                                  int minIndex = viewFrame.errorList.getMinSelectionIndex();
                                                                  int maxIndex = viewFrame.errorList.getMaxSelectionIndex();
                                                                  int i = minIndex;
@@ -339,7 +337,6 @@ public class STViz {
             }
             windowsLineEndingsList.add(i);
         }
-
         int[] windowsLineEndings = new int[windowsLineEndingsList.size()];
         for (int i = 0; i<windowsLineEndingsList.size(); i++) {
             windowsLineEndings[i] = windowsLineEndingsList.get(i);
@@ -353,7 +350,6 @@ public class STViz {
         if ( windowsLineEndings==null || windowsLineEndings.length==0 ) {
             return position;
         }
-
         int index = Arrays.binarySearch(windowsLineEndings, position);
         if ( index>=0 ) {
             return position-index;
@@ -446,7 +442,7 @@ Misc.join(stack.iterator(), " ")+"]");
             if ( e.scope.earlyEval ) {
                 continue;
             }
-            if ( charIndex>=e.outputStartChar && charIndex<= e.outputStopChar ) return e;
+            if ( charIndex>= e.outputStartChar && charIndex<= e.outputStopChar ) return e;
         }
         return null;
     }
@@ -493,7 +489,7 @@ Misc.join(stack.iterator(), " ")+"]");
     public static void test2() throws IOException
     { // test rig
         String templates = "t1(q1=\"Some\\nText\") ::= <<\n"+
-                           "<q1>\n" +">>\n"+"\n"+"t2(p1) ::= <<\n"+
+                           "<q1>\n" +">>\n"+"\n"+"t2(p1) ::= <<\n" +
                            "<p1>\n"+
                            ">>\n"+
                            "\n"+
@@ -518,7 +514,7 @@ Misc.join(stack.iterator(), " ")+"]");
 
     public static void test4() throws IOException
     {
-        String templates = "main(t) ::= <<\n"+"hi: <t>\n"+">>\n"+"foo(x,y={hi}) ::= \"<bar(x,y)>\"\n"+
+        String templates = "main(t) ::= <<\n"+"hi: <t>\n"+">>\n"+"foo(x,y={hi}) ::= \"<bar(x,y)>\"\n" +
                            "bar(x,y) ::= << <y> >>\n" +"ignore(m) ::= \"<m>\"\n";
         STGroup group = new STGroupString(templates);
         ST st = group.getInstanceOf("main");

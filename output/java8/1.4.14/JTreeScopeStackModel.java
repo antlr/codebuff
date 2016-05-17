@@ -79,7 +79,6 @@ public class JTreeScopeStackModel implements TreeModel {
         //System.out.println(root.toStringTree());
     }
 
-
     public void addAttributeDescriptions(ST st, StringTree node, Set<String> names) {
         Map<String, Object> attrs = st.getAttributes();
         if ( attrs==null ) return;

@@ -33,6 +33,7 @@ package org.stringtemplate.v4.misc;
  * @author Sam Harwell
  */
 
+
 public class AmbiguousMatchException extends RuntimeException {
     public AmbiguousMatchException() {
         super();

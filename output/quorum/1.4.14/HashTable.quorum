@@ -37,8 +37,6 @@ class HashTable <Key, Value> is HashTableBlueprint<Key, Value>
     number maxResizeRatio = 0.75
                 integer arraySize = 8//128
 
-
-
                 integer maxItemsBeforeResize = 0
     //the items stored in the hash table
 
@@ -127,6 +125,7 @@ class HashTable <Key, Value> is HashTableBlueprint<Key, Value>
 
                                          node = node:next
                                      end
+
                                      i = i + 1
                                  end
                                  return undefined
@@ -452,6 +451,7 @@ class HashTable <Key, Value> is HashTableBlueprint<Key, Value>
                                              hash:next = undefined
                                              hash = next
                                          end
+
                                          originalHash:next = undefined
                                      end
 
@@ -555,7 +555,6 @@ class HashTable <Key, Value> is HashTableBlueprint<Key, Value>
                                  integer index = ComputeIndex(key)
                                  HashNode<Key, Value> node = array:Get(index)
                                  HashNode<Key, Value> previous = undefined
-
                                  repeat while node not= undefined
                                      if key:Equals(node:key)
                                          if previous not= undefined

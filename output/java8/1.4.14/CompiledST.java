@@ -235,7 +235,7 @@ public class CompiledST implements Cloneable {
                 start = Math.min(start, interval.a);
                 stop = Math.max(stop, interval.b);
             }
-            if ( start<=stop+1 ) {
+            if ( start<= stop+1 ) {
                 return new Interval(start, stop);
             }
         }

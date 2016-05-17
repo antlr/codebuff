@@ -142,7 +142,7 @@ public class Compiler {
             reportMessageAndThrowSTException(tokens, templateToken, p, re);
             return null;
         }
-        if ( p.getNumberOfSyntaxErrors() >0 || r.getTree()==null ) {
+        if ( p.getNumberOfSyntaxErrors()>0 || r.getTree()==null ) {
             CompiledST impl = new CompiledST();
             impl.defineFormalArgs(args);
             return impl;

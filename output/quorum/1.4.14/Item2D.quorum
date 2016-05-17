@@ -557,7 +557,6 @@ class Item2D is Item
                      vertices:Set(Y3, y2)
                      vertices:Set(X4, x2)
                      vertices:Set(Y4, parentY)
-
                      if rotation not= 0 or scaleX not= 1 or scaleY not= 1
                          verticesChanged = true
                      end
@@ -1313,7 +1312,6 @@ class Item2D is Item
                  Iterator<TouchListener> iterator = GetTouchListeners()
                  if iterator:HasNext()
                      event:SetEventHandled(true)
-
                      if event:eventType = event:BEGAN
                          repeat while iterator:HasNext()
                              iterator:Next():BeganTouch(event)
@@ -1364,7 +1362,6 @@ class Item2D is Item
                  vertices:Set(Y3, y2)
                  vertices:Set(X4, x2)
                  vertices:Set(Y4, parentY)
-
                  if rotation not= 0 or scaleX not= 1 or scaleY not= 1
                      verticesChanged = true
                  end
@@ -2063,7 +2060,6 @@ class Item2D is Item
 
              action Draw(Painter2D painter)
                  PrepareVertices()
-
                  if not IsShowing()
                      return now
                  end

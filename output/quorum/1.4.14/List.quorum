@@ -35,7 +35,6 @@ class List<Type> is ListBlueprint<Type>
     ListNode<Type> head = undefined
           ListNode<Type> tail = undefined
           integer invalidIndex = - 1
-
           integer size = 0
 
     /*
@@ -682,7 +681,6 @@ class List<Type> is ListBlueprint<Type>
                      array:Sort()
                      ListIterator<Type> iterator
                      iterator:Set(me, head, tail)
-
                      integer i = 0
                      repeat while iterator:HasNext()
                          iterator:Next()

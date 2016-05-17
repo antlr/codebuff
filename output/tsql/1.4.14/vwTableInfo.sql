@@ -35,8 +35,7 @@ SELECT
                SELECT sum(spart.rows)
                FROM sys.partitions spart
                WHERE spart.object_id = tbl.object_id
-                     AND spart.index_id < 2),
-               0) AS [RowCount]
+                     AND spart.index_id < 2), 0) AS [RowCount]
     , Coalesce((
                SELECT
                    Cast(v.low / 1024.0 AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1

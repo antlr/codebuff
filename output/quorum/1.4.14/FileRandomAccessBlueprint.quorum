@@ -36,9 +36,12 @@ class FileRandomAccessBlueprint
 
     blueprint action Read() returns text
 
+
     blueprint action Read(integer numberOfBytes) returns text
 
+
     blueprint action ReadLine() returns text
+
 
     blueprint action ReadLines() returns Indexed<text>
 

@@ -72,12 +72,8 @@ public class Interpreter {
 
     Object[] operands = new Object[DEFAULT_OPERAND_STACK_SIZE];
     /** Stack pointer register. */
-
-
     int sp = -1;
     /** The number of characters written on this template line so far. */
-
-
     int nwline = 0;
 
     /** Render template with respect to this group.
@@ -376,7 +372,7 @@ public class Interpreter {
                                                                     ErrorType.EXPECTING_STRING,
                                                                     "strlen",
                                                                     o.getClass().getName());
-                                                operands[++sp] =0;
+                                                operands[++sp] = 0;
                                             }
                                             break;
                 case Bytecode.INSTR_REVERSE: operands[sp] = reverse(scope, operands[sp]);
@@ -403,7 +399,7 @@ public class Interpreter {
                         if ( prevOpcode==Bytecode.INSTR_NEWLINE || prevOpcode==Bytecode.INSTR_INDENT || nwline>0) {
                             out.write(Misc.newline);
                         }
-                        nwline =0;
+                        nwline = 0;
                     }
                     catch (IOException ioe) {
                         errMgr.IOError(self, ErrorType.WRITE_IO_ERROR, ioe);
@@ -1084,7 +1080,7 @@ public class Interpreter {
         else if ( v.getClass().isArray() ) i = Array.getLength(v);
         else if ( v instanceof Iterable || v instanceof Iterator ) {
                  Iterator<?> it = v instanceof Iterable ? ((Iterable<?>)v).iterator() : (Iterator<?>)v;
-                 i =0;
+                 i = 0;
                  while ( it.hasNext() ) {
                      it.next();
                      i++;
@@ -1330,7 +1326,7 @@ public class Interpreter {
         if ( Misc.referenceEquals(self.impl.name, ST.UNKNOWN_NAME) ) name = "";
         tr.append(String.format("%-40s", name+buf));
         tr.append("\tstack=[");
-        for (int i = 0; i<=sp; i++) {
+        for (int i = 0; i<= sp; i++) {
             Object o = operands[i];
             printForTrace(tr, scope, o);
         }

@@ -59,6 +59,7 @@ class ListBlueprint <Type> is Addable<Type>, Container, Copyable, Indexed<Type>,
         Attribute: Returns The item at the front of the list.
     */
 
+
                     blueprint action GetFromFront returns Type
 
     /*

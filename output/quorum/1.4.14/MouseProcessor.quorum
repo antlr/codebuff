@@ -102,7 +102,6 @@ class MouseProcessor
             Iterator<MouseMovementListener> moveIterator = moveListeners:GetIterator()
             Iterator<MouseWheelListener> wheelIterator = wheelListeners:GetIterator()
             MouseEvent currentEvent = undefined
-
             repeat while not events:IsEmpty()
                 currentEvent = events:RemoveFromFront()
                 if currentEvent:eventType = currentEvent:MOVED_MOUSE
