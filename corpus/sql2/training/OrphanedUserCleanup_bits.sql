@@ -18,7 +18,6 @@ WHERE ServerLogin = '** Orphaned **'
               , 'cdc'
               , 'BUILTIN\Administrators')
       AND ServerName NOT IN
-          ('PSQLRPT21'  -- can't remove users from db's in restore mode
-          )
+          ('PSQLRPT21')
 ORDER BY 1, 3, 4
 

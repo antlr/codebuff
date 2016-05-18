@@ -33,9 +33,6 @@ SET LoadStageDBStartDate    = @DayAgo
     , Status                = 4
 WHERE SourceDB = 'MembersMortgage'
 ----------------------------------------------
-/*
-TRUNCATE TABLE DMartLogging
-*/
 SELECT *
 FROM DMartLogging
 ORDER BY ErrorDateTime
@@ -72,9 +69,6 @@ SELECT
     , DATEDIFF(minute, LoadReportDBStartDate,
                LoadReportDBEndDate) AS ReportLoadTime
 FROM ClientConnection
---WHERE ReportServer = 'PSQLRPT22'
---WHERE SourceServer = 'STGSQL511'
---WHERE Beta = 2
 ORDER BY Beta, 3
 ----------------
 
@@ -133,7 +127,6 @@ SELECT
 FROM
     (
         SELECT
---SourceServer,
             Client_ID
             , SourceDB
             , [Status]

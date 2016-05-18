@@ -59,8 +59,6 @@ SELECT
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
 
---SELECT *
---FROM dbo.ClientConnection_test
 ----------------------------------------------
 SELECT *
 FROM DMartLogging
@@ -293,9 +291,6 @@ SELECT
                                                 LoadReportDBEndDate), 0),
               114) AS ReportLoadTime
 FROM ClientConnection
---WHERE ReportServer = 'PSQLRPT22'
---WHERE SourceServer = 'STGSQL511'
---WHERE Beta = 2
 ORDER BY Beta, 3
 ----------------------------------------------
 -- EliLillyFCU STGSQL615 10086
@@ -334,7 +329,6 @@ FROM (
      ) AS t
 ----------------------------------------------
 SELECT SUM(DataLoadTime) AS TotalStageLoadTime
---, SUM(ReportLoadTime) AS TotalReportLoadTime
 FROM (
          SELECT
              ClientID
@@ -350,7 +344,6 @@ FROM (
          --, DATEDIFF(minute, LoadReportDBStartDate,
          --           LoadReportDBEndDate) AS ReportLoadTime
          FROM ClientConnectionCDC
---WHERE     Beta != '2'
          WHERE Status != 0
      ) AS t
 ----------------------------------------------

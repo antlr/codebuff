@@ -1,9 +1,8 @@
 -- remove duplicates from SQLErrorLogs table
 ALTER TABLE SQLIndexRebuilds
     ADD seq_num INT identity
-go
---delete from a
-SELECT *-- from a
+
+SELECT *
 FROM SQLIndexRebuilds a JOIN
 ( SELECT ServerName
 , DBName

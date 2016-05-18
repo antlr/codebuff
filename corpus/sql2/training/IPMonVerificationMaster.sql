@@ -247,7 +247,6 @@ WHERE t.active = 1
             ON l.address = t.server_name
         INNER JOIN t_server_type_assoc tsta
             ON t.server_id = tsta.server_id
---where l.name like '%IIS Admin Service%'
     WHERE l.name LIKE '%IIS Admin%'
           AND t.environment_id = 0
           AND tsta.type_id IN ('2', '4', '30', '31')
@@ -319,45 +318,9 @@ WHERE t.active = 1
     WHERE l.name LIKE '%ftp'
           AND t.environment_id = 0
           AND tsta.type_id IN ('4', '30', '31')
-          --Connection, FTP or Internal FTP
           AND g.groupname IN ('Prod FTP Port')
           AND t.active = 1)
 UNION ALL
----------------------------------------------------------------------------------------------------
---SELECT DISTINCT t.server_name,
---                t.server_id,
---                'SMTP Service' AS missingmonitors
---FROM   t_server t
---       INNER JOIN t_server_type_assoc tsta
---         ON t.server_id = tsta.server_id
---WHERE  t.active = 1
---       AND tsta.type_id IN ( '2' ) --Web Server
---       AND t.environment_id = 0
---       AND t.server_name NOT IN (SELECT DISTINCT l.address
---                                 FROM   ipmongroups g
---                                        INNER JOIN ipmongroupmembers m
---                                          ON g.groupid = m.groupid
---                                        INNER JOIN ipmonmonitors l
---                                          ON m.monitorid = l.monitorid
---                                        INNER JOIN t_server t
---                                          ON l.address = t.server_name
---                                        INNER JOIN t_server_type_assoc tsta
---                                          ON t.server_id = tsta.server_id
---                                 WHERE  l.name LIKE '%Simple Mail Transfer%'
---                                        AND t.environment_id = 0
---                                        AND tsta.type_id IN ( '2' ) --Web Server
---                                        AND g.groupname IN ( 'Prod IIS Services'
---                                                           )
---                                        AND t.active = 1)
---EXCEPT
---(SELECT t.server_name,
---        t.server_id,
---        'SMTP Service' AS missingmonitors --exclude connection and fax servers
--- FROM   t_server t
---        INNER JOIN t_server_type_assoc tsta
---          ON t.server_id = tsta.server_id
--- WHERE  tsta.type_id IN ( '4', '26' ))
---UNION ALL
 ---------------------------------------------------------------------------------------------------
 SELECT DISTINCT
     t.server_name
@@ -387,15 +350,5 @@ WHERE t.active = 1
           AND tsta.type_id IN ('5')
           AND g.groupname IN ('Prod File Access')
           AND t.active = 1)
---UNION ALL
---SELECT DISTINCT url           AS server_name,
---                '0'           AS server_id,
---                'ASP Monitor' AS missingmonitors
-----from stgsqlops510.ops.dbo.sites --Stage
---FROM   psqlsvc21.ops.dbo.sites --Prod
---WHERE  url NOT IN (SELECT address
---                   FROM   xsqlutil18.status.dbo.ipmonmonitors
---                   WHERE  typeid = '6')
---ORDER  BY server_name, missingmonitors
 ORDER BY missingmonitors, server_name
 
