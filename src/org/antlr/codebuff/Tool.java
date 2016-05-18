@@ -56,6 +56,7 @@ import static org.antlr.v4.runtime.atn.PredictionMode.SLL;
  * Tool  -dbg  -tsql      corpus/tsql/training        corpus/tsql/testing/select1.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -dbg  -leave-one-out -java      corpus/java/training/stringtemplate4     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
+ * Tool  -dbg  -leave-one-out -java      corpus/java/training/guava     corpus/java/training/guava/base/Absent.java
  * Tool  -dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
@@ -71,7 +72,8 @@ public class Tool {
 		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", Java8Lexer.class, Java8Parser.class, "compilationUnit", 4);
 
 	public static final LangDescriptor JAVA_GUAVA_DESCR =
-		new LangDescriptor("java_guava", "corpus/java/training/guava", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+		new LangDescriptor("java_guava", "corpus/java/training/guava", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit",
+		                   2); // wow. indent=2 not 4
 
 	public static final LangDescriptor ANTLR4_DESCR =
 		new LangDescriptor("antlr", "corpus/antlr4/training", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
@@ -90,6 +92,7 @@ public class Tool {
 		QUORUM_DESCR,
 		JAVA_DESCR,
 		JAVA8_DESCR,
+		JAVA_GUAVA_DESCR,
 		ANTLR4_DESCR,
 		SQLITE_NOISY_DESCR,
 		SQLITE_CLEAN_DESCR,
