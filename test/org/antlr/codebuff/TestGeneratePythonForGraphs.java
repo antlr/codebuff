@@ -6,6 +6,7 @@ import org.antlr.codebuff.validation.DropAlignFeatures;
 import org.antlr.codebuff.validation.DropWSFeatures;
 import org.antlr.codebuff.validation.LeaveOneOutValidator;
 import org.antlr.codebuff.validation.OneFileCapture;
+import org.antlr.codebuff.validation.Stability;
 import org.antlr.codebuff.validation.SubsetValidator;
 import org.antlr.codebuff.validation.TestK;
 import org.junit.Test;
@@ -49,5 +50,10 @@ public class TestGeneratePythonForGraphs {
 	@Test
 	public void genAllSQL() throws Exception {
 		AllSQLLeaveOneOutValidation.main(null);
+	}
+
+	@Test
+	public void genStability() throws Exception {
+		Stability.main(null);
 	}
 }
