@@ -17,12 +17,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
-import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
@@ -54,7 +57,7 @@ public class SubsetValidator {
 
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-			QUORUM_DESCR,
+//			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
 			JAVA_GUAVA_DESCR,
@@ -112,25 +115,41 @@ public class SubsetValidator {
 		SubsetValidator validator = new SubsetValidator(language.corpusDir, language);
 		List<InputDocument> documents = load(validator.allFiles, language);
 		float[] medians = new float[maxNumFiles+1];
+
+		int ncpu = Runtime.getRuntime().availableProcessors();
+		ExecutorService pool = Executors.newFixedThreadPool(3); // works with 2 but not 3 threads. hmm...
+		List<Callable<Void>> jobs = new ArrayList<>();
+
 		for (int i = 1; i<=Math.min(validator.allFiles.size(), maxNumFiles); i++) { // i is corpus subset size
-			List<Float> errorRates = new ArrayList<>();
-			for (int trial = 1; trial<=trials; trial++) { // multiple trials per subset size
-				Pair<InputDocument, List<InputDocument>> sample = validator.selectSample(documents, i);
-				Triple<Formatter, Float, Float> results = validate(language, sample.b, sample.a, true, false);
-				System.out.println(sample.a.fileName+" n="+i+": error="+results.c);
+			final int corpusSubsetSize = i;
+			Callable<Void> job = () -> {
+				try {
+					List<Float> errorRates = new ArrayList<>();
+					for (int trial = 1; trial<=trials; trial++) { // multiple trials per subset size
+						Pair<InputDocument, List<InputDocument>> sample = validator.selectSample(documents, corpusSubsetSize);
+						Triple<Formatter, Float, Float> results = validate(language, sample.b, sample.a, true, false);
+//					System.out.println(sample.a.fileName+" n="+corpusSubsetSize+": error="+results.c);
 //				System.out.println("\tcorpus =\n\t\t"+Utils.join(sample.b.iterator(), "\n\t\t"));
-				errorRates.add(results.c);
-			}
-			Collections.sort(errorRates);
-			int n = errorRates.size();
-			float min = errorRates.get(0);
-			float quart = errorRates.get((int)(0.27*n));
-			float median = errorRates.get(n/2);
-			float quart3 = errorRates.get((int)(0.75*n));
-			float max = errorRates.get(n-1);
-			System.out.println("median error rate for n="+i+" is "+median);
-			medians[i] = median;
+						errorRates.add(results.c);
+					}
+					Collections.sort(errorRates);
+					int n = errorRates.size();
+					float median = errorRates.get(n/2);
+					System.out.println("median "+language.name+" error rate for n="+corpusSubsetSize+" is "+median);
+					medians[corpusSubsetSize] = median;
+				}
+				catch (Throwable t) {
+					t.printStackTrace(System.err);
+				}
+				return null;
+			};
+			jobs.add(job);
 		}
+
+		pool.invokeAll(jobs);
+		pool.shutdown();
+		boolean terminated = pool.awaitTermination(60, TimeUnit.MINUTES);
+		System.err.println(language.name+" terminate properly = "+terminated);
 		return medians;
 	}
 

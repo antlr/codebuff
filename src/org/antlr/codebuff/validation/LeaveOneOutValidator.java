@@ -81,9 +81,9 @@ public class LeaveOneOutValidator {
 	                                                                         String outputDir)
 		throws Exception
 	{
-		List<Formatter> formatters = new ArrayList<>();
-		List<Float> distances = new ArrayList<>();
-		List<Float> errors = new ArrayList<>();
+		List<Formatter> formatters = Collections.synchronizedList(new ArrayList<>());
+		List<Float> distances = Collections.synchronizedList(new ArrayList<>());
+		List<Float> errors = Collections.synchronizedList(new ArrayList<>());
 		long start = System.nanoTime();
 		try {
 			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
@@ -98,15 +98,20 @@ public class LeaveOneOutValidator {
 			for (int i = 0; i<documents.size(); i++) {
 				final String fileName = documents.get(i).fileName;
 				Callable<Void> job = () -> {
-					Triple<Formatter, Float, Float> results =
-						validate(language, documents, fileName,
-						         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
-						         outputDir, computeEditDistance, false);
-					formatters.add(results.a);
-					float editDistance = results.b;
-					distances.add(editDistance);
-					Float errorRate = results.c;
-					errors.add(errorRate);
+					try {
+						Triple<Formatter, Float, Float> results =
+							validate(language, documents, fileName,
+							         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
+							         outputDir, computeEditDistance, false);
+						formatters.add(results.a);
+						float editDistance = results.b;
+						distances.add(editDistance);
+						Float errorRate = results.c;
+						errors.add(errorRate);
+					}
+					catch (Throwable t) {
+						t.printStackTrace(System.err);
+					}
 					return null;
 				};
 				jobs.add(job);
@@ -114,7 +119,7 @@ public class LeaveOneOutValidator {
 
 			pool.invokeAll(jobs);
 			pool.shutdown();
-			pool.awaitTermination(2, TimeUnit.MILLISECONDS);
+			pool.awaitTermination(60, TimeUnit.MINUTES);
 		}
 		finally {
 			long final_stop = System.nanoTime();
