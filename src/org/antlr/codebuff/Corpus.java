@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.getLexer;
@@ -40,13 +41,6 @@ public class Corpus {
 	public List<int[]> featureVectors;
 	public List<Integer> injectWhitespace;
 	public List<Integer> hpos;
-
-	public synchronized void addExemplar(InputDocument doc, int[] features, int ws, int hpos) {
-		documentsPerExemplar.add(doc);
-		featureVectors.add(features);
-		injectWhitespace.add(ws);
-		this.hpos.add(hpos);
-	}
 
 	public String rootDir;
 	public LangDescriptor language;
@@ -89,6 +83,13 @@ public class Corpus {
 		if ( shuffleFeatureVectors ) randomShuffleInPlace();
 
 		buildTokenContextIndex();
+	}
+
+	public synchronized void addExemplar(InputDocument doc, int[] features, int ws, int hpos) {
+		documentsPerExemplar.add(doc);
+		featureVectors.add(features);
+		injectWhitespace.add(ws);
+		this.hpos.add(hpos);
 	}
 
 	/** Walk all documents to compute matching token dependencies (we need this for feature computation)
@@ -148,8 +149,9 @@ public class Corpus {
 		injectWhitespace = new ArrayList<>();
 		hpos = new ArrayList<>();
 
-		int ncpu = Runtime.getRuntime().availableProcessors();
-		ExecutorService pool = Executors.newFixedThreadPool((int)(ncpu)); // take 3/4 of the core
+		// have 3 threads train corpus at once. there is contention on lock at addExemplar
+		// on my system 3 threads seems to saturate that lock but it cuts like 30% off training time.
+		ExecutorService pool = Executors.newFixedThreadPool(3);
 		List<Callable<Void>> jobs = new ArrayList<>();
 
 		for (InputDocument doc : documents) {
@@ -162,6 +164,8 @@ public class Corpus {
 			jobs.add(job);
 		}
 		pool.invokeAll(jobs);
+		pool.shutdown();
+		pool.awaitTermination(2, TimeUnit.MILLISECONDS);
 	}
 
 	/** Feature vectors in X are lumped together as they are read in each
