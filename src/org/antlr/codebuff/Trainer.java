@@ -3,6 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.RuleAltKey;
+import org.antlr.codebuff.misc.TrainingResult;
 import org.antlr.codebuff.walkers.CollectTokenDependencies;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import static org.antlr.codebuff.FeatureType.BOOL;
 import static org.antlr.codebuff.FeatureType.INFO_CHARPOS;
@@ -224,6 +226,11 @@ public class Trainer {
 	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
 	protected int indentSize;
 
+	// training results:
+	protected Vector<int[]> featureVectors;
+	protected Vector<Integer> injectWhitespace;
+	protected Vector<Integer> hpos;
+
 	/** Make it fast to get a node for a specific token */
 	protected Map<Token, TerminalNode> tokenToNodeMap = null;
 
@@ -236,13 +243,27 @@ public class Trainer {
 		this.indentSize = indentSize;
 	}
 
-	public void computeFeatureVectors() {
+	public TrainingResult computeFeatureVectors() {
 		List<Token> realTokens = getRealTokens(tokens);
+
+		// make space for n feature vectors and decisions, one for each token
+		// from stream, including hidden tokens (though hidden tokens have no
+		// entries in featureVectors, injectWhitespace, align.
+		// Index i in features, decisions are token i
+		// for token index from stream, not index into purely real tokens list.
+		int n = tokens.size();
+		featureVectors = new Vector<>(n); // use vector so we can set ith value
+		featureVectors.setSize(n);
+		injectWhitespace = new Vector<>(n);
+		injectWhitespace.setSize(n);
+		hpos = new Vector<>(n);
+		hpos.setSize(n);
 
 		for (int i = ANALYSIS_START_TOKEN_INDEX; i<realTokens.size(); i++) { // can't process first token
 			int tokenIndexInStream = realTokens.get(i).getTokenIndex();
 			computeFeatureVectorForToken(tokenIndexInStream);
 		}
+		return getResults();
 	}
 
 	public void computeFeatureVectorForToken(int i) {
@@ -259,8 +280,12 @@ public class Trainer {
 			aligned = getAlignmentCategory(doc, node, indentSize);
 		}
 
+//		corpus.addExemplar(doc, features, injectNL_WS, aligned);
+
 		// track feature -> injectws, align decisions for token i
-		corpus.addExemplar(doc, features, injectNL_WS, aligned);
+		featureVectors.set(i, features);
+		injectWhitespace.set(i, injectNL_WS);
+		hpos.set(i, aligned);
 	}
 
 	public static int getInjectWSCategory(CommonTokenStream tokens, int i) {
@@ -890,6 +915,10 @@ public class Trainer {
 		}
 		Collections.reverse(online);
 		return online;
+	}
+
+	public TrainingResult getResults() {
+		return new TrainingResult(featureVectors, injectWhitespace, hpos);
 	}
 
 	public static String _toString(FeatureMetaData[] FEATURES, InputDocument doc, int[] features) {

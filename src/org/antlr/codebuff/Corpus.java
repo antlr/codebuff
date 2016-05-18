@@ -4,6 +4,7 @@ import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.codebuff.misc.SiblingListStats;
+import org.antlr.codebuff.misc.TrainingResult;
 import org.antlr.codebuff.validation.FeatureVectorAsObject;
 import org.antlr.codebuff.walkers.CollectSiblingLists;
 import org.antlr.codebuff.walkers.CollectTokenDependencies;
@@ -23,7 +24,6 @@ import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.getLexer;
 import static org.antlr.codebuff.Tool.getParser;
 import static org.antlr.codebuff.Tool.load;
-import static org.antlr.codebuff.Tool.showFileNames;
 
 public class Corpus {
 	public static final int FEATURE_VECTOR_RANDOM_SEED = 314159; // need randomness but use same seed to get reproducibility
@@ -147,10 +147,22 @@ public class Corpus {
 		hpos = new ArrayList<>();
 
 		for (InputDocument doc : documents) {
-			if ( showFileNames ) System.out.println(doc);
-			// Parse document, add feature vectors to this corpus
-			Trainer trainer = new Trainer(this, doc, language.indentSize);
-			trainer.computeFeatureVectors();
+			// see if we've trained before
+			TrainingResult r = doc.trainingResult;
+			if ( r==null ) {
+				// Parse document, add feature vectors to this corpus
+				Trainer trainer = new Trainer(this, doc, language.indentSize);
+				doc.trainingResult = trainer.computeFeatureVectors(); // record training result
+				r = doc.trainingResult;
+			}
+			for (int i=0; i<r.featureVectors.size(); i++) {
+				int[] features = r.featureVectors.get(i);
+				if ( features==null ) continue;
+				documentsPerExemplar.add(doc);
+				injectWhitespace.add(r.injectWhitespace.get(i));
+				hpos.add(r.hpos.get(i));
+				featureVectors.add(features);
+			}
 		}
 	}
 

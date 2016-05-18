@@ -98,6 +98,9 @@ public class LeaveOneOutValidator {
 				errors.add(errorRate);
 			}
 		}
+		catch (Exception e) {
+			e.printStackTrace(System.err);
+		}
 		finally {
 			long final_stop = System.nanoTime();
 			int medianTrainingTime = (int)median(trainingTimes);

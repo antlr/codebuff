@@ -2,6 +2,7 @@ package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.LangDescriptor;
+import org.antlr.codebuff.misc.TrainingResult;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -23,6 +24,8 @@ public class InputDocument {
 
 	public Parser parser;
 	public CodeBuffTokenStream tokens;
+
+	public TrainingResult trainingResult; // if we used for training, save result (makes LeaveOneOut much faster)
 
 	public static InputDocument dup(InputDocument old) throws Exception {
 		// reparse to get new tokens, tree
