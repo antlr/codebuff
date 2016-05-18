@@ -94,7 +94,7 @@ public class ObjectModelAdaptor implements ModelAdaptor {
                                      if ( members!=null ) {
                                          member = members.get(memberName);
                                          if ( member!=null ) {
-                                             return member != INVALID_MEMBER ?member : null;
+                                             return member != INVALID_MEMBER ?member :null;
                                          }
                                      }
                                      else {

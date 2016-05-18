@@ -95,8 +95,8 @@ UNION
 SELECT
     CONVERT(CHAR(100), SERVERPROPERTY('Servername'))    AS Server
     , master_dbo_sysdatabases.NAME                                AS database_name
-    , NULL    AS [Last Data Backup Date]
-    , 9999    AS [Backup Age (Hours)]
+    , NULL AS [Last Data Backup Date]
+    , 9999 AS [Backup Age (Hours)]
 FROM master_dbo_sysdatabases
     LEFT JOIN msdb_dbo_backupset
         ON master_dbo_sysdatabases.name = msdb_dbo_backupset_database_name

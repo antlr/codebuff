@@ -437,7 +437,8 @@ statement
     |   selectionStatement
     |   iterationStatement
     |   jumpStatement
-    |   ('__asm' | '__asm__') ('volatile' | '__volatile__') '(' (logicalOrExpression (',' logicalOrExpression)*)?
+    |   ('__asm' | '__asm__')
+        ('volatile' | '__volatile__') '(' (logicalOrExpression (',' logicalOrExpression)*)?
         (':' (logicalOrExpression (',' logicalOrExpression)*)?)* ')' ';'
     ;
 
@@ -700,7 +701,7 @@ LongSuffix
 
 fragment
 LongLongSuffix
-    :   'll' | 'LL'
+    :   'll'| 'LL'
     ;
 
 fragment
@@ -735,7 +736,7 @@ ExponentPart
 
 fragment
 Sign
-    :   '+' | '-'
+    :   '+'| '-'
     ;
 
 fragment
@@ -762,7 +763,7 @@ HexadecimalDigitSequence
 
 fragment
 FloatingSuffix
-    :   'f' | 'l' | 'F' | 'L'
+    :   'f'| 'l' | 'F' | 'L'
     ;
 
 fragment
@@ -811,7 +812,7 @@ HexadecimalEscapeSequence
 StringLiteral : EncodingPrefix? '"' SCharSequence? '"' ;
 fragment
 EncodingPrefix
-    :   'u8' | 'u' | 'U' | 'L'
+    :   'u8'| 'u' | 'U' | 'L'
     ;
 
 fragment
@@ -827,6 +828,6 @@ SChar
 LineDirective : '#' Whitespace? DecimalConstant Whitespace? StringLiteral ~[\r\n]* -> skip ;
 PragmaDirective : '#' Whitespace? 'pragma' Whitespace ~[\r\n]* -> skip ;
 Whitespace :   [ \t]+ -> skip ;
-Newline : ('\r' '\n'? | '\n') -> skip ;
+Newline : ('\r' '\n'?| '\n') -> skip ;
 BlockComment : '/*' .*? '*/' -> skip ;
 LineComment : '//' ~[\r\n]* -> skip ;

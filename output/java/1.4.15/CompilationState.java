@@ -79,7 +79,7 @@ public class CompilationState {
             emit1(id, Bytecode.INSTR_LOAD_LOCAL, index);
         }
         else {
-            if ( Interpreter.predefinedAnonSubtemplateAttributes.contains(name) ) {
+            if ( Interpreter.predefinedAnonSubtemplateAttributes.contains(name) )     {
                 errMgr.compileTimeError(ErrorType.REF_TO_IMPLICIT_ATTRIBUTE_OUT_OF_SCOPE, templateToken, id.token);
                 emit(id, Bytecode.INSTR_NULL);
             } else {
@@ -158,7 +158,7 @@ public class CompilationState {
         //System.out.println("after  insert of "+opcode+"("+s+"):"+ Arrays.toString(impl.instrs));
         // adjust addresses for BR and BRF
         int a = addr+instrSize;
-        while ( a< ip ) {
+        while ( a< ip) {
             byte op = impl.instrs[a];
             Bytecode.Instruction I = Bytecode.instructions[op];
             if ( op== Bytecode.INSTR_BR || op== Bytecode.INSTR_BRF ) {

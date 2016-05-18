@@ -16,10 +16,16 @@ FROM sys.databases
 WHERE name LIKE 'DMart%Stage' AND name NOT LIKE '%Template%'
 GROUP BY name
 SELECT @cmd2 =
-       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME + ' -FirstDatabase DMart_Template_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
+       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME +
+       ' -FirstDatabase DMart_Template_Data -SqlServerTwo ' + @SERVERNAME +
+       ' -DatabaseList ' + @dblistData +
+       ' -Column -Log'
 
 SELECT @cmd3 =
-       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME + ' -FirstDatabase DMart_Template_Stage -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
+       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME +
+       ' -FirstDatabase DMart_Template_Stage -SqlServerTwo ' + @SERVERNAME +
+       ' -DatabaseList ' + @dblistStage +
+       ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
 -- CDC package
@@ -29,7 +35,10 @@ FROM sys.databases
 WHERE name LIKE 'DMart%CDC%Data' AND name NOT LIKE '%Template%'
 GROUP BY name
 SELECT @CDCcmd =
-       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME + ' -FirstDatabase DMart_TemplateCDC_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @CDCData + ' -Column -Log'
+       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME +
+       ' -FirstDatabase DMart_TemplateCDC_Data -SqlServerTwo ' + @SERVERNAME +
+       ' -DatabaseList ' + @CDCData +
+       ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
 -- XSQLUTIL18.dbo.Status
@@ -52,7 +61,8 @@ ORDER BY server_name
 --print @ServerList
 
 SELECT @cmd =
-       'E:\Dexma\powershell_bits\Compare-DbamaintSchema.ps1 '+ '-ServerList ' + @ServerList + ' -Column -Log'
+       'E:\Dexma\powershell_bits\Compare-DbamaintSchema.ps1 '+ '-ServerList ' + @ServerList +
+       ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -82,9 +92,14 @@ FROM sys.databases
 WHERE name LIKE '%SMC' AND name NOT LIKE '%Test%'
 GROUP BY name
 SELECT @cmd2 =
-       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME + ' -FirstDatabase RLCSMC -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
+       'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME +
+       ' -FirstDatabase RLCSMC -SqlServerTwo ' + @SERVERNAME +
+       ' -DatabaseList ' + @dblistData +
+       ' -Column -Log'
 
 -- use the Dev current version
 
 SELECT @cmd3 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' +
-               'ISQLDEV610 -FirstDatabase SMCCurrent -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
+               'ISQLDEV610 -FirstDatabase SMCCurrent -SqlServerTwo ' + @SERVERNAME +
+               ' -DatabaseList ' + @dblistStage +
+               ' -Column -Log'

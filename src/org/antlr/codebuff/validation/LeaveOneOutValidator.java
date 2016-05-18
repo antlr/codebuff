@@ -19,6 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
@@ -86,17 +90,31 @@ public class LeaveOneOutValidator {
 			List<InputDocument> documents = load(allFiles, language);
 			long stop = System.nanoTime();
 			System.out.printf("Load/parse all docs time %d ms\n", (stop-start)/1_000_000);
+
+			int ncpu = Runtime.getRuntime().availableProcessors();
+			ExecutorService pool = Executors.newFixedThreadPool(ncpu-1);
+			List<Callable<Void>> jobs = new ArrayList<>();
+
 			for (int i = 0; i<documents.size(); i++) {
-				Triple<Formatter, Float, Float> results =
-					validate(language, documents, documents.get(i).fileName,
-					         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
-					         outputDir, computeEditDistance, false);
-				formatters.add(results.a);
-				float editDistance = results.b;
-				distances.add(editDistance);
-				Float errorRate = results.c;
-				errors.add(errorRate);
+				final String fileName = documents.get(i).fileName;
+				Callable<Void> job = () -> {
+					Triple<Formatter, Float, Float> results =
+						validate(language, documents, fileName,
+						         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
+						         outputDir, computeEditDistance, false);
+					formatters.add(results.a);
+					float editDistance = results.b;
+					distances.add(editDistance);
+					Float errorRate = results.c;
+					errors.add(errorRate);
+					return null;
+				};
+				jobs.add(job);
 			}
+
+			pool.invokeAll(jobs);
+			pool.shutdown();
+			pool.awaitTermination(2, TimeUnit.MILLISECONDS);
 		}
 		finally {
 			long final_stop = System.nanoTime();
