@@ -18,12 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.getLexer;
 import static org.antlr.codebuff.Tool.getParser;
 import static org.antlr.codebuff.Tool.load;
-import static org.antlr.codebuff.Tool.showFileNames;
 
 public class Corpus {
 	public static final int FEATURE_VECTOR_RANDOM_SEED = 314159; // need randomness but use same seed to get reproducibility
@@ -39,7 +41,7 @@ public class Corpus {
 	public List<Integer> injectWhitespace;
 	public List<Integer> hpos;
 
-	public void addExemplar(InputDocument doc, int[] features, int ws, int hpos) {
+	public synchronized void addExemplar(InputDocument doc, int[] features, int ws, int hpos) {
 		documentsPerExemplar.add(doc);
 		featureVectors.add(features);
 		injectWhitespace.add(ws);
@@ -146,12 +148,20 @@ public class Corpus {
 		injectWhitespace = new ArrayList<>();
 		hpos = new ArrayList<>();
 
+		int ncpu = Runtime.getRuntime().availableProcessors();
+		ExecutorService pool = Executors.newFixedThreadPool((int)(ncpu)); // take 3/4 of the core
+		List<Callable<Void>> jobs = new ArrayList<>();
+
 		for (InputDocument doc : documents) {
-			if ( showFileNames ) System.out.println(doc);
-			// Parse document, add feature vectors to this corpus
-			Trainer trainer = new Trainer(this, doc, language.indentSize);
-			trainer.computeFeatureVectors();
+			Callable<Void> job = () -> {
+				// Parse document, add feature vectors to this corpus
+				Trainer trainer = new Trainer(this, doc, language.indentSize);
+				trainer.computeFeatureVectors();
+				return null;
+			};
+			jobs.add(job);
 		}
+		pool.invokeAll(jobs);
 	}
 
 	/** Feature vectors in X are lumped together as they are read in each
