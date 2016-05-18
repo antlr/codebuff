@@ -30,8 +30,11 @@ package org.stringtemplate.v4.compiler;
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.CommonTree;
 import org.stringtemplate.v4.*;
+
 import org.stringtemplate.v4.misc.*;
+
 import java.io.*;
+
 import java.util.*;
 
 /** The result of compiling an {@link ST}.  Contains all the bytecode instructions,
@@ -141,7 +144,6 @@ public class CompiledST implements Cloneable {
         return clone;
     }
 
-
     public void addImplicitlyDefinedTemplate(CompiledST sub) {
         sub.prefix = this.prefix;
         if ( sub.name.charAt(0)!='/' ) sub.name = sub.prefix+sub.name;
@@ -150,7 +152,6 @@ public class CompiledST implements Cloneable {
         }
         implicitlyDefinedTemplates.add(sub);
     }
-
 
     public void defineArgDefaultValueTemplates(STGroup group) {
         if ( formalArguments==null ) return;
@@ -189,7 +190,6 @@ public class CompiledST implements Cloneable {
         }
     }
 
-
     public void defineFormalArgs(List<FormalArgument> args) {
         hasFormalArgs = true; // even if no args; it's formally defined
         if ( args==null ) formalArguments = null;
@@ -198,7 +198,6 @@ public class CompiledST implements Cloneable {
 
     /** Used by {@link ST#add} to add args one by one without turning on full formal args definition signal. */
 
-
     public void addArg(FormalArgument a) {
         if ( formalArguments==null ) {
             formalArguments = Collections.synchronizedMap(new LinkedHashMap<String, FormalArgument>());
@@ -206,7 +205,6 @@ public class CompiledST implements Cloneable {
         a.index = formalArguments.size();
         formalArguments.put(a.name, a);
     }
-
 
     public void defineImplicitlyDefinedTemplates(STGroup group) {
         if ( implicitlyDefinedTemplates!=null ) {
@@ -217,12 +215,10 @@ public class CompiledST implements Cloneable {
         }
     }
 
-
     public String getTemplateSource() {
         Interval r = getTemplateRange();
         return template.substring(r.a, r.b+1);
     }
-
 
     public Interval getTemplateRange() {
         if ( isAnonSubtemplate ) {
@@ -242,12 +238,10 @@ public class CompiledST implements Cloneable {
         return new Interval(0, template.length()-1);
     }
 
-
     public String instrs() {
         BytecodeDisassembler dis = new BytecodeDisassembler(this);
         return dis.instrs();
     }
-
 
     public void dump() {
         BytecodeDisassembler dis = new BytecodeDisassembler(this);
@@ -259,7 +253,6 @@ public class CompiledST implements Cloneable {
         System.out.println("Bytecode to template map:");
         System.out.println(dis.sourceMap());
     }
-
 
     public String disasm() {
         BytecodeDisassembler dis = new BytecodeDisassembler(this);

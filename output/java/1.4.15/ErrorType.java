@@ -29,7 +29,6 @@ package org.stringtemplate.v4.misc;
 
 /** All the errors that can happen and how to generate a message. */
 
-
 public enum ErrorType{
     // RUNTIME SEMANTIC ERRORS NO_SUCH_TEMPLATE("no such template: %s"), NO_IMPORTED_TEMPLATE("no such template: super.%s"), NO_SUCH_ATTRIBUTE("attribute %s isn't defined"), NO_SUCH_ATTRIBUTE_PASS_THROUGH("could not pass through undefined attribute %s"), REF_TO_IMPLICIT_ATTRIBUTE_OUT_OF_SCOPE("implicitly-defined attribute %s not visible"), MISSING_FORMAL_ARGUMENTS("missing argument definitions"), NO_SUCH_PROPERTY("no such property or can't access: %s"), MAP_ARGUMENT_COUNT_MISMATCH("iterating through %s values in zip map but template has %s declared arguments"), ARGUMENT_COUNT_MISMATCH("passed %s arg(s) to template %s with %s declared arg(s)"), EXPECTING_STRING("function %s expects a string not %s"), WRITER_CTOR_ISSUE("%s(Writer) constructor doesn't exist"), CANT_IMPORT("can't find template(s) in import \"%s\""),
 

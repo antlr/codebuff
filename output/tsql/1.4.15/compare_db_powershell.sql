@@ -9,11 +9,13 @@ WHERE SalCal_UniqueID = 1
 
 SELECT @dblistData = COALESCE(@dblistData + ', ', '') + name
 FROM sys.databases
-WHERE name LIKE 'DMart%Data' AND name NOT LIKE '%Template%'
+WHERE name LIKE 'DMart%Data'
+      AND name NOT LIKE '%Template%'
 GROUP BY name
 SELECT @dblistStage = COALESCE(@dblistStage + ', ', '') + name
 FROM sys.databases
-WHERE name LIKE 'DMart%Stage' AND name NOT LIKE '%Template%'
+WHERE name LIKE 'DMart%Stage'
+      AND name NOT LIKE '%Template%'
 GROUP BY name
 SELECT @cmd2 =
        'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME +
@@ -32,7 +34,8 @@ SELECT @cmd3 =
 
 SELECT @CDCData = COALESCE(@CDCData + ', ', '') + name
 FROM sys.databases
-WHERE name LIKE 'DMart%CDC%Data' AND name NOT LIKE '%Template%'
+WHERE name LIKE 'DMart%CDC%Data'
+      AND name NOT LIKE '%Template%'
 GROUP BY name
 SELECT @CDCcmd =
        'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME +
@@ -54,7 +57,8 @@ FROM Status_dbo.t_server s
         ON s.environment_id = e.environment_id
     INNER JOIN [t_monitoring] m
         ON s.server_id = m.server_id
-WHERE type_name = 'DB' AND active = 1
+WHERE type_name = 'DB'
+      AND active = 1
 GROUP BY server_name
 ORDER BY server_name
 
@@ -76,7 +80,8 @@ FROM [t_server] s
         ON s.environment_id = e.environment_id
     INNER JOIN [t_monitoring] m
         ON s.server_id = m.server_id
-WHERE type_name = 'DB' AND active = 1
+WHERE type_name = 'DB'
+      AND active = 1
 ORDER BY 1
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -85,11 +90,13 @@ ORDER BY 1
 
 SELECT @dblistData = COALESCE(@dblistData + ', ', '') + name
 FROM sys.databases
-WHERE name LIKE '%SMC' AND name NOT LIKE '%Test%'
+WHERE name LIKE '%SMC'
+      AND name NOT LIKE '%Test%'
 GROUP BY name
 SELECT @dblistStage = COALESCE(@dblistStage + ', ', '') + name
 FROM sys.databases
-WHERE name LIKE '%SMC' AND name NOT LIKE '%Test%'
+WHERE name LIKE '%SMC'
+      AND name NOT LIKE '%Test%'
 GROUP BY name
 SELECT @cmd2 =
        'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '+ @SERVERNAME +

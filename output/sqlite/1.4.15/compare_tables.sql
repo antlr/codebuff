@@ -9,7 +9,7 @@ SELECT
 FROM
     (
         SELECT
-            'OSQLUTIL12_Status_dbo.t_server'             AS TableName
+            'OSQLUTIL12_Status_dbo.t_server' AS TableName
             , server_id
             , server_name
             , environment_id
@@ -20,7 +20,7 @@ FROM
 UNION ALL
 
 SELECT
-   'ISQLCBS510_StatusIMP_dbo.t_server'             AS TableName
+   'ISQLCBS510_StatusIMP_dbo.t_server' AS TableName
    , server_id
    , server_name
    , environment_id

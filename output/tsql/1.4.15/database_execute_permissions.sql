@@ -12,6 +12,8 @@ INSERT INTO dbs
 SELECT 'USE ' + database_name + char(10) + 'GO' + CHAR(10) + permission + ' ' + action_type + ' ON ' + objectname + ' TO ' + '''' + '''' + CHAR(10) + 'GO' + CHAR(10)
 FROM permission
 WHERE object_type IS NOT NULL
-      AND objectname IS NOT NULL
-      AND account_type = 'WINDOWS_GROUP'
+      AND
+      objectname IS NOT NULL
+      AND
+      account_type = 'WINDOWS_GROUP'
 ORDER BY database_name, user_role_name

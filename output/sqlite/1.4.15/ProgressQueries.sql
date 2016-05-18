@@ -31,8 +31,7 @@ FROM
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END)             AS Status3
-            , COUNT(CASE WHEN Status = 4 AND
-                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
@@ -90,24 +89,20 @@ ORDER BY ErrorDateTime
 SELECT
     CASE WHEN CAST(Beta AS VARCHAR) IS NULL
         THEN 'Grand Total'
-    ELSE CAST(Beta AS VARCHAR) END AS Beta
-    , CASE
-      WHEN SourceDB IS NULL
+    ELSE CAST(Beta AS VARCHAR) END    AS Beta
+    , CASE WHEN SourceDB IS NULL
           THEN 'Beta Group Total'
-      ELSE SourceDB END AS SourceDB
+      ELSE SourceDB END    AS SourceDB
 --, LoadStageDBStartDate
 --, LoadStageDBEndDate
     , CONVERT(VARCHAR(12),
-              DATEADD(ms, SUM(DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate)), 0),
-              114)    AS StageLoadTime
+              DATEADD(ms, SUM(DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate)), 0), 114)    AS StageLoadTime
 --, LoadReportDBStartDate
 --, LoadReportDBEndDate
     , CONVERT(VARCHAR(12),
-              DATEADD(ms, SUM(DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate)), 0),
-              114)    AS ReportLoadTime
+              DATEADD(ms, SUM(DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate)), 0), 114)    AS ReportLoadTime
     , CONVERT(VARCHAR(12), DATEADD(ms,SUM((DATEDIFF(ms, LoadStageDBStartDate, LoadStageDBEndDate))) +
-SUM((DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate))),
-                                   0), 114)    AS ClientTotal
+SUM((DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate))), 0), 114)    AS ClientTotal
 FROM ClientConnection
 GROUP BY Beta, SourceDB
 

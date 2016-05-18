@@ -1,6 +1,6 @@
 SELECT
     CAST(cast(g.name AS varbinary(256)) AS sysname)    AS [FileGroup_Name]
-    , s.name                                AS [Name]
+    , s.name       AS [Name]
     , CAST(CASE s.file_id
            WHEN 1
                THEN 1
@@ -21,10 +21,11 @@ SELECT
                         8) END AS [MaxSize]
     , s.file_id AS [ID]
     , 'Server[@Name=' + quotename(CAST(serverproperty('Servername') AS sysname), '''') + ']' + '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name AS varbinary(256)) AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
-    , CAST(CASE s.is_percent_growth
-               WHEN 1
-               THEN s.growth
-           ELSE s.growth * 8 END AS FLOAT)    AS [Growth]
+    , CAST(
+CASE s.is_percent_growth
+   WHEN 1
+   THEN s.growth
+ELSE s.growth * 8 END AS FLOAT)    AS [Growth]
     , s.is_media_read_only AS [IsReadOnlyMedia]
     , s.is_read_only AS [IsReadOnly]
     , CAST(CASE s.state
@@ -39,7 +40,8 @@ FROM sys.filegroups AS g
         ON (
            (s.type = 2
             OR s.type = 0)
-           AND s.database_id = db_id()
+           AND
+           s.database_id = db_id()
            AND (s.drop_lsn IS NULL))
            AND (s.data_space_id = g.data_space_id)
 ORDER BY [FileGroup_Name]
@@ -48,8 +50,12 @@ ORDER BY [FileGroup_Name]
 
 ---------------------
 
+
+
+
+
 SELECT
-    s.name                                AS [Name]
+    s.name       AS [Name]
     , s.physical_name AS [FileName]
 FROM MASTER.sysdatabases AS dtb, sys.master_files AS s
 WHERE (s.TYPE = 1 AND s.database_id = Db_id()) AND ((dtb.name = Db_name()))
@@ -58,10 +64,14 @@ ORDER BY [Name]
 
 ------------------
 
+
+
+
+
 SELECT
     CONVERT(nvarchar(32), SERVERPROPERTY('Servername'))    AS Server
     , '?' AS DatabaseName
-    , [?].sysfiles.name                                AS LogicalName
+    , [?].sysfiles.name       AS LogicalName
     , sys.master_filesphysical_name AS FileName
     , GETDATE()
 FROM [?].sysfiles

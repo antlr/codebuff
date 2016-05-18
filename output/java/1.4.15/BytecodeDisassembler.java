@@ -93,8 +93,9 @@ public class BytecodeDisassembler {
                 case ADDR :
                 case INT : operands.add(String.valueOf(opnd));
                 break;
-                default: operands.add(String.valueOf(opnd));
-                         break;
+                default:
+                    operands.add(String.valueOf(opnd));
+                    break;
             }
         }
 
@@ -117,7 +118,7 @@ public class BytecodeDisassembler {
                 s = code.strings[poolIndex];
                 if ( code.strings[poolIndex]!=null ) {
                     s = Misc.replaceEscapes(s);
-                    s = '"'+s+'"';
+                    s = '"'+s+ '"';
                 }
             }
         }
@@ -129,7 +130,7 @@ public class BytecodeDisassembler {
     public static int getShort(byte[] memory, int index) {
         int b1 = memory[index]&0xFF; // mask off sign-extended bits
         int b2 = memory[index+1]&0xFF;
-        int word = b1<<(8*1) | b2;
+        int word = b1<<(8*1)| b2;
         return word;
     }
 

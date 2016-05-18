@@ -69,7 +69,6 @@ FROM IPMonMonitors imm
 GROUP BY DeviceID, MonitorID, ita.monitor_category, Name, [Address], imm.TypeID, [Description]
 ------------------------------------------------------------------------------------------------------------------------
 -- missing 463 or so rows EXCEPT
-
 SELECT
     DeviceID
     , imm.MonitorID

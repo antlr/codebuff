@@ -184,7 +184,7 @@ public class Interpreter {
         byte[] code = self.impl.instrs;        // which code block are we executing
         int ip = 0;
         while ( ip<self.impl.codeSize ) {
-            if ( trace|| debug ) trace(scope, ip);
+            if ( trace || debug ) trace(scope, ip);
             short opcode = code[ip];
             //count[opcode]++;
             scope.ip = ip;
@@ -244,7 +244,7 @@ public class Interpreter {
                 case Bytecode.INSTR_NEW_IND:
                     nargs = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
-                    name = (String) operands[ sp-nargs];
+                    name = (String) operands[sp-nargs];
                     st = self.groupThatCreatedThisInstance.getEmbeddedInstanceOf(this, scope, name);
                     storeArgs(scope, nargs, st);
                     sp -= nargs;
@@ -315,7 +315,7 @@ public class Interpreter {
                     int nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<ST> templates = new ArrayList<ST>();
-                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[ sp-i]);
+                    for (int i = nmaps -1; i>=0; i--) templates.add((ST) operands[sp-i]);
                     sp -= nmaps;
                     o = operands[sp--];
                     if ( o !=null ) rot_map(scope, o, templates);
@@ -325,7 +325,7 @@ public class Interpreter {
                     nmaps = getShort(code, ip);
                     ip += Bytecode.OPND_SIZE_IN_BYTES;
                     List<Object> exprs = new ObjectList();
-                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[ sp-i]);
+                    for (int i = nmaps -1; i>=0; i--) exprs.add(operands[sp-i]);
                     sp -= nmaps;
                     operands[++sp] = zip_map(scope, exprs, st);
                     break;
@@ -563,6 +563,7 @@ public class Interpreter {
     }
 
     void storeArgs(InstanceScope scope, Map<String, Object> attrs, ST st) {
+
         boolean noSuchAttributeReported = false;
         if ( attrs !=null ) {
             for (Map.Entry<String, Object> argument : attrs.entrySet()) {
@@ -595,6 +596,7 @@ public class Interpreter {
             }
         }
         if ( st.impl.hasFormalArgs) {
+
             boolean argumentCountMismatch = false;
             Map<String, FormalArgument> formalArguments = st.impl.formalArguments;
             if ( formalArguments==null ) {
@@ -641,13 +643,13 @@ public class Interpreter {
         int firstArg = sp - (nargs -1);
         int numToStore = Math.min(nargs, nformalArgs);
         if ( st.impl.isAnonSubtemplate) nformalArgs -= predefinedAnonSubtemplateAttributes.size();
-        if ( nargs<(nformalArgs - st.impl.numberOfArgsWithDefaultValues) || nargs> nformalArgs ) {
+        if ( nargs<(nformalArgs - st.impl.numberOfArgsWithDefaultValues) || nargs>nformalArgs ) {
             errMgr.runTimeError(this, scope, ErrorType.ARGUMENT_COUNT_MISMATCH, nargs, st.impl.name, nformalArgs);
         }
         if ( st.impl.formalArguments==null ) return;
         Iterator<String> argNames = st.impl.formalArguments.keySet().iterator();
         for (int i = 0; i < numToStore; i++) {
-            Object o = operands[ firstArg+i];    // value to store
+            Object o = operands[firstArg+i];    // value to store
             String argName = argNames.next();
             st.rawSetAttribute(argName, o);
         }
@@ -751,6 +753,8 @@ public class Interpreter {
         Iterator<?> it = (Iterator<?>)o;
         String separator = null;
         if ( options !=null ) separator = options[Option.SEPARATOR.ordinal()];
+
+
         boolean seenAValue = false;
         while ( it.hasNext() ) {
             Object iterValue = it.next();
@@ -848,7 +852,7 @@ public class Interpreter {
                 continue;
             }
 
-            int templateIndex = ti% prototypes.size(); // rotate through
+            int templateIndex = ti % prototypes.size(); // rotate through
             ti++;
             ST proto = prototypes.get(templateIndex);
             ST st = group.createStringTemplateInternally(proto);
@@ -885,7 +889,7 @@ public class Interpreter {
         int numExprs = exprs.size();
         CompiledST code = prototype.impl;
         Map<String, FormalArgument> formalArguments = code.formalArguments;
-        if ( !code.hasFormalArgs|| formalArguments==null ) {
+        if ( !code.hasFormalArgs || formalArguments==null ) {
             errMgr.runTimeError(this, scope, ErrorType.MISSING_FORMAL_ARGUMENTS);
             return null;
         }
@@ -1108,7 +1112,7 @@ public class Interpreter {
         int i = 1;      // we have at least one of something. Iterator and arrays might be empty.
         if ( v instanceof Map) i = ((Map<?, ?>)v).size();
         else if ( v instanceof Collection) i = ((Collection<?>)v).size();
-        else if ( v instanceof Object[] ) i = ((Object[])v).length;
+        else if ( v instanceof Object[]) i = ((Object[])v).length;
         else if ( v.getClass().isArray() ) i = Array.getLength(v);
         else if ( v instanceof Iterable || v instanceof Iterator ) {
             Iterator<?> it = v instanceof Iterable? ((Iterable<?>)v).iterator() : (Iterator<?>)v;
@@ -1139,7 +1143,7 @@ public class Interpreter {
                                     ErrorType.WRITER_CTOR_ISSUE,
                                     out.getClass().getSimpleName());
             }
-            if ( debug&& !scope.earlyEval ) {
+            if ( debug && !scope.earlyEval ) {
                 scope = new InstanceScope(scope, scope.st);
                 scope.earlyEval = true;
             }
@@ -1153,7 +1157,7 @@ public class Interpreter {
         Iterator<?> iter = null;
         if ( o==null ) return null;
         if ( o instanceof Iterable) iter = ((Iterable<?>)o).iterator();
-        else if ( o instanceof Object[] ) iter = Arrays.asList((Object[])o).iterator();
+        else if ( o instanceof Object[]) iter = Arrays.asList((Object[])o).iterator();
         else if ( o.getClass().isArray() ) iter = new ArrayIterator(o);
         else if ( o instanceof Map) {
             if ( scope.st.groupThatCreatedThisInstance.iterateAcrossValues) {
@@ -1358,7 +1362,7 @@ public class Interpreter {
         if ( Misc.referenceEquals(self.impl.name, ST.UNKNOWN_NAME) ) name = "";
         tr.append(String.format("%-40s", name+buf));
         tr.append("\tstack=[");
-        for (int i = 0; i<= sp; i++) {
+        for (int i = 0; i<=sp; i++) {
             Object o = operands[i];
             printForTrace(tr, scope, o);
         }
@@ -1422,7 +1426,7 @@ public class Interpreter {
 
     public static int getShort(byte[] memory, int index) {
         int b1 = memory[index]&0xFF; // mask off sign-extended bits
-        int b2 = memory[ index+1]&0xFF;
+        int b2 = memory[index+1]&0xFF;
         return b1<<(8*1) | b2;
     }
 

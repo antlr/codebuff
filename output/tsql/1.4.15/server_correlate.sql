@@ -17,6 +17,7 @@ FROM dbo.t_server s
         ON pc.proc_controller_id = pca.proc_controller_id
 ORDER BY s.server_name, name, environment_name
 
+
 SELECT
     s.server_name
     , d.dsn_name
@@ -41,41 +42,6 @@ WHERE s.server_name NOT IN
       ('opsdb.dexma.com', 'opsdb.demo.dexma.com', 'impopsdb.dexma.com', '(local)', 'OPSFH.DEXMA.COM')
 UNION
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 SELECT s.server_name
 FROM dbo.t_server s
     INNER JOIN
@@ -83,7 +49,8 @@ FROM dbo.t_server s
         ON rs.remote_server_id = s.server_id
 WHERE s.server_name NOT IN
       ('opsdb.dexma.com', 'opsdb.demo.dexma.com', 'impopsdb.dexma.com', '(local)', 'OPSFH.DEXMA.COM')
-      AND active = '1'
+      AND
+      active = '1'
 ORDER BY server_name
 
 SELECT server_name
@@ -92,6 +59,7 @@ WHERE server_id IN (
     SELECT server_id
     FROM t_sched_task)
 ORDER BY server_name
+
 
 SELECT
     s.server_id
@@ -108,6 +76,7 @@ FROM dbo.t_server s
         ON st.server_id = s.server_id
 WHERE s.server_name = 'alya'
 ORDER BY s.server_name
+
 
 SELECT
     s.server_name

@@ -44,6 +44,6 @@ public class Coordinate {
     @Override
     public String toString() {
         return line+
-               ":" +charPosition;
+               ":"+charPosition;
     }
 }

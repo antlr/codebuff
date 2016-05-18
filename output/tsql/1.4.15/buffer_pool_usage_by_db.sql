@@ -3,7 +3,8 @@
 SELECT @total_buffer = cntr_value
 FROM sys.dm_os_performance_counters
 WHERE RTRIM([object_name]) LIKE '%Buffer Manager'
-      AND counter_name = 'Total Pages';
+      AND
+      counter_name = 'Total Pages';
 
 WITH src AS
 (
@@ -26,7 +27,7 @@ SELECT
     , db_buffer_percent = CONVERT(DECIMAL(6, 3), db_buffer_pages * 100.0 / @total_buffer)
 FROM src
 ORDER BY db_buffer_MB
-    DESC ;
+    DESC;
 
 ------------------------------------------------------
 -- specific database
@@ -68,4 +69,4 @@ FROM src
 WHERE b.database_id = DB_ID()
 GROUP BY src.[Object], src.[Type], src.[Index], src.Index_Type
 ORDER BY buffer_pages
-    DESC ;
+    DESC;

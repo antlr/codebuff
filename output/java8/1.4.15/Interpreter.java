@@ -529,6 +529,7 @@ public class Interpreter {
     }
 
     void storeArgs(InstanceScope scope, Map<String, Object> attrs, ST st) {
+
         boolean noSuchAttributeReported = false;
         if ( attrs!=null ) {
             for (Map.Entry<String, Object> argument : attrs.entrySet()) {
@@ -561,6 +562,7 @@ public class Interpreter {
             }
         }
         if ( st.impl.hasFormalArgs ) {
+
             boolean argumentCountMismatch = false;
             Map<String, FormalArgument> formalArguments = st.impl.formalArguments;
             if ( formalArguments==null ) {
@@ -585,7 +587,7 @@ public class Interpreter {
             // next make sure there aren't too many arguments. note that the names
             // of arguments are checked below as they are applied to the template
             // instance, so there's no need to do that here.
-            if ( attrs!=null && attrs.size()> formalArguments.size() ) {
+            if ( attrs!=null && attrs.size()>formalArguments.size() ) {
                 argumentCountMismatch = true;
             }
             if ( argumentCountMismatch ) {
@@ -603,10 +605,10 @@ public class Interpreter {
 
         int nformalArgs = 0;
         if ( st.impl.formalArguments!=null ) nformalArgs = st.impl.formalArguments.size();
-        int firstArg = sp -(nargs -1);
+        int firstArg = sp - (nargs -1);
         int numToStore = Math.min(nargs, nformalArgs);
         if ( st.impl.isAnonSubtemplate ) nformalArgs -= predefinedAnonSubtemplateAttributes.size();
-        if ( nargs < (nformalArgs -st.impl.numberOfArgsWithDefaultValues) || nargs> nformalArgs ) {
+        if ( nargs < (nformalArgs -st.impl.numberOfArgsWithDefaultValues) || nargs>nformalArgs ) {
             errMgr.runTimeError(this, scope, ErrorType.ARGUMENT_COUNT_MISMATCH, nargs, st.impl.name, nformalArgs);
         }
         if ( st.impl.formalArguments==null ) return;
@@ -724,6 +726,8 @@ public class Interpreter {
         Iterator<?> it = (Iterator<?>)o;
         String separator = null;
         if ( options!=null ) separator = options[Option.SEPARATOR.ordinal()];
+
+
         boolean seenAValue = false;
         while ( it.hasNext() ) {
             Object iterValue = it.next();
@@ -820,7 +824,7 @@ public class Interpreter {
                 continue;
             }
 
-            int templateIndex = ti% prototypes.size(); // rotate through
+            int templateIndex = ti%prototypes.size(); // rotate through
             ti++;
             ST proto = prototypes.get(templateIndex);
             ST st = group.createStringTemplateInternally(proto);
@@ -1080,7 +1084,7 @@ public class Interpreter {
         int i = 1;      // we have at least one of something. Iterator and arrays might be empty.
         if ( v instanceof Map ) i = ((Map<?, ?>)v).size();
         else if ( v instanceof Collection ) i = ((Collection<?>)v).size();
-        else if ( v instanceof Object[] ) i = ((Object[])v).length;
+        else if ( v instanceof Object[]) i = ((Object[])v).length;
         else if ( v.getClass().isArray() ) i = Array.getLength(v);
         else if ( v instanceof Iterable || v instanceof Iterator ) {
                  Iterator<?> it = v instanceof Iterable ? ((Iterable<?>)v).iterator() : (Iterator<?>)v;
@@ -1125,7 +1129,7 @@ public class Interpreter {
         Iterator<?> iter = null;
         if ( o==null ) return null;
         if ( o instanceof Iterable ) iter = ((Iterable<?>)o).iterator();
-        else if ( o instanceof Object[] ) iter = Arrays.asList((Object[])o).iterator();
+        else if ( o instanceof Object[]) iter = Arrays.asList((Object[])o).iterator();
         else if ( o.getClass().isArray() ) iter = new ArrayIterator(o);
         else if ( o instanceof Map ) {
                  if ( scope.st.groupThatCreatedThisInstance.iterateAcrossValues ) {

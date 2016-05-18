@@ -40,6 +40,24 @@ public class CodeBuffTokenStream extends CommonTokenStream {
 		return tokens.get(i);
 	}
 
+	public Token getPreviousRealToken(int i) {
+		i--; // previousTokenOnChannel is inclusive
+		int pi = previousTokenOnChannel(i, Token.DEFAULT_CHANNEL);
+		if ( pi>=0 && pi<size() ) {
+			return get(pi);
+		}
+		return null;
+	}
+
+	public Token getNextRealToken(int i) {
+		i++; // nextTokenOnChannel is inclusive
+		int ni = nextTokenOnChannel(i, Token.DEFAULT_CHANNEL);
+		if ( ni>=0 && ni<size() ) {
+			return get(ni);
+		}
+		return null;
+	}
+
 	public List<Token> getRealTokens() {
 		return getRealTokens(0, size()-1);
 	}

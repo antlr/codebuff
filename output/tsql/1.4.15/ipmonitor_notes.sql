@@ -61,6 +61,7 @@ GROUP BY DeviceID, MonitorID, ita.monitor_category, Name, [Address], imm.TypeID,
 -- missing 463 or so rows
 EXCEPT
 
+
 SELECT
     DeviceID
     , imm.MonitorID
@@ -166,9 +167,7 @@ SELECT
     , s.description
     , st.[type_name]
 FROM t_server s
-    JOIN t_server_type_assoc sta
-        ON sta.server_id = s.server_id
-    JOIN t_server_type st
-        ON sta.type_id = st.type_id
+    JOIN t_server_type_assoc sta ON sta.server_id = s.server_id
+    JOIN t_server_type st ON sta.type_id = st.type_id
 WHERE s.active = 1
 ORDER BY 3, 1

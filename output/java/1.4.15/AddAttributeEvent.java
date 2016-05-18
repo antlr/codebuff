@@ -40,7 +40,7 @@ public class AddAttributeEvent extends ConstructionEvent {
 
     @Override
     public String toString() {
-        return "addEvent{"+", name='"+name+'\''+", value="+value+", location="+getFileName() +
+        return "addEvent{"+", name='" +name+'\''+", value=" +value+", location=" +getFileName()+
                ":" +
                getLine() +
                '}';

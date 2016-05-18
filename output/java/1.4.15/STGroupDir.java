@@ -104,7 +104,7 @@ public class STGroupDir extends STGroup {
     @Override
     public void importTemplates(Token fileNameToken) {
         String msg = "import illegal in group files embedded in STGroupDirs; "+"import " +
-                     fileNameToken.getText() +
+                     fileNameToken.getText()+
                      " in STGroupDir " +
                      this.getName();
         throw new UnsupportedOperationException(msg);

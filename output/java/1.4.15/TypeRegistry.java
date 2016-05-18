@@ -108,7 +108,7 @@ public class TypeRegistry <V> implements Map<Class<?>, V> {
             return backingStore.get(candidates.get(0));
         }
         else {
-            for (int i = 0; i< candidates.size()-1; i++) {
+            for (int i = 0; i< candidates.size() -1; i++) {
                 if ( candidates.get(i)==null ) {
                     continue;
                 }

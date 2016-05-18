@@ -35,38 +35,36 @@ SELECT
                SELECT sum(spart.rows)
                FROM sys.partitions spart
                WHERE spart.object_id = tbl.object_id
-                     AND spart.index_id < 2),
+                     AND spart.index_id <
+                         2),
                0) AS [RowCount]
     , Coalesce((
                SELECT
                    Cast(v.low / 1024.0 AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1
-                                                                          THEN a.used_pages WHEN p.index_id < 2
-                                                                          THEN a.data_pages
+                                                                          THEN a.used_pages WHEN p.index_id <
+                                                                                                 2 THEN a.data_pages
                                                                       ELSE 0 END)
                FROM sys.indexes AS i
-                   JOIN sys.partitions AS p
-                       ON p.object_id = i.object_id AND p.index_id = i.index_id
-                   JOIN sys.allocation_units AS a
-                       ON a.container_id = p.partition_id
+                   JOIN sys.partitions AS p ON p.object_id = i.object_id AND p.index_id = i.index_id
+                   JOIN sys.allocation_units AS a ON a.container_id = p.partition_id
                WHERE i.object_id = tbl.object_id), 0.0) AS [IndexKB]
     , Coalesce((
                SELECT
                    Cast(v.low / 1024.0 AS FLOAT) * SUM(CASE WHEN a.type <> 1
-THEN a.used_pages WHEN p.index_id < 2
-THEN a.data_pages
+THEN a.used_pages WHEN p.index_id <
+                       2 THEN a.data_pages
                                                        ELSE 0 END)
                FROM sys.indexes AS i
-                   JOIN sys.partitions AS p
-                       ON p.object_id = i.object_id AND p.index_id = i.index_id
-                   JOIN sys.allocation_units AS a
-                       ON a.container_id = p.partition_id
+                   JOIN sys.partitions AS p ON p.object_id = i.object_id AND p.index_id = i.index_id
+                   JOIN sys.allocation_units AS a ON a.container_id = p.partition_id
                WHERE i.object_id = tbl.object_id), 0.0) AS [DataKB]
     , tbl.create_date
     , tbl.modify_date
 FROM sys.tables AS tbl
     INNER JOIN
     sys.indexes AS idx
-        ON (idx.object_id = tbl.object_id AND idx.index_id < 2)
+        ON (idx.object_id = tbl.object_id AND idx.index_id <
+                                              2)
     INNER JOIN
     master_dbo.spt_values v
         ON (v.number = 1 AND v.type = 'E')

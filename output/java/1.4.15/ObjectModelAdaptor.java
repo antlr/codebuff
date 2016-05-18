@@ -94,7 +94,7 @@ public class ObjectModelAdaptor implements ModelAdaptor {
                                      if ( members!=null ) {
                                          member = members.get(memberName);
                                          if ( member!=null ) {
-                                             return member != INVALID_MEMBER ?member :null;
+                                             return member != INVALID_MEMBER? member : null;
                                          }
                                      }
                                      else {
@@ -103,9 +103,8 @@ public class ObjectModelAdaptor implements ModelAdaptor {
                                      }
 
             // try getXXX and isXXX properties, look up using reflection
-                                     String methodSuffix =
-                                         Character.toUpperCase(memberName.charAt(0))+
-                                         memberName.substring(1, memberName.length());
+                                     String methodSuffix = Character.toUpperCase(memberName.charAt(0)) +
+                                                           memberName.substring(1, memberName.length());
                                      member = tryGetMethod(clazz, "get"+methodSuffix);
                                      if ( member==null ) {
                                          member = tryGetMethod(clazz, "is"+methodSuffix);
@@ -117,7 +116,7 @@ public class ObjectModelAdaptor implements ModelAdaptor {
                 // try for a visible field
                                          member = tryGetField(clazz, memberName);
                                      }
-                                     members.put(memberName, member !=null ?member : INVALID_MEMBER);
+                                     members.put(memberName, member !=null ? member : INVALID_MEMBER);
                                      return member;
         }
     }
@@ -130,8 +129,10 @@ public class ObjectModelAdaptor implements ModelAdaptor {
             }
             return method;
         }
-        catch (NoSuchMethodException ex) { }
-        catch (SecurityException ex) { }
+        catch (NoSuchMethodException ex) {
+        }
+        catch (SecurityException ex) {
+        }
         return null;
     }
 
@@ -143,8 +144,10 @@ public class ObjectModelAdaptor implements ModelAdaptor {
             }
             return field;
         }
-        catch (NoSuchFieldException ex) { }
-        catch (SecurityException ex) { }
+        catch (NoSuchFieldException ex) {
+        }
+        catch (SecurityException ex) {
+        }
         return null;
     }
 

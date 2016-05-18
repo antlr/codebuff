@@ -45,5 +45,5 @@ import java.util.Locale;
 
 
 public interface AttributeRenderer {
-    public String toString(Object o, String formatString, Locale locale) ;
+    public String toString(Object o, String formatString, Locale locale);
 }

@@ -23,10 +23,11 @@ INSERT INTO CountersDataDaily
                      ON s.server_id = cd.ServerID
              WHERE convert(char(10), CounterDateTime, 101) > GetDate() - 3
 --where  convert(char(10), CounterDateTime, 101) = (GetDate() - 6)
-             GROUP BY
-             s.server_id
-                 , c.CountersID
-                 , convert(char(10), CounterDateTime, 101)
+             GROUP BY s.server_id
+                 ,
+             c.CountersID
+                 ,
+             convert(char(10), CounterDateTime, 101)
          ) AS f
 
 
@@ -54,10 +55,11 @@ FROM
             INNER JOIN newton.Statusdbot_server s
                 ON s.server_id = cdd.ServerID
         WHERE convert(char(10), Date, 101) > GetDate() - 3
-        GROUP BY
-            s.server_id
-            , c.CountersID
-            , convert(char(10), Date, 101)
+        GROUP BY s.server_id
+            ,
+            c.CountersID
+            ,
+            convert(char(10), Date, 101)
     ) AS f
 ORDER BY server_id, ContersID, Day
 

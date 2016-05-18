@@ -80,6 +80,7 @@ public class Compiler {
     public Compiler() {
         this(STGroup.defaultGroup);
     }
+
     public Compiler(STGroup group) {
         this.group = group;
     }

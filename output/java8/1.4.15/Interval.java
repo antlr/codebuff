@@ -44,6 +44,6 @@ public class Interval {
     @Override
     public String toString() {
         return a+
-               ".." +b;
+               ".."+b;
     }
 }

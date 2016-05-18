@@ -37,6 +37,9 @@ FROM [Status].[ProjectStatus]
 ORDER BY pslastupdate
     DESC
 
+
+
+
 SELECT
     [PDID]
     , pd.[PSID]
@@ -48,10 +51,13 @@ SELECT
     , [PDLastUpdate]
 FROM [Status].[ProjectDetail] pd
     INNER JOIN
-    [Status].[ProjectStatus] ps ON pd.PSID = ps.PSID
+    [Status].[ProjectStatus] ps
+        ON pd.PSID = ps.PSID
 WHERE pd.TechID = '4'
-      AND DATEPART(MONTH, PDLastUpdate) IN
-          ('1', '2', '3')
-      AND DATEPART(YEAR, PDLastUpdate) = '2013'
+      AND
+      DATEPART(MONTH, PDLastUpdate) IN
+      ('1', '2', '3')
+      AND
+      DATEPART(YEAR, PDLastUpdate) = '2013'
 ORDER BY pdlastupdate
     ASC

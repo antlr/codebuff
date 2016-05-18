@@ -263,5 +263,7 @@ INSERT INTO t_monitoring ( server_id ) SELECT DISTINCT s.server_id
                                            dbo.t_server_type st
                                                ON st.type_id = sta.type_id
                                        WHERE s.active = '1'
-                                             AND st.type_id NOT LIKE '18'
-                                             AND s.server_name NOT LIKE '%dexma.com'
+                                             AND
+                                             st.type_id NOT LIKE '18'
+                                             AND
+                                             s.server_name NOT LIKE '%dexma.com'

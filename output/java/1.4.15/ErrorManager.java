@@ -118,19 +118,19 @@ public class ErrorManager {
     }
 
     public void runTimeError(Interpreter interp, InstanceScope scope, ErrorType error) {
-        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip :0, scope));
+        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope));
     }
 
     public void runTimeError(Interpreter interp, InstanceScope scope, ErrorType error, Object arg) {
-        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip :0, scope, arg));
+        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope, arg));
     }
 
     public void runTimeError(Interpreter interp, InstanceScope scope, ErrorType error, Throwable e, Object arg) {
-        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip :0, scope, e, arg));
+        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope, e, arg));
     }
 
     public void runTimeError(Interpreter interp, InstanceScope scope, ErrorType error, Object arg, Object arg2) {
-        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip :0, scope, null, arg, arg2));
+        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope, null, arg, arg2));
     }
 
     public void runTimeError(Interpreter interp,
@@ -139,7 +139,7 @@ public class ErrorManager {
                              Object arg,
                              Object arg2,
                              Object arg3) {
-        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip :0, scope, null, arg, arg2, arg3));
+        listener.runTimeError(new STRuntimeMessage(interp, error, scope!=null ? scope.ip : 0, scope, null, arg, arg2, arg3));
     }
 
     public void IOError(ST self, ErrorType error, Throwable e) {

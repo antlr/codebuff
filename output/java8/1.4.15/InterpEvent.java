@@ -44,5 +44,7 @@ public class InterpEvent {
     }
 
     @Override
-    public String toString() { return getClass().getSimpleName()+"{"+"self="+scope.st+", start="+outputStartChar+", stop="+outputStopChar+'}'; }
+    public String toString() {
+        return getClass().getSimpleName()+"{"+"self="+scope.st+", start="+outputStartChar+", stop="+outputStopChar+'}';
+    }
 }

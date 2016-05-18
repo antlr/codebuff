@@ -82,9 +82,6 @@ ORDER BY [usecounts], [statement]
 ------------------------------------------------------------------------
 -- List Statements With the Highest Average CPU Time
 
-
-
-
 SELECT qs.total_worker_time / qs.execution_count AS [Avg CPU Time]
        , SUBSTRING(qt.text, qs.statement_start_offset / 2, (CASE WHEN qs.statement_end_offset = -1
 THEN len(convert(nvarchar(max), qt.text)) * 2

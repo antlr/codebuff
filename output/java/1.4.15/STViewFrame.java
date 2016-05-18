@@ -73,18 +73,22 @@ public class STViewFrame extends JFrame {
         //======== this ========
         Container contentPane = getContentPane();
         contentPane.setLayout(new GridBagLayout());
-        ((GridBagLayout)contentPane.getLayout()).columnWidths = new int[] {0,
-                                                                           0};
-        ((GridBagLayout)contentPane.getLayout()).rowHeights = new int[] {0,
-                                                                         0,
-                                                                         0,
-                                                                         0};
-        ((GridBagLayout)contentPane.getLayout()).columnWeights = new double[] {1.0,
-                                                                               1.0E-4};
-        ((GridBagLayout)contentPane.getLayout()).rowWeights = new double[] {0.0,
-                                                                            1.0,
-                                                                            0.0,
-                                                                            1.0E-4};
+        ((GridBagLayout)contentPane.getLayout()).columnWidths = new int[] {
+0,
+0};
+        ((GridBagLayout)contentPane.getLayout()).rowHeights = new int[] {
+0,
+0,
+0,
+0};
+        ((GridBagLayout)contentPane.getLayout()).columnWeights = new double[] {
+1.0,
+1.0E-4};
+        ((GridBagLayout)contentPane.getLayout()).rowWeights = new double[] {
+0.0,
+1.0,
+0.0,
+1.0E-4};
         contentPane.add(toolBar1, new GridBagConstraints(0,0,1,1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0),0,0));
 
         //======== treeContentSplitPane ========
@@ -194,9 +198,12 @@ public class STViewFrame extends JFrame {
     protected JScrollPane scrollPane7;
     public JTextPane output;
     public JTabbedPane templateBytecodeTraceTabPanel;
+
     private JPanel panel1;
+
     private JScrollPane scrollPane3;
     public JTextPane template;
+
     private JScrollPane scrollPane2;
     public JTree ast;
 
@@ -205,6 +212,7 @@ public class STViewFrame extends JFrame {
 
 
     protected JTextPane bytecode;
+
     private JScrollPane scrollPane1;
     public JTextPane trace;
     public JScrollPane errorScrollPane;

@@ -144,8 +144,8 @@ public class Formatter {
 			tokenToNodeMap = indexTree(testDoc.tree);
 		}
 
-		testDoc.tokens.seek(0);
-		WritableToken firstToken = (WritableToken)testDoc.tokens.LT(1);
+		WritableToken firstToken = (WritableToken)testDoc.tokens.getNextRealToken(-1);
+
 		String prefix = originalTokens.getText(Interval.of(0, firstToken.getTokenIndex())); // gets any comments in front + first real token
 		charPosInLine = firstToken.getCharPositionInLine()+firstToken.getText().length()+1; // start where first token left off
 		line = Tool.count(prefix, '\n') + 1;
@@ -338,12 +338,11 @@ public class Formatter {
 	}
 
 	public int[] getFeatures(InputDocument doc, int tokenIndexInStream) {
-		doc.tokens.seek(tokenIndexInStream);
+		Token prevToken = doc.tokens.getPreviousRealToken(tokenIndexInStream);
+		Token prevPrevToken = prevToken!=null ? doc.tokens.getPreviousRealToken(prevToken.getTokenIndex()) : null;
 		boolean prevTokenStartsLine = false;
-		if ( doc.tokens.index()-2 >= 0 ) {
-			if ( doc.tokens.LT(-2)!=null ) {
-				prevTokenStartsLine = doc.tokens.LT(-1).getLine()>doc.tokens.LT(-2).getLine();
-			}
+		if ( prevToken!=null && prevPrevToken!=null ) {
+			prevTokenStartsLine = prevToken.getLine()>prevPrevToken.getLine();
 		}
 		TerminalNode node = tokenToNodeMap.get(doc.tokens.get(tokenIndexInStream));
 		if ( node==null ) {
@@ -352,10 +351,10 @@ public class Formatter {
 		}
 
 		Token curToken = node.getSymbol();
-		doc.tokens.seek(tokenIndexInStream); // seek so that LT(1) is tokens.get(i);
-		Token prevToken = doc.tokens.LT(-1);
 
-		boolean curTokenStartsNewLine = line>prevToken.getLine();
+		boolean curTokenStartsNewLine = false;
+		if ( prevToken==null ) curTokenStartsNewLine = true; // we must be at start of file
+		else if ( line > prevToken.getLine() ) curTokenStartsNewLine = true;
 
 		int[] features = getContextFeatures(corpus, tokenToNodeMap, doc, tokenIndexInStream);
 
@@ -489,12 +488,11 @@ public class Formatter {
 		return Character.isLetterOrDigit(prevLastChar) && Character.isLetterOrDigit(curFirstChar);
 	}
 
-	public static void wipeCharPositionInfoAndWhitespaceTokens(CommonTokenStream tokens) {
+	public static void wipeCharPositionInfoAndWhitespaceTokens(CodeBuffTokenStream tokens) {
 		tokens.fill();
 		CommonToken dummy = new CommonToken(Token.INVALID_TYPE, "");
 		dummy.setChannel(Token.HIDDEN_CHANNEL);
-		tokens.seek(0);
-		Token firstRealToken = tokens.LT(1);
+		Token firstRealToken = tokens.getNextRealToken(-1);
 		for (int i = 0; i<tokens.size(); i++) {
 			if ( i==firstRealToken.getTokenIndex() ) continue; // don't wack first token
 			CommonToken t = (CommonToken)tokens.get(i);

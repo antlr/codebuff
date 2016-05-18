@@ -77,10 +77,8 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 		ParserRuleContext first = siblings.get(0);
 		ParserRuleContext last = siblings.get(siblings.size()-1);
 
-		tokens.seek(first.getStart().getTokenIndex());
-		Token prefixToken = tokens.LT(-1); // e.g., '(' in an arg list or ':' in grammar def
-		tokens.seek(last.getStop().getTokenIndex());
-		Token suffixToken = tokens.LT(2);  // e.g., LT(1) is last token of list; LT(2) is ')' in an arg list of ';' in grammar def
+		Token prefixToken = tokens.getPreviousRealToken(first.getStart().getTokenIndex()); // e.g., '(' in an arg list or ':' in grammar def
+		Token suffixToken = tokens.getNextRealToken(last.getStop().getTokenIndex());       // e.g., LT(1) is last token of list; LT(2) is ')' in an arg list of ';' in grammar def
 
 		TerminalNode prefixNode = tokenToNodeMap.get(prefixToken);
 		TerminalNode suffixNode = tokenToNodeMap.get(suffixToken);

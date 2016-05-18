@@ -221,7 +221,7 @@ public class Trainer {
 	protected Corpus corpus;
 	protected InputDocument doc;
 	protected ParserRuleContext root;
-	protected CommonTokenStream tokens; // track stream so we can examine previous tokens
+	protected CodeBuffTokenStream tokens; // track stream so we can examine previous tokens
 	protected int indentSize;
 
 	/** Make it fast to get a node for a specific token */
@@ -263,12 +263,11 @@ public class Trainer {
 		corpus.addExemplar(doc, features, injectNL_WS, aligned);
 	}
 
-	public static int getInjectWSCategory(CommonTokenStream tokens, int i) {
+	public static int getInjectWSCategory(CodeBuffTokenStream tokens, int i) {
 		int precedingNL = getPrecedingNL(tokens, i); // how many lines to inject
 
 		Token curToken = tokens.get(i);
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-		Token prevToken = tokens.LT(-1);
+		Token prevToken = tokens.getPreviousRealToken(i);
 
 		int ws = 0;
 		if ( precedingNL==0 ) {
@@ -293,14 +292,13 @@ public class Trainer {
 		Pair<Integer,Integer> indentInfo = null;
 
 		Token curToken = node.getSymbol();
-		doc.tokens.seek(curToken.getTokenIndex()); // seek so that LT(-1) is previous real token
-		Token prevToken = doc.tokens.LT(-1);
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
 		Pair<ParserRuleContext, Integer> pair =
 			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, curToken.getCharPositionInLine());
-		String[] ruleNames = doc.parser.getRuleNames();
+//		String[] ruleNames = doc.parser.getRuleNames();
+//		Token prevToken = doc.tokens.getPreviousRealToken(curToken.getTokenIndex());
 		if ( pair!=null ) {
 			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 			alignInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
@@ -523,8 +521,7 @@ public class Trainer {
 	}
 
 	public boolean isFirstOnLine(Token t) {
-		tokens.seek(t.getTokenIndex()); // LT(1)
-		Token prevToken = tokens.LT(-1);
+		Token prevToken = tokens.getPreviousRealToken(t.getTokenIndex());
 		if ( prevToken==null ) {
 			return true; // if we are first token, must be first on line
 		}
@@ -540,8 +537,7 @@ public class Trainer {
 		}
 
 		Token curToken = node.getSymbol();
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
-		Token prevToken = tokens.LT(-1);
+		Token prevToken = tokens.getPreviousRealToken(i);
 
 		boolean prevTokenStartsLine = false;
 		if ( tokens.index()-2 >= 0 ) {
@@ -579,9 +575,8 @@ public class Trainer {
 		}
 		Token curToken = node.getSymbol();
 
-		tokens.seek(i); // seek so that LT(1) is tokens.get(i);
 		// Get context information for previous token
-		Token prevToken = tokens.LT(-1);
+		Token prevToken = tokens.getPreviousRealToken(i);
 		TerminalNode prevNode = tokenToNodeMap.get(prevToken);
 
 		ParserRuleContext prevEarliestRightAncestor = earliestAncestorEndingWithToken(prevNode);
@@ -694,8 +689,7 @@ public class Trainer {
 			Token matchingLeftToken = matchingLeftNode.getSymbol();
 			int i = matchingLeftToken.getTokenIndex();
 			if ( i==0 ) return 1; // first token is considered first on line
-			doc.tokens.seek(i);
-			Token tokenBeforeMatchingToken = doc.tokens.LT(-1);
+			Token tokenBeforeMatchingToken = doc.tokens.getPreviousRealToken(i);
 //			System.out.printf("doc=%s node=%s, pair=%s, before=%s\n",
 //			                  new File(doc.fileName).getName(), node.getSymbol(), matchingLeftToken, tokenBeforeMatchingToken);
 			if ( tokenBeforeMatchingToken!=null ) {
@@ -716,8 +710,7 @@ public class Trainer {
 		if ( matchingLeftNode != null ) {
 			Token matchingLeftToken = matchingLeftNode.getSymbol();
 			int i = matchingLeftToken.getTokenIndex();
-			doc.tokens.seek(i);
-			Token tokenAfterMatchingToken = doc.tokens.LT(2); // LT(1) is current token
+			Token tokenAfterMatchingToken = doc.tokens.getNextRealToken(i);
 //			System.out.printf("doc=%s node=%s, pair=%s, after=%s\n",
 //			                  new File(doc.fileName).getName(), node.getSymbol(), matchingLeftToken, tokenAfterMatchingToken);
 			if ( tokenAfterMatchingToken!=null ) {

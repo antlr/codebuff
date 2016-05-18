@@ -1,6 +1,6 @@
 SELECT
-    CONVERT(nvarchar(14), sls.SourceServer) AS SourceServer
-    , CONVERT(nvarchar(16), sls.DestinationServer) AS DestinationServer
+    CONVERT(nvarchar(14), sls.SourceServer)    AS SourceServer
+    , CONVERT(nvarchar(16), sls.DestinationServer)    AS DestinationServer
     , sls.LastUpdate
 FROM t_server s
     JOIN SQLLinkedServers sls
@@ -16,7 +16,6 @@ SELECT
     , ServerLogin
     , DatabaseRole
 FROM SQLDBUsers
-WHERE ServerLogin LIKE '%Orphaned%'
-      AND DataBaseUserID NOT IN ('cdc', 'guest', 'INFORMATION_SCHEMA', 'sys')
+WHERE ServerLogin LIKE '%Orphaned%' AND DataBaseUserID NOT IN ('cdc', 'guest', 'INFORMATION_SCHEMA', 'sys')
       AND ServerName NOT LIKE 'PSQLRPT21'
 ORDER BY 1, 3, 4

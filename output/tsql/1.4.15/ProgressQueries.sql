@@ -13,9 +13,8 @@ FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, LoadReportDBEndDate) <
-                              CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND CONVERT(DATE, LoadReportDBEndDate) <
+                                             CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
 --, COUNT ( CASE WHEN Status = 4 AND LoadReportDBEndDate < GETDATE() THEN Status ELSE NULL END ) AS OldStatus4
@@ -31,8 +30,7 @@ FROM
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4 AND
-                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
@@ -86,6 +84,9 @@ ORDER BY ErrorDateTime
 --------------------------------
 
 -- works fully
+
+
+
 
 SELECT
     CASE WHEN CAST(Beta AS VARCHAR) IS NULL

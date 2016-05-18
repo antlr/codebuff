@@ -175,7 +175,6 @@ public class STGroup {
     public ErrorManager errMgr = STGroup.DEFAULT_ERR_MGR;
 
     public STGroup() { }
-
     public STGroup(char delimiterStartChar, char delimiterStopChar) {
         this.delimiterStartChar = delimiterStartChar;
         this.delimiterStopChar = delimiterStopChar;
@@ -438,7 +437,7 @@ public class STGroup {
     public void rawDefineTemplate(String name, CompiledST code, Token defT) {
         CompiledST prev = rawGetTemplate(name);
         if ( prev!=null ) {
-            if ( !prev.isRegion ) {
+            if (!prev.isRegion ) {
                 errMgr.compileTimeError(ErrorType.TEMPLATE_REDEFINITION, null, defT);
                 return;
             }
@@ -479,7 +478,7 @@ public class STGroup {
 
     public static String getMangledRegionName(String enclosingTemplateName, String name) {
         if ( enclosingTemplateName.charAt(0) !='/' ) {
-            enclosingTemplateName = '/'+enclosingTemplateName;
+            enclosingTemplateName ='/'+enclosingTemplateName;
         }
         return "/region__"+enclosingTemplateName+"__"+name;
     }
@@ -490,7 +489,7 @@ public class STGroup {
         String t = mangledName.substring("/region__".length(), mangledName.lastIndexOf("__"));
         String r = mangledName.substring(mangledName.lastIndexOf("__") +2, mangledName.length());
         return t+
-               '.' +r;
+               '.'+r;
     }
 
     /** Define a map for this group.
@@ -541,7 +540,9 @@ public class STGroup {
 
         //System.out.println("import "+fileName);
         boolean isGroupFile = fileName.endsWith(GROUP_FILE_EXTENSION);
+
         boolean isTemplateFile = fileName.endsWith(TEMPLATE_FILE_EXTENSION);
+
         boolean isGroupDir = !(isGroupFile || isTemplateFile);
         STGroup g = null;
 
