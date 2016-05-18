@@ -56,16 +56,14 @@ FROM Status_dbo.t_server s
                INNER JOIN [t_monitoring] m
         ON s.server_id = m.server_id
 WHERE type_name = 'DB'
-      AND
-      active = 1
+      AND active = 1
 GROUP BY server_name
 ORDER BY server_name
 
 --print @ServerList
 
 SELECT @cmd = 'E:\Dexma\powershell_bits\Compare-DbamaintSchema.ps1 ' + '-ServerList ' +
-              @ServerList
-              +
+              @ServerList +
               ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -81,8 +79,7 @@ FROM [t_server] s
                INNER JOIN [t_monitoring] m
         ON s.server_id = m.server_id
 WHERE type_name = 'DB'
-      AND
-      active = 1
+      AND active = 1
 ORDER BY 1
 
 ------------------------------------------------------------------------------------------------------------------------

@@ -14,7 +14,6 @@ WITH perms_cte AS
 )
 
 --users
-
 SELECT
     p.principal_name
     , p.principal_type_desc
@@ -27,8 +26,6 @@ FROM perms_cte p
 WHERE principal_type_desc <> 'DATABASE_ROLE'
 UNION
 --role members
-
-
 SELECT
     rm.member_principal_name
 , rm.principal_type_desc

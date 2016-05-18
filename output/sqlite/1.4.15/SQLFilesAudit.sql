@@ -12,12 +12,14 @@ ELSE 99 END)
            ELSE s.is_percent_growth END AS INT)    AS [GrowthType]
     , s.physical_name AS [FileName]
     , s.size * CONVERT(float, 8)    AS [Size]
-    , CASE WHEN s.max_size = -1
+    , CASE
+      WHEN s.max_size = -1
           THEN -1 ELSE s.max_size * CONVERT(float, 8)
-          END AS [MaxSize]
+          END                                              AS [MaxSize]
     , s.file_id AS [ID]
     , 'Server[@Name=' +
-      quotename(CAST(serverproperty('Servername') AS sysname), '''') +
+      quotename(CAST(serverproperty('Servername') AS sysname), '''')
+      +
       ']' + '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name AS varbinary(256)) AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
     , CAST(CASE s.is_percent_growth
            WHEN 1
@@ -32,9 +34,9 @@ ELSE 99 END)
     , s.is_sparse AS [IsSparse]
 FROM sys.filegroups AS g
     INNER JOIN sys.master_files AS s
-        ON ((s.type = 2 OR s.type = 0)
-            AND
-            s.database_id = db_id()
+        ON ((s.type = 2 OR
+             s.type = 0)
+            AND s.database_id = db_id()
             AND (s.drop_lsn IS NULL))
            AND (s.data_space_id = g.data_space_id)
 ORDER BY [FileGroup_Name]
@@ -43,25 +45,18 @@ ORDER BY [FileGroup_Name]
 
 ---------------------
 
-
-
-
-
 SELECT
     s.name AS [Name]
     , s.physical_name AS [FileName]
 FROM MASTER.sysdatabases AS dtb,
     sys.master_files AS s
-WHERE (s.TYPE = 1 AND s.database_id = Db_id())
+WHERE (s.TYPE = 1 AND
+       s.database_id = Db_id())
       AND ((dtb.name = Db_name()))
 ORDER BY [Name]
     ASC
 
 ------------------
-
-
-
-
 
 SELECT
     CONVERT(nvarchar(32), SERVERPROPERTY('Servername'))    AS Server
@@ -71,9 +66,6 @@ SELECT
     , GETDATE()
 FROM [?].sysfiles
 WHERE DATABASEPROPERTYEX('?', 'Updateability') != 'READ_ONLY'
-      OR
-      DATABASEPROPERTYEX('?', 'Status') != 'RECOVERING'
-      OR
-      DATABASEPROPERTYEX('?', 'Status') != 'RESTORING'
-      OR
-      DATABASEPROPERTYEX('?', 'Status') != 'OFFLINE'
+      OR DATABASEPROPERTYEX('?', 'Status') != 'RECOVERING'
+      OR DATABASEPROPERTYEX('?', 'Status') != 'RESTORING'
+      OR DATABASEPROPERTYEX('?', 'Status') != 'OFFLINE'

@@ -1,7 +1,7 @@
 SELECT
-    dp.NAME AS principal_name
+    dp.NAME                                AS principal_name
     , dp.type_desc AS principal_type_desc
-    , o.NAME AS object_name
+    , o.NAME                                AS object_name
     , o.Type AS Type
     , p.permission_name
     , p.state_desc AS permission_state_desc
@@ -43,8 +43,6 @@ FROM perms_cte p
 WHERE principal_type_desc <> 'DATABASE_ROLE'
 UNION
 --role members
-
-
 SELECT
     rm.member_principal_name
     , rm.principal_type_desc

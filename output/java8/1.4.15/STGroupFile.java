@@ -59,7 +59,6 @@ public class STGroupFile extends STGroup {
     public STGroupFile(String fileName) {
         this(fileName, '<', '>');
     }
-
     public STGroupFile(String fileName, char delimiterStartChar, char delimiterStopChar) {
         super(delimiterStartChar, delimiterStopChar);
         if ( !fileName.endsWith(GROUP_FILE_EXTENSION) ) {
@@ -85,11 +84,9 @@ public class STGroupFile extends STGroup {
         }
         this.fileName = fileName;
     }
-
     public STGroupFile(String fullyQualifiedFileName, String encoding) {
         this(fullyQualifiedFileName, encoding, '<', '>');
     }
-
     public STGroupFile(String fullyQualifiedFileName,
                        String encoding,
                        char delimiterStartChar, char delimiterStopChar) {
@@ -100,7 +97,6 @@ public class STGroupFile extends STGroup {
     /** Pass in a URL with the location of a group file. E.g.,
      *  STGroup g = new STGroupFile(loader.getResource("org/foo/templates/g.stg"), "UTF-8", '<', '>');
       */
-
     public STGroupFile(URL url, String encoding, char delimiterStartChar, char delimiterStopChar) {
         super(delimiterStartChar, delimiterStopChar);
         this.url = url;

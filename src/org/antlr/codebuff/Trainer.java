@@ -538,15 +538,16 @@ public class Trainer {
 
 		Token curToken = node.getSymbol();
 		Token prevToken = tokens.getPreviousRealToken(i);
+		Token prevPrevToken = prevToken!=null ? doc.tokens.getPreviousRealToken(prevToken.getTokenIndex()) : null;
 
 		boolean prevTokenStartsLine = false;
-		if ( tokens.index()-2 >= 0 ) {
-			if ( tokens.LT(-2)!=null ) {
-				prevTokenStartsLine = tokens.LT(-1).getLine()>tokens.LT(-2).getLine();
-			}
+		if ( prevToken!=null && prevPrevToken!=null ) {
+			prevTokenStartsLine = prevToken.getLine()>prevPrevToken.getLine();
 		}
 
-		boolean curTokenStartsNewLine = curToken.getLine()>prevToken.getLine();
+		boolean curTokenStartsNewLine = false;
+		if ( prevToken==null ) curTokenStartsNewLine = true; // we must be at start of file
+		else if ( curToken.getLine() > prevToken.getLine() ) curTokenStartsNewLine = true;
 
 		int[] features = getContextFeatures(corpus, tokenToNodeMap, doc, i);
 

@@ -38,7 +38,6 @@ ORDER BY SourceDB, TaskName, ErrorDateTime
 
 
 
-
 SELECT
     SourceServer
     , SourceDB
@@ -88,8 +87,9 @@ SELECT DISTINCT
 --, (SELECT dmcl2.ErrorDateTime WHERE dmcl2.ErrorMessage LIKE '%Cleanup phase is beginning.%' AND dmcl.ClientID = dmcl2.ClientID AND dmcl.TaskName = dmcl2.TaskName AND dmcl.ErrorMessage LIKE '%Validation phase is beginning.%')  AS TaskEndTime
 --, CONVERT(NVARCHAR(12), DATEADD(ms, DATEDIFF(ms, (SELECT dmcl.ErrorDateTime WHERE dmcl.ErrorMessage LIKE '%Validation phase is beginning.%'), (SELECT dmcl2.ErrorDateTime WHERE dmcl2.ErrorMessage LIKE '%Cleanup phase is beginning.%')), 0), 114) AS TaskTimeTaken
 FROM dbo.DMartComponentLogging dmcl
-    JOIN dbo.DMartComponentLogging dmcl2 ON dmcl.TaskName = dmcl2.TaskName
-                                            AND dmcl.SourceServer = dmcl2.SourceServer AND dmcl.ClientID = dmcl2.ClientID
+    JOIN dbo.DMartComponentLogging dmcl2 ON dmcl.TaskName = dmcl2.TaskName AND
+                                            dmcl.SourceServer = dmcl2.SourceServer AND
+                                            dmcl.ClientID = dmcl2.ClientID
 WHERE DATEPART(day, dmcl.ErrorDateTime) = DATEPART(day, GetDate())
       AND DATEPART(month, dmcl.ErrorDateTime) = DATEPART(month, GetDate())
       AND DATEPART(year, dmcl.ErrorDateTime) = DATEPART(year, GetDate())

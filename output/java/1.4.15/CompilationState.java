@@ -157,7 +157,7 @@ public class CompilationState {
         ip = save+instrSize;
         //System.out.println("after  insert of "+opcode+"("+s+"):"+ Arrays.toString(impl.instrs));
         // adjust addresses for BR and BRF
-        int a = addr +instrSize;
+        int a = addr+instrSize;
         while ( a< ip ) {
             byte op = impl.instrs[a];
             Bytecode.Instruction I = Bytecode.instructions[op];
@@ -175,7 +175,7 @@ public class CompilationState {
     }
 
     protected void ensureCapacity(int n) {
-        if ( (ip+n)>=impl.instrs.length ) { // ensure room for full instruction
+        if ( (ip+n)>= impl.instrs.length ) { // ensure room for full instruction
             byte[] c = new byte[impl.instrs.length*2];
             System.arraycopy(impl.instrs, 0, c, 0, impl.instrs.length);
             impl.instrs = c;
@@ -195,6 +195,6 @@ public class CompilationState {
 
     public static void writeShort(byte[] memory, int index, short value) {
         memory[index+0] = (byte)((value>>(8*1))&0xFF);
-        memory[index+1] = (byte)(value &0xFF);
+        memory[index+1] = (byte)(value&0xFF);
     }
 }

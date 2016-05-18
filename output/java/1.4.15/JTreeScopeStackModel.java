@@ -57,7 +57,7 @@ public class JTreeScopeStackModel implements TreeModel {
 
         @Override
         public boolean isNil() {
-            return text ==null;
+            return text==null;
         }
 
         @Override
@@ -145,11 +145,14 @@ public class JTreeScopeStackModel implements TreeModel {
     }
 
     @Override
-    public void valueForPathChanged(TreePath treePath, Object o) { }
+    public void valueForPathChanged(TreePath treePath, Object o) {
+    }
 
     @Override
-    public void addTreeModelListener(TreeModelListener treeModelListener) { }
+    public void addTreeModelListener(TreeModelListener treeModelListener) {
+    }
 
     @Override
-    public void removeTreeModelListener(TreeModelListener treeModelListener) { }
+    public void removeTreeModelListener(TreeModelListener treeModelListener) {
+    }
 }

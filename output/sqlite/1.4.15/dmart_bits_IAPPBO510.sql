@@ -55,6 +55,7 @@ SELECT
     , LoanSecondaryEndDate
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
+
 UPDATE ClientConnection_test
 SET Status = 0
 
@@ -62,7 +63,6 @@ UPDATE ClientConnection_test
 SET Beta = '0'
 --WHERE Beta = '1'
 WHERE SourceDB IN ('PADemoDU', 'RLC', 'EliLillyFCU', 'GTE32')
-
 
 SELECT
     ClientID
@@ -86,6 +86,7 @@ SELECT
     , LoanSecondaryEndDate
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
+
 UPDATE ClientConnection
 SET Beta = '1', SSISInstanceID = 0
 WHERE SourceDB = 'PADemoDU'
@@ -108,7 +109,8 @@ FROM
         SELECT
             CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
             , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+                              CONVERT(DATE, LoadReportDBEndDate) <
+                              CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END)             AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -124,7 +126,8 @@ FROM
             THEN Status
                     ELSE NULL END)             AS Status3
 --, COUNT ( CASE WHEN Status = 4 THEN Status ELSE NULL END ) AS Status4
-            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
@@ -149,7 +152,8 @@ FROM
         SELECT
             CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
             , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+                              CONVERT(DATE, LoadReportDBEndDate) <
+                              CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END)             AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -164,7 +168,8 @@ FROM
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END)             AS Status3
-            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END)             AS Status4
         FROM dbo.ClientConnection
@@ -181,10 +186,8 @@ ORDER BY ErrorDateTime
 SELECT *
 FROM DMartLogging
 WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())
-      AND
-      DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
-      AND
-      DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
+      AND DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
+      AND DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
 ORDER BY ErrorDateTime
     DESC
 ----------------------------------------------
@@ -198,12 +201,9 @@ ORDER BY ErrorDateTime
 SELECT *
 FROM dbo.DMartComponentLogging
 WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())
-      AND
-      DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
-      AND
-      DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
-      AND
-      TaskName = 'Data Flow Task br_liability'
+      AND DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
+      AND DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
+      AND TaskName = 'Data Flow Task br_liability'
 GROUP BY TaskName
        , ErrorDateTime
        , PackageName
@@ -341,6 +341,7 @@ SELECT
     , LoanSecondaryEndDate
 FROM ClientConnection_test
 ORDER BY Beta, SourceDB
+
 UPDATE dbo.ClientConnection_test
 SET LoanCurrentStartDate = '2013-04-21 14:39:24.897'
 , LoanCurrentEndDate   = '2013-04-26 14:39:24.897'

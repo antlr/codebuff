@@ -8,10 +8,10 @@ SELECT
     CASE WHEN Col IS NULL
         THEN 'Total'
     ELSE Col END COL
-    , SUM(COL1)    AS Col1
-    , SUM(COL2)    AS COL2
-    , SUM(COL3)    AS COL3
-    , SUM(COL4)    AS COL4
+    , SUM(COL1) AS Col1
+    , SUM(COL2) AS COL2
+    , SUM(COL3) AS COL3
+    , SUM(COL4) AS COL4
 FROM t
 GROUP BY COL
 ORDER BY CASE WHEN Col IS NULL

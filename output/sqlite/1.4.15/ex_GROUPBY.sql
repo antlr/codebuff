@@ -10,8 +10,7 @@ INSERT INTO girl (name, hair, did_date) VALUES ('Heather', 'Blonde', 1);
 
 SELECT
     g.hair
-    , (
-          COUNT(*)) AS girl_count
+    , (COUNT(*)) AS girl_count
 FROM girl g
 GROUP BY g.hair
 
@@ -20,8 +19,7 @@ GROUP BY g.hair
 SELECT
     g.hair
     , g.did_date
-    , (
-          COUNT(*)) AS girl_count
+    , (COUNT(*)) AS girl_count
 FROM girl g
 GROUP BY g.hair, g.did_date
 
@@ -30,14 +28,9 @@ GROUP BY g.hair, g.did_date
 
 SELECT
     g.hair
-    , (
-          COUNT(*)) AS girl_count
-    , (
-          COUNT(
-NULLIF(did_date, 0))) AS did_date_count
-    , (
-          COUNT(
-NULLIF(did_date, 1))) AS did_not_date_count
+    , (COUNT(*)) AS girl_count
+    , (COUNT(NULLIF(did_date, 0))) AS did_date_count
+    , (COUNT(NULLIF(did_date, 1))) AS did_not_date_count
 FROM girl g
 GROUP BY g.hair
 
@@ -47,15 +40,12 @@ GROUP BY g.hair
 
 SELECT
     g.hair
-    , (
-          COUNT(*)) AS girl_count
-    , (
-          COUNT(CASE WHEN did_date = 1
-                    THEN did_date
-                ELSE NULL END)) AS did_date_count
-    , (
-          COUNT(CASE WHEN did_date = 0
-                    THEN did_date
-                ELSE NULL END)) AS did_not_date_count
+    , (COUNT(*)) AS girl_count
+    , (COUNT(CASE WHEN did_date = 1
+                 THEN did_date
+             ELSE NULL END)) AS did_date_count
+    , (COUNT(CASE WHEN did_date = 0
+                 THEN did_date
+             ELSE NULL END)) AS did_not_date_count
 FROM girl g
 GROUP BY g.hair

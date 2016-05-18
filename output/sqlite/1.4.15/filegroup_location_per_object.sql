@@ -8,12 +8,10 @@ SELECT 'Object Name' = CASE si.IndID
                         ELSE si.Name END
         , 'Object Type' = CASE WHEN si.IndID < 2
                               THEN 'Table'
-                          ELSE 'Index'
-                          END
+                          ELSE 'Index' END
         , 'Table Name' = CASE WHEN si.IndID > 1
                              THEN so.Name
-                         ELSE ' '
-                         END
+                         ELSE ' ' END
         , 'FileGroup Name' = sfg.GroupName
         , 'System FileName' = sf.Name
 FROM sysfilegroups sfg

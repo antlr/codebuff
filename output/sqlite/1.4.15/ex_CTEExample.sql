@@ -3,13 +3,17 @@ http://www.sqlservercentral.com/articles/T-SQL/62159/
 */
 
 CREATE
-TABLE[dbo].[Items]([ItemId] [int]
-NOT NULL, [Item] [varchar](100) NOT NULL)
+TABLE [dbo].[Items]
+([ItemId] [int]
+NOT NULL, [Item] [varchar](100)
 
-CREATE
-TABLE[dbo].[PriceHistory]([ItemId] [int]
+              NOT NULL)
+CREATE TABLE [dbo].[PriceHistory]
+([ItemId] [int]
 NOT NULL, [PriceStartDate] [datetime]
-NOT NULL, [Price] [decimal](10, 2) NOT NULL)
+NOT NULL, [Price] [decimal](10, 2)
+
+             NOT NULL)
 
 SELECT
     currow.Item

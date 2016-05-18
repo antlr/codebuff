@@ -230,12 +230,12 @@ public class Tool {
 		propsStream.close();
 	}
 
-	public static CommonTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
+	public static CodeBuffTokenStream tokenize(String doc, Class<? extends Lexer> lexerClass)
 		throws Exception {
 		ANTLRInputStream input = new ANTLRInputStream(doc);
 		Lexer lexer = getLexer(lexerClass, input);
 
-		CommonTokenStream tokens = new CodeBuffTokenStream(lexer);
+		CodeBuffTokenStream tokens = new CodeBuffTokenStream(lexer);
 		tokens.fill();
 		return tokens;
 	}
@@ -571,23 +571,23 @@ public class Tool {
 		throws Exception
 	{
 		// Grammar must strip all but real tokens and whitespace (and put that on hidden channel)
-		CommonTokenStream original_tokens = tokenize(original, lexerClass);
+		CodeBuffTokenStream original_tokens = tokenize(original, lexerClass);
 //		String s = original_tokens.getText();
-		CommonTokenStream formatted_tokens = tokenize(formatted, lexerClass);
+		CodeBuffTokenStream formatted_tokens = tokenize(formatted, lexerClass);
 //		String t = formatted_tokens.getText();
 
 		// walk token streams and examine whitespace in between tokens
-		int i = 1;
+		int i = -1;
 		int ws_distance = 0;
 		int original_ws = 0;
 		int formatted_ws = 0;
 		while ( true ) {
-			Token ot = original_tokens.LT(i);
+			Token ot = original_tokens.LT(i); // TODO: FIX THIS! can't use LT()
 			if ( ot==null || ot.getType()==Token.EOF ) break;
 			List<Token> ows = original_tokens.getHiddenTokensToLeft(ot.getTokenIndex());
 			original_ws += tokenText(ows).length();
 
-			Token ft = formatted_tokens.LT(i);
+			Token ft = formatted_tokens.LT(i); // TODO: FIX THIS! can't use LT()
 			if ( ft==null || ft.getType()==Token.EOF ) break;
 			List<Token> fws = formatted_tokens.getHiddenTokensToLeft(ft.getTokenIndex());
 			formatted_ws += tokenText(fws).length();

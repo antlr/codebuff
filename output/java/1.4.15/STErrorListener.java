@@ -33,7 +33,6 @@ import org.stringtemplate.v4.misc.STMessage;
 
 
 public interface STErrorListener {
-
     void compileTimeError(STMessage msg);
 
     void runTimeError(STMessage msg);

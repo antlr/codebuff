@@ -77,10 +77,10 @@ public class ErrorManager {
     public ErrorManager() {
         this(DEFAULT_ERROR_LISTENER);
     }
-
     public ErrorManager(STErrorListener listener) {
         this.listener = listener;
     }
+
 
     public void compileTimeError(ErrorType error, Token templateToken, Token t) {
         CharStream input = t.getInputStream();

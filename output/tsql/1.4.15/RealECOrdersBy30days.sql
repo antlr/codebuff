@@ -9,7 +9,7 @@ SELECT
     , do_date_received
     , do_last_update
     , DATEDIFF(day, do_date_initiated,
-               do_date_received)             AS DaysBetween
+               do_date_received) AS DaysBetween
 FROM document_orders
 WHERE do_document_category LIKE '%REALEC%'
       AND (do_date_initiated IS NULL OR do_date_received IS NULL OR do_last_update IS NULL)
@@ -28,14 +28,14 @@ THEN 'DaysBetween'
     , COUNT(CASE WHEN DATEDIFF(day, do_date_initiated,
                                do_date_received) BETWEEN 30 AND 59
     THEN 'DaysBetween'
-            END)             AS ThirtyToSixty
+            END) AS ThirtyToSixty
     , COUNT(CASE WHEN DATEDIFF(day, do_date_initiated,
                                do_date_received) BETWEEN 60 AND 89
     THEN 'DaysBetween'
-            END)             AS SixtyToNinety
+            END) AS SixtyToNinety
     , COUNT(CASE WHEN DATEDIFF(day, do_date_initiated,
                                do_date_received) >= 90
     THEN 'DaysBetween'
-            END)             AS NinetyPlus
+            END) AS NinetyPlus
 FROM document_orders
 WHERE do_document_category LIKE '%REALEC%'

@@ -85,7 +85,7 @@ public class STCompiletimeMessage extends STMessage {
                 if ( templateToken.getType()==GroupParser.BIGSTRING || templateToken.getType()==GroupParser.BIGSTRING_NO_NL ) {
                     templateDelimiterSize = 2;
                 }
-                line += templateToken.getLine() -1;
+                line += templateToken.getLine()-1;
                 charPos += templateToken.getCharPositionInLine()+templateDelimiterSize;
             }
         }

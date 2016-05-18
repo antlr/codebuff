@@ -79,6 +79,7 @@ public class ST {
 
     /** Events during template hierarchy construction (not evaluation) */
 
+
     public static class DebugState {
         /** Record who made us? {@link ConstructionEvent} creates {@link Exception} to grab stack */
         public ConstructionEvent newSTEvent;
@@ -174,11 +175,12 @@ public class ST {
     }
 
     public ST(STGroup group, String template) {
-        this(); groupThatCreatedThisInstance = group;
-                impl = groupThatCreatedThisInstance.compile(group.getFileName(), null, null, template, null);
-                impl.hasFormalArgs = false;
-                impl.name = UNKNOWN_NAME;
-                impl.defineImplicitlyDefinedTemplates(groupThatCreatedThisInstance);
+        this();
+        groupThatCreatedThisInstance = group;
+        impl = groupThatCreatedThisInstance.compile(group.getFileName(), null, null, template, null);
+        impl.hasFormalArgs = false;
+        impl.name = UNKNOWN_NAME;
+        impl.defineImplicitlyDefinedTemplates(groupThatCreatedThisInstance);
     }
 
     /** Clone a prototype template.

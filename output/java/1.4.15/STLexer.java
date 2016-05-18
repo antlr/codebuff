@@ -90,7 +90,7 @@ public class STLexer implements TokenSource {
                    "," +
                    line +
                    ":" +
-                getCharPositionInLine()+
+                getCharPositionInLine() +
                    "]";
         }
     }
@@ -245,8 +245,7 @@ public class STLexer implements TokenSource {
     }
 
     protected Token outside() {
-        if ( input.getCharPositionInLine()==0 &&
-             (c==' ' || c=='\t') ) {
+        if ( input.getCharPositionInLine()==0 &&(c==' ' || c=='\t') ) {
             while ( c==' ' || c=='\t' ) consume(); // scarf indent
             if ( c!= EOF ) return newToken(INDENT);
             return newToken(TEXT);
@@ -282,7 +281,7 @@ public class STLexer implements TokenSource {
 
     protected Token inside() {
         while ( true ) {
-            switch ( c) {
+            switch ( c ) {
                 case ' ':
                 case '\t':
                 case '\n':
@@ -426,7 +425,7 @@ public class STLexer implements TokenSource {
         consume(); // kill \\
         if ( c=='u' ) return UNICODE();
         String text;
-        switch ( c) {
+        switch ( c ) {
             case '\\':
                 LINEBREAK();
                 return SKIP;
@@ -571,7 +570,7 @@ public class STLexer implements TokenSource {
             if ( c=='\\' ) {
                 sawEscape = true;
                 consume();
-                switch ( c) {
+                switch ( c ) {
                     case 'n':
                         buf.append('\n');
                         break;
@@ -617,7 +616,7 @@ public class STLexer implements TokenSource {
                 re.charPositionInLine = input.getCharPositionInLine();
                 errMgr.lexerError(input.getSourceName(),
                                   "Nonterminated comment starting at " +
-                                  startLine+":"+startCharPositionInLine +
+                                  startLine +":"+startCharPositionInLine +
                                   ": '!" +
                                   delimiterStopChar +
                                   "' missing", templateToken, re);
@@ -652,15 +651,15 @@ public class STLexer implements TokenSource {
     }
 
     public static boolean isIDLetter(char c) {
-        return c >='a' && c<='z' || c >='A' && c<='Z' || c >='0' && c<='9' || c=='_' || c=='/';
+        return c>='a' && c<='z' || c>='A' && c<='Z' || c>='0' && c<='9' || c=='_'|| c=='/';
     }
 
     public static boolean isWS(char c) {
-        return c==' ' || c=='\t' || c=='\n' || c=='\r';
+        return c==' ' || c=='\t' || c=='\n'|| c=='\r';
     }
 
     public static boolean isUnicodeLetter(char c) {
-        return c >='a' && c<='f' || c >='A' && c<='F' || c >='0' && c<='9';
+        return c>='a' && c<='f' || c>='A' && c<='F'|| c>='0' && c<='9';
     }
 
     public Token newToken(int ttype) {

@@ -5,11 +5,13 @@ SELECT
     , Beta
     , LoadStageDBStartDate
     , LoadStageDBEndDate
-    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)    AS StageLoadTime
+    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)
+    AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
     , DATEDIFF(minute, LoadReportDBStartDate,
-               LoadReportDBEndDate)    AS ReportLoadTime
+               LoadReportDBEndDate)
+    AS ReportLoadTime
 FROM ClientConnection
 WHERE Beta = '1'
 ORDER BY Beta, 2
@@ -34,6 +36,9 @@ WHERE SourceDB = 'MembersMortgage'
 TRUNCATE TABLE DMartLogging
 */
 
+
+
+
 SELECT *
 FROM DMartLogging
 ORDER BY ErrorDateTime
@@ -45,10 +50,16 @@ FROM sys.databases
 WHERE Name LIKE '%Stage%'
 ----------------------------------------------
 
+
+
+
 SELECT name
 FROM sys.databases
 WHERE Name LIKE '%Data%'
 ----------------------------------------------
+
+
+
 
 SELECT *
 FROM opsinfo_ops_dbo.clients
@@ -67,11 +78,13 @@ SELECT
     , ReportDB
     , LoadStageDBStartDate
     , LoadStageDBEndDate
-    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)    AS StageLoadTime
+    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)
+    AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
     , DATEDIFF(minute, LoadReportDBStartDate,
-               LoadReportDBEndDate)    AS ReportLoadTime
+               LoadReportDBEndDate)
+    AS ReportLoadTime
 FROM ClientConnection
 --WHERE ReportServer = 'PSQLRPT22'
 --WHERE SourceServer = 'STGSQL511'
@@ -132,23 +145,28 @@ SET Client_ID = '228'
 WHERE SourceDB = 'RLC'
 
 SELECT
-    SUM(StageLoadTime)    AS TotalStageLoadTime
-    , SUM(ReportLoadTime)    AS TotalReportLoadTime
-FROM (
-         SELECT
+    SUM(StageLoadTime)
+    AS TotalStageLoadTime
+    , SUM(ReportLoadTime)
+    AS TotalReportLoadTime
+FROM
+    (
+        SELECT
 --SourceServer,
-             Client_ID
-             , SourceDB
-             , [Status]
-             , Beta
-             , LoadStageDBStartDate
-             , LoadStageDBEndDate
-             , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)    AS StageLoadTime
-             , LoadReportDBStartDate
-             , LoadReportDBEndDate
-             , DATEDIFF(minute, LoadReportDBStartDate,
-                        LoadReportDBEndDate)    AS ReportLoadTime
-         FROM ClientConnection
-         WHERE Beta != '2'
+            Client_ID
+            , SourceDB
+            , [Status]
+            , Beta
+            , LoadStageDBStartDate
+            , LoadStageDBEndDate
+            , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)
+            AS StageLoadTime
+            , LoadReportDBStartDate
+            , LoadReportDBEndDate
+            , DATEDIFF(minute, LoadReportDBStartDate,
+                       LoadReportDBEndDate)
+            AS ReportLoadTime
+        FROM ClientConnection
+        WHERE Beta != '2'
 ORDER BY Beta, 2
-     ) t
+    ) t

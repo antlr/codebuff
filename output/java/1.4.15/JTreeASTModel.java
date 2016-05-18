@@ -47,6 +47,7 @@ public class JTreeASTModel implements TreeModel {
         this.root = root;
     }
 
+
     public JTreeASTModel(Object root) {
         this.adaptor = new CommonTreeAdaptor();
         this.root = root;
@@ -79,11 +80,14 @@ public class JTreeASTModel implements TreeModel {
     }
 
     @Override
-    public void valueForPathChanged(TreePath treePath, Object o) { }
+    public void valueForPathChanged(TreePath treePath, Object o) {
+    }
 
     @Override
-    public void addTreeModelListener(TreeModelListener treeModelListener) { }
+    public void addTreeModelListener(TreeModelListener treeModelListener) {
+    }
 
     @Override
-    public void removeTreeModelListener(TreeModelListener treeModelListener) { }
+    public void removeTreeModelListener(TreeModelListener treeModelListener) {
+    }
 }

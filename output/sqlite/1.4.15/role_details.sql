@@ -5,8 +5,10 @@ SELECT
     , o.Type AS Type
     , p.permission_name
     , p.state_desc AS permission_state_desc
-FROM sys.database_permissions p LEFT OUTER JOIN sys.all_objects o ON p.major_id = o.OBJECT_ID
-                                                INNER JOIN sys.database_principals dp ON p.grantee_principal_id = dp.principal_id
+FROM sys.database_permissions p LEFT OUTER JOIN sys.all_objects o
+                                    ON p.major_id = o.OBJECT_ID
+                                                INNER JOIN sys.database_principals dp
+                                    ON p.grantee_principal_id = dp.principal_id
 --WHERE permission_name = 'EXECUTE'
 ORDER BY 1
 
@@ -24,11 +26,10 @@ WITH perms_cte AS
         , p.permission_name
         , p.state_desc                      AS permission_state_desc
     FROM sys.database_permissions p
-        INNER JOIN sys.database_principals dp ON p.grantee_principal_id = dp.principal_id
+        INNER JOIN sys.database_principals dp
+             ON p.grantee_principal_id = dp.principal_id
 )
 --users
-
-
 SELECT
     p.principal_name
     , p.principal_type_desc
@@ -41,8 +42,6 @@ FROM perms_cte p
 WHERE principal_type_desc <> 'DATABASE_ROLE'
 UNION
 --role members
-
-
 SELECT
     rm.member_principal_name
     , rm.principal_type_desc
@@ -60,7 +59,8 @@ FROM perms_cte p LEFT OUTER JOIN
              , user_name(member_principal_id)             AS member_principal_name
              , user_name(role_principal_id)             AS role_name --,*
          FROM sys.database_role_members rm
-             INNER JOIN sys.database_principals dp ON rm.member_principal_id = dp.principal_id
+             INNER JOIN sys.database_principals dp
+                 ON rm.member_principal_id = dp.principal_id
      ) rm
                      ON rm.role_principal_id = p.principal_id
 ORDER BY 1

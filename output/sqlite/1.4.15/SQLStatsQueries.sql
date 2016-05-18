@@ -12,7 +12,7 @@ SELECT
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
                 (CASE WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
-                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2)    AS query_text
+                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS query_text
     , qt.dbid
     , dbname = db_name(qt.dbid)
 , qt.objectid
@@ -40,7 +40,7 @@ SELECT
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
                 (CASE WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
-                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2)    AS statement
+                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS statement
 FROM sys.dm_exec_query_stats qs
     INNER JOIN sys.dm_exec_cached_plans AS cp
         ON qs.plan_handle = cp.plan_handle
@@ -64,13 +64,14 @@ SELECT
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
                 (CASE WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
-                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2)    AS statement
+                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS statement
     , qs.sql_handle
     , qs.plan_handle
 FROM sys.dm_exec_query_stats qs
     INNER JOIN sys.dm_exec_cached_plans AS cp
         ON qs.plan_handle = cp.plan_handle
-WHERE cp.plan_handle = qs.plan_handle AND qt.dbid IS NULL
+WHERE cp.plan_handle = qs.plan_handle AND
+      qt.dbid IS NULL
 ORDER BY [usecounts], [statement]
                     ASC
 
@@ -78,12 +79,11 @@ ORDER BY [usecounts], [statement]
 ------------------------------------------------------------------------
 -- List Statements With the Highest Average CPU Time
 
-
 SELECT qs.total_worker_time / qs.execution_count AS [Avg CPU Time]
        , SUBSTRING(qt.text, qs.statement_start_offset / 2,
                    (CASE WHEN qs.statement_end_offset = -1
                         THEN len(convert(nvarchar(max), qt.text)) * 2
-                        ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2)    AS query_text
+                        ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS query_text
        , qt.dbid
        , dbname = db_name(qt.dbid)
 , qt.objectid
@@ -100,7 +100,7 @@ SELECT
     , SUBSTRING(qt.text, qs.statement_start_offset / 2,
                 (CASE WHEN qs.statement_end_offset = -1
                      THEN len(convert(nvarchar(max), qt.text)) * 2
-                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2)    AS query_text
+                     ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) AS query_text
     , qt.dbid
     , dbname = db_name(qt.dbid)
 , qt.objectid

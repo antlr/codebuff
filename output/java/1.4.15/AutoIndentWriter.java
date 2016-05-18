@@ -109,7 +109,7 @@ public class AutoIndentWriter implements STWriter {
 
     @Override
     public void pushAnchorPoint() {
-        if ( (anchors_sp+1) >=anchors.length ) {
+        if ( (anchors_sp+1) >= anchors.length ) {
             int[] a = new int[anchors.length*2];
             System.arraycopy(anchors, 0, a, 0, anchors.length-1);
             anchors = a;
@@ -190,7 +190,7 @@ public class AutoIndentWriter implements STWriter {
         int n = 0;
         // if want wrap and not already at start of line (last char was \n)
         // and we have hit or exceeded the threshold
-        if ( lineWidth!= NO_WRAP&& wrap!=null && !atStartOfLine && charPosition>= lineWidth ) {
+        if ( lineWidth!= NO_WRAP&& wrap!=null && !atStartOfLine && charPosition>=lineWidth ) {
             // ok to wrap
             // Walk wrap string and look for A\nB.  Spit out A\n
             // then spit indent or anchor, whichever is larger
@@ -233,9 +233,9 @@ public class AutoIndentWriter implements STWriter {
         // *after* doing indents (might tabs in there or whatever)
 
         int indentWidth = n;
-        if ( anchors_sp>=0 && anchors[anchors_sp]> indentWidth ) {
+        if ( anchors_sp>=0 && anchors[anchors_sp]>indentWidth ) {
             int remainder = anchors[anchors_sp]-indentWidth;
-            for (int i = 1; i <= remainder; i++) out.write(' ');
+            for (int i = 1; i<=remainder; i++) out.write(' ');
             n += remainder;
         }
         charPosition += n;

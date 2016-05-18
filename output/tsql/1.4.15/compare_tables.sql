@@ -29,5 +29,6 @@ SELECT
    , LastUpdate
 FROM ISQLCBS510_StatusIMP_dbo.t_server
     ) tmp
-GROUP BY server_id, server_name, environment_id, description, active, LastUpdate HAVING COUNT(*) = 1
+GROUP BY server_id, server_name, environment_id, description, active, LastUpdate
+HAVING COUNT(*) = 1
 ORDER BY server_id

@@ -81,6 +81,7 @@ public class Aggregate {
         properties.put(propName, propValue);
     }
 
+
     public Object get(String propName) {
         return properties.get(propName);
     }

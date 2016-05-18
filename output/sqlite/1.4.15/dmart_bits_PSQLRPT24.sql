@@ -12,16 +12,15 @@ SELECT
     , CONVERT(VARCHAR(12), DATEADD(ms, DATEDIFF(ms, LoadReportDBStartDate, LoadReportDBEndDate), 0), 114) AS ReportLoadTime
 FROM ClientConnection
 GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate, LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate, SourceServer
-ORDER BY SourceDB
-, Status
-ASC
-, Beta
-ASC
-, SSISInstanceID
-ASC
-, LoadStageDBStartDate
-ASC
-, SourceServer
+ORDER BY SourceDB, Status
+                 ASC
+                 , Beta
+                 ASC
+                 , SSISInstanceID
+                 ASC
+                 , LoadStageDBStartDate
+                 ASC
+                 , SourceServer
 -------------------------------------------
 
 
@@ -76,22 +75,22 @@ SELECT
 FROM
     (
         SELECT
-            CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
+            CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
             , COUNT(CASE WHEN Status = 0
             THEN Status
-                    ELSE NULL END)             AS Status0
+                    ELSE NULL END) AS Status0
             , COUNT(CASE WHEN Status = 1
             THEN Status
-                    ELSE NULL END)             AS Status1
+                    ELSE NULL END) AS Status1
             , COUNT(CASE WHEN Status = 2
             THEN Status
-                    ELSE NULL END)             AS Status2
+                    ELSE NULL END) AS Status2
             , COUNT(CASE WHEN Status = 3
             THEN Status
-                    ELSE NULL END)             AS Status3
+                    ELSE NULL END) AS Status3
             , COUNT(CASE WHEN Status = 4
             THEN Status
-                    ELSE NULL END)             AS Status4
+                    ELSE NULL END) AS Status4
         FROM dbo.ClientConnectionCDC
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
@@ -112,22 +111,22 @@ SELECT
 FROM
     (
         SELECT
-            CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
+            CONVERT(VARCHAR, SSISInstanceID) AS SSISInstanceID
             , COUNT(CASE WHEN Status = 0
             THEN Status
-                    ELSE NULL END)             AS Status0
+                    ELSE NULL END) AS Status0
             , COUNT(CASE WHEN Status = 1
             THEN Status
-                    ELSE NULL END)             AS Status1
+                    ELSE NULL END) AS Status1
             , COUNT(CASE WHEN Status = 2
             THEN Status
-                    ELSE NULL END)             AS Status2
+                    ELSE NULL END) AS Status2
             , COUNT(CASE WHEN Status = 3
             THEN Status
-                    ELSE NULL END)             AS Status3
+                    ELSE NULL END) AS Status3
             , COUNT(CASE WHEN Status = 4
             THEN Status
-                    ELSE NULL END)             AS Status4
+                    ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
@@ -149,26 +148,28 @@ SELECT
 FROM
     (
         SELECT
-            CONVERT(VARCHAR, SSISInstanceID)             AS InstanceID
+            CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
             , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
+                              CONVERT(DATE, EndTimeExtract) <
+                              CONVERT(DATE, GETDATE())
             THEN Status
-                    ELSE NULL END)             AS OldStatus4
+                    ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
             THEN Status
-                    ELSE NULL END)             AS Status0
+                    ELSE NULL END) AS Status0
             , COUNT(CASE WHEN Status = 1
             THEN Status
-                    ELSE NULL END)             AS Status1
+                    ELSE NULL END) AS Status1
             , COUNT(CASE WHEN Status = 2
             THEN Status
-                    ELSE NULL END)             AS Status2
+                    ELSE NULL END) AS Status2
             , COUNT(CASE WHEN Status = 3
             THEN Status
-                    ELSE NULL END)             AS Status3
-            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
+                    ELSE NULL END) AS Status3
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
             THEN Status
-                    ELSE NULL END)             AS Status4
+                    ELSE NULL END) AS Status4
         FROM dbo.ClientConnectionCDC
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
@@ -190,26 +191,28 @@ SELECT
 FROM
     (
         SELECT
-            CONVERT(VARCHAR, SSISInstanceID)             AS InstanceID
+            CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
             , COUNT(CASE WHEN Status = 4 AND
-                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+                              CONVERT(DATE, LoadReportDBEndDate) <
+                              CONVERT(DATE, GETDATE())
             THEN Status
-                    ELSE NULL END)             AS OldStatus4
+                    ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
             THEN Status
-                    ELSE NULL END)             AS Status0
+                    ELSE NULL END) AS Status0
             , COUNT(CASE WHEN Status = 1
             THEN Status
-                    ELSE NULL END)             AS Status1
+                    ELSE NULL END) AS Status1
             , COUNT(CASE WHEN Status = 2
             THEN Status
-                    ELSE NULL END)             AS Status2
+                    ELSE NULL END) AS Status2
             , COUNT(CASE WHEN Status = 3
             THEN Status
-                    ELSE NULL END)             AS Status3
-            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+                    ELSE NULL END) AS Status3
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
-                    ELSE NULL END)             AS Status4
+                    ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
@@ -295,10 +298,10 @@ FROM
             , Beta
             , LoadStageDBStartDate
             , LoadStageDBEndDate
-            , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)             AS StageLoadTime
+            , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime
             , LoadReportDBStartDate
             , LoadReportDBEndDate
-            , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate)             AS ReportLoadTime
+            , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
         FROM ClientConnection
         WHERE Beta != '2'
     ) AS t
@@ -315,7 +318,7 @@ FROM
             , Beta
             , [dbo].[ClientConnectionCDC].[StartTimeExtract]
             , [dbo].[ClientConnectionCDC].[EndTimeExtract]
-            , DATEDIFF(minute, StartTimeExtract, EndTimeExtract)             AS DataLoadTime
+            , DATEDIFF(minute, StartTimeExtract, EndTimeExtract) AS DataLoadTime
          --, LoadReportDBStartDate
          --, LoadReportDBEndDate
          --, DATEDIFF(minute, LoadReportDBStartDate,

@@ -11,7 +11,6 @@ WHERE TechID = '4'
 ORDER BY pdlastupdate
     DESC
 
-
 UPDATE [Status].[ProjectDetail]
 SET pdlastupdate = '2011-11-11 11:08:00'
 WHERE pdlastupdate = '2011-11-14 11:26:00'
@@ -38,9 +37,6 @@ SELECT
 FROM [Status].[ProjectStatus]
 ORDER BY pslastupdate
     DESC
-
-
-
 
 SELECT
     [PDID]

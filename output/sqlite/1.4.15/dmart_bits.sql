@@ -5,10 +5,10 @@ SELECT
     , Beta
     , LoadStageDBStartDate
     , LoadStageDBEndDate
-    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)    AS StageLoadTime
+    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate)    AS ReportLoadTime
+    , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
 FROM ClientConnection
 WHERE Beta = '1'
 ORDER BY Beta, 2
@@ -63,10 +63,10 @@ SELECT
     , ReportDB
     , LoadStageDBStartDate
     , LoadStageDBEndDate
-    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate)    AS StageLoadTime
+    , DATEDIFF(minute, LoadStageDBStartDate, LoadStageDBEndDate) AS StageLoadTime
     , LoadReportDBStartDate
     , LoadReportDBEndDate
-    , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate)    AS ReportLoadTime
+    , DATEDIFF(minute, LoadReportDBStartDate, LoadReportDBEndDate) AS ReportLoadTime
 FROM ClientConnection
 --WHERE ReportServer = 'PSQLRPT22'
 --WHERE SourceServer = 'STGSQL511'
@@ -128,8 +128,8 @@ SET Client_ID = '228'
 WHERE SourceDB = 'RLC'
 
 SELECT
-    SUM(StageLoadTime)    AS TotalStageLoadTime
-    , SUM(ReportLoadTime)    AS TotalReportLoadTime
+    SUM(StageLoadTime) AS TotalStageLoadTime
+    , SUM(ReportLoadTime) AS TotalReportLoadTime
 FROM
     (
         SELECT

@@ -2,12 +2,10 @@ SELECT *
 FROM sprocswithservernames
 ORDER BY server, DatabaseName
 
-
 SELECT DISTINCT server
 FROM sprocswithservernames
 ORDER BY server
 -------------------------------------------------------------------
-
 
 SELECT DISTINCT
     Server
@@ -23,7 +21,6 @@ FROM
     ) AS q
 ORDER BY ProcedureName, DatabaseName
 
-
 SELECT DISTINCT
     Server
     , DatabaseName
@@ -37,7 +34,6 @@ FROM
     ) AS q
 ORDER BY ProcedureName, DatabaseName
 -------------------------------------------------------------------
-
 
 SELECT DISTINCT ProcedureName
 FROM

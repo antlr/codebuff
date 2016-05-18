@@ -58,6 +58,7 @@ public class BytecodeDisassembler {
         return buf.toString();
     }
 
+
     public String disassemble() {
         StringBuilder buf = new StringBuilder();
         int i = 0;
@@ -68,6 +69,7 @@ public class BytecodeDisassembler {
         return buf.toString();
     }
 
+
     public int disassembleInstruction(StringBuilder buf, int ip) {
         int opcode = code.instrs[ip];
         if ( ip>= code.codeSize ) {
@@ -75,7 +77,7 @@ public class BytecodeDisassembler {
         }
         Bytecode.Instruction I = Bytecode.instructions[opcode];
         if ( I==null ) {
-            throw new IllegalArgumentException("no such instruction " +opcode+" at address "+ip);
+            throw new IllegalArgumentException("no such instruction "+opcode+" at address "+ip);
         }
         String instrName = I.name;
         buf.append(String.format("%04d:\t%-14s", ip, instrName));
@@ -131,12 +133,14 @@ public class BytecodeDisassembler {
         return buf.toString();
     }
 
+
     public static int getShort(byte[] memory, int index) {
         int b1 = memory[index]&0xFF; // mask off sign-extended bits
         int b2 = memory[index+1]&0xFF;
         int word = b1<<(8*1) | b2;
         return word;
     }
+
 
     public String strings() {
         StringBuilder buf = new StringBuilder();
@@ -156,6 +160,7 @@ public class BytecodeDisassembler {
         }
         return buf.toString();
     }
+
 
     public String sourceMap() {
         StringBuilder buf = new StringBuilder();

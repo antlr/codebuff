@@ -167,6 +167,7 @@ public class STViz {
                                                        if ( depth!=1 ) {
                                                            return;
                                                        }
+
                                                        int dot = toEventPosition((JTextComponent)e.getSource(), e.getDot());
                                                        currentEvent = findEventAtOutputLocation(allEvents, dot);
                                                        if ( currentEvent==null ) currentScope = tmodel.root.event.scope;
@@ -212,6 +213,7 @@ public class STViz {
                                                                  if ( depth!=1 ) {
                                                                      return;
                                                                  }
+
                                                                  int minIndex = viewFrame.errorList.getMinSelectionIndex();
                                                                  int maxIndex = viewFrame.errorList.getMaxSelectionIndex();
                                                                  int i = minIndex;
@@ -338,6 +340,7 @@ public class STViz {
             }
             windowsLineEndingsList.add(i);
         }
+
         int[] windowsLineEndings = new int[windowsLineEndingsList.size()];
         for (int i = 0; i< windowsLineEndingsList.size(); i++) {
             windowsLineEndings[i] = windowsLineEndingsList.get(i);
@@ -351,6 +354,7 @@ public class STViz {
         if ( windowsLineEndings==null || windowsLineEndings.length==0 ) {
             return position;
         }
+
         int index = Arrays.binarySearch(windowsLineEndings, position);
         if ( index>=0 ) {
             return position-index;
@@ -378,7 +382,7 @@ public class STViz {
             j = toComponentPosition(comp, j);
             highlighter.addHighlight(i, j+1, DefaultHighlighter.DefaultPainter);
             if ( scroll ) {
-                if ( comp.getCaretPosition()< i || comp.getCaretPosition()> j ) {
+                if ( comp.getCaretPosition()< i || comp.getCaretPosition()>j ) {
                     comp.moveCaretPosition(i);
                     comp.scrollRectToVisible(comp.modelToView(i));
                 }

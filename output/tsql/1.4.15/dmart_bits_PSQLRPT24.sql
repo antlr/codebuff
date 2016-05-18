@@ -17,16 +17,15 @@ SELECT
               114) AS ReportLoadTime
 FROM ClientConnection
 GROUP BY Beta, Status, SSISInstanceID, SourceDB, LoadStageDBStartDate, LoadStageDBEndDate, LoadReportDBStartDate, LoadReportDBEndDate, SourceServer
-ORDER BY SourceDB
-, Status
-ASC
-, Beta
-ASC
-, SSISInstanceID
-ASC
-, LoadStageDBStartDate
-ASC
-, SourceServer
+ORDER BY SourceDB, Status
+                 ASC
+                 , Beta
+                 ASC
+                 , SSISInstanceID
+                 ASC
+                 , LoadStageDBStartDate
+                 ASC
+                 , SourceServer
 -------------------------------------------
 
 
@@ -73,16 +72,11 @@ SELECT
     CASE WHEN SSISInstanceID IS NULL
         THEN 'Total'
     ELSE SSISInstanceID END SSISInstanceID
-    , SUM(
-          Status0) AS Status0
-    , SUM(
-          Status1) AS Status1
-    , SUM(
-          Status2) AS Status2
-    , SUM(
-          Status3) AS Status3
-    , SUM(
-          Status4) AS Status4
+    , SUM(Status0) AS Status0
+    , SUM(Status1) AS Status1
+    , SUM(Status2) AS Status2
+    , SUM(Status3) AS Status3
+    , SUM(Status4) AS Status4
 FROM
     (
         SELECT
@@ -114,16 +108,11 @@ SELECT
     CASE WHEN SSISInstanceID IS NULL
         THEN 'Total'
     ELSE SSISInstanceID END SSISInstanceID
-    , SUM(
-          Status0) AS Status0
-    , SUM(
-          Status1) AS Status1
-    , SUM(
-          Status2) AS Status2
-    , SUM(
-          Status3) AS Status3
-    , SUM(
-          Status4) AS Status4
+    , SUM(Status0) AS Status0
+    , SUM(Status1) AS Status1
+    , SUM(Status2) AS Status2
+    , SUM(Status3) AS Status3
+    , SUM(Status4) AS Status4
 FROM
     (
         SELECT
@@ -154,24 +143,19 @@ SELECT
     CASE WHEN InstanceID IS NULL
         THEN 'Total'
     ELSE InstanceID END InstanceID
-    , SUM(
-          OldStatus4) AS OldStatus4
-    , SUM(
-          Status0) AS Status0
-    , SUM(
-          Status1) AS Status1
-    , SUM(
-          Status2) AS Status2
-    , SUM(
-          Status3) AS Status3
-    , SUM(
-          Status4) AS Status4
+    , SUM(OldStatus4) AS OldStatus4
+    , SUM(Status0) AS Status0
+    , SUM(Status1) AS Status1
+    , SUM(Status2) AS Status2
+    , SUM(Status3) AS Status3
+    , SUM(Status4) AS Status4
     , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 + Status4) AS InstanceTotal
 FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4 AND CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, EndTimeExtract) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -186,7 +170,8 @@ FROM
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, EndTimeExtract) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnectionCDC
@@ -200,24 +185,19 @@ SELECT
     CASE WHEN InstanceID IS NULL
         THEN 'Total'
     ELSE InstanceID END InstanceID
-    , SUM(
-          OldStatus4) AS OldStatus4
-    , SUM(
-          Status0) AS Status0
-    , SUM(
-          Status1) AS Status1
-    , SUM(
-          Status2) AS Status2
-    , SUM(
-          Status3) AS Status3
-    , SUM(
-          Status4) AS Status4
+    , SUM(OldStatus4) AS OldStatus4
+    , SUM(Status0) AS Status0
+    , SUM(Status1) AS Status1
+    , SUM(Status2) AS Status2
+    , SUM(Status3) AS Status3
+    , SUM(Status4) AS Status4
     , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 + Status4) AS InstanceTotal
 FROM
     (
         SELECT
             CONVERT(VARCHAR, SSISInstanceID) AS InstanceID
-            , COUNT(CASE WHEN Status = 4 AND CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, LoadReportDBEndDate) < CONVERT(DATE, GETDATE())
             THEN Status
                     ELSE NULL END) AS OldStatus4
             , COUNT(CASE WHEN Status = 0
@@ -232,13 +212,16 @@ FROM
             , COUNT(CASE WHEN Status = 3
             THEN Status
                     ELSE NULL END) AS Status3
-            , COUNT(CASE WHEN Status = 4 AND DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
             THEN Status
                     ELSE NULL END) AS Status4
         FROM dbo.ClientConnection
         GROUP BY SSISInstanceID
     ) AS StatusMatrix
 GROUP BY InstanceID;
+
+
 
 SELECT *
 FROM DMartLogging
@@ -325,10 +308,8 @@ WHERE CDCReportDB = 'Dmart_OrangeCounty32CDC_Data'
 ----------------------------------------------
 
 SELECT
-    SUM(
-        StageLoadTime) AS TotalStageLoadTime
-    , SUM(
-          ReportLoadTime) AS TotalReportLoadTime
+    SUM(StageLoadTime) AS TotalStageLoadTime
+    , SUM(ReportLoadTime) AS TotalReportLoadTime
 FROM
     (
         SELECT
@@ -348,8 +329,7 @@ FROM
     ) AS t
 ----------------------------------------------
 
-SELECT SUM(
-           DataLoadTime) AS TotalStageLoadTime
+SELECT SUM(DataLoadTime) AS TotalStageLoadTime
 --, SUM(ReportLoadTime) AS TotalReportLoadTime
 FROM
     (

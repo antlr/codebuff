@@ -68,6 +68,7 @@ public class CompilationState {
         impl.prefix = Misc.getPrefix(name);
     }
 
+
     public int defineString(String s) {
         return stringtable.add(s);
     }
@@ -198,7 +199,7 @@ public class CompilationState {
      */
 
     public static void writeShort(byte[] memory, int index, short value) {
-        memory[index+0] = (byte)((value>> (8*1))&0xFF);
+        memory[index+0] = (byte)((value>>(8*1))&0xFF);
         memory[index+1] = (byte)(value&0xFF);
     }
 }

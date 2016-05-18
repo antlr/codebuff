@@ -79,6 +79,7 @@ public class JTreeScopeStackModel implements TreeModel {
         //System.out.println(root.toStringTree());
     }
 
+
     public void addAttributeDescriptions(ST st, StringTree node, Set<String> names) {
         Map<String, Object> attrs = st.getAttributes();
         if ( attrs==null ) return;
@@ -145,11 +146,14 @@ public class JTreeScopeStackModel implements TreeModel {
     }
 
     @Override
-    public void valueForPathChanged(TreePath treePath, Object o) { }
+    public void valueForPathChanged(TreePath treePath, Object o) {
+    }
 
     @Override
-    public void addTreeModelListener(TreeModelListener treeModelListener) { }
+    public void addTreeModelListener(TreeModelListener treeModelListener) {
+    }
 
     @Override
-    public void removeTreeModelListener(TreeModelListener treeModelListener) { }
+    public void removeTreeModelListener(TreeModelListener treeModelListener) {
+    }
 }

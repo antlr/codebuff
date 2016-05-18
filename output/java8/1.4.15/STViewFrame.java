@@ -195,12 +195,9 @@ public class STViewFrame extends JFrame {
     protected JScrollPane scrollPane7;
     public JTextPane output;
     public JTabbedPane templateBytecodeTraceTabPanel;
-
     private JPanel panel1;
-
     private JScrollPane scrollPane3;
     public JTextPane template;
-
     private JScrollPane scrollPane2;
     public JTree ast;
 
@@ -209,7 +206,6 @@ public class STViewFrame extends JFrame {
 
 
     protected JTextPane bytecode;
-
     private JScrollPane scrollPane1;
     public JTextPane trace;
     public JScrollPane errorScrollPane;

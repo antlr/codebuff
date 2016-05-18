@@ -84,7 +84,7 @@ public class STLexer implements TokenSource {
             String tokenName;
             if ( type==EOF_TYPE ) tokenName = "EOF";
             else tokenName = STParser.tokenNames[type];
-            return "[@"+getTokenIndex()+"," +start+":" +stop+"='" +txt+"',<" +tokenName+">" +channelStr+"," +line+":" +getCharPositionInLine()+"]";
+            return "[@"+getTokenIndex()+","+start+":"+stop+"='"+txt+"',<"+tokenName+">"+channelStr+","+line+":"+getCharPositionInLine()+"]";
         }
     }
 
@@ -210,7 +210,7 @@ public class STLexer implements TokenSource {
         if ( c!= x ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
             errMgr.lexerError(input.getSourceName(),
-                              "expecting '"+x+"', found '" +str(c)+"'",
+                              "expecting '" +x+"', found '"+str(c)+"'",
                               templateToken,
                               e);
         }
@@ -241,8 +241,7 @@ public class STLexer implements TokenSource {
     }
 
     protected Token outside() {
-        if ( input.getCharPositionInLine()==0 &&
-             (c==' ' || c=='\t') ) {
+        if ( input.getCharPositionInLine()==0 && (c==' ' || c=='\t') ) {
             while ( c==' ' || c=='\t' ) consume(); // scarf indent
             if ( c!= EOF ) return newToken(INDENT);
             return newToken(TEXT);
@@ -364,7 +363,7 @@ public class STLexer implements TokenSource {
                     re.line = startLine;
                     re.charPositionInLine = startCharPositionInLine;
                     errMgr.lexerError(input.getSourceName(),
-                                      "invalid character '"+str(c)+"'",
+                                      "invalid character '" +str(c)+"'",
                                       templateToken,
                                       re);
                     if ( c==EOF ) {
@@ -440,7 +439,7 @@ public class STLexer implements TokenSource {
             default:
                 NoViableAltException e = new NoViableAltException("", 0, 0, input);
                 errMgr.lexerError(input.getSourceName(),
-                                  "invalid escaped char: '"+str(c)+"'",
+                                  "invalid escaped char: '" +str(c)+"'",
                                   templateToken,
                                   e);
                 consume();
@@ -459,7 +458,7 @@ public class STLexer implements TokenSource {
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
             errMgr.lexerError(input.getSourceName(),
-                              "invalid unicode char: '"+str(c)+"'",
+                              "invalid unicode char: '" +str(c)+"'",
                               templateToken,
                               e);
         }
@@ -468,7 +467,7 @@ public class STLexer implements TokenSource {
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
             errMgr.lexerError(input.getSourceName(),
-                              "invalid unicode char: '"+str(c)+"'",
+                              "invalid unicode char: '" +str(c)+"'",
                               templateToken,
                               e);
         }
@@ -477,7 +476,7 @@ public class STLexer implements TokenSource {
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
             errMgr.lexerError(input.getSourceName(),
-                              "invalid unicode char: '"+str(c)+"'",
+                              "invalid unicode char: '" +str(c)+"'",
                               templateToken,
                               e);
         }
@@ -486,7 +485,7 @@ public class STLexer implements TokenSource {
         if ( !isUnicodeLetter(c) ) {
             NoViableAltException e = new NoViableAltException("", 0, 0, input);
             errMgr.lexerError(input.getSourceName(),
-                              "invalid unicode char: '"+str(c)+"'",
+                              "invalid unicode char: '" +str(c)+"'",
                               templateToken,
                               e);
         }
@@ -618,7 +617,7 @@ public class STLexer implements TokenSource {
                 RecognitionException re = new MismatchedTokenException((int)'!', input);
                 re.line = input.getLine();
                 re.charPositionInLine = input.getCharPositionInLine();
-                errMgr.lexerError(input.getSourceName(), "Nonterminated comment starting at "+startLine+":" +startCharPositionInLine+": '!" +delimiterStopChar+"' missing", templateToken, re);
+                errMgr.lexerError(input.getSourceName(), "Nonterminated comment starting at "+startLine+":"+startCharPositionInLine+": '!"+delimiterStopChar+"' missing", templateToken, re);
                 break;
             }
             consume();

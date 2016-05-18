@@ -55,7 +55,6 @@ public class STGroupDir extends STGroup {
     public STGroupDir(String dirName) {
         this(dirName, '<', '>');
     }
-
     public STGroupDir(String dirName, char delimiterStartChar, char delimiterStopChar) {
         super(delimiterStartChar, delimiterStopChar);
         this.groupDirName = dirName;
@@ -85,16 +84,13 @@ public class STGroupDir extends STGroup {
             }
         }
     }
-
     public STGroupDir(String dirName, String encoding) {
         this(dirName, encoding, '<', '>');
     }
-
     public STGroupDir(String dirName, String encoding, char delimiterStartChar, char delimiterStopChar) {
         this(dirName, delimiterStartChar, delimiterStopChar);
         this.encoding = encoding;
     }
-
     public STGroupDir(URL root, String encoding, char delimiterStartChar, char delimiterStopChar) {
         super(delimiterStartChar, delimiterStopChar);
         this.groupDirName = new File(root.getFile()).getName();
