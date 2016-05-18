@@ -119,8 +119,8 @@ public class BuffUtils {
 		return diffs;
 	}
 
-	public static double median(List<Double> data) {
-		Collections.sort(data);
+	public static <T> T median(List<T> data) {
+		Collections.sort((List)data);
 		int n = data.size();
 		return data.get(n/2);
 	}

@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
@@ -60,7 +59,6 @@ public class SubsetValidator {
 //			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
-			JAVA_GUAVA_DESCR,
 			ANTLR4_DESCR,
 //			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,

@@ -27,12 +27,9 @@ import java.util.concurrent.TimeUnit;
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.load;
 import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
@@ -87,20 +84,23 @@ public class LeaveOneOutValidator {
 		long start = System.nanoTime();
 		try {
 			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-			List<InputDocument> documents = load(allFiles, language);
+			final List<InputDocument> documents = load(allFiles, language);
+			final List<InputDocument> parsableDocuments = filter(documents, d -> d.tree!=null);
 			long stop = System.nanoTime();
-			System.out.printf("Load/parse all docs time %d ms\n", (stop-start)/1_000_000);
+			System.out.printf("Load/parse all docs from %s time %d ms\n",
+			                  rootDir,
+			                  (stop-start)/1_000_000);
 
 			int ncpu = Runtime.getRuntime().availableProcessors();
 			ExecutorService pool = Executors.newFixedThreadPool(ncpu-1);
 			List<Callable<Void>> jobs = new ArrayList<>();
 
-			for (int i = 0; i<documents.size(); i++) {
-				final String fileName = documents.get(i).fileName;
+			for (int i = 0; i<parsableDocuments.size(); i++) {
+				final String fileName = parsableDocuments.get(i).fileName;
 				Callable<Void> job = () -> {
 					try {
 						Triple<Formatter, Float, Float> results =
-							validate(language, documents, fileName,
+							validate(language, parsableDocuments, fileName,
 							         Formatter.DEFAULT_K, injectWSFeatures, alignmentFeatures,
 							         outputDir, computeEditDistance, false);
 						formatters.add(results.a);
@@ -123,11 +123,11 @@ public class LeaveOneOutValidator {
 		}
 		finally {
 			long final_stop = System.nanoTime();
-			int medianTrainingTime = (int)median(trainingTimes);
+			Double medianTrainingTime = median(trainingTimes);
 			double medianFormattingPerMS = median(formattingTokensPerMS);
 			System.out.printf("Total time %dms\n", (final_stop-start)/1_000_000);
 			System.out.printf("Median training time %dms\n",
-			                  medianTrainingTime);
+			                  medianTrainingTime.intValue());
 			System.out.printf("Median formatting time tokens per ms %5.4fms, min %5.4f max %5.4f\n",
 			                  medianFormattingPerMS,
 			                  BuffUtils.min(formattingTokensPerMS),
@@ -161,7 +161,7 @@ public class LeaveOneOutValidator {
 	                                              boolean collectAnalysis)
 		throws Exception
 	{
-		final String path = new File(fileToExclude).getCanonicalPath();
+		final String path = new File(fileToExclude).getPath();
 		List<InputDocument> others = filter(documents, d -> !d.fileName.equals(path));
 		List<InputDocument> excluded = filter(documents, d -> d.fileName.equals(path));
 		assert others.size() == documents.size() - 1;
@@ -211,7 +211,7 @@ public class LeaveOneOutValidator {
 		return new Triple<>(formatter, editDistance, analysis.getErrorRate());
 	}
 
-	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs) throws Exception {
+	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs, String imageFileName) throws Exception {
 		List<String> languageNames = map(languages, l -> l.name+"_dist");
 		languageNames.addAll(map(languages, l -> l.name+"_err"));
 		Collections.sort(languageNames);
@@ -261,9 +261,9 @@ public class LeaveOneOutValidator {
 				"ax.set_ylabel(\"Edit distance / size of file\")\n" +
 				"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
 				"plt.tight_layout()\n" +
-				"fig.savefig('images/leave_one_out.pdf', format='pdf')\n"+
+				"fig.savefig('images/%s', format='pdf')\n"+
 				"plt.show()\n";
-		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr);
+		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr, imageFileName);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -271,16 +271,13 @@ public class LeaveOneOutValidator {
 			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
-			JAVA_GUAVA_DESCR,
 			ANTLR4_DESCR,
-			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
-			TSQL_NOISY_DESCR,
 			TSQL_CLEAN_DESCR,
 		};
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);
 		String[] dirs = corpusDirs.toArray(new String[languages.length]);
-		String python = testAllLanguages(languages, dirs);
+		String python = testAllLanguages(languages, dirs, "leave_one_out.pdf");
 		String fileName = "python/src/leave_one_out.py";
 		Utils.writeFile(fileName, python);
 		System.out.println("wrote python code to "+fileName);

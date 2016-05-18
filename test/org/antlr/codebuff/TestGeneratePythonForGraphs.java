@@ -1,5 +1,7 @@
 package org.antlr.codebuff;
 
+import org.antlr.codebuff.validation.AllJavaLeaveOneOutValidation;
+import org.antlr.codebuff.validation.AllSQLLeaveOneOutValidation;
 import org.antlr.codebuff.validation.DropAlignFeatures;
 import org.antlr.codebuff.validation.DropWSFeatures;
 import org.antlr.codebuff.validation.LeaveOneOutValidator;
@@ -37,5 +39,15 @@ public class TestGeneratePythonForGraphs {
 	@Test
 	public void genOneFileCapture() throws Exception {
 		OneFileCapture.main(null);
+	}
+
+	@Test
+	public void genAllJava() throws Exception {
+		AllJavaLeaveOneOutValidation.main(null);
+	}
+
+	@Test
+	public void genAllSQL() throws Exception {
+		AllSQLLeaveOneOutValidation.main(null);
 	}
 }

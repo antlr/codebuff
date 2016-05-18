@@ -342,6 +342,9 @@ public class Tool {
 				doc.parser.setErrorHandler(new DefaultErrorStrategy());
 				doc.parser.getInterpreter().setPredictionMode(PredictionMode.LL);
 				doc.setTree((ParserRuleContext) startRule.invoke(doc.parser, (Object[]) null));
+				if ( doc.parser.getNumberOfSyntaxErrors()>0 ) {
+					doc.setTree(null);
+				}
 			}
 		}
 
