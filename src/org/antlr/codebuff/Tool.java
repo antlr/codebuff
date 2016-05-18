@@ -64,29 +64,30 @@ public class Tool {
 	public static boolean showTokens = false;
 
 	public static final LangDescriptor QUORUM_DESCR =
-		new LangDescriptor("quorum", "corpus/quorum/training", ".*\\.quorum", QuorumLexer.class, QuorumParser.class, "start", 4);
+		new LangDescriptor("quorum", "corpus/quorum/training", ".*\\.quorum", QuorumLexer.class, QuorumParser.class, "start", 4, QuorumLexer.COMMENTS);
 
 	public static final LangDescriptor JAVA_DESCR =
-		new LangDescriptor("java", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4);
+		new LangDescriptor("java", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4, JavaLexer.LINE_COMMENT);
 	public static final LangDescriptor JAVA8_DESCR =
-		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", Java8Lexer.class, Java8Parser.class, "compilationUnit", 4);
+		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", Java8Lexer.class, Java8Parser.class, "compilationUnit", 4, Java8Lexer.LINE_COMMENT);
 
 	public static final LangDescriptor JAVA_GUAVA_DESCR =
 		new LangDescriptor("java_guava", "corpus/java/training/guava", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit",
-		                   2); // wow. indent=2 not 4
+		                   2, // wow. indent=2 not 4
+						   JavaLexer.LINE_COMMENT);
 
 	public static final LangDescriptor ANTLR4_DESCR =
-		new LangDescriptor("antlr", "corpus/antlr4/training", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4);
+		new LangDescriptor("antlr", "corpus/antlr4/training", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4, ANTLRv4Lexer.LINE_COMMENT);
 
 	public static final LangDescriptor SQLITE_NOISY_DESCR =
-		new LangDescriptor("sqlite_noisy", "corpus/sql/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
+		new LangDescriptor("sqlite_noisy", "corpus/sql/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4, SQLiteLexer.SINGLE_LINE_COMMENT);
 	public static final LangDescriptor SQLITE_CLEAN_DESCR =
-		new LangDescriptor("sqlite", "corpus/sql2/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4);
+		new LangDescriptor("sqlite", "corpus/sql2/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4, SQLiteLexer.SINGLE_LINE_COMMENT);
 
 	public static final LangDescriptor TSQL_NOISY_DESCR =
-		new LangDescriptor("tsql_noisy", "corpus/sql/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
+		new LangDescriptor("tsql_noisy", "corpus/sql/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4, tsqlLexer.LINE_COMMENT);
 	public static final LangDescriptor TSQL_CLEAN_DESCR =
-		new LangDescriptor("tsql", "corpus/sql2/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4);
+		new LangDescriptor("tsql", "corpus/sql2/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4, tsqlLexer.LINE_COMMENT);
 
 	public static LangDescriptor[] languages = new LangDescriptor[] {
 		QUORUM_DESCR,

@@ -187,13 +187,13 @@ public class Formatter {
 		String tokText = curToken.getText();
 		TerminalNode node = tokenToNodeMap.get(curToken);
 
-		emitCommentsToTheLeft(tokenIndexInStream);
-
 		int[] features = getFeatures(testDoc, tokenIndexInStream);
 		int[] featuresForAlign = new int[features.length];
 		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
 		int injectNL_WS = wsClassifier.classify2(k, features, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+
+		emitCommentsToTheLeft(tokenIndexInStream, injectNL_WS);
 
 		int newlines = 0;
 		int ws = 0;
@@ -374,7 +374,7 @@ public class Formatter {
 	 *  We able to see original input stream for comment purposes. With all
 	 *  whitespace removed, we can't emit this stuff properly at moment.
 	 */
-	public void emitCommentsToTheLeft(int tokenIndexInStream) {
+	public void emitCommentsToTheLeft(int tokenIndexInStream, int injectNL_WS) {
 		List<Token> hiddenTokensToLeft = originalTokens.getHiddenTokensToLeft(tokenIndexInStream);
 		if ( hiddenTokensToLeft!=null ) {
 			// if at least one is not whitespace, assume it's a comment and print all hidden stuff including whitespace
@@ -390,8 +390,9 @@ public class Formatter {
 						break;
 					}
 				}
-				List<Token> stripped = hiddenTokensToLeft.subList(0, last+1);
-				for (Token hidden : stripped) {
+				Token commentToken = hiddenTokensToLeft.get(last);
+				List<Token> truncated = hiddenTokensToLeft.subList(0, last+1);
+				for (Token hidden : truncated) {
 					String hiddenText = hidden.getText();
 					output.append(hiddenText);
 					if ( hiddenText.matches("\\n+") ) {
@@ -402,6 +403,15 @@ public class Formatter {
 						// if a comment or plain ' ', must count char position
 						charPosInLine += hiddenText.length();
 					}
+				}
+				// failsafe. make sure single-line comments have \n on the end.
+				// If not predicted, must override and inject one
+				if ( commentToken.getType()==corpus.language.singleLineCommentType &&
+					(injectNL_WS&0xFF)!=CAT_INJECT_NL )
+				{
+					output.append("\n"); // force newline
+					line++;
+					charPosInLine = 0;
 				}
 			}
 		}

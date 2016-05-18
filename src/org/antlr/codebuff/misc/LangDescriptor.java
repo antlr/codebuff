@@ -11,6 +11,10 @@ public class LangDescriptor {
 	public Class<? extends Parser> parserClass;
 	public String startRuleName;
 	public int indentSize;
+	/** token type of single comment, if any. If your single-comment lexer
+	 *  rule matches newline, then this is optional.
+	 */
+	public int singleLineCommentType;
 
 	public LangDescriptor(String name,
 	                      String corpusDir,
@@ -18,7 +22,8 @@ public class LangDescriptor {
 	                      Class<? extends Lexer> lexerClass,
 	                      Class<? extends Parser> parserClass,
 	                      String startRuleName,
-	                      int indentSize)
+	                      int indentSize,
+	                      int singleLineCommentType)
 	{
 		this.name = name;
 		this.corpusDir = corpusDir;
@@ -27,5 +32,6 @@ public class LangDescriptor {
 		this.parserClass = parserClass;
 		this.startRuleName = startRuleName;
 		this.indentSize = indentSize;
+		this.singleLineCommentType = singleLineCommentType;
 	}
 }
