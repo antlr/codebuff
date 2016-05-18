@@ -18,9 +18,7 @@ import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.version;
 
 public class Stability {
@@ -32,9 +30,7 @@ public class Stability {
 			JAVA_DESCR,
 			JAVA8_DESCR,
 			ANTLR4_DESCR,
-			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
-			TSQL_NOISY_DESCR,
 			TSQL_CLEAN_DESCR,
 		};
 
