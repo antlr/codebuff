@@ -80,9 +80,9 @@ public class LeaveOneOutValidator {
 		List<Formatter> formatters = new ArrayList<>();
 		List<Float> distances = new ArrayList<>();
 		List<Float> errors = new ArrayList<>();
+		long start = System.nanoTime();
 		try {
 			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-			long start = System.nanoTime();
 			List<InputDocument> documents = load(allFiles, language);
 			long stop = System.nanoTime();
 			System.out.printf("Load/parse all docs time %d ms\n", (stop-start)/1_000_000);
@@ -99,8 +99,10 @@ public class LeaveOneOutValidator {
 			}
 		}
 		finally {
+			long final_stop = System.nanoTime();
 			int medianTrainingTime = (int)median(trainingTimes);
 			double medianFormattingPerMS = median(formattingTokensPerMS);
+			System.out.printf("Total time %dms\n", (final_stop-start)/1_000_000);
 			System.out.printf("Median training time %dms\n",
 			                  medianTrainingTime);
 			System.out.printf("Median formatting time tokens per ms %5.4fms, min %5.4f max %5.4f\n",
