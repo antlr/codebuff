@@ -1,0 +1,102 @@
+package Libraries.System
+
+/*
+This class provides some basic system functions. What it returns is dependent on
+the implementation of the language.
+
+Attribute: Author Andreas Stefik
+Attribute: Example
+use Libraries.System.SystemHelper
+
+SystemHelper help
+output help:GetAvailableProcessors()
+*/
+
+
+class SystemHelper 
+
+    /*
+        This class provides some basic system functions. What it returns is dependent on
+        the implementation of the language.
+
+        Attribute: Parameter milliseconds Tells the system to pause for a set number of milliseconds.
+        Attribute: Example
+        use Libraries.System.SystemHelper
+
+        SystemHelper help
+        help:Sleep(1000) //one second
+    */
+
+    system action Sleep(integer milliseconds)
+
+    /*
+        This action asks the system to collect any garbage currently in memory. 
+        Whether the system honors the request depends on the implementation.
+
+        Attribute: Example
+        use Libraries.System.SystemHelper
+
+        SystemHelper help
+        output help:RequestGarbageCollection()
+    */
+
+
+    system action RequestGarbageCollection
+
+    /*
+        This action returns the amount of memory that is currently free on the 
+        system. How this is computed is implementation dependent.
+
+        Attribute: Returns The amount of free memory available.
+        Attribute: Example
+        use Libraries.System.SystemHelper
+
+        SystemHelper help
+        output help:GetFreeMemory()
+    */
+
+
+    system action GetFreeMemory returns number
+    
+    /*
+        This action returns the maximum amount of memory available on the system.
+
+        Attribute: Returns The maximum amount of memory available to the system.
+        Attribute: Example
+        use Libraries.System.SystemHelper
+
+        SystemHelper help
+        output help:GetMaximumMemory()
+    */
+
+
+    system action GetMaximumMemory returns number
+    
+    /*
+        This action returns the total amount of memory currently on the system.
+
+        Attribute: Returns The total amount of memory allocated.
+        Attribute: Example
+        use Libraries.System.SystemHelper
+
+        SystemHelper help
+        output help:GetTotalMemory()
+    */
+
+
+    system action GetTotalMemory returns number
+    
+    /*
+        This action returns the total number of processors available to the program.
+
+        Attribute: Returns The number of processors currently available to this program.
+        Attribute: Example
+        use Libraries.System.SystemHelper
+
+        SystemHelper help
+        output help:GetAvailableProcessors()
+    */
+
+
+    system action GetAvailableProcessors returns number
+end

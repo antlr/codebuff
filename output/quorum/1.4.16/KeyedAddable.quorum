@@ -1,0 +1,103 @@
+package Libraries.Containers.Blueprints
+
+/*
+
+Inheriting from the KeyedAddable class provides a basic blueprint for adding
+and removing from an KeyedAddable object.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.KeyedAddable
+
+class MyHashTable<Key, Value> is KeyedAddable<Key, Value>
+    action Add(Key key, Value value)
+        //implement here
+    end
+end
+*/
+
+
+class KeyedAddable <Key, Value>
+
+    /*
+        This action adds an item to the KeyedAddable object, given the key-value pair.
+
+        Attribute: Parameter key The key used to access the value.
+
+        Attribute: Parameter value The value to be stored.
+    */
+
+
+    blueprint action Add(Key key, Value value)
+
+    /*
+        This action determines if the KeyedAddable object contains a certain value.
+
+        Attribute: Parameter value The value to find.
+        
+        Attribute: Returns True if the value is in the KeyedAddable object and false
+        if it is not.
+    */
+
+    blueprint action HasValue(Value value) returns boolean
+
+    /*
+        This action determines if the KeyedAddable object contains a certain key.
+
+        Attribute: Parameter key The key to find.
+        
+        Attribute: Returns True if the key is in the KeyedAddable object and false
+        if it is not.
+    */
+
+
+    blueprint action HasKey(Key key) returns boolean
+
+    /*
+        This action removes a key-value pair given a key.
+
+        Attribute: Parameter key The key of the key-value pair to be removed.
+        
+        Attribute: Returns The value that was removed.
+    */
+
+
+    blueprint action RemoveKey(Key key) returns Value
+
+    /*
+        This action removes a key-value pair given a value.
+
+        Attribute: Parameter value The value of the key-value pair to be removed.
+        
+        Attribute: Returns The key that was removed.
+    */
+
+
+    blueprint action RemoveValue(Value value) returns Key
+
+    /*
+        This action removes all instances of a key-value pair given a key.
+
+        Attribute: Parameter key The key of the key-value pair to be removed.
+        
+        Attribute: Returns True if any key-value pairs were removed and false
+        if none were removed.
+    */
+
+
+    blueprint action RemoveAllValues(Value value) returns boolean
+
+    /*
+        This action removes a key-value pair given a key.
+
+        Attribute: Parameter key The key of the key-value pair to be removed.
+        
+        Attribute: Returns True if any key-value pairs were removed and false 
+        if none were removed.
+    */
+
+
+    blueprint action RemoveAllKeys(Key key) returns boolean
+end

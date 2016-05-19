@@ -1,0 +1,92 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.Addable
+use Libraries.Containers.Blueprints.Container
+use Libraries.Containers.Blueprints.Copyable
+use Libraries.Containers.Blueprints.Indexed
+use Libraries.Containers.Blueprints.Sortable
+use Libraries.Containers.Blueprints.Iterative
+use Libraries.Containers.Array
+
+/*
+
+Inheriting from the ListBlueprint class provides a basic blueprint for a
+linked list data structure.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.ListBlueprint
+
+class MyList<Type> is ListBlueprint<Type>
+    action AddToFront(Type value)
+        //implementation goes here
+    end
+end
+*/
+
+
+class ListBlueprint <Type> is Addable<Type>, Container, Copyable, Indexed<Type>, Iterative<Type>, Sortable
+    /*
+        This action adds an item to the end of the list.
+
+        Attribute: Parameter value The item to be added to the list. 
+    */
+    blueprint action AddToEnd(Type value)
+
+    /*
+        This action adds an item to the front of the list.
+
+        Attribute: Parameter value The item to be added to the list.
+    */
+
+
+                    blueprint action AddToFront(Type value)
+
+    /*
+        This action copies the list to an array data structure.
+
+        Attribute: Returns This returns an array of the list.
+    */
+
+
+                    blueprint action CopyToArray returns Array<Type>
+
+    /*
+        This action gets the item at the front of the list(the item will remain in the list). 
+
+        Attribute: Returns The item at the front of the list.
+    */
+
+
+                    blueprint action GetFromFront returns Type
+
+    /*
+        This action gets the item at the end of the list(the item will remain in the list). 
+
+        Attribute: Returns The item at the end of the list.
+
+    */
+
+
+                    blueprint action GetFromEnd returns Type
+
+    /*
+        This action removes the item at the end of the list. 
+
+        Attribute: Returns The item at the end of the list. 
+    */
+
+
+                    blueprint action RemoveFromEnd returns Type
+
+    /*
+        This action removes the item at the front of the list. 
+
+        Attribute: Returns The item at the front of the list. 
+    */
+
+
+                    blueprint action RemoveFromFront returns Type
+end

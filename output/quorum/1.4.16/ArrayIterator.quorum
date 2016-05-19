@@ -1,0 +1,165 @@
+package Libraries.Containers.Support
+
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Array
+
+/*
+
+The ArrayIterator class for Arrays, enables iteration for the array data structure.
+Generally, there is no need to use this class directly, as most users will only
+need an instance of the parent, the Iterator class.
+
+Attribute: Author Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.ArrayIterator
+
+class Main
+    action main
+        Array<integer> myArray
+        ArrayIterator<Array<integer>> arrayIt = myArray:GetIterator()
+    end
+end
+*/
+
+
+class ArrayIterator<Type> is Iterator<Type>
+    Array<Type> array
+                   integer count = 0
+
+    /*
+        This action sets the array parameters up for the iterator. 
+
+        Attribute: Parameter array The array to iterator over.
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+        use Libraries.Containers.Support.ArrayIterator
+        
+        Array<integer> myArray
+        ArrayIterator<integer> iterator
+        iterator:Set(myArray)
+    */
+
+
+                   action Set(Array<Type> newArray)
+                       me:array = newArray
+                       me:count = 0
+                   end
+
+    /*
+        This action gets the array that the iterator has.
+
+        Attribute: Returns The array.
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+        use Libraries.Containers.Support.ArrayIterator
+
+        Array<integer> myArray
+        ArrayIterator<integer> arrayIterator = cast(ArrayIterator, myArray:GetIterator())
+        Array<integer> array = arrayIterator:GetArray()
+    */
+
+
+                   action GetArray() returns Array<Type>
+                       return array
+                   end
+
+    /*
+        This action gets the current item in the iteration without continuing
+        the iteration.
+        
+        Attribute: Returns The current item in the iteration.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+        Array<integer> myArray
+        Iterator<integer> arrayIterator = myArray:GetIterator()
+        integer item = arrayIterator:GetCurrent()
+
+    */
+
+
+                   action GetCurrent returns Type
+                       if count = 0
+                           return undefined
+                       else
+                           return array:Get(count - 1)
+                       end
+                   end
+
+    /*
+        This action determines if there is a next item in the iteration. It 
+        returns true if there is a next and false if there is not.
+        
+        Attribute: Returns True if there is a next in the iteration and false
+        if there is not.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+        Array<Array<integer>> myArray
+        Iterator<Array<integer>> arrayIterator = myArray:GetIterator()
+        
+        if arrayIterator:HasNext()
+            arrayIterator:Next()
+        end
+    */
+
+
+                   action HasNext returns boolean
+                       integer size = array:GetSize()
+
+                       if count >= size
+                           return false
+                       else
+                           return true
+                       end
+                   end
+
+    /*
+        This action get the next item in the iteration.
+
+        Attribute: Returns The next item in the iteration.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+        Array<integer> myArray
+        Iterator<integer> arrayIterator = myArray:GetIterator()
+        integer item = arrayIterator:Next()
+
+    */
+
+
+                   action Next returns Type
+                       Type result = array:Get(count)
+                       count = count + 1
+                       return result
+                   end
+
+    /*
+        This action starts the iteration over from the beginning. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+        Array<Array<integer>> myArray
+        Iterator<Array<integer>> arrayIterator = myArray:GetIterator()
+        
+        if arrayIterator:HasNext()
+            arrayIterator:Next()
+        end
+
+        arrayIterator:Rewind()
+
+    */
+
+
+                   action Rewind
+                       count = 0
+                   end
+end

@@ -1,0 +1,84 @@
+package Libraries.Containers.Blueprints
+
+use Libraries.Containers.Blueprints.ListBlueprint
+
+/*
+
+Inheriting from the ArrayBlueprint class provides a basic blueprint for a
+array data structure. This array has a flag to indicate wither the array is
+dynamic or not. A dynamic array automatically resized the array when it has
+been filled.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.ArrayBlueprint
+
+class MyArray<Type> is ArrayBlueprint<Type>
+    action SetSize(integer size)
+        //implementation goes here
+    end
+end
+*/
+
+
+class ArrayBlueprint<Type> is ListBlueprint<Type>
+    /*
+        This action returns true if the array is dynamic(resizable) or false
+        if the array does not automatically resize.
+
+        Attribute: Returns True if the array is resizable and false if it is not.
+    */
+
+    blueprint action GetAutoResize returns boolean
+
+    /*
+        This action changes the flag that tells the structure if it is a dynamic
+        array or not. If it is dynamic(an array list) then resizable is true and
+        if it is a standard array(not dynamic) then resizable is false. 
+
+        Attribute: Parameter resizable The value to set the resizable flag to.
+    */
+
+
+                    blueprint action SetAutoResize(boolean resizable)
+
+    /*
+        This action sets the size of the array. Changing the size of the array
+        means any items already in the array must be copied over.
+
+        Attribute: Parameter size The size of the array. 
+    */
+
+                    blueprint action SetSize(integer size)
+
+    /*
+        This action gets the size of the array.
+
+        Attribute: Return The size of the array. 
+    */
+
+                    blueprint action GetSize returns integer
+
+    /*
+        This action gets the number of items that can be stored in the array(max size).
+
+        Attribute: Return The max size of the array. 
+    */
+
+
+                    blueprint action GetMaxSize returns integer
+
+    /*
+        This action sets the number of items that can be stored in the 
+        array(max size). The max size can only be increased, any value that is
+        lower will leave the array with the same max size it had.
+
+        Attribute: Parameter size The max size to set for the array. 
+    */
+
+
+                    blueprint action SetMaxSize(integer size)
+
+end

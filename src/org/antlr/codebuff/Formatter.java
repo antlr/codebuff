@@ -38,6 +38,7 @@ import static org.antlr.codebuff.Trainer.getContextFeatures;
 import static org.antlr.codebuff.Trainer.getRealTokens;
 import static org.antlr.codebuff.Trainer.getTokensOnPreviousLine;
 import static org.antlr.codebuff.Trainer.indexTree;
+import static org.antlr.codebuff.Trainer.nlcat;
 import static org.antlr.codebuff.Trainer.setListInfoFeatures;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 
@@ -193,7 +194,7 @@ public class Formatter {
 
 		int injectNL_WS = wsClassifier.classify2(k, features, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
 
-		emitCommentsToTheLeft(tokenIndexInStream, injectNL_WS);
+		injectNL_WS = emitCommentsToTheLeft(tokenIndexInStream, injectNL_WS);
 
 		int newlines = 0;
 		int ws = 0;
@@ -374,7 +375,7 @@ public class Formatter {
 	 *  We able to see original input stream for comment purposes. With all
 	 *  whitespace removed, we can't emit this stuff properly at moment.
 	 */
-	public void emitCommentsToTheLeft(int tokenIndexInStream, int injectNL_WS) {
+	public int emitCommentsToTheLeft(int tokenIndexInStream, int injectNL_WS) {
 		List<Token> hiddenTokensToLeft = originalTokens.getHiddenTokensToLeft(tokenIndexInStream);
 		if ( hiddenTokensToLeft!=null ) {
 			// if at least one is not whitespace, assume it's a comment and print all hidden stuff including whitespace
@@ -409,12 +410,12 @@ public class Formatter {
 				if ( commentToken.getType()==corpus.language.singleLineCommentType &&
 					(injectNL_WS&0xFF)!=CAT_INJECT_NL )
 				{
-					output.append("\n"); // force newline
-					line++;
-					charPosInLine = 0;
+					return nlcat(1); // force formatter to predict newline then trigger alignment
 				}
 			}
 		}
+
+		return injectNL_WS; // send same thing back out unless we trigger failsafe
 	}
 
 	public TokenPositionAnalysis getTokenAnalysis(int[] features, int[] featuresForAlign,

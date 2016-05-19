@@ -1,0 +1,235 @@
+package Libraries.Sound
+/*
+
+The speech class does effectively the same thing as the say command in Quorum, 
+except that it provides for more advanced functionality. Specifically, by
+using the speech class, you can change the volume, pitch, speed, and other
+properties of the current text-to-speech engine. You can also issue blocking
+calls, that prevent the program from taking other action until the speaking
+is complete.
+
+Attribute: Example
+
+use Libraries.Sound.Speech
+class Main
+   action Main
+      //Gain access to the speech object
+      Speech speech
+
+      //Get the current volume
+      number volume = speech:GetVolume()
+      number speed = speech:GetSpeed()
+      number pitch = speech:GetPitch()
+
+      //issue a blocking speech call
+      speech:Say("Hello, world!", true)
+   end
+end
+*/
+
+
+class Speech
+    /*
+    Determines whether or not the currently loaded text-to-speech engine
+    can issue a speech blocking call.
+
+    Attribute: Returns whether the speech engine can block.
+
+    Attribute: Example
+    Speech speech
+    boolean block = speech:CanBlock()
+    */
+
+
+    system action CanBlock() returns boolean
+
+    /*
+    Determines whether or not the currently loaded text-to-speech engine
+    can issue a speech pause call.
+
+    Attribute: Returns whether the speech engine can pause.
+
+    Attribute: Example
+    Speech speech
+    boolean pause = speech:CanPause()
+    */
+
+
+    system action CanPause() returns boolean
+
+    /*
+    Determines whether or not the currently loaded text-to-speech engine
+    can issue a speech resume call. This only matters if the speech
+    engine is currently paused.
+
+    Attribute: Returns whether the speech engine can resume from a pause.
+
+    Attribute: Example
+    Speech speech
+    boolean resume = speech:CanResume()
+    */
+
+
+    system action CanResume() returns boolean
+
+    /*
+    Determines whether or not the currently loaded text-to-speech engine
+    can have its voice changed.
+
+    Attribute: Returns whether the speech engine can have a voice change.
+
+    Attribute: Example
+    Speech speech
+    boolean voice = speech:CanSetVoice()
+    */
+
+
+    system action CanSetVoice() returns boolean
+
+    /*
+    Determines whether or not the currently loaded text-to-speech engine
+    can have its volume changed.
+
+    Attribute: Returns whether the speech engine can have a volume change.
+
+    Attribute: Example
+    Speech speech
+    boolean volume = speech:CanSetVolume()
+    */
+
+
+    system action CanSetVolume() returns boolean
+
+    /*
+    Sets the current volume of the text-to-speech engine. The legal
+    values are from 0.0, no volume, to 1.0 maximum volume.
+
+    Attribute: Parameter value The new volume
+
+    Attribute: Example
+    Speech speech
+    speech:SetVolume(1.0)
+    */
+
+
+    system action SetVolume(number value)
+
+    /*
+    Sets the current volume of the text-to-speech engine. The legal
+    values are from 0.0, no volume, to 1.0 maximum volume.
+
+    Attribute: Returns The current volume on the system.
+
+    Attribute: Example
+    Speech speech
+    number volume = speech:GetVolume()
+    */
+
+
+    system action GetVolume() returns number
+
+    /*
+    Sets the current pitch of the text-to-speech engine. The legal
+    values are from 0.0, lowest pitch, to 1.0 maximum pitch.
+
+    Attribute: Parameter value The new pitch.
+
+    Attribute: Example
+    Speech speech
+    speech:SetPitch(1.0)
+    */
+
+
+    system action SetPitch(number value)
+
+    /*
+    Sets the current pitch of the text-to-speech engine. The legal
+    values are from 0.0, lowest pitch, to 1.0 maximum pitch.
+
+    Attribute: Returns The current pitch on the system.
+
+    Attribute: Example
+    Speech speech
+    number pitch = speech:GetPitch()
+    */
+
+
+    system action GetPitch() returns number
+
+    /*
+    Sets the current speed of the text-to-speech engine. The legal
+    values are from 0.0, slowest speed, to 1.0 maximum speed. Each speech engine
+    implementation calculates speed slightly different, but this speech
+    engine should sound approximately equal across implementations.
+
+    Attribute: Parameter value The new volume
+
+    Attribute: Example
+    Speech speech
+    speech:SetSpeed(1.0)
+    */
+
+
+    system action SetSpeed(number value)
+
+    /*
+    Sets the current speed of the text-to-speech engine. The legal
+    values are from 0.0, lowest speed, to 1.0 maximum speed. Each speech engine
+    implementation calculates speed slightly different, but this speech
+    engine should sound approximately equal across implementations.
+
+    Attribute: Returns The current volume on the system.
+
+    Attribute: Example
+    Speech speech
+    number speed = speech:GetSpeed()
+    */
+
+
+    system action GetSpeed() returns number
+
+    /*
+    Determines whether or not the currently loaded text-to-speech engine
+    can have its speed changed.
+
+    Attribute: Returns whether the speech engine can have a speed change.
+
+    Attribute: Example
+    Speech speech
+    boolean speed = speech:CanSetSpeed()
+    */
+
+
+    system action CanSetSpeed() returns boolean
+
+    /*
+    Instructs the system to speak a particular phrase through the current
+    text-to-speech engine.
+    
+    Attribute: Parameter value The text to be spoken.
+
+    Attribute: Example
+    Speech speech
+    speech:Say("Hello, World!")
+    */
+
+
+    system action Say(text value)
+
+    /*
+    Instructs the system to speak a particular phrase through the current
+    text-to-speech engine.
+
+    Attribute: Parameter value The text to be spoken.
+    Attribute: Parameter block Whether or not this is a blocking call, which will
+        cause the rest of the program to pause as it is executed.
+
+    Attribute: Example
+    Speech speech
+    speech:Say("Hello, World!")
+    */
+
+
+    system action Say(text value, boolean block)
+
+end
