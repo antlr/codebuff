@@ -1,0 +1,190 @@
+package Libraries.Containers.Support
+
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.List
+use Libraries.Containers.Support.ListNode
+
+/*
+
+The ListIterator class for Lists, enables iteration for the list data structure.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.List
+use Libraries.Containers.Blueprints.ListIterator
+
+class Main
+    action main
+        List<integer> myList
+        ListIterator<List<integer>> listIt = myList:GetIterator()
+    end
+end
+*/
+
+
+class ListIterator <Type> is Iterator<Type>
+    List<Type> list
+                          ListNode<Type> head = undefined
+                          ListNode<Type> tail = undefined
+                          ListNode<Type> current = undefined
+
+    /*
+        This action sets the list parameters up for the iterator. 
+
+        Attribute: Parameter list The list to iterator over.
+        Attribute: Parameter head The head pointer of the list.
+        Attribute: Parameter tail The tail pointer of the list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        use Libraries.Containers.Support.ListIterator
+        use Libraries.Containers.Support.ListNode
+        List<integer> myList
+        ListNode<integer> head
+        ListNode<integer> tail
+        ListIterator<List<integer>> listIterator
+        listIterator:Set(myList, head, tail)
+
+    */
+
+
+                          action Set(List<Type> newList, ListNode<Type> newHead, ListNode<Type> newTail)
+                              me:list = newList
+                              me:head = newHead
+                              me:tail = newTail
+                              me:current = undefined
+                          end
+
+    /*
+        This action gets the list that the iterator has.
+
+        Attribute: Returns The list.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        use Libraries.Containers.Support.ListIterator
+        ListIterator<List<integer>> listIterator 
+        listIterator:GetList()
+
+    */
+
+
+                          action GetList() returns List<Type>
+                              return list
+                          end
+
+    /*
+        This action gets the current item in the iteration without continuing
+        the iteration.
+        
+        Attribute: Returns The current item in the iteration.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        use Libraries.Containers.Blueprints.Iterator
+        List<integer> myList
+        Iterator<integer> listIterator = myList:GetIterator()
+        integer item = listIterator:GetCurrent()
+
+    */
+
+
+                          action GetCurrent returns Type
+                              return current:value
+                          end
+
+    /*
+        This action determines if there is a next item in the iteration. It 
+        returns true if there is a next and false if there is not.
+        
+        Attribute: Returns True if there is a next in the iteration and false
+        if there is not.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        use Libraries.Containers.Blueprints.Iterator
+        List<integer> myList
+        Iterator<integer> listIterator = myList:GetIterator()
+        
+        if listIterator:HasNext()
+            listIterator:Next()
+        end
+    */
+
+
+                          action HasNext returns boolean
+                              if head = undefined
+                                  return false
+                              elseif current = undefined and head not= undefined
+                                  return true
+                              else
+                                  ListNode<Type> next = current:next
+                                  if next not= undefined
+                                      return true
+                                  end
+
+                                  return false
+                              end
+                          end
+
+    /*
+        This action get the next item in the iteration.
+
+        Attribute: Returns The next item in the iteration.
+
+        Attribute: Example
+        use Libraries.Containers.List
+        use Libraries.Containers.Blueprints.Iterator
+        List<integer> myList
+        Iterator<integer> listIterator = myList:GetIterator()
+        integer item = listIterator:Next()
+
+    */
+
+
+                          action Next returns Type
+                              if current = undefined
+                                  current = head
+                              else
+                                  current = current:next
+                              end
+
+                              return current:value
+                          end
+
+    /*
+        This action sets the value of the current point in the list. Generally,
+        this action should not be used outside of the Libraries.Containers.List class.
+
+        Attribute: Parameter The value to be set.
+    */
+
+
+                          action Set(Type t)
+                              current:SetValue(t)
+                          end
+
+    /*
+        This action starts the iteration over from the beginning. 
+
+        Attribute: Example
+        use Libraries.Containers.List
+        use Libraries.Containers.Blueprints.Iterator
+        List<integer> myList
+        Iterator<integer> listIterator = myList:GetIterator()
+        
+        if listIterator:HasNext()
+            listIterator:Next()
+        end
+
+        listIterator:Rewind()
+
+    */
+
+
+                          action Rewind
+                              current = undefined
+                          end
+end

@@ -1,0 +1,32 @@
+package Libraries.Interface.Events
+
+use Libraries.Interface.Item2D
+
+/*
+The CollisionEvent2D class represents a collision between two objects in 2D
+space. When an Item2D object is involved in a collision, it can receive a
+CollisionEvent2D object which contains data about the other colliding Item2D.
+*/
+
+
+class CollisionEvent2D
+    Item2D item = undefined
+
+    /*
+    This action will set the item that is passed by this object.
+    */
+
+
+action SetItem(Item2D item2D)
+   item = item2D
+end
+
+    /*
+    This action will return the colliding item contained in this object.
+    */
+
+
+action GetItem returns Item2D
+   return item
+end
+end

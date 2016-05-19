@@ -1,0 +1,371 @@
+package Libraries.Language.Types
+
+use Libraries.Language.Object
+use Libraries.Language.Support.CompareResult
+use Libraries.Language.Errors.CastError
+
+/*
+The Integer class is the object representation of the primitive type integer. 
+
+
+Attribute: Example
+
+class Main
+   action Main
+      integer age = 15
+      Integer result = test(age)
+   end
+   action test(Integer int) returns Integer
+        return int
+   end
+end
+*/
+
+
+class Integer is Object
+    //The value this Integer class represents
+
+
+    private integer value = 0
+              public constant integer maximumValue = 2147483647
+              public constant integer minimumValue = - 2147483647 - 1
+    /*
+        This action sets the value of the integer object.
+
+        Attribute: Parameter i The integer value.
+
+        Attribute: Example
+
+        Integer age
+        age:SetValue(15)
+    */
+
+
+              action SetValue(integer i)
+                  value = i
+                  SetValueNative(i)
+              end
+
+    private system action SetValueNative(integer i)
+
+    /*
+        This action gets the value from the integer object.
+
+        Attribute: Returns The value of the object.
+
+        Attribute: Example
+
+        Integer age
+        integer result = age:GetValue()
+    */
+
+
+              action GetValue returns integer
+                  return value
+              end
+
+    /*
+        This action gets the hash code for an object. In this case, GetHashCode
+        is overriden to be equivalent to the hash code of its containing object,
+        value.
+
+        Attribute: Returns The integer hash code of the object.
+
+        Attribute: Example
+
+        Object o
+        integer hash = o:GetHashCode()
+    */
+
+
+    system action GetHashCode() returns integer
+
+    /*
+        This action gets the value from the Integer object and casts it to
+        a number.
+
+        Attribute: Returns The value of the object converted to a number.
+
+        Attribute: Example
+
+        Integer age
+        number result = age:GetNumber()
+    */
+
+
+              action GetNumber returns number
+                  return cast(number, value)
+              end
+
+    /*
+        This action gets the value from the integer object and casts it to
+        a text value.
+
+        Attribute: Returns The value of the object converted to text.
+
+        Attribute: Example
+
+        Integer age
+        text result = age:GetText()
+    */
+
+
+              action GetText returns text
+                  return cast(text, value)
+              end
+
+    /*
+        This action gets the maximum value allowed for an integer variable(2147483647).
+
+        Attribute: Returns The maximum value that can be stored in an integer.
+
+        Attribute: Example
+
+        Integer size
+        integer max = size:GetMaximumValue()
+    */
+
+
+              action GetMaximumValue() returns integer
+                  return maximumValue
+              end
+
+    /*
+        This action gets the minimum value allowed for an integer variable(-2147483648).
+
+        Attribute: Returns The minimum value that can be stored in an integer.
+
+        Attribute: Example
+
+        Integer size
+        integer min = size:GetMinimumValue()
+    */
+
+
+              action GetMinimumValue() returns integer
+                  return minimumValue
+              end
+
+    /*
+        This action compares two object values and returns a CompareResult.
+        The compare result is either larger if this hash code is larger than
+        the object passed as a parameter, smaller, or equal.
+
+        Attribute: Parameter object The object to compare to.
+        Attribute: Returns The Comprare result, Smaller, Equal, or Larger. 
+
+        Attribute: Example
+        use Libraries.Language.Support.CompareResult
+        Integer o
+        Integer t
+        CompareResult result = o:Compare(t)
+    */
+
+
+              action Compare(Object object) returns CompareResult
+                  CompareResult result
+
+                  integer thisOne = me:value
+                  Integer b = cast(Integer, object)
+                  integer other = b:GetValue()
+                  if thisOne = other
+                      result:result = result:EQUAL
+                  elseif thisOne < other
+                      result:result = result:SMALLER
+                  else
+                      result:result = result:LARGER
+                  end
+                  return result
+              end
+
+    /*
+        This action determines if two objects are equal based on their
+        values.
+
+        Attribute: Parameter object The to be compared.
+
+        Attribute: Returns True if the values are equal and false if they
+        are not equal. 
+
+        Attribute: Example
+
+        Integer o
+        Integer t
+        boolean result = o:Equals(t)
+    */
+
+
+              action Equals(Object object) returns boolean
+                  integer myValue = GetValue()
+                  Integer t = undefined
+                  t = cast(Integer, object)
+                  integer otherValue = t:GetValue()
+                  return myValue = otherValue
+              end
+
+    /*
+        This action determines the number of one bits in the integer value. This 
+        integer value is represented as two's compliment binary representation.
+
+        Attribute: Returns The number of one bits in the integer value. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:BitCount()
+    */
+
+
+    system action BitCount returns integer
+
+    /*
+        This action determines the highest(left most) one bit in the two's compliment binary
+        representation of the integer.
+
+        Attribute: Returns The location of the highest one bit in the integer value. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:HighestOneBit()
+    */
+
+
+    system action HighestOneBit returns integer
+
+    /*
+        This action determines the lowest(right most) one bit in the two's compliment binary
+        representation of the integer.
+
+        Attribute: Returns The location of the lowest one bit in the integer value. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:LowestOneBit()
+    */
+
+
+    system action LowestOneBit returns integer
+
+    /*
+        This action determines the number of leading zeros on the two's compliment
+        binary representation of the integer value.
+
+        Attribute: Returns The number of leading zeros. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:LeadingZeros()
+    */
+
+
+    system action LeadingZeros returns integer
+
+    /*
+        This action determines the number of trailing zeros on the two's compliment
+        binary representation of the integer value.
+
+        Attribute: Returns The number of trailing zeros. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:TrailingZeros()
+    */
+
+
+    system action TrailingZeros returns integer
+
+    /*
+        This action determines the reverse of the two's compliment
+        binary representation of the integer value.
+
+        Attribute: Returns The reverse of the two's compliment of the integer value. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:Reverse()
+    */
+
+
+    system action Reverse returns integer
+
+    /*
+        This action rotates left the two's compliment binary representation of the integer
+        value by a specified number of positions.
+
+        Attribute: Parameter value the number of position to rotate.
+
+        Attribute: Returns The rotated left integer. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:RotateLeft(2)
+    */
+
+
+    system action RotateLeft(integer value) returns integer
+
+    /*
+        This action rotates right the two's compliment binary representation of the integer
+        value by a specified number of positions.
+
+        Attribute: Parameter value the number of position to rotate.
+
+        Attribute: Returns The rotated right integer. 
+
+        Attribute: Example
+
+        integer i = 3
+        integer result = i:RotateRight(2)
+    */
+
+
+    system action RotateRight(integer value) returns integer
+
+    /*
+        This action gets the binary representation of the integer value.
+
+        Attribute: Returns The binary representation of the integer. 
+
+        Attribute: Example
+
+        integer i = 3
+        text result = i:GetBinary()
+    */
+
+
+    system action GetBinary returns text
+
+    /*
+        This action gets the hex representation of the integer value.
+
+        Attribute: Returns The hex representation of the integer. 
+
+        Attribute: Example
+
+        integer i = 3
+        text result = i:GetHex()
+    */
+
+
+    system action GetHex returns text
+
+    /*
+        This action gets the octal representation of the integer value.
+
+        Attribute: Returns The octal representation of the integer. 
+
+        Attribute: Example
+
+        integer i = 3
+        text result = i:GetOctal()
+    */
+
+
+    system action GetOctal returns text
+end

@@ -1,0 +1,747 @@
+package Libraries.Containers
+
+use Libraries.Containers.Blueprints.ArrayBlueprint
+use Libraries.Language.Errors.InvalidLocationError
+use Libraries.Containers.Blueprints.Iterator
+use Libraries.Containers.Support.ArrayIterator
+use Libraries.Language.Support.CompareResult
+
+/*
+The Array class is a data structure that stores items in contiguous memory. An
+item is typically stored and accessed through an index or location. This location
+always starts at 0, this means the first item in the array is at location 0, the
+second is at location 1, etc. The default maximum size is set to 10, but can be
+changed by using the SetSize(value) method or the array will automatically
+make itself large when the space is needed (note: it is possible to turn the 
+resizing off with the SetAutoResize(false) method).
+
+Attribute: Example
+
+use Libraries.Containers.Array
+class Main
+   action Main
+      //make the array
+      Array<integer> myArray
+      //add a value
+      myArray:Add(12)
+      //get it back
+      integer value = myArray:Get(0)
+   end
+end
+*/
+
+
+class Array<Type> is ArrayBlueprint<Type>
+
+
+    private system action SetNative(integer location, Type value)
+           private system action GetNative(integer location) returns Type
+
+
+           private system action SetSizeNative(integer size)
+           private system action AddNative(integer location, Type value)
+           private system action AddNative(Type value)
+           private system action RemoveAtNative(integer location) returns Type
+
+    /*
+        This action sets the item at a given location in the indexed object to a new item. 
+
+        Attribute: Parameter location The index or location the value will be stored at.
+
+        Attribute: Parameter value The item to be added to the indexed object. 
+        
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22)
+    */
+
+
+                  action Set(integer location, Type value)
+                      integer size = GetSize()
+                      if location < size and location >= 0
+                          SetNative(location, value)
+                      else
+                          InvalidLocationError error
+                          alert(error)
+                      end
+                  end
+
+    /*
+        This action gets the item at a given location in an array.
+
+
+        Attribute: Parameter location The index or location the value is located at. 
+
+        Attribute: Returns The item at the given location.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22)
+        integer result = myArray:Get(0)
+    */
+
+
+                  action Get(integer location) returns Type
+                      integer size = GetSize()
+                      if location < size and location >= 0
+                          return GetNative(location)
+                      else
+                          InvalidLocationError error
+                          alert(error)
+                      end
+                  end
+
+    /*
+        This action gets the number of items that can be stored in the array(max size).
+
+        Attribute: Return The max size of the array. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        integer maxSize = myArray:GetMaxSize()
+    */
+
+
+           system action GetMaxSize returns integer
+
+    /*
+        This action sets the number of items that can be stored in the 
+        array(max size). The max size can only be increased, any value that is
+        lower will leave the array with the same max size it had.
+
+        Attribute: Parameter size The max size to set for the array. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetMaxSize(20)
+    */
+
+
+           system action SetMaxSize(integer size)
+
+    /*
+        This action sets the size of the array and fills it with undefined items.
+        Changing the size of the array means any items already in the array 
+        must be copied over.
+
+        Attribute: Parameter size The size of the array. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+    */
+
+
+                  action SetSize(integer size)
+                      if size < 0
+                          InvalidLocationError error
+                          alert(error)
+                      else
+                          SetSizeNative(size)
+                      end
+                  end
+
+    /*
+        This action gets the size of the array.
+
+        Attribute: Return The size of the array. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        integer size = myArray:GetSize()
+    */
+
+
+           system action GetSize returns integer
+
+    /*
+        This action returns true if the array is dynamic(resizable) or false
+        if the array does not automatically resize.
+
+        Attribute: Returns True if the array is resizable and false if it is not.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        boolean result = myArray:GetAutoResize()
+    */
+
+
+           system action GetAutoResize returns boolean
+
+    /*
+        This action changes the flag that tells the structure if it is a dynamic
+        array or not. If it is dynamic(an array list) then resizable is true and
+        if it is a standard array(not dynamic) then resizable is false. 
+
+        Attribute: Parameter resizable The value to set the resizable flag to.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetAutoResize(false)
+        myArray:SetSize(10)
+    */
+
+
+           system action SetAutoResize(boolean resizable)
+
+    /*
+        This action adds a value at a location in the indexed object. 
+
+        Attribute: Parameter location The index or location the value will be stored at.
+
+        Attribute: Parameter value The item to be added to the indexed object.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(0, 22) 
+    */
+
+
+                  action Add(integer location, Type value)
+                      integer size = GetSize()
+                      integer capacity = GetMaxSize()
+                      if not GetAutoResize() and size = capacity
+                          InvalidLocationError error
+                          error:SetErrorMessage("Invalid Location Error: cannot add to the array because the max size has been reached")
+                          alert(error)
+                      end
+                      if location <= size and location >= 0
+                          AddNative(location, value)
+                      else
+                          InvalidLocationError error
+                          alert(error)
+                      end
+                  end
+
+    /*
+        This action adds a value to the end of the array.
+
+        Attribute: Parameter value The value to be inserted.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(22)
+    */
+
+
+                  action Add(Type value)
+                      integer size = GetSize()
+                      integer capacity = GetMaxSize()
+                      if not GetAutoResize() and size = capacity
+                          InvalidLocationError error
+                          error:SetErrorMessage("Invalid Location Error: cannot add to the array because the max size has been reached")
+                          alert(error)
+                      end
+                      if size <= capacity
+                          AddNative(value)
+                      else
+                          InvalidLocationError error
+                          alert(error)
+                      end
+                  end
+
+    /*
+        This action gets the first occurrence of the item and returns its 
+        location. If the item was not found -1 is returned. 
+
+        Attribute: Parameter value The item being searched for.
+
+        Attribute: Returns The location of the first occurrence of the item.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        integer location = myArray:GetFirstLocation(22)
+    */
+
+
+                  action GetFirstLocation(Type value) returns integer
+                      integer size = me:GetSize()
+                      integer counter = 0
+                      if value not= undefined
+                          repeat while counter < size
+                              Type temp = me:Get(counter)
+                              if temp not= undefined
+                                  if value:Equals(temp)
+                                      return counter
+                                  end
+                              end
+
+                              counter = counter + 1
+                          end
+                      end
+
+                      return - 1
+                  end
+
+    /*
+        This action gets the last occurrence of the item and returns its 
+        location. If the item was not found -1 is returned.
+        
+        Attribute: Parameter value The item being searched for.
+
+        Attribute: Returns The location of the last occurrence of the item. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        integer location = myArray:GetLastLocation(22)
+    */
+
+
+                  action GetLastLocation(Type value) returns integer
+                      integer size = me:GetSize()
+                      if value not= undefined
+                          repeat until size <= 0
+                              size = size - 1
+                              Type temp = me:Get(size)
+                              if temp not= undefined
+                                  if value:Equals(temp)
+                                      return size
+                                  end
+                              end
+                          end
+                      end
+
+                      return - 1
+                  end
+
+    /*
+        This action adds an item to the end of the array. If the max size has
+        been reached an the array is not re-sizable an InvalidLocationError
+        will be alerted.
+
+        Attribute: Parameter value The item to be added to the array. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:AddToEnd(12)
+    */
+
+
+                  action AddToEnd(Type value)
+                      me:Add(value)
+                  end
+
+    /*
+        This action adds an item to the front of the array at index 0. Then moves
+        all other items down one index. If the max size is already reached and
+        the array is not re-sizable an InvalidLocationError will be alerted.
+
+        Attribute: Parameter value The item to be added to the array.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:AddToFront(12)
+    */
+
+
+                  action AddToFront(Type value)
+                      me:Add(0, value)
+                  end
+
+    /*
+        This action returns a deep copy of the array in question. As such,
+        all elements are copied from one array to the other. While the array
+        is a deep copy, the elements inside of the array are not copied.
+
+        Attribute: Returns Returns a deep copy of the array.
+        
+        Attribute: Example
+        //the array class is Copyable
+        use Libraries.Containers.Array
+        Array<integer> array
+        Object o = array:Copy()
+        Array<integer> copy = cast(Array<integer>, o)
+    */
+
+
+                  action Copy returns Object
+                      Array<Type> newArray
+
+                      integer count = 0
+                      integer size = GetSize()
+                      repeat until count = size
+                          newArray:Add(Get(count))
+                          count = count + 1
+                      end
+                      return newArray
+                  end
+
+    /*
+        This action copies the list to an array data structure.
+
+        Attribute: Returns This returns an array of the list.
+    */
+
+
+                  action CopyToArray returns Array<Type>
+                      Array<Type> array = cast(Array<Type>, Copy())
+                      return array
+                  end
+
+    /*
+        This action gets the item at the front of the array(the item will remain in the array). 
+
+        Attribute: Returns The item at the front of the array.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(4)
+        myArray:Add(13)
+        myArray:Add(12)
+        integer value = myArray:GetFromFront()
+    */
+
+
+                  action GetFromFront returns Type
+                      return Get(0)
+                  end
+
+    /*
+        This action gets the item at the end of the array(the item will remain in the array). 
+
+        Attribute: Returns The item at the end of the array.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(4)
+        myArray:Add(13)
+        myArray:Add(12)
+        integer value = myArray:GetFromEnd()
+    */
+
+
+                  action GetFromEnd returns Type
+                      return Get(me:GetSize() - 1)
+                  end
+
+    /*
+        This action removes an item from an indexed object and returns that item. 
+
+        Attribute: Parameter location The index or location of the item to remove. 
+
+        Attribute: Returns The item that was removed from the indexed object. 
+
+        Attribute: Example
+        
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        integer item = myArray:RemoveAt(2)
+    */
+
+
+                  action RemoveAt(integer location) returns Type
+                      integer size = GetSize()
+                      if location < size and location >= 0
+                          return RemoveAtNative(location)
+                      else
+                          InvalidLocationError error
+                          alert(error)
+                      end
+                  end
+
+    /*
+        This action gets an iterator for the object and returns that iterator. 
+
+        Attribute: Returns Returns the iterator for an object. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        use Libraries.Containers.Blueprints.Iterator
+
+        Array<integer> myArray
+        myArray:SetSize(4)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        Iterator<integer> it = myArray:GetIterator()
+    */
+
+
+                  action GetIterator() returns Iterator<Type>
+                      ArrayIterator<Type> iterator
+                      iterator:Set(me)
+                      return iterator
+                  end
+
+    /*
+        This action determines if an addable object contains a certain item. 
+
+        Attribute: Parameter value The item to find in the Addable object.
+
+        Attribute: Returns Returns true if the item was in the Addable object and false if it was not. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        boolean result = myArray:Has(33)
+    */
+
+
+                  action Has(Type value) returns boolean
+                      integer count = 0
+                      integer size = GetSize()
+                      repeat while count < size
+                          Type item = Get(count)
+                          if value:Equals(item)
+                              return true
+                          end
+
+                          count = count + 1
+                      end
+                      return false
+                  end
+
+    /*
+        This action removes the first occurrence of an item that is found in the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        boolean result = myArray:Remove(22)
+    */
+
+
+                  action Remove(Type value) returns boolean
+                      integer count = 0
+                      integer size = GetSize()
+                      repeat while count < size
+                          Type item = Get(count)
+                          if value:Equals(item)
+                              RemoveAt(count)
+                              return true
+                          end
+
+                          count = count + 1
+                      end
+                      return false
+                  end
+
+    /*
+        This action removes all occurrences of an item from the Addable object. 
+
+        Attribute: Parameter value The item to find in the Addable object. 
+
+        Attribute: Returns Returns true if the item was removed and false if it was not removed.
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        boolean result = myArray:RemoveAll(22) 
+    */
+
+
+                  action RemoveAll(Type value) returns boolean
+                      boolean hasRemoved = false
+                      integer count = 0
+                      integer size = GetSize()
+                      repeat while count < size
+                          Type item = Get(count)
+                          if value:Equals(item)
+                              RemoveAt(count)
+                              hasRemoved = true
+                              size = size - 1
+                          else
+                              count = count + 1
+                          end
+                      end
+                      return hasRemoved
+                  end
+
+    /*
+        This action removes the item at the end of the array. 
+
+        Attribute: Returns The item at the end of the array. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(33)
+        myArray:Add(13)
+        myArray:Add(43)
+        integer removed = myArray:RemoveFromEnd()
+    */
+
+
+                  action RemoveFromEnd returns Type
+                      return RemoveAt(me:GetSize() - 1)
+                  end
+
+    /*
+        This action removes the item at the front of the list. 
+
+        Attribute: Returns The item at the front of the list. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(33)
+        myArray:Add(13)
+        myArray:Add(43)
+        integer removed = myArray:RemoveFromFront()
+    */
+
+
+                  action RemoveFromFront returns Type
+                      return RemoveAt(0)
+                  end
+
+    /*
+        This action sorts the values of the array using a merge sort algorithm.
+        It is guaranteed to execute in O(n log n).
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:Add(33)
+        myArray:Add(13)
+        myArray:Add(43)
+        myArray:Sort()
+    */
+
+
+                  action Sort
+                      Array<Type> temp
+                      temp:SetMaxSize(me:GetSize())
+                      temp:SetSize(me:GetSize())
+                      MergeSort(me, temp, 0, me:GetSize() - 1)
+                  end
+
+           private action MergeSort(Array<Type> original, Array<Type> temp, integer left, integer right)
+               if left < right
+                   center = (left + right)/ 2
+                   MergeSort(original, temp, left, center)
+                   MergeSort(original, temp, center + 1, right)
+                   Merge(original, temp, left, center + 1, right)
+               end
+           end
+
+           private action Merge(Array<Type> original, Array<Type> temp, integer left, integer center, integer right)
+               leftEnd = center - 1
+               leftTemp = left
+               rightTemp = right
+               centerTemp = center
+               position = left
+               repeat while leftTemp <= leftEnd and centerTemp <= right
+                   Type l = original:Get(leftTemp)
+                   Type r = original:Get(centerTemp)
+                   CompareResult result = l:Compare(r)
+                   if result:result = result:SMALLER or result:result = result:EQUAL
+                       temp:Set(position, original:Get(leftTemp))
+                       leftTemp = leftTemp + 1
+                   else
+                       temp:Set(position, original:Get(centerTemp))
+                       centerTemp = centerTemp + 1
+                   end
+
+                   position = position + 1
+               end
+
+               repeat while leftTemp <= leftEnd
+                   temp:Set(position, original:Get(leftTemp))
+                   leftTemp = leftTemp + 1
+                   position = position + 1
+               end
+
+               repeat while centerTemp <= right
+                   temp:Set(position, original:Get(centerTemp))
+                   centerTemp = centerTemp + 1
+                   position = position + 1
+               end
+               size = right - left + 1
+               i = left
+               repeat size times
+                   original:Set(i, temp:Get(i))
+                   i = i + 1
+               end
+           end
+    
+
+    /*
+        This action empty's the list, clearing out all of the items contained within it. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        myArray:Empty()
+    */
+
+
+           system action Empty
+
+    /*
+        This action returns a boolean value, true if the container is empty and false if it contains any items. 
+
+        Attribute: Returns Returns true when the container is empty and false when it is not. 
+
+        Attribute: Example
+        use Libraries.Containers.Array
+        Array<integer> myArray
+        myArray:SetSize(10)
+        myArray:Set(0, 22) 
+        myArray:Set(1, 33)
+        myArray:Set(2, 45)
+        myArray:Set(3, 22)
+        boolean result = myArray:IsEmpty()
+    */
+
+
+           system action IsEmpty returns boolean
+end

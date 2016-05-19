@@ -72,12 +72,12 @@ public class ClassificationAnalysis {
 				n_ws_errors++;
 			}
 
-			boolean actual_align_none   = (a.actualAlign&0xFF)==Trainer.CAT_NO_ALIGNMENT;
+			boolean actual_align        = (a.actualAlign&0xFF)==Trainer.CAT_ALIGN;
 			boolean actual_align_child  = (a.actualAlign&0xFF)==Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 			boolean actual_indent_child = (a.actualAlign&0xFF)==Trainer.CAT_INDENT_FROM_ANCESTOR_CHILD;
 			boolean actual_indent       = (a.actualAlign&0xFF)==Trainer.CAT_INDENT;
 
-			boolean predict_align_none  = (a.alignPrediction&0xFF)==Trainer.CAT_NO_ALIGNMENT;
+			boolean predict_align       = (a.alignPrediction&0xFF)==Trainer.CAT_ALIGN;
 			boolean predict_align_child = (a.alignPrediction&0xFF)==Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 			boolean predict_indent_child= (a.alignPrediction&0xFF)==Trainer.CAT_INDENT_FROM_ANCESTOR_CHILD;
 			boolean predict_indent      = (a.alignPrediction&0xFF)==Trainer.CAT_INDENT;
@@ -93,7 +93,7 @@ public class ClassificationAnalysis {
 				else if ( actual_indent ) {
 					n_actual_indent++;
 				}
-				else if ( actual_align_none ) {
+				else if ( actual_align ) {
 					n_actual_align_none++;
 				}
 				// Can't compare align/indent if both aren't supposed to align.
@@ -101,7 +101,7 @@ public class ClassificationAnalysis {
 				// to match. Similarly, if we predict no-'\n' but actual is '\n',
 				// we didn't compute align so can't compare.
 				n_align_decisions++;
-				if ( predict_align_none && actual_align_none ) {
+				if ( predict_align && actual_align ) {
 					correct_align_none++;
 				}
 				else if ( predict_align_child && a.alignPrediction==a.actualAlign ) {
@@ -146,7 +146,7 @@ public class ClassificationAnalysis {
 			"ws errors      %4d/%4d\n"+
 				"\n"+
 
-			"no alignment   %4d/%4d = %5.2f%%\n"+
+			"align          %4d/%4d = %5.2f%%\n"+
 			"align ^ child  %4d/%4d = %5.2f%%\n"+
 			"indent ^ child %4d/%4d = %5.2f%%\n"+
 			"indent         %4d/%4d = %5.2f%%\n"+

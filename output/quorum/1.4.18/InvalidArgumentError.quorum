@@ -1,0 +1,32 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The InvalidArgumentError class is an error or exception that is thrown when 
+an action is called with an argument that is considered invalid by the called
+action.
+
+Attribute: Example
+
+use Libraries.Language.Errors.EndOfFileError
+use Libraries.Containers.File
+
+class Main
+   action Main
+      File file
+      check
+        file:OpenForRead("")
+      detect e is InvalidArgumentError
+        output "Bad argument: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+
+
+class InvalidArgumentError is Error
+    on create
+        SetErrorMessage("InvalidArgumentError: An argument passed to the action action is invalid.")
+    end
+end

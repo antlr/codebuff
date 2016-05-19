@@ -1,0 +1,40 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.all
+
+/*
+    The EverythingObserver class provides functionality to output any event from 
+    the system. This class is used to listen to any keyboard, mouse, or system 
+    event. 
+
+    Attribute: Example
+
+    AccessibilityManager manager
+    EverythingObserver eObserver
+    manager:Add(eObserver)
+
+    manager:Start()
+    manager:Stop()
+
+*/
+
+
+class EverythingObserver 
+
+    /*
+        This action is a blueprint function that receives an event from the system
+        for the programmer to use.
+
+        Attribute: Parameter event The event from the system.
+
+        Attribute: Example
+
+        KeyboardObserver observer
+        SystemEvent event
+        observer:ReceiveEvent(event)
+    */
+
+
+    blueprint action ReceiveEvent(AccessibilityEvent event)
+
+end

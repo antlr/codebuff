@@ -74,7 +74,7 @@ public class Trainer {
 	public static final int CAT_INJECT_WS = 200;
 
 	// Categories for alignment/indentation
-	public static final int CAT_NO_ALIGNMENT = 0;
+	public static final int CAT_ALIGN = 0;
 
 	/* We want to identify alignment with a child's start token of some parent
 	   but that parent could be a number of levels up the tree. The next category
@@ -253,7 +253,7 @@ public class Trainer {
 
 		int injectNL_WS = getInjectWSCategory(tokens, i);
 
-		int aligned = CAT_NO_ALIGNMENT ;
+		int aligned = -1; // "don't care"
 		if ( (injectNL_WS&0xFF)==CAT_INJECT_NL ) {
 			TerminalNode node = tokenToNodeMap.get(curToken);
 			aligned = getAlignmentCategory(doc, node, indentSize);
@@ -322,6 +322,11 @@ public class Trainer {
 		if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-indentSize;
 			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
+			if ( pair==null ) {
+				// try with 2 indents (commented out for now; can't encode how many indents in directive)
+//				indentedFromPos = curToken.getCharPositionInLine()-2*indentSize;
+//				pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
+			}
 			if ( pair!=null ) {
 				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
 				indentInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
@@ -353,7 +358,7 @@ public class Trainer {
 			return CAT_INDENT; // indent standard amount
 		}
 
-		return CAT_NO_ALIGNMENT;
+		return CAT_ALIGN; // otherwise just line up with first token of previous line
 	}
 
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
@@ -372,19 +377,6 @@ public class Trainer {
 		List<Token> hiddenTokensToLeft = tokens.getHiddenTokensToLeft(i);
 		if ( hiddenTokensToLeft==null ) return null;
 		return filter(hiddenTokensToLeft, t -> t.getText().matches("\\s+"));
-//		if ( hasCommentToken(hiddenTokensToLeft) ) {
-//			for (int j = hiddenTokensToLeft.size()-1; j>=0; j--) {
-//				Token hidden = hiddenTokensToLeft.get(j);
-//				String hiddenText = hidden.getText();
-//				if ( !hiddenText.matches("\\s+") ) {
-//					return hiddenTokensToLeft.subList(j+1, hiddenTokensToLeft.size());
-//				}
-//			}
-//			return null;
-//		}
-//		else {
-//			return hiddenTokensToLeft;
-//		}
 	}
 
 	public static boolean hasCommentToken(List<Token> hiddenTokensToLeft) {

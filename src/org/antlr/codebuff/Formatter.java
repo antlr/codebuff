@@ -21,12 +21,12 @@ import java.util.Vector;
 import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
 import static org.antlr.codebuff.Tool.tokenText;
 import static org.antlr.codebuff.Tool.tokenize;
+import static org.antlr.codebuff.Trainer.CAT_ALIGN;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.Trainer.CAT_INDENT;
 import static org.antlr.codebuff.Trainer.CAT_INDENT_FROM_ANCESTOR_CHILD;
 import static org.antlr.codebuff.Trainer.CAT_INJECT_NL;
 import static org.antlr.codebuff.Trainer.CAT_INJECT_WS;
-import static org.antlr.codebuff.Trainer.CAT_NO_ALIGNMENT;
 import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.Trainer.INDEX_FIRST_ON_LINE;
@@ -209,7 +209,7 @@ public class Formatter {
 			ws = 1;
 		}
 
-		int alignOrIndent = CAT_NO_ALIGNMENT;
+		int alignOrIndent = CAT_ALIGN;
 
 		if ( newlines>0 ) {
 			output.append(Tool.newlines(newlines));
@@ -218,8 +218,6 @@ public class Formatter {
 
 			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
 			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
-			// if we decide to inject a newline, we better recompute this value before classifying alignment
-//			featuresForAlign[INDEX_MATCHING_TOKEN_STARTS_LINE] = getMatchingSymbolStartsLine(corpus, testDoc, node);
 
 			alignOrIndent = hposClassifier.classify2(k, featuresForAlign, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
@@ -228,6 +226,15 @@ public class Formatter {
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT_FROM_ANCESTOR_CHILD ) {
 				indent(alignOrIndent, node);
+			}
+			else if ( (alignOrIndent&0xFF)==CAT_ALIGN ) {
+				List<Token> tokensOnPreviousLine = getTokensOnPreviousLine(testDoc.tokens, tokenIndexInStream, line);
+				if ( tokensOnPreviousLine.size()>0 ) {
+					Token firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
+					int indentCol = firstTokenOnPrevLine.getCharPositionInLine();
+					charPosInLine = indentCol;
+					output.append(Tool.spaces(indentCol));
+				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT ) {
 				indent(alignOrIndent, node);
@@ -480,9 +487,10 @@ public class Formatter {
 	public static String getHPosCategoryStr(int alignOrIndent) {
 		int[] elements = Trainer.triple(alignOrIndent);
 		int cat = alignOrIndent&0xFF;
-		String catS = "none";
+		String catS = "align";
 		if ( cat==CAT_ALIGN_WITH_ANCESTOR_CHILD ) catS = "align^";
 		else if ( cat==CAT_INDENT_FROM_ANCESTOR_CHILD ) catS = "indent^";
+		else if ( cat==CAT_ALIGN ) catS = "align";
 		else if ( cat==CAT_INDENT ) catS = "indent";
 		else return null;
 		return String.format("%7s|%d|%d", catS, elements[0], elements[1]);
