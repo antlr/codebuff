@@ -115,7 +115,7 @@ public class SubsetValidator {
 		float[] medians = new float[maxNumFiles+1];
 
 		int ncpu = Runtime.getRuntime().availableProcessors();
-		ExecutorService pool = Executors.newFixedThreadPool(3); // works with 2 but not 3 threads. hmm...
+		ExecutorService pool = Executors.newFixedThreadPool(ncpu-1);
 		List<Callable<Void>> jobs = new ArrayList<>();
 
 		for (int i = 1; i<=Math.min(validator.allFiles.size(), maxNumFiles); i++) { // i is corpus subset size
@@ -147,7 +147,6 @@ public class SubsetValidator {
 		pool.invokeAll(jobs);
 		pool.shutdown();
 		boolean terminated = pool.awaitTermination(60, TimeUnit.MINUTES);
-		System.err.println(language.name+" terminate properly = "+terminated);
 		return medians;
 	}
 

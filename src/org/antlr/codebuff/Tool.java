@@ -319,6 +319,7 @@ public class Tool {
 		}
 		catch (InvocationTargetException ex) {
 			if ( ex.getCause() instanceof ParseCancellationException ) {
+				doc.parser.reset();
 				doc.tokens.reset(); // rewind input stream
 				// back to standard listeners/handlers
 				doc.parser.addErrorListener(

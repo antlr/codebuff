@@ -9,10 +9,16 @@ import org.antlr.v4.runtime.misc.Triple;
 import org.antlr.v4.runtime.misc.Utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
@@ -31,29 +37,13 @@ public class TestK extends LeaveOneOutValidator {
 		this.k = k;
 	}
 
-	/** Return error rate for each document using leave-one-out validation */
-	public List<Float> scoreDocuments() throws Exception {
-		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-		List<InputDocument> documents = load(allFiles, language);
-		List<Float> errors = new ArrayList<>();
-		for (int i = 0; i<documents.size(); i++) {
-			Triple<Formatter,Float,Float> results =
-				validate(language, documents, documents.get(i).fileName, k, null, false, false);
-			Float errorRate = results.c;
-			errors.add(errorRate);
-		}
-		return errors;
-	}
-
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
 			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
 			ANTLR4_DESCR,
-//			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
-//			TSQL_NOISY_DESCR,
 			TSQL_CLEAN_DESCR,
 		};
 
@@ -65,32 +55,52 @@ public class TestK extends LeaveOneOutValidator {
 		}
 		ks.add(OUTLIER_K);
 		// track medians[language][k]
-		List<Float>[] medians = new List[languages.length];
+		Float[][] medians = new Float[languages.length+1][];
+
+		int ncpu = Runtime.getRuntime().availableProcessors();
+		ExecutorService pool = Executors.newFixedThreadPool(ncpu-1);
+		List<Callable<Void>> jobs = new ArrayList<>();
+
 		for (int i = 0; i<languages.length; i++) {
-			LangDescriptor language = languages[i];
+			final LangDescriptor language = languages[i];
+			final int langIndex = i;
 			System.out.println(language.name);
-			medians[i] = new ArrayList<>();
 			for (int k : ks) {
-				TestK tester = new TestK(language.corpusDir, language, k);
-				List<Float> errorRates = tester.scoreDocuments();
-				Collections.sort(errorRates);
-				int n = errorRates.size();
-				float min = errorRates.get(0);
-				float quart = errorRates.get((int)(0.27*n));
-				float median = errorRates.get(n/2);
-				float quart3 = errorRates.get((int)(0.75*n));
-				float max = errorRates.get(n-1);
-				double var = BuffUtils.varianceFloats(errorRates);
-				String display = String.format("%5.4f, %5.4f, %5.4f, %5.4f, %5.4f", min, quart, median, quart3, max);
-				medians[i].add(median);
+				medians[langIndex] = new Float[OUTLIER_K+1];
+				Callable<Void> job = () -> {
+					try {
+						TestK tester = new TestK(language.corpusDir, language, k);
+						List<Float> errorRates = tester.scoreDocuments();
+						Collections.sort(errorRates);
+						int n = errorRates.size();
+						float median = errorRates.get(n/2);
+//						double var = BuffUtils.varianceFloats(errorRates);
+//						String display = String.format("%5.4f, %5.4f, %5.4f, %5.4f, %5.4f", min, quart, median, quart3, max);
+						medians[langIndex][k] = median;
+					}
+					catch (Throwable t) {
+						t.printStackTrace(System.err);
+					}
+					return null;
+				};
+				jobs.add(job);
 			}
 		}
 
+		pool.invokeAll(jobs);
+		pool.shutdown();
+		boolean terminated = pool.awaitTermination(60, TimeUnit.MINUTES);
+
+		writePython(languages, ks, medians);
+	}
+
+	public static void writePython(LangDescriptor[] languages, List<Integer> ks, Float[][] medians) throws IOException {
 		StringBuilder data = new StringBuilder();
 		StringBuilder plot = new StringBuilder();
 		for (int i = 0; i<languages.length; i++) {
 			LangDescriptor language = languages[i];
-			data.append(language.name+'='+medians[i]+'\n');
+			List<Float> filteredMedians = BuffUtils.filter(Arrays.asList(medians[i]), m -> m!=null);
+			data.append(language.name+'='+filteredMedians+'\n');
 			plot.append(String.format("ax.plot(ks, %s, label=\"%s\", marker='o')\n", language.name, language.name));
 		}
 
@@ -117,5 +127,19 @@ public class TestK extends LeaveOneOutValidator {
 		String fileName = "python/src/vary_k.py";
 		Utils.writeFile(fileName, code);
 		System.out.println("wrote python code to "+fileName);
+	}
+
+	/** Return error rate for each document using leave-one-out validation */
+	public List<Float> scoreDocuments() throws Exception {
+		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
+		List<InputDocument> documents = load(allFiles, language);
+		List<Float> errors = new ArrayList<>();
+		for (int i = 0; i<documents.size(); i++) {
+			Triple<Formatter,Float,Float> results =
+				validate(language, documents, documents.get(i).fileName, k, null, false, false);
+			Float errorRate = results.c;
+			errors.add(errorRate);
+		}
+		return errors;
 	}
 }
