@@ -6,14 +6,14 @@ SELECT
                THEN 1
            ELSE 0 END AS bit)                         AS [IsPrimaryFile]
     , CAST(CASE WHEN s.growth = 0
-    THEN (CASE WHEN s.type = 2
-        THEN 0
-          ELSE 99 END)
+               THEN (CASE WHEN s.type = 2
+                        THEN 0
+                     ELSE 99 END)
            ELSE s.is_percent_growth END AS INT)       AS [GrowthType]
     , s.physical_name                                 AS [FileName]
     , s.size * CONVERT(float, 8)                      AS [Size]
     , CASE WHEN s.max_size = -1
-    THEN -1
+          THEN -1
       ELSE s.max_size * CONVERT(float, 8) END         AS [MaxSize]
     , s.file_id                                       AS [ID]
     , 'Server[@Name=' + quotename(CAST(
