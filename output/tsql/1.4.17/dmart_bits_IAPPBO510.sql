@@ -25,7 +25,7 @@ GROUP BY Beta
     , LoadReportDBEndDate
 ORDER BY Status
     ASC
-    , SSISInstanceID
+, SSISInstanceID
 ASC
 , Beta
 ASC
