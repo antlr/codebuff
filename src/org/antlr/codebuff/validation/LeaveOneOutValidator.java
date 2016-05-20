@@ -161,7 +161,7 @@ public class LeaveOneOutValidator {
 	                                              boolean collectAnalysis)
 		throws Exception
 	{
-		final String path = new File(fileToExclude).getPath();
+		final String path = new File(fileToExclude).getAbsolutePath();
 		List<InputDocument> others = filter(documents, d -> !d.fileName.equals(path));
 		List<InputDocument> excluded = filter(documents, d -> d.fileName.equals(path));
 		assert others.size() == documents.size() - 1;
