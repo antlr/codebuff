@@ -295,19 +295,19 @@ public class Trainer {
 
 		// at a newline, are we aligned with a prior sibling (in a list) etc...
 		ParserRuleContext earliestLeftAncestor = earliestAncestorStartingWithToken(node);
-		Pair<ParserRuleContext, Integer> pair =
+		Pair<ParserRuleContext, Integer> alignPair =
 			earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, curToken.getCharPositionInLine());
 //		String[] ruleNames = doc.parser.getRuleNames();
 //		Token prevToken = doc.tokens.getPreviousRealToken(curToken.getTokenIndex());
-		if ( pair!=null ) {
-			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
-			alignInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
+		if ( alignPair!=null ) {
+			int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, alignPair.a);
+			alignInfo = new Pair<>(deltaFromLeftAncestor, alignPair.b);
 //			int ruleIndex = pair.a.getRuleIndex();
 //			System.out.printf("ALIGN %s %s i=%d %s %s\n",
 //			                  curToken,
 //			                  ruleNames[ruleIndex],
 //			                  pair.b, alignInfo, doc.fileName);
- 		}
+		}
 
 		// perhaps we are indented as well?
 		int tokenIndexInStream = node.getSymbol().getTokenIndex();
@@ -319,17 +319,18 @@ public class Trainer {
 			columnDelta = curToken.getCharPositionInLine() - firstTokenOnPrevLine.getCharPositionInLine();
 		}
 
+		Pair<ParserRuleContext, Integer> indentPair = null;
 		if ( columnDelta!=0 ) {
 			int indentedFromPos = curToken.getCharPositionInLine()-indentSize;
-			pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
-			if ( pair==null ) {
+			indentPair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
+			if ( indentPair==null ) {
 				// try with 2 indents (commented out for now; can't encode how many indents in directive)
 //				indentedFromPos = curToken.getCharPositionInLine()-2*indentSize;
 //				pair = earliestAncestorWithChildStartingAtCharPos(earliestLeftAncestor, curToken, indentedFromPos);
 			}
-			if ( pair!=null ) {
-				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, pair.a);
-				indentInfo = new Pair<>(deltaFromLeftAncestor, pair.b);
+			if ( indentPair!=null ) {
+				int deltaFromLeftAncestor = getDeltaToAncestor(earliestLeftAncestor, indentPair.a);
+				indentInfo = new Pair<>(deltaFromLeftAncestor, indentPair.b);
 //				int ruleIndex = pair.a.getRuleIndex();
 //				System.out.printf("INDENT %s %s i=%d %s %s\n",
 //				                  curToken,
@@ -338,6 +339,15 @@ public class Trainer {
 			}
 		}
 
+		/*
+		I tried reducing all specific and alignment operations to the generic
+		"indent/align from first token on previous line" directives but
+		the contexts were not sufficiently precise. method bodies got doubly
+		indented when there is a throws clause etc... Might be worth pursuing
+		in the future if I can increase context information regarding
+	    exactly what kind of method declaration signature it is. See
+	    targetTokenIsFirstTokenOnPrevLine().
+		 */
 		// If both align and indent from ancestor child exist, choose closest (lowest delta up tree)
 		if ( alignInfo!=null && indentInfo!=null ) {
 			if ( alignInfo.a < indentInfo.a ) {
@@ -359,6 +369,25 @@ public class Trainer {
 		}
 
 		return CAT_ALIGN; // otherwise just line up with first token of previous line
+	}
+
+	public static boolean targetTokenIsFirstTokenOnPrevLine(Pair<ParserRuleContext,Integer> pair,
+	                                                        Token firstTokenOnPrevLine)
+	{
+		ParserRuleContext p = pair.a;
+		int childIndex = pair.b;
+		return getStartToken(p.getChild(childIndex))==firstTokenOnPrevLine;
+	}
+
+	public static Token getStartToken(ParseTree p) {
+		Token start;
+		if ( p instanceof ParserRuleContext ) {
+			start = ((ParserRuleContext) p).getStart();
+		}
+		else { // must be token
+			start = ((TerminalNode)p).getSymbol();
+		}
+		return start;
 	}
 
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
@@ -661,8 +690,8 @@ public class Trainer {
 
 	public static int getMatchingSymbolOnDiffLine(Corpus corpus,
 	                                              InputDocument doc,
-												  TerminalNode node,
-												  int line)
+	                                              TerminalNode node,
+	                                              int line)
 	{
 		TerminalNode matchingLeftNode = getMatchingLeftSymbol(corpus, doc, node);
 		if (matchingLeftNode != null) {
@@ -675,7 +704,7 @@ public class Trainer {
 
 	public static int getMatchingSymbolStartsLine(Corpus corpus,
 	                                              InputDocument doc,
-												  TerminalNode node)
+	                                              TerminalNode node)
 	{
 		TerminalNode matchingLeftNode = getMatchingLeftSymbol(corpus, doc, node);
 		if ( matchingLeftNode != null ) {
@@ -741,8 +770,8 @@ public class Trainer {
 				// count children
 				List<? extends ParserRuleContext> siblings = parent.getRuleContexts(child.getClass());
 //				if ( siblings.size()>1 ) {
-					childMemberOfList = child;
-					break; // stop at FIRST opportunity up the tree
+				childMemberOfList = child;
+				break; // stop at FIRST opportunity up the tree
 //				}
 			}
 			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
@@ -781,7 +810,7 @@ public class Trainer {
 		Corpus corpus,
 		TerminalNode node,
 		ParserRuleContext earliestLeftAncestor
-	)
+	                                                              )
 	{
 		ParserRuleContext child = (ParserRuleContext)node.getParent();
 		if ( child==null ) return null;
@@ -801,7 +830,7 @@ public class Trainer {
 
 	public static TerminalNode getMatchingLeftSymbol(Corpus corpus,
 	                                                 InputDocument doc,
-													 TerminalNode node)
+	                                                 TerminalNode node)
 	{
 		ParserRuleContext parent = (ParserRuleContext)node.getParent();
 		int curTokensParentRuleIndex = parent.getRuleIndex();
@@ -952,8 +981,8 @@ public class Trainer {
 		StringBuilder buf = new StringBuilder();
 		for (int i=0; i<FEATURES.length; i++) {
 			if ( FEATURES[i].type!=INFO_FILE &&
-				 FEATURES[i].type!=INFO_LINE &&
-				 FEATURES[i].type!=INFO_CHARPOS )
+				FEATURES[i].type!=INFO_LINE &&
+				FEATURES[i].type!=INFO_CHARPOS )
 			{
 				continue;
 			}
