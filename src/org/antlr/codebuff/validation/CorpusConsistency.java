@@ -118,8 +118,10 @@ public class CorpusConsistency {
 		}
 		System.out.println();
 		System.out.println(language.name);
-		System.out.println("There are "+wsContextToIndex.size()+" unique ws feature vectors out of "+n);
-		System.out.println("There are "+hposContextToIndex.size()+" unique hpos feature vectors out of "+n);
+		System.out.println("There are "+wsContextToIndex.size()+" unique ws feature vectors out of "+n+" = "+
+			                   String.format("%3.1f%%",100.0*wsContextToIndex.size()/n));
+		System.out.println("There are "+hposContextToIndex.size()+" unique hpos feature vectors out of "+n+" = "+
+			                   String.format("%3.1f%%",100.0*hposContextToIndex.size()/n));
 		float prob_ws_ambiguous = num_ambiguous_ws_vectors/(float) n;
 		System.out.printf("num_ambiguous_ws_vectors   = %5d/%5d = %5.3f\n", num_ambiguous_ws_vectors, n, prob_ws_ambiguous);
 		float prob_hpos_ambiguous = num_ambiguous_hpos_vectors/(float) n;
