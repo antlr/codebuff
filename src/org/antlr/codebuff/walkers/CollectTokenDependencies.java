@@ -1,7 +1,6 @@
 package org.antlr.codebuff.walkers;
 
 import org.antlr.codebuff.misc.BuffUtils;
-import org.antlr.codebuff.misc.HashBag;
 import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -131,7 +130,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 	}
 
 	/** Map a rule name to a bag of (a,b) tuples that counts occurrences */
-	protected Map<RuleAltKey,HashBag<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
+	protected Map<RuleAltKey,HashSet<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
 
 	/** Track repeated token refs per rule */
 	protected Map<RuleAltKey,Set<Integer>> ruleToRepeatedTokensSet = new HashMap<>();
@@ -175,9 +174,9 @@ public class CollectTokenDependencies implements ParseTreeListener {
 				}
 				else {
 					Pair<Integer, Integer> pair = new Pair<>(atype, btype);
-					HashBag<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
+					HashSet<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
 					if ( pairsBag==null ) {
-						pairsBag = new HashBag<>();
+						pairsBag = new HashSet<>();
 						ruleToPairsBag.put(ruleAltKey, pairsBag);
 					}
 					pairsBag.add(pair);
@@ -245,17 +244,17 @@ public class CollectTokenDependencies implements ParseTreeListener {
 		// For each rule
 		for (RuleAltKey ruleAltKey : ruleToPairsBag.keySet()) {
 			Set<Integer> ruleRepeatedTokens = ruleToRepeatedTokensSet.get(ruleAltKey);
-			HashBag<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
+			HashSet<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
 			// If there are repeated tokens for this rule
 			if ( ruleRepeatedTokens!=null ) {
 				// Remove all (a,b) for b in repeated token set
 				List<Pair<Integer, Integer>> pairsWoRepeats =
-					BuffUtils.filter(pairsBag.keySet(),
+					BuffUtils.filter(pairsBag,
                                      p -> !ruleRepeatedTokens.contains(p.a) && !ruleRepeatedTokens.contains(p.b));
 				ruleToPairsWoRepeats.put(ruleAltKey, pairsWoRepeats);
 			}
 			else {
-				ruleToPairsWoRepeats.put(ruleAltKey, new ArrayList<>(pairsBag.keySet()));
+				ruleToPairsWoRepeats.put(ruleAltKey, new ArrayList<>(pairsBag));
 			}
 		}
 		return ruleToPairsWoRepeats;
