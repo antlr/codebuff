@@ -130,7 +130,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 	}
 
 	/** Map a rule name to a bag of (a,b) tuples that counts occurrences */
-	protected Map<RuleAltKey,HashSet<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
+	protected Map<RuleAltKey,Set<Pair<Integer,Integer>>> ruleToPairsBag = new HashMap<>();
 
 	/** Track repeated token refs per rule */
 	protected Map<RuleAltKey,Set<Integer>> ruleToRepeatedTokensSet = new HashMap<>();
@@ -174,7 +174,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 				}
 				else {
 					Pair<Integer, Integer> pair = new Pair<>(atype, btype);
-					HashSet<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
+					Set<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
 					if ( pairsBag==null ) {
 						pairsBag = new HashSet<>();
 						ruleToPairsBag.put(ruleAltKey, pairsBag);
@@ -244,7 +244,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 		// For each rule
 		for (RuleAltKey ruleAltKey : ruleToPairsBag.keySet()) {
 			Set<Integer> ruleRepeatedTokens = ruleToRepeatedTokensSet.get(ruleAltKey);
-			HashSet<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
+			Set<Pair<Integer, Integer>> pairsBag = ruleToPairsBag.get(ruleAltKey);
 			// If there are repeated tokens for this rule
 			if ( ruleRepeatedTokens!=null ) {
 				// Remove all (a,b) for b in repeated token set
