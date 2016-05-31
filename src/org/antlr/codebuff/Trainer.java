@@ -3,7 +3,7 @@ package org.antlr.codebuff;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.RuleAltKey;
-import org.antlr.codebuff.walkers.CollectTokenDependencies;
+import org.antlr.codebuff.walkers.CollectTokenPairs;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -848,7 +848,7 @@ public class Trainer {
 				Vocabulary vocab = doc.parser.getVocabulary();
 				if ( !viableMatchingLeftTokenTypes.isEmpty() ) {
 					int matchingLeftTokenType =
-						CollectTokenDependencies.getMatchingLeftTokenType(curToken, viableMatchingLeftTokenTypes, vocab);
+						CollectTokenPairs.getMatchingLeftTokenType(curToken, viableMatchingLeftTokenTypes, vocab);
 					List<TerminalNode> matchingLeftNodes = parent.getTokens(matchingLeftTokenType);
 					// get matching left node by getting last node to left of current token
 					List<TerminalNode> nodesToLeftOfCurrentToken =

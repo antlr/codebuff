@@ -6,7 +6,7 @@ import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.codebuff.misc.SiblingListStats;
 import org.antlr.codebuff.validation.FeatureVectorAsObject;
 import org.antlr.codebuff.walkers.CollectSiblingLists;
-import org.antlr.codebuff.walkers.CollectTokenDependencies;
+import org.antlr.codebuff.walkers.CollectTokenPairs;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.MultiMap;
@@ -95,14 +95,14 @@ public class Corpus {
 	public void collectTokenPairsAndSplitListInfo() throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException {
 		Vocabulary vocab = getLexer(language.lexerClass, null).getVocabulary();
 		String[] ruleNames = getParser(language.parserClass, null).getRuleNames();
-		CollectTokenDependencies collectTokenDependencies = new CollectTokenDependencies(vocab, ruleNames);
+		CollectTokenPairs collectTokenPairs = new CollectTokenPairs(vocab, ruleNames);
 		CollectSiblingLists collectSiblingLists = new CollectSiblingLists();
 		for (InputDocument doc : documents) {
 			collectSiblingLists.setTokens(doc.tokens, doc.tree, doc.tokenToNodeMap);
-			ParseTreeWalker.DEFAULT.walk(collectTokenDependencies, doc.tree);
+			ParseTreeWalker.DEFAULT.walk(collectTokenPairs, doc.tree);
 			ParseTreeWalker.DEFAULT.walk(collectSiblingLists, doc.tree);
 		}
-		ruleToPairsBag = collectTokenDependencies.getDependencies();
+		ruleToPairsBag = collectTokenPairs.getDependencies();
 		rootAndChildListStats = collectSiblingLists.getListStats();
 		rootAndSplitChildListStats = collectSiblingLists.getSplitListStats();
 		splitListForms = collectSiblingLists.getSplitListForms();

@@ -114,7 +114,7 @@ Sample counts of rule nodes and unique token lists:
  For matching symbols like {}, [], let's use that info to get a unique match
  when this algorithm doesn't give one.
  */
-public class CollectTokenDependencies implements ParseTreeListener {
+public class CollectTokenPairs implements ParseTreeListener {
 	/** a bit of "overfitting" or tailoring to the most common pairs in all
 	 *  computer languages to improve accuracy when choosing pairs.
 	 *  I.e., it never makes sense to choose ('@',')') when ('(',')') is
@@ -140,7 +140,7 @@ public class CollectTokenDependencies implements ParseTreeListener {
 
 	protected String[] ruleNames;
 
-	public CollectTokenDependencies(Vocabulary vocab, String[] ruleNames) {
+	public CollectTokenPairs(Vocabulary vocab, String[] ruleNames) {
 		this.vocab = vocab;
 		this.ruleNames = ruleNames;
 	}
