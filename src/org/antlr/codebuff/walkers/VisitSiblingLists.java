@@ -1,5 +1,6 @@
-package org.antlr.codebuff;
+package org.antlr.codebuff.walkers;
 
+import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;

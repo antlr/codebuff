@@ -2,7 +2,6 @@ package org.antlr.codebuff.walkers;
 
 import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
-import org.antlr.codebuff.VisitSiblingLists;
 import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;

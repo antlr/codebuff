@@ -2,7 +2,6 @@ package org.antlr.codebuff.walkers;
 
 import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.Trainer;
-import org.antlr.codebuff.VisitSiblingLists;
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
 import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.SiblingListStats;
