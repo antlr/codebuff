@@ -165,7 +165,7 @@ public class Trainer {
 	public static FeatureMetaData[] FEATURES_HPOS = {
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
-		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1), // TODO: candidate for removal
+		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(1)"}, 1),
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
