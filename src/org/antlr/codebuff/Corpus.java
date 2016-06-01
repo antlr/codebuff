@@ -60,7 +60,6 @@ public class Corpus {
 	public Map<RuleAltKey, List<Pair<Integer, Integer>>> ruleToPairsBag = null;
 	public Map<ParentSiblingListKey, SiblingListStats> rootAndChildListStats;
 	public Map<ParentSiblingListKey, SiblingListStats> rootAndSplitChildListStats;
-	public Map<ParentSiblingListKey, Integer> splitListForms;
 	public Map<Token, Pair<Boolean, Integer>> tokenToListInfo;
 
 	public Corpus(String rootDir, LangDescriptor language) throws Exception {
@@ -105,7 +104,6 @@ public class Corpus {
 		ruleToPairsBag = collectTokenPairs.getDependencies();
 		rootAndChildListStats = collectSiblingLists.getListStats();
 		rootAndSplitChildListStats = collectSiblingLists.getSplitListStats();
-		splitListForms = collectSiblingLists.getSplitListForms();
 		tokenToListInfo = collectSiblingLists.getTokenToListInfo();
 
 		if ( false ) {
@@ -128,6 +126,8 @@ public class Corpus {
 				System.out.println(parent+":"+siblingPairs.parentRuleAlt+"->"+siblingListName+":"+siblingPairs.childRuleAlt+
 					                   " (n,min,median,var,max)="+rootAndChildListStats.get(siblingPairs));
 			}
+			Map<ParentSiblingListKey, Integer> splitListForms =
+				collectSiblingLists.getSplitListForms();
 			for (ParentSiblingListKey siblingPairs : rootAndSplitChildListStats.keySet()) {
 				String parent = ruleNames[siblingPairs.parentRuleIndex];
 				parent = parent.replace("Context","");

@@ -28,6 +28,8 @@ import java.util.Map;
  *  A single instance is shared across all training docs to collect complete info.
  */
 public class CollectSiblingLists extends VisitSiblingLists {
+	// listInfo and splitListInfo are used to collect statistics for use by the formatting engine when computing "is oversize list"
+
 	/** Track set of (parent:alt,child:alt) list pairs and their min,median,variance,max
 	 *  but only if the list is all on one line and has a separator.
 	 */
@@ -39,6 +41,7 @@ public class CollectSiblingLists extends VisitSiblingLists {
 	 */
 	public Map<ParentSiblingListKey, List<Integer>> splitListInfo = new HashMap<>();
 
+	/** Debugging */
 	public Map<ParentSiblingListKey, List<Integer>> splitListForm = new HashMap<>();
 
 	/** Map token to ("is oversize", element type). Used to compute feature vector. */
@@ -98,7 +101,7 @@ public class CollectSiblingLists extends VisitSiblingLists {
 		}
 		lens.add(Trainer.getSiblingsLength(siblings));
 
-		// track the form split lists take
+		// track the form split lists take for debugging
 		if ( isSplitList ) {
 			int form = Trainer.listform(ws);
 			List<Integer> forms = splitListForm.get(pair);
@@ -114,6 +117,7 @@ public class CollectSiblingLists extends VisitSiblingLists {
 		tokenToListInfo.putAll(tokenInfo);
 	}
 
+	// for debugging
 	public Map<ParentSiblingListKey, Integer> getSplitListForms() {
 		Map<ParentSiblingListKey, Integer> results = new HashMap<>();
 		for (ParentSiblingListKey pair : splitListForm.keySet()) {
