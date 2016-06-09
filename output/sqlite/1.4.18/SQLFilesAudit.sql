@@ -18,8 +18,8 @@ ELSE 99 END)
           END                                              AS [MaxSize]
     , s.file_id AS [ID]
     , 'Server[@Name=' +
-      quotename(CAST(serverproperty('Servername') AS sysname), '''')
-      +']' + '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name AS varbinary(256)) AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
+      quotename(CAST(serverproperty('Servername') AS sysname), '''') + ']' +
+      '/Database[@Name=' + quotename(db_name(), '''') + ']' + '/FileGroup[@Name=' + quotename(CAST(cast(g.name AS varbinary(256)) AS sysname), '''') + ']' + '/File[@Name=' + quotename(s.name, '''') + ']' AS [Urn]
     , CAST(CASE s.is_percent_growth
            WHEN 1
                THEN s.growth ELSE s.growth * 8

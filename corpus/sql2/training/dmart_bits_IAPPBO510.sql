@@ -94,18 +94,12 @@ SELECT
           THEN 'Total'
       ELSE SSISInstanceID END SSISInstanceID
     , SUM(OldStatus4) AS      OldStatus4
-    , SUM(
-          Status0)    AS      Status0
-    , SUM(
-          Status1)    AS      Status1
-    , SUM(
-          Status2)    AS      Status2
-    , SUM(
-          Status3)    AS      Status3
-    , SUM(
-          Status4)    AS      Status4
-    , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 +
-          Status4)    AS      InstanceTotal
+    , SUM(Status0)    AS      Status0
+    , SUM(Status1)    AS      Status1
+    , SUM(Status2)    AS      Status2
+    , SUM(Status3)    AS      Status3
+    , SUM(Status4)    AS      Status4
+    , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 + Status4)    AS      InstanceTotal
 FROM
     (
         SELECT
@@ -143,18 +137,12 @@ SELECT
           THEN 'Total'
       ELSE SSISInstanceID END SSISInstanceID
     , SUM(OldStatus4) AS      OldStatus4
-    , SUM(
-          Status0)    AS      Status0
-    , SUM(
-          Status1)    AS      Status1
-    , SUM(
-          Status2)    AS      Status2
-    , SUM(
-          Status3)    AS      Status3
-    , SUM(
-          Status4)    AS      Status4
-    , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 +
-          Status4)    AS      InstanceTotal
+    , SUM(Status0)    AS      Status0
+    , SUM(Status1)    AS      Status1
+    , SUM(Status2)    AS      Status2
+    , SUM(Status3)    AS      Status3
+    , SUM(Status4)    AS      Status4
+    , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 + Status4)    AS      InstanceTotal
 FROM
     (
         SELECT

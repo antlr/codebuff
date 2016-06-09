@@ -20,10 +20,12 @@ WHERE name LIKE 'DMart%Stage'
 GROUP BY name
 
 SELECT @cmd2 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME +
-               ' -FirstDatabase DMart_Template_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
+               ' -FirstDatabase DMart_Template_Data -SqlServerTwo ' +
+               @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
 
 SELECT @cmd3 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME +
-               ' -FirstDatabase DMart_Template_Stage -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
+               ' -FirstDatabase DMart_Template_Stage -SqlServerTwo ' +
+               @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
 -- CDC package
@@ -36,7 +38,8 @@ WHERE name LIKE 'DMart%CDC%Data'
 GROUP BY name
 
 SELECT @CDCcmd = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME +
-                 ' -FirstDatabase DMart_TemplateCDC_Data -SqlServerTwo ' + @SERVERNAME + ' -DatabaseList ' + @CDCData + ' -Column -Log'
+                 ' -FirstDatabase DMart_TemplateCDC_Data -SqlServerTwo ' +
+                 @SERVERNAME + ' -DatabaseList ' + @CDCData + ' -Column -Log'
 
 ------------------------------------------------------------------------------------------------------------------------
 -- XSQLUTIL18.dbo.Status
@@ -98,11 +101,13 @@ GROUP BY name
 
 SELECT @cmd2 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne ' + @SERVERNAME +
                ' -FirstDatabase RLCSMC -SqlServerTwo ' +
-               @SERVERNAME + ' -DatabaseList ' + @dblistData + ' -Column -Log'
+               @SERVERNAME +
+               ' -DatabaseList ' + @dblistData + ' -Column -Log'
 
 -- use the Dev current version
 
 SELECT @cmd3 = 'E:\Dexma\powershell_bits\Compare-DMartSchema2.ps1 -SqlServerOne '
                +
                'ISQLDEV610 -FirstDatabase SMCCurrent -SqlServerTwo ' +
-               @SERVERNAME + ' -DatabaseList ' + @dblistStage + ' -Column -Log'
+               @SERVERNAME +
+               ' -DatabaseList ' + @dblistStage + ' -Column -Log'

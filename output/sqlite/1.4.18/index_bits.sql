@@ -31,8 +31,7 @@ ORDER BY LastUpdate
     DESC
 --------------------------------------------------------------------------
 
-SELECT 'dbcc showcontig (' + CONVERT(varchar(20), i.id) +
-       ',' + -- table id
+SELECT 'dbcc showcontig (' + CONVERT(varchar(20), i.id) + ',' + -- table id
        CONVERT(varchar(20), i.indid) +
        ') -- ' + -- index id
        object_name(i.id) +

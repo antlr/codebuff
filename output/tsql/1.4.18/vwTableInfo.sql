@@ -32,16 +32,14 @@ SELECT
            ELSE 0
            END AS bit)             AS [HasClusIdx]
     , Coalesce((
-               SELECT sum(
-                          spart.rows)
+               SELECT sum(spart.rows)
                FROM sys.partitions spart
                WHERE spart.object_id = tbl.object_id
                      AND spart.index_id < 2),
                0)             AS [RowCount]
     , Coalesce((
                SELECT
-                   Cast(v.low / 1024.0 AS FLOAT) * SUM(
-                                                       a.used_pages - CASE WHEN a.type <> 1
+                   Cast(v.low / 1024.0 AS FLOAT) * SUM(a.used_pages - CASE WHEN a.type <> 1
                                                                           THEN a.used_pages WHEN p.index_id < 2
                                                                           THEN a.data_pages
                                                                       ELSE 0 END)
@@ -51,8 +49,7 @@ SELECT
                WHERE i.object_id = tbl.object_id), 0.0)             AS [IndexKB]
     , Coalesce((
                SELECT
-                   Cast(v.low / 1024.0 AS FLOAT) * SUM(
-                                                       CASE WHEN a.type <> 1
+                   Cast(v.low / 1024.0 AS FLOAT) * SUM(CASE WHEN a.type <> 1
                                                            THEN a.used_pages WHEN p.index_id < 2
                                                            THEN a.data_pages
                                                        ELSE 0 END)
