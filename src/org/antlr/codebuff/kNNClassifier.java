@@ -228,14 +228,11 @@ public abstract class kNNClassifier {
 			vectorIndexesMatchingContext = corpus.curAndPrevTokenRuleIndexToExemplarIndexes.get(key);
 		}
 		if ( FEATURES==FEATURES_HPOS &&
-			 (vectorIndexesMatchingContext==null || vectorIndexesMatchingContext.size()<k) )
+			(vectorIndexesMatchingContext==null || vectorIndexesMatchingContext.size()<k) )
 		{
-			// can't use this cache if we are testing out different feature sets
-			if ( FEATURES==FEATURES_INJECT_WS || FEATURES==FEATURES_HPOS ) {
-				// ok, not exact. look for match with prev and current rule index
-				Pair<Integer, Integer> key = new Pair<>(pr, cr);
-				vectorIndexesMatchingContext = corpus.curAndPrevTokenRuleIndexToExemplarIndexes.get(key);
-			}
+			// ok, not exact. look for match with prev and current rule index
+			Pair<Integer, Integer> key = new Pair<>(pr, cr);
+			vectorIndexesMatchingContext = corpus.curAndPrevTokenRuleIndexToExemplarIndexes.get(key);
 		}
 
 		if ( distanceThreshold==MAX_CONTEXT_DIFF_THRESHOLD2 ) { // couldn't find anything, open it all up.

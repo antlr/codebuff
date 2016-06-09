@@ -36,6 +36,7 @@ import static org.antlr.codebuff.misc.BuffUtils.map;
 
 public class SubsetValidator {
 	public static final int DOCLIST_RANDOM_SEED = 777111333; // need randomness but use same seed to get reproducibility
+	public static final boolean FORCE_SINGLE_THREADED = false;
 
 	public static final String outputDir = "/tmp";
 
@@ -115,6 +116,9 @@ public class SubsetValidator {
 		float[] medians = new float[maxNumFiles+1];
 
 		int ncpu = Runtime.getRuntime().availableProcessors();
+		if ( FORCE_SINGLE_THREADED ) {
+			ncpu = 2;
+		}
 		ExecutorService pool = Executors.newFixedThreadPool(ncpu-1);
 		List<Callable<Void>> jobs = new ArrayList<>();
 

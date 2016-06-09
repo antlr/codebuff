@@ -30,6 +30,7 @@ import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.load;
 
 public class TestK extends LeaveOneOutValidator {
+	public static final boolean FORCE_SINGLE_THREADED = false;
 	public final int k;
 
 	public TestK(String rootDir, LangDescriptor language, int k) {
@@ -58,6 +59,9 @@ public class TestK extends LeaveOneOutValidator {
 		Float[][] medians = new Float[languages.length+1][];
 
 		int ncpu = Runtime.getRuntime().availableProcessors();
+		if ( FORCE_SINGLE_THREADED ) {
+			ncpu = 2;
+		}
 		ExecutorService pool = Executors.newFixedThreadPool(ncpu-1);
 		List<Callable<Void>> jobs = new ArrayList<>();
 

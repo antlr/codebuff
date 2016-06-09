@@ -41,6 +41,8 @@ public class LeaveOneOutValidator {
 	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
 	final Random random = new Random();
 
+	public static final boolean FORCE_SINGLE_THREADED = false;
+
 	public String rootDir;
 	public LangDescriptor language;
 
@@ -92,6 +94,9 @@ public class LeaveOneOutValidator {
 			                  (stop-start)/1_000_000);
 
 			int ncpu = Runtime.getRuntime().availableProcessors();
+			if ( FORCE_SINGLE_THREADED ) {
+				ncpu = 2;
+			}
 			ExecutorService pool = Executors.newFixedThreadPool(ncpu-1);
 			List<Callable<Void>> jobs = new ArrayList<>();
 
