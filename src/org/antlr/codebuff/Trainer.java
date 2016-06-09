@@ -134,7 +134,7 @@ public class Trainer {
 	public static final int NUM_FEATURES                        = 25;
 	public static final int ANALYSIS_START_TOKEN_INDEX          = 1; // we use current and previous token in context so can't start at index 0
 
-	public static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
+	public final static FeatureMetaData[] FEATURES_INJECT_WS = { // inject ws or nl
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
@@ -162,7 +162,7 @@ public class Trainer {
 		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
-	public static FeatureMetaData[] FEATURES_HPOS = {
+	public final static FeatureMetaData[] FEATURES_HPOS = {
 		FeatureMetaData.UNUSED,
 		FeatureMetaData.UNUSED,
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
@@ -190,7 +190,7 @@ public class Trainer {
 		new FeatureMetaData(INFO_CHARPOS, new String[] {"char", "pos"}, 0)
 	};
 
-	public static FeatureMetaData[] FEATURES_ALL = {
+	public final static FeatureMetaData[] FEATURES_ALL = {
 		new FeatureMetaData(TOKEN, new String[] {"", "LT(-1)"}, 1),
 		new FeatureMetaData(BOOL,  new String[] {"Strt", "line"}, 1),
 		new FeatureMetaData(RULE,  new String[] {"LT(-1)", "right ancestor"}, 1),
