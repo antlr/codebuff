@@ -5,7 +5,6 @@ import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenSource;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.Arrays;
@@ -50,14 +49,6 @@ public class InputDocument {
 		if ( root!=null ) {
 			tokenToNodeMap = Trainer.indexTree(root);
 		}
-	}
-
-	public Class<? extends Parser> getParserClass() {
-		return parser.getClass();
-	}
-
-	public Class<? extends TokenSource> getLexerClass() {
-		return tokens.getTokenSource().getClass();
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package org.antlr.codebuff;
 
 import org.antlr.codebuff.misc.CodeBuffTokenStream;
-import org.antlr.codebuff.misc.ParentSiblingListKey;
 import org.antlr.codebuff.misc.RuleAltKey;
 import org.antlr.codebuff.walkers.CollectTokenPairs;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -371,25 +370,6 @@ public class Trainer {
 		return CAT_ALIGN; // otherwise just line up with first token of previous line
 	}
 
-	public static boolean targetTokenIsFirstTokenOnPrevLine(Pair<ParserRuleContext,Integer> pair,
-	                                                        Token firstTokenOnPrevLine)
-	{
-		ParserRuleContext p = pair.a;
-		int childIndex = pair.b;
-		return getStartToken(p.getChild(childIndex))==firstTokenOnPrevLine;
-	}
-
-	public static Token getStartToken(ParseTree p) {
-		Token start;
-		if ( p instanceof ParserRuleContext ) {
-			start = ((ParserRuleContext) p).getStart();
-		}
-		else { // must be token
-			start = ((TerminalNode)p).getSymbol();
-		}
-		return start;
-	}
-
 	public static int getPrecedingNL(CommonTokenStream tokens, int i) {
 		int precedingNL = 0;
 		List<Token> previousWS = getPreviousWS(tokens, i);
@@ -476,20 +456,6 @@ public class Trainer {
 		return prev;
 	}
 
-	/** Walk upwards from node until we find p.start at char position and p.start
-	 *  is first token on a line; return null if there is no such ancestor p.
-	 */
-	public ParserRuleContext earliestAncestorStartingAtCharPos(ParserRuleContext node, int charpos) {
-		ParserRuleContext p = node;
-		while ( p!=null ) {
-			if ( isFirstOnLine(p.getStart()) && p.getStart().getCharPositionInLine()==charpos ) {
-				return p;
-			}
-			p = p.getParent();
-		}
-		return null;
-	}
-
 	/** Walk upwards from node until we find a child of p at t's char position.
 	 *  Don't see alignment with self, t, or element *after* us.
 	 *  return null if there is no such ancestor p.
@@ -539,14 +505,6 @@ public class Trainer {
 			p = p.getParent();
 		}
 		return p;
-	}
-
-	public boolean isFirstOnLine(Token t) {
-		Token prevToken = tokens.getPreviousRealToken(t.getTokenIndex());
-		if ( prevToken==null ) {
-			return true; // if we are first token, must be first on line
-		}
-		return t.getLine()>prevToken.getLine();
 	}
 
 	public int[] getFeatures(int i)	{
@@ -670,14 +628,6 @@ public class Trainer {
 		return len;
 	}
 
-	public static String getSiblingsText(List<? extends ParserRuleContext> siblings) {
-		StringBuilder buf = new StringBuilder();
-		for (ParserRuleContext sib : siblings) {
-			buf.append(sib.getText());
-		}
-		return buf.toString();
-	}
-
 	public static String getText(List<? extends Token> tokens) {
 		if ( tokens==null ) return "";
 		StringBuilder buf = new StringBuilder();
@@ -687,20 +637,6 @@ public class Trainer {
 		return buf.toString();
 	}
 
-
-	public static int getMatchingSymbolOnDiffLine(Corpus corpus,
-	                                              InputDocument doc,
-	                                              TerminalNode node,
-	                                              int line)
-	{
-		TerminalNode matchingLeftNode = getMatchingLeftSymbol(corpus, doc, node);
-		if (matchingLeftNode != null) {
-//			System.out.println(node.getPayload()+" matches with "+matchingLeftNode.getSymbol());
-			int matchingLeftTokenLine = matchingLeftNode.getSymbol().getLine();
-			return matchingLeftTokenLine != line ? 1 : 0;
-		}
-		return NOT_PAIR;
-	}
 
 	public static int getMatchingSymbolStartsLine(Corpus corpus,
 	                                              InputDocument doc,
@@ -743,89 +679,6 @@ public class Trainer {
 			}
 		}
 		return NOT_PAIR;
-	}
-
-	/** Walk upwards checking for an ancestor that is a sibling list element.
-	 *  Only consider lists identified by the corpus if there are more than
-	 *  one actual elements in the list for node.  For example, a grammar
-	 *  alt with just element X is in a list from corpus as alternative:element
-	 *  is a pair in rootAndChildListPairs. But, it is a singleton list. Ignore
-	 *  it and look upwards to the altList:alternative pair and see if there
-	 *  is more than one alt in the altList.
-	 *
-	 *  The earliestLeftAncestor is the highest child we'll look at for
-	 *  efficiency reasons.
-	 */
-	public static ParserRuleContext getMemberOfSiblingList(Corpus corpus,
-	                                                       TerminalNode node,
-	                                                       ParserRuleContext earliestLeftAncestor)
-	{
-		ParserRuleContext child = (ParserRuleContext)node.getParent();
-		if ( child==null ) return null;
-		ParserRuleContext parent = child.getParent();
-		ParserRuleContext childMemberOfList = null;
-		while ( parent!=null ) {
-			ParentSiblingListKey pair = new ParentSiblingListKey(parent, child, node.getSymbol().getType());
-			if ( corpus.rootAndChildListStats.containsKey(pair) ) {
-				// count children
-				List<? extends ParserRuleContext> siblings = parent.getRuleContexts(child.getClass());
-//				if ( siblings.size()>1 ) {
-				childMemberOfList = child;
-				break; // stop at FIRST opportunity up the tree
-//				}
-			}
-			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
-			child = parent;
-			parent = parent.getParent();
-		}
-
-		if ( childMemberOfList!=null ) {
-//			child = childMemberOfList;
-//			parent = childMemberOfList.getParent();
-//			List<? extends ParserRuleContext> siblings = parent.getRuleContexts(childMemberOfList.getClass());
-//			int len = getSiblingsLength(siblings);
-//			Quad<Integer, Integer, Integer, Integer> pair = new Quad<>(
-//				parent.getRuleIndex(), parent.getAltNumber(),
-//				child.getRuleIndex(), child.getAltNumber()
-//			);
-//			Triple<Integer, Integer, Integer> info = rootAndChildListPairs.get(pair);
-//			System.out.println(StringUtils.abbreviate(parent.getText(),30)+"; "+len+" actual vs "+info);
-		}
-
-		return childMemberOfList;
-	}
-
-	/** Walk upwards checking for an ancestor that is a sibling list element.
-	 *  Only consider lists identified by the corpus if there are more than
-	 *  one actual elements in the list for node.  For example, a grammar
-	 *  alt with just element X is in a list from corpus as alternative:element
-	 *  is a pair in rootAndChildListPairs. But, it is a singleton list. Ignore
-	 *  it and look upwards to the altList:alternative pair and see if there
-	 *  is more than one alt in the altList.
-	 *
-	 *  The earliestLeftAncestor is the highest child we'll look at for
-	 *  efficiency reasons.
-	 */
-	public static ParserRuleContext getEarliestMemberOfSiblingList(
-		Corpus corpus,
-		TerminalNode node,
-		ParserRuleContext earliestLeftAncestor
-	                                                              )
-	{
-		ParserRuleContext child = (ParserRuleContext)node.getParent();
-		if ( child==null ) return null;
-		ParserRuleContext parent = child.getParent();
-		ParserRuleContext childMemberOfList = null; // track last good match we found
-		while ( parent!=null ) {
-			ParentSiblingListKey pair = new ParentSiblingListKey(parent, child, node.getSymbol().getType());
-			if ( corpus.rootAndChildListStats.containsKey(pair) ) {
-				childMemberOfList = child;
-			}
-			if ( child==earliestLeftAncestor ) break; // we've hit last opportunity to check for sibling list
-			child = parent;
-			parent = parent.getParent();
-		}
-		return childMemberOfList;
 	}
 
 	public static TerminalNode getMatchingLeftSymbol(Corpus corpus,
@@ -943,7 +796,6 @@ public class Trainer {
 					}
 					break;
 				case INT :
-				case COLWIDTH:
 				case INFO_LINE:
 				case INFO_CHARPOS:
 					if ( showInfo ) {

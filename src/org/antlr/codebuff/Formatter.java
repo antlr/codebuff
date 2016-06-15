@@ -67,8 +67,8 @@ public class Formatter {
 	 */
 	public Map<Token,Pair<Boolean,Integer>> tokenToListInfo;
 
-	public CodekNNClassifier wsClassifier;
-	public CodekNNClassifier hposClassifier;
+	public kNNClassifier wsClassifier;
+	public kNNClassifier hposClassifier;
 	public int k;
 	public FeatureMetaData[] wsFeatures = FEATURES_INJECT_WS;
 	public FeatureMetaData[] hposFeatures = FEATURES_HPOS;
@@ -132,8 +132,8 @@ public class Formatter {
 		this.realTokens = getRealTokens(testDoc.tokens);
 		// squeeze out ws and kill any line/col info so we can't use ground truth by mistake
 		wipeCharPositionInfoAndWhitespaceTokens(testDoc.tokens); // all except for first token
-		wsClassifier = new CodekNNClassifier(corpus, wsFeatures, corpus.injectWhitespace);
-		hposClassifier = new CodekNNClassifier(corpus, hposFeatures, corpus.hpos);
+		wsClassifier = new kNNClassifier(corpus, wsFeatures, corpus.injectWhitespace);
+		hposClassifier = new kNNClassifier(corpus, hposFeatures, corpus.hpos);
 
 		analysis = new Vector<>(testDoc.tokens.size());
 		analysis.setSize(testDoc.tokens.size());
@@ -190,7 +190,7 @@ public class Formatter {
 		int[] featuresForAlign = new int[features.length];
 		System.arraycopy(features, 0, featuresForAlign, 0, features.length);
 
-		int injectNL_WS = wsClassifier.classify2(k, features, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
+		int injectNL_WS = wsClassifier.classify(k, features, Trainer.MAX_WS_CONTEXT_DIFF_THRESHOLD);
 
 		injectNL_WS = emitCommentsToTheLeft(tokenIndexInStream, injectNL_WS);
 
@@ -217,7 +217,7 @@ public class Formatter {
 			// getFeatures() doesn't know what line curToken is on. If \n, we need to find exemplars that start a line
 			featuresForAlign[INDEX_FIRST_ON_LINE] = 1; // use \n prediction to match exemplars for alignment
 
-			alignOrIndent = hposClassifier.classify2(k, featuresForAlign, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
+			alignOrIndent = hposClassifier.classify(k, featuresForAlign, MAX_ALIGN_CONTEXT_DIFF_THRESHOLD);
 
 			if ( (alignOrIndent&0xFF)==CAT_ALIGN_WITH_ANCESTOR_CHILD ) {
 				align(alignOrIndent, node);

@@ -435,17 +435,6 @@ public class Tool {
 					count += featureTypes[i].mismatchCost;
 				}
 			}
-			else if ( type==FeatureType.COLWIDTH ) {
-				// threshold any len > RIGHT_MARGIN_ALARM
-				int a = A[i];
-				int b = B[i];
-//				int a = Math.min(A[i], WIDE_LIST_THRESHOLD);
-//				int b = Math.min(B[i], WIDE_LIST_THRESHOLD);
-//				count += Math.abs(a-b) / (float) WIDE_LIST_THRESHOLD; // normalize to 0..1
-//				count += sigmoid(a-b, 37);
-				double delta = Math.abs(sigmoid(a, 43)-sigmoid(b, 43));
-				count += delta;
-			}
 		}
 		return count;
 	}
@@ -639,20 +628,6 @@ public class Tool {
 		return buf.toString();
 	}
 
-	public static int getNumberRealTokens(CommonTokenStream tokens, int from, int to) {
-		if ( tokens==null ) return 0;
-		int n = 0;
-		if ( from<0 ) from = 0;
-		if ( to>tokens.size() ) to = tokens.size()-1;
-		for (int i = from; i <= to; i++) {
-			Token t = tokens.get(i);
-			if ( t.getChannel()==Token.DEFAULT_CHANNEL ) {
-				n++;
-			}
-		}
-		return n;
-	}
-
 	public static String spaces(int n) {
 		return sequence(n, " ");
 //		StringBuilder buf = new StringBuilder();
@@ -734,22 +709,6 @@ public class Tool {
 			}
 		}
 		return join(whiteSpaces, " | ");
-	}
-
-	// In some case, before a new line sign, there maybe some white space.
-	// But those white spaces won't change the look of file.
-	// To compare if two WS are the same, we should remove all the shite space before the first '\n'
-	public static boolean TwoWSEqual(String a, String b) {
-		String newA = a;
-		String newB = b;
-
-		int aStartNLIndex = a.indexOf('\n');
-		int bStartNLIndex = b.indexOf('\n');
-
-		if (aStartNLIndex > 0) newA = a.substring(aStartNLIndex);
-		if (bStartNLIndex > 0) newB = b.substring(bStartNLIndex);
-
-		return newA.equals(newB);
 	}
 
 	public static void printOriginalFilePiece(InputDocument doc, CommonToken originalCurToken) {
