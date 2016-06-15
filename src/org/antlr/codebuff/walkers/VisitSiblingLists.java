@@ -88,6 +88,7 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 
 		if ( hasSurroundingTokens ) {
 			tokenToListInfo.put(prefixToken, new Pair<>(isOversizeList, Trainer.LIST_PREFIX));
+			tokenToListInfo.put(suffixToken, new Pair<>(isOversizeList, Trainer.LIST_SUFFIX));
 		}
 
 		List<Tree> separators = getSeparators(ctx, siblings);
@@ -101,10 +102,6 @@ public abstract class VisitSiblingLists implements ParseTreeListener {
 		tokenToListInfo.put(first.getStart(), new Pair<>(isOversizeList, Trainer.LIST_FIRST_ELEMENT));
 		for (ParserRuleContext s : siblings.subList(1,siblings.size())) {
 			tokenToListInfo.put(s.getStart(), new Pair<>(isOversizeList, Trainer.LIST_MEMBER));
-		}
-
-		if ( hasSurroundingTokens ) {
-			tokenToListInfo.put(suffixToken, new Pair<>(isOversizeList, Trainer.LIST_SUFFIX));
 		}
 
 		return tokenToListInfo;
