@@ -114,7 +114,15 @@ public class CollectSiblingLists extends VisitSiblingLists {
 
 		Map<Token, Pair<Boolean, Integer>> tokenInfo =
 			getInfoAboutListTokens(ctx, tokens, tokenToNodeMap, siblings, isSplitList);
-		tokenToListInfo.putAll(tokenInfo);
+
+		// copy sibling list info for associated tokens into overall list
+		// but don't overwrite existing so that most general (largest construct)
+		// list information is use/retained (i.e., not overwritten).
+		for (Token t : tokenInfo.keySet()) {
+			if ( !tokenToListInfo.containsKey(t) ) {
+				tokenToListInfo.put(t, tokenInfo.get(t));
+			}
+		}
 	}
 
 	// for debugging

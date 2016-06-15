@@ -1,0 +1,48 @@
+package Libraries.Containers.Blueprints
+
+/*
+
+Inheriting from the Containers class provides a basic blueprint for container
+objects.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.Container
+
+class MyClass is Container
+    action GetSize returns integer
+        //implement here
+    end
+end
+*/
+
+
+class Container
+
+    /*
+        This action retrieves the number of elements in the container. 
+
+        Attribute: Returns Returns an integer value representing the size of the container.
+    */
+
+
+    blueprint action GetSize returns integer
+
+    /*
+        This action empty's the list, clearing out all of the items contained within it. 
+    */
+
+
+blueprint action Empty
+
+    /*
+        This action returns a boolean value, true if the container is empty and false if it contains any items. 
+
+        Attribute: Returns Returns true when the container is empty and false when it is not. 
+    */
+
+
+blueprint action IsEmpty returns boolean
+end

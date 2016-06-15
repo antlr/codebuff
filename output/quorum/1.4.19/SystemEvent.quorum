@@ -1,0 +1,376 @@
+package Libraries.Accessibility
+
+use Libraries.Accessibility.AccessibilityEvent
+use Libraries.Accessibility.AccessibleChild
+use Libraries.Containers.Array
+
+/*
+    The SystemEvent class is used to represent an event that happened on the 
+    system. It has four components (category, act, component, and component 
+    name) to describe the event. These components are typically used as 
+    described in the Legam Screen Reader XML documentation.
+
+    Attribute: Example
+
+    KeyboardEvent kevent
+    kevent:SetCategory("Window")
+    kevent:SetAction("MoveOrResize")
+    kevent:SetComponent("Window")
+    kevent:SetComponentName("Sodbeans")
+    say(kevent:GetDescription())
+
+*/
+
+
+class SystemEvent is AccessibilityEvent
+
+    private text category = ""
+                  private text act = ""
+                  private text component = ""
+                  private text componentName = ""
+                  private text keyboardShortcut = ""
+                  private integer childCount = 0
+                  private Array<AccessibleChild> children
+                  constant text focus = "Focus"
+                  constant text window = "Window"
+                  constant text mouseCaptureStart = "MouseCaptureStart"
+                  constant text mouseCaptureStop = "MouseCaptureStop"
+    
+    
+    /*
+        This action gets the category of the system event. The categories are 
+        used to distinguish events (e.g. Focus, Window, Menu...).
+        
+        Attribute: Returns text of what the category is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        text category = event:GetCategory()
+    */
+
+
+    action GetCategory() returns text
+        return category
+    end
+
+    /*
+        This action implements the inherited GetAction action from the 
+        AccessibilityEvent class. 
+
+        This action gets the act of the system event. The acts are used to define 
+        what event happened (e.g. Minimize, MenuOpen, ElementTriggered...).
+        
+        Attribute: Returns text of what the act is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        text act = event:GetAction()
+    */
+
+
+    action GetAction() returns text
+        return act
+    end
+
+    /*
+        This action gets the component of the system event. The component is used to define 
+        what object the event happened to (e.g. Button, Window, Toolbar...).
+        
+        Attribute: Returns text of what the component is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        text component = event:GetComponent()
+    */
+
+
+    action GetComponent() returns text
+        return component
+    end
+
+    /*
+        This action gets the component name of the system event. The component 
+        name is the title given to the object the event happened to.
+        
+        Attribute: Returns text of what the component name is.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        text componentName = event:GetComponentName()
+    */
+
+
+    action GetComponentName() returns text
+        return componentName
+    end
+
+    /*
+        This action sets the category of the system event. The categories are 
+        used to distinguish events (e.g. Focus, Window, Menu...).
+        
+        Attribute: Parameter value The text of the category.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        event:SetCategory("Focus")
+    */
+
+
+    action SetCategory(text newCategory)
+        category = newCategory
+    end
+
+    /*
+        This action sets the act of the system event. The acts are used to define 
+        what event happened (e.g. Minimize, MenuOpen, ElementTriggered...).
+        
+        Attribute: Parameter value The text of the act.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        event:SetAction("CreateComponent")
+    */
+
+
+    action SetAction(text newAct)
+        act = newAct
+    end
+
+    /*
+        This action sets the component of the system event. The component is used to 
+        define what object the event happened to (e.g. Button, Window, Toolbar...).
+        
+        Attribute: Parameter value The text of the component.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        event:SetComponent("List")
+    */
+
+
+    action SetComponent(text newComponent)
+        if newComponent = " "
+            component = "item"
+        else
+            component = newComponent
+        end
+    end
+
+    /*
+        This action sets the component name of the system event. The component 
+        name is the title given to the object the event happened to.
+        
+        Attribute: Parameter value The text of the component name.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        event:SetComponent("Files")
+    */
+
+
+    action SetComponentName(text newComponentName)
+        componentName = newComponentName
+    end
+
+    /*
+        This action implements the inherited GetDescription action from the 
+        AccessibilityEvent class. 
+
+        This action gets a string to describe the event.
+        
+        Attribute: Returns Text to describe the event.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        text result = event:GetDescription()
+    */
+
+
+    action GetDescription() returns text
+        boolean focusResult = (category = focus)
+        boolean windowResult = (category = window)
+        if focusResult
+            if act = mouseCaptureStart
+                return (component + " " + componentName + " has mouse capture.")
+            elseif act = mouseCaptureStop
+                return (component + " " + componentName + " released mouse capture.")
+            end
+
+            return (component + " " + componentName + " Focused.")
+        elseif windowResult
+            return ("Window " + componentName + " " + act)
+        else
+            Text comp
+            comp:SetValue(component)
+            Text compName
+            compName:SetValue(componentName)
+
+            if ((comp:GetSize() not= 0) and (compName:GetSize() not= 0))
+                return (component + " " + componentName + " " + act)
+            elseif (comp:GetSize() not= 0)
+                return (component + " " + act)
+            else
+                return (act)
+            end
+        end
+    end
+
+    /*
+        This action gets a string that represents the keyboard shortcut of the 
+        component that triggered the event. 
+        
+        Attribute: Returns Text to represent the keyboard shortcut.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        text result = event:GetKeyboardShortcut()
+    */
+
+
+    action GetKeyboardShortcut() returns text
+        return keyboardShortcut
+    end
+
+    /*
+        This action gets the number of children the component that triggered the 
+        event had. 
+        
+        Attribute: Returns Integer to represent the number of children.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        integer result = event:GetChildCount()
+    */
+
+
+    action GetChildCount() returns integer
+        return childCount
+    end
+
+    /*
+        This action sets the string that represents the keyboard shortcut of the 
+        component that triggered the event. 
+        
+        Attribute: Parameter value Text to represent the keyboard shortcut.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        event:SetKeyboardShortcut("cmd + M")
+    */
+
+
+    action SetKeyboardShortcut(text newShortcut)
+        keyboardShortcut = newShortcut
+    end
+    
+    /*
+        This action sets the number of children the component that triggered the 
+        event had. 
+        
+        Attribute: Parameter value Integer to represent the number of children.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        event:SetChildCount(7)
+    */
+
+
+    action SetChildCount(integer newChildCount)
+        childCount = newChildCount
+    end
+
+    /*
+        This action adds an AccessibleChild to the event. These children 
+        represent all of the children that component that triggered the 
+        event has (e.g. the "Save" menu item is a child of the "File" menu).
+        
+        Attribute: Parameter value AccessibleChild to represent a child.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        AccessibleChild child
+        child:SetName("Save")
+        child:SetComponentType("MenuItem")
+        child:SetKeyboardShortcut("cmd + S")
+        event:AddChild(child)
+    */
+
+
+    action AddChild(AccessibleChild newChild)
+        children:Add(newChild)
+    end
+
+    /*
+        This action gets an AccessibleChild from the event. These children 
+        represent all of the children that component that triggered the 
+        event has (e.g. the "Save" menu item is a child of the "File" menu).
+        
+        Attribute: Parameter value Integer as the index of the child to get.
+
+        Attribute: Returns AccessibleChild at the index given.
+
+        Attribute: Example
+
+        use Libraries.Accessibility.all
+
+        SystemEvent event
+        integer i = 0
+        repeat while i < event:GetChildCount()
+            AccessibleChild c = e:GetChild(i)
+            output c:GetName()
+            i = i + 1
+        end
+    */
+
+
+    action GetChild(integer index) returns AccessibleChild
+        if (index >= 0) and (index < childCount)
+            return children:Get(index)
+        else
+            AccessibleChild emptyChild
+            return emptyChild
+        end
+    end
+end

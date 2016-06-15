@@ -42,7 +42,15 @@ public class IdentifyOversizeLists extends VisitSiblingLists {
 		boolean oversize = isOversizeList(ctx, siblings, separator);
 		Map<Token, Pair<Boolean, Integer>> tokenInfo =
 			getInfoAboutListTokens(ctx, tokens, tokenToNodeMap, siblings, oversize);
-		tokenToListInfo.putAll(tokenInfo);
+
+		// copy sibling list info for associated tokens into overall list
+		// but don't overwrite existing so that most general (largest construct)
+		// list information is use/retained (i.e., not overwritten).
+		for (Token t : tokenInfo.keySet()) {
+			if ( !tokenToListInfo.containsKey(t) ) {
+				tokenToListInfo.put(t, tokenInfo.get(t));
+			}
+		}
 	}
 
 	/** Return true if we've only seen parent-sibling-separator combo as a split list.

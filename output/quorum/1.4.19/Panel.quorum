@@ -1,0 +1,377 @@
+package Libraries.Interface
+
+use Libraries.Game.Graphics.Color
+use Libraries.Game.Graphics.Drawable
+use Libraries.Interface.Item2D
+
+/*
+    The Panel class is an extension of the Libraries.Interface.Item class, and
+    contains actions to automatically handle a background and a border.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:SetPosition(100, 100)
+                myPanel:Initialize(100, 100)
+                Add(myPanel)
+            end
+
+        end
+*/
+
+
+class Panel is Item2D
+
+    boolean hasBorder = false
+            boolean hasBackground = false
+            Color borderColor
+            Color backgroundColor
+            Drawable border = undefined
+            Drawable background = undefined
+
+
+    on create
+        borderColor = borderColor:Gray()
+        backgroundColor = backgroundColor:LightGray()
+    end
+
+    /*
+    The Initialize action sets the starting width and height of the panel, and
+    loads the default background and border.
+
+    Attribute: Parameter width The width of the panel object.
+    Attribute: Parameter height The height of the panel object.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:Initialize(100, 100)
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action Initialize(number width, number height)
+                SetWidth(width)
+                SetHeight(height)
+                EnableBackground()
+                EnableBorder()
+                SetName("Panel")
+            end
+
+    /*
+    The EnableBackground action loads the background of the panel.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:SetWidth(75)
+                myPanel:SetHeight(125)
+                myPanel:EnableBackground()
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action EnableBackground
+                if hasBackground = true
+                    return now
+                end
+                Drawable back
+                back:LoadFilledRectangle(cast(integer, GetWidth()), cast(integer, GetHeight()), backgroundColor)
+                background = back
+                background:SetName("Panel Background")
+                Add(0, background)
+                hasBackground = true
+            end
+
+    /*
+    The DisableBackground action removes the background from a panel.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:Initialize(100, 100)
+                myPanel:DisableBackground()
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action DisableBackground
+                if hasBackground = false
+                    return now
+                end
+
+                Remove(0)
+                background:Dispose()
+                background = undefined
+                hasBackground = false
+            end
+
+    /*
+    This action sets the color of the panel's background using a 
+    Libraries.Game.Graphics.Color object.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+        use Libraries.Game.Graphics.Color
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Color yellow
+                yellow:SetColor(1, 1, 0, 1)
+                Panel myPanel
+                myPanel:Initialize(100, 100)
+                myPanel:SetBackgroundColor(color)
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action SetBackgroundColor(Color color)
+                backgroundColor = color
+                if hasBackground = true
+            //DisableBackground()
+            //EnableBackground()
+
+                    background:SetColor(color)
+                end
+            end
+
+    /*
+    This action loads the border for this panel.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:SetWidth(120)
+                myPanel:SetHeight(100)
+                myPanel:EnableBorder()
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action EnableBorder
+                if hasBorder = true
+                    return now
+                end
+
+                integer borderIndex = 0
+                if hasBackground
+                    borderIndex = 1
+                end
+                Drawable bord
+                bord:LoadRectangle(cast(integer, GetWidth()), cast(integer, GetHeight()), borderColor)
+                border = bord
+                border:SetName("Panel Border")
+                Add(borderIndex, border)
+                hasBorder = true
+            end
+
+    /*
+    This action removes the border from a panel.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:Initialize(120, 100)
+                myPanel:DisableBorder()
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action DisableBorder
+                if hasBorder = false
+                    return now
+                end
+
+                integer borderIndex = 0
+                if hasBackground
+                    borderIndex = 1
+                end
+
+                Remove(borderIndex)
+                border:Dispose()
+                border = undefined
+                hasBorder = false
+            end
+
+    /*
+    This action sets the color of the panel's background using a 
+    Libraries.Game.Graphics.Color object.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+        use Libraries.Game.Graphics.Color
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Color blue
+                blue:SetColor(0, 0, 1, 1)
+                Panel myPanel
+                myPanel:Initialize(100, 100)
+                myPanel:SetBorderColor(color)
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action SetBorderColor(Color color)
+                borderColor = color
+                if hasBorder = true
+            //DisableBorder()
+            //EnableBorder()
+
+                    border:SetColor(color)
+                end
+            end
+
+    /*
+    This action returns whether or not this panel currently has a background.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:Initialize(100, 100)
+                boolean hasBackground = myPanel:IsBackgroundEnabled()
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action IsBackgroundEnabled returns boolean
+                return hasBackground
+            end
+
+    /*
+    This action returns whether or not this panel currently has a border.
+
+    Attribute: Example
+
+        use Libraries.Interface.Panel
+        use Libraries.Game.Game
+
+        class Main is Game
+
+            action Main
+                StartGame()
+            end
+
+            action CreateGame
+                Panel myPanel
+                myPanel:Initialize(100, 100)
+                boolean hasBorder = myPanel:IsBorderEnabled()
+                Add(myPanel)
+            end
+
+        end
+    */
+
+
+            action IsBorderEnabled returns boolean
+                return hasBorder
+            end
+end

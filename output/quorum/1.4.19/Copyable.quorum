@@ -1,0 +1,42 @@
+package Libraries.Containers.Blueprints
+
+/*
+
+Inheriting from the Copyable class provides a basic blueprint for copying
+a particular object.
+
+Attribute: Author Andreas and Melissa Stefik
+
+Attribute: Example
+
+use Libraries.Containers.Blueprints.Copyable
+
+class MyClass is Copyable
+    action Copy returns Object
+        MyClass mine
+        //set whatever properties you want
+        return mine
+    end
+end
+*/
+
+
+class Copyable 
+
+    /*
+        This blueprint action copies an object and returns the copy. 
+
+        Attribute: Returns Returns a copy of this object. This copy is not guaranteed
+        to be a deep copy.
+        
+        Attribute: Example
+        //the list class is Copyable
+        List<integer> list
+        Object o = list:Copy()
+        List<integer> copy = cast(List<integer>, o)
+    */
+
+
+    blueprint action Copy returns Object
+
+end

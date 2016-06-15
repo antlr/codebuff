@@ -1,0 +1,36 @@
+package Libraries.Language.Errors
+
+use Libraries.Language.Errors.Error
+
+/*
+The InvalidPathError class is an error or exception that is thrown when
+a path specified for a required operation is not valid. There may be many
+reasons for this, including referencing a path using illegal characters
+(such as including a "<" in a file name on Windows), or if a specific type
+of path is required and is not given (e.g. an absoltue path vs. a relative
+path). 
+
+Attribute: Example
+
+use Libraries.Language.Errors.EndOfFileError
+use Libraries.Containers.File
+
+class Main
+   action Main
+      File file
+      check
+        file:SetRelativePath("C:\hello.txt") // see "Path" documentation for more information on absolute vs. relative paths.
+      detect e is InvalidPathError
+        // We will detect an error here, as "C:\hello.txt" is not a relative path!
+        output "Bad path: " + e:GetErrorMessage()
+      end
+   end
+end
+*/
+
+
+class InvalidPathError is Error
+    on create
+        SetErrorMessage("InvalidPathError: The specified path is not valid for this operation.")
+    end
+end

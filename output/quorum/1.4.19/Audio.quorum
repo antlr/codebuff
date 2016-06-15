@@ -1,0 +1,1739 @@
+package Libraries.Sound
+
+use Libraries.System.File
+use Libraries.System.Properties
+use Libraries.System.SystemHelper
+use Libraries.Compute.Vector3
+
+/*
+The Audio class can be used to play sound files and change how they are played.
+Before playing audio, a file must be loaded first. For most audio, this is done
+with a normal Load action. If you want to load a long audio file, like a song or
+music, you can use the advanced LoadToStream action instead. The Audio class
+will support audio files with the .wav or .ogg extensions. If you try to load a
+different file type, or try to play audio before you've loaded a file, a generic
+runtime Error will be thrown. After you're done with the Audio, you should call
+Dispose() to let the system know you're done with the file.
+
+
+Attribute: Example
+
+use Libraries.Sound.Audio
+use Libraries.System.File
+
+// We need to first create Audio and File objects to use.
+Audio audio
+File file
+
+// We have to set our file so its path is the file we want to use for Audio.
+// When writing your own code, test.wav should be replaced with your file.
+file:SetPath("test.wav")
+
+// Now that our file is set up, we can load that file as audio.
+audio:Load(file)
+
+// After we load the file, we can play it with a call to PlayUntilDone().
+audio:PlayUntilDone()
+
+*/
+
+class Audio
+    
+    /*
+    The Load action will retrieve an audio file to be used by the Audio class. 
+    After we've loaded the file, we can play and stop audio, or change how it's
+    played.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+    use Libraries.System.File
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // To load from a file, we'll also need to create one of those.
+    File file
+
+    // In this example, we'll load a file called "beep.ogg" from a folder called
+    // "Sounds" in our project.
+    file:SetPath("Sounds/beep.ogg")
+
+    // Now that our file is set up, we can load that file as audio.
+    audio:Load(file)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    */
+
+    system action Load(File file)
+
+
+    /*
+    For convenience, Load can also be called using just a file name. This is the
+    same as making a file, calling SetPath, and calling Load with that file.
+    Compare the below example to the example for Load when using a file.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // To load a file that is directly accessible from our project folder, we
+    // can skip making a file and just pass the fle location directly to the
+    // Load action.
+    // This will load the same "beep.ogg" file as in the previous example.
+    audio:Load("Sounds/beep.ogg")
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    */
+
+
+action Load(text filePath)
+   File file
+   file:SetPath(filePath)
+   Load(file)
+end
+
+
+    /*
+    The LoadToStream action will prepare an audio file to be streamed. While a
+    normal Load action makes a copy of the sound so it can be played all at
+    once, the LoadToStream action gets sound data in small chunks without making
+    a copy of the entire thing. To play the next "chunk" of data, use the Stream
+    action. This is useful for long sounds or music, where it could take a long
+    time to copy the entire audio file.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+    use Libraries.System.File
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // To load from a file, we'll also need to create one of those.
+    File file
+
+    // In this example, we'll load a file called "LongSong.ogg" from a folder 
+    // called "Sounds" in our project.
+    file:SetPath("Sounds/LongSong.ogg")
+
+    // Since our audio file is large, it makes sense to load it for streaming.
+    audio:LoadToStream(file)
+
+    // After we load the file, we can begin playing it with Play(). This will
+    // play the first "chunk" of data we loaded from the stream.
+    audio:Play()
+
+    // To play the whole song, we will need to keep loading chunks of data until
+    // the song is finished. To do this, we will use the repeat structure.
+
+    // This will continuously call our code until we have played the whole song.
+    repeat while audio:IsPlaying()
+        // This will load and play the next chunk of sound data.
+        audio:Stream()
+    end
+
+    */
+
+
+system action LoadToStream(File file)
+
+
+    /*
+    The LoadToStream action can also be called using just a path to where a file
+    is located for convenience. This is the same as making a file, calling 
+    SetPath, and calling LoadToStream with that file.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // In this example, we'll load a file called "LongSong.ogg" from a folder 
+    // called "Sounds" in our project.
+    // Since our audio file is large, it makes sense to load it for streaming.
+    audio:LoadToStream("Sounds/LongSong.ogg")
+
+    // After we load the file, we can begin playing it with Play(). This will
+    // play the first "chunk" of data we loaded from the stream.
+    audio:Play()
+
+    // To play the whole song, we will need to keep loading chunks of data until
+    // the song is finished. To do this, we will use the repeat structure.
+
+    // This will continuously call our code until we have played the whole song.
+    repeat while audio:IsPlaying()
+        // This will load and play the next chunk of sound data.
+        audio:Stream()
+    end
+
+    */
+
+
+action LoadToStream(text filePath)
+   File file
+   file:SetPath(filePath)
+   LoadToStream(file)
+end
+
+
+    /*
+    Once we've prepared our audio file with either the Load or LoadToStream
+    actions, we can play the file. If we prepared the file with Load, using the
+    Play action will play the entire song. If we prepared it with LoadToStream,
+    we use Play to start the sound, then we call Stream() repeatedly to play the
+    rest of the sound.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We will first load a sound normally with the Load command. Most sounds
+    // should be loaded this way.
+    audio:Load("ShortSound.wav")
+
+    // After we load the file, we can play it with a call to Play().
+    audio:Play()
+
+    // We can also use the Play action with streamed audio.
+    Audio longAudio
+    longAudio:LoadToStream("LongSound.wav")
+    
+    // Using Play() on longAudio will start the stream. We will have to keep
+    // calling Stream() to play the whole sound.
+
+    longAudio:Play()
+
+    repeat while longAudio:IsPlaying()
+        longAudio:Stream()
+    end
+
+    */
+
+
+system action Play
+
+    /*
+    If you want to make a program wait until your audio has stopped playing to
+    continue, use the PlayUntilDone action. This action won't work on streamed
+    audio, only on audio loaded with the Load() action. The audio file will
+    always play just once, even if looping is enabled. If this action is used
+    on a streaming audio file, nothing will happen.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We will first load a sound normally with the Load command. Most sounds
+    // should be loaded this way.
+    audio:Load("ShortSound.wav")
+
+    // Now that our file is loaded, we can play the sound.
+    audio:PlayUntilDone()
+    
+    // This output statement will be called after the entire sound has played.
+    output "Finished playing audio!"
+
+    */
+
+
+action PlayUntilDone
+   if IsStreaming()
+       return now
+   end
+
+   Play()
+   boolean wasLooping = IsLoopingEnabled()
+   if wasLooping
+       DisableLooping()
+   end
+
+   SystemHelper helper
+   repeat while IsPlaying()
+       helper:Sleep(100)
+   end
+
+   if wasLooping
+       EnableLooping()
+   end
+end
+    
+    /*
+    The Stop action will stop audio if it is currently playing. If it is not
+    playing, it will do nothing.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("ding.wav")
+
+    // After we load the file, we can play it with a call to Play().
+    audio:Play()
+
+    // Now that audio is playing, we can stop it at any time by calling Stop().
+    audio:Stop()
+
+    */
+
+
+system action Stop
+
+
+    /*
+    The Pause action will temporarily stop playing a sound, and remember where
+    the sound was during its playback. Calling Resume will make the sound play
+    again from where it was paused.
+
+
+    */
+
+
+system action Pause
+
+    /*
+    The Resume action will resume playing an audio file that was paused. If the
+    audio was not paused, this action will have no effect.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("ding.wav")
+
+    // After we load the file, we can play it with a call to Play().
+    audio:Play()
+
+    // Now that audio is playing, we can pause it at any time by calling Pause.
+    audio:Pause()
+
+    // We can also resume the audio at any time by calling Resume.
+    audio:Resume()
+
+    */
+
+
+system action Resume
+
+    /*
+    IsPlaying returns a boolean based on the sound's current state. It will 
+    return true if the sound is currently playing, or return false if it is not.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("example.ogg")
+
+    // After we load the file, we can play it with a call to Play().
+    audio:Play()
+
+    // Because we just told the sound to play, IsPlaying() should return true,
+    // so we will enter this conditional statement.
+    if audio:IsPlaying()
+        output "The audio is playing!"
+    end
+
+    */
+
+
+system action IsPlaying returns boolean
+
+    /*
+    EnableLooping will set the audio to continuously repeat itself when reaching
+    the end of the audio instead of stopping.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We need to load our audio before we change whether or not it will loop.
+    audio:Load("test.wav")
+    
+    // We now enable looping. This will make the sound repeat forever until we
+    // stop it or call "audio:DisableLooping()".
+    audio:EnableLooping()
+
+    */
+
+
+system action EnableLooping
+
+    
+    /*
+    DisableLooping will ensure that an audio file stops playing when it reaches
+    the end of the sound, instead of repeating. This is the default behavior, so
+    it is only necessary to call this if there was a call to EnableLooping
+    earlier in the program.
+
+
+    */
+
+
+system action DisableLooping
+
+    /*
+    This action will return true or false based on whether or not the audio
+    has been set to loop.
+    */
+
+
+system action IsLoopingEnabled returns boolean
+
+    
+    /*
+    The Dispose action will stop a sound if it is playing and then free the 
+    memory that is in use by the computer. You should always use Dispose after
+    you are finished with a sound or at the end of your program to let the
+    computer know you are done with the audio file. After calling Dispose from
+    an audio object, you can then load a new audio file into it.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // In this example, we'll use LoadToStream, but Dispose can also be called
+    // on audio files prepared using Load!
+    audio:LoadToStream("Sounds/LongSong.ogg")
+
+    audio:Play()
+
+    repeat while audio:IsPlaying()
+        audio:Stream()
+    end
+
+    // At this point, the entire song will be done playing, so we can Dispose
+    // the audio to let the system know we're done playing that audio file.
+    audio:Dispose()
+
+    */
+
+
+system action Dispose
+
+    // Sets the pitch of the sound. A standard pitch is at value 1.0, or 100% of
+    // normal pitch value. To increase pitch by 20%, pass a value of 1.2.
+
+
+
+system action SetPitch(number pitch)
+
+    // Returns the currently set pitch.
+
+
+
+system action GetPitch returns number
+
+    /*
+    The SetVolume action adjusts the volume of a sound. It takes a number value
+    to set the volume to a percentage of the original sound volume. A value of
+    1.0 will play the sound at 100% of standard volume. To reduce the sound by
+    25%, for example, you would provide the number 0.75, or 75% volume.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("ding.wav")
+
+    // For this example, we will set the audio to 50%, or half, volume.
+    audio:SetVolume(0.5)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+
+    */
+
+
+system action SetVolume(number volume)
+
+    /*
+    The GetVolume action returns the currently set volume. A number value of 1.0
+    represents 100% of normal volume.
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("ding.wav")
+
+    // For this example, we will set the audio to 50%, or half, volume.
+    audio:SetVolume(0.5)
+
+    // We can get the volume back as a number using the GetVolume() action.
+    number volume = audio:GetVolume()
+
+    */
+
+
+system action GetVolume returns number
+
+    
+    /*
+    SetBalance will change how the sound is played through stereo speakers or
+    headphones. Values passed to this should always be between -1 and 1. A value 
+    of -1 will make the sound play through only the left speaker. A value of 1 
+    will play the sound only through the right speaker. A value of 0 will play
+    the sound equally through both speakers.
+
+    Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+    each other, and using one will override any others used previously.
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("noise.ogg")
+
+    // For this example, we will set the position with the value -1. This will
+    // make the sound play through only the left speaker.
+    audio:SetBalance(-1)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+
+    */
+
+
+system action SetBalance(number position)
+
+    /*
+    GetBalance will return the current balance value of the sound. A value of -1
+    represents audio fully from the left speaker. A value of 1 represents audio
+    fully from the right speaker. A value of 0 represents audio equally from
+    both speakers.
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("ding.wav")
+
+    // For this example, we will set the balance to -1.
+    audio:SetBalance(-1)
+
+    // We can get the balance back as a number using the GetBalance() action.
+    number balance = audio:GetBalance()
+    */
+
+
+system action GetBalance returns number
+
+    /*
+    The Stream action is used to load and play the next chunk of data for a file
+    that was prepared using LoadToStream. To play an audio file smoothly this
+    way, Stream should be called in a loop. When the entire audio file has been
+    played, if looping is disabled it will stop playing. If looping is enabled,
+    it will continue playing.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // In this example, we'll load a file called "LongSong.ogg" from a folder 
+    // called "Sounds" in our project.
+    // Since our audio file is large, it makes sense to load it for streaming.
+    audio:LoadToStream("Sounds/LongSong.ogg")
+
+    // After we load the file, we can begin playing it with Play(). This will
+    // play the first "chunk" of data we loaded from the stream.
+    audio:Play()
+
+    // To play the whole song, we will need to keep loading chunks of data until
+    // the song is finished. To do this, we will use the repeat structure.
+
+    // This will continuously call our code until we have played the whole song.
+    repeat while audio:IsPlaying()
+        // This will load and play the next chunk of sound data.
+        audio:Stream()
+    end
+
+    */
+
+
+system action Stream()
+
+    /*
+    IsStreaming will return if an audio file was loaded as a streaming audio
+    file. If the audio was loaded normally via the Load action, this will return
+    false. If it was loaded with LoadToStream, it will return true. 
+
+    Attribute:Example
+
+    use Libraries.Sound.Audio
+
+    // We will have two audio objects for this example.
+    Audio audio1
+    Audio audio2
+
+    // Our first object will not be streamed. Our second one will be.
+    audio1:Load("shortSound.ogg")
+    audio2:LoadToStream("longSound.ogg")
+
+    // Now we'll output which of these two audio files are set for streaming.
+    output "Was audio1 streaming? " + audio1:IsStreaming()
+    output "Was audio2 streaming? " + audio2:IsStreaming()
+    */
+
+
+system action IsStreaming() returns boolean
+
+    /*
+    SetFade will change how the sound is played through speakers that have
+    forward and back channels. Values passed to this should always be between -1
+    and 1. A value of -1 will make the sound play through only the back channel.
+    A value of 1 will play the sound only through the front channel. A value of 
+    0 will play the sound equally through both channels.
+
+    Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+    each other, and using one will override any others used previously.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("noise.ogg")
+
+    // For this example, we will set the fade with the value 1. This will make
+    // the sound play through only the front channel.
+    audio:SetFade(1)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+    */
+
+
+system action SetFade(number fade)
+
+    /*
+    GetFade will return the current fade value of the sound. A value of -1
+    represents audio fully from the rear channel. A value of 1 represents audio
+    fully from the front channel. A value of 0 represents audio equally from
+    both channels.
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("ding.wav")
+
+    // For this example, we will set the fade to -1.
+    audio:SetFade(-1)
+
+    // We can get the fade back as a number using the GetFade() action.
+    number fade = audio:GetFade()
+    */
+
+
+system action GetFade returns number
+
+    /*
+    SetX places the sound at a specific X coordinate in 3D virtual space. The
+    distance and location of the sound relative to the listener's coordinates of
+    0, 0, 0 will affect the volume of the sound as well as how it plays though
+    speakers or headphones.
+
+    Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+    each other, and using one will override any others used previously.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("noise.ogg")
+
+    // For this example, we will place the audio at 2.5 units to the right of
+    // the listener. 
+    audio:SetX(2.5)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+    */
+
+
+system action SetX(number newX)
+
+    /*
+    SetY places the sound at a specific Y coordinate in 3D virtual space. The
+    distance and location of the sound relative to the listener's coordinates of
+    0, 0, 0 will affect the volume of the sound as well as how it plays though
+    speakers or headphones.
+
+    Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+    each other, and using one will override any others used previously.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("noise.ogg")
+
+    // For this example, we will place the audio at 1 unit behind the listener.
+    audio:SetY(-1)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+    */
+
+
+system action SetY(number newY)
+
+    /*
+    SetZ places the sound at a specific Z coordinate in 3D virtual space. The
+    distance and location of the sound relative to the listener's coordinates of
+    0, 0, 0 will affect the volume of the sound as well as how it plays though
+    speakers or headphones.
+
+    Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+    each other, and using one will override any others used previously.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("noise.ogg")
+
+    // For this example, we will place the audio at 1.5 units above the listener.
+    audio:SetZ(1.5)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+    */
+
+
+system action SetZ(number newZ)
+
+    /*
+    SetPosition places the sound at a specific set of X, Y, and Z coordinates in
+    3D virtual space. The distance and location of the sound relative to the
+    listener's coordinates of 0, 0, 0 will affect the volume of the sound as 
+    well as how it plays though speakers or headphones.
+
+    Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+    each other, and using one will override any others used previously.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("noise.ogg")
+
+    // For this example, we will place the audio at 2 units to the left, 4 units
+    // in front of, and 1 unit above the listener.
+    audio:SetPosition(-2, 4, 1)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+    */
+
+
+system action SetPosition(number newX, number newY, number newZ)
+
+    /*
+    SetPosition uses the X, Y, and Z coordinates contained in a Vector3 object
+    to place the sound at a specific point in 3D virtual space. The distance and
+    location of the sound relative to the listener's coordinates will affect the
+    volume of the sound as well as how it plays though speakers or headphones.
+
+    Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+    each other, and using one will override any others used previously.
+
+
+    Attribute: Example
+
+    use Libraries.Sound.Audio
+    use Libraries.Compute.Vector3
+
+    // To use audio, we'll first need to create an object for it.
+    Audio audio
+
+    // We always have to load a sound before use.
+    audio:Load("noise.ogg")
+
+    // For this example, we will load our point into a Vector3 object.
+    Vector3 vector
+
+    // Our point will be located 2 units to the left, 4 units in front of, and 1
+    // unit above the listener.
+    vector:Set(-2, 4, 1)
+
+    // Now we can set our audio's position with the Vector3.
+    audio:SetPosition(vector)
+
+    // After we load the file, we can play it with a call to PlayUntilDone().
+    audio:PlayUntilDone()
+
+    // Once we're finished with an audio file, we need to let the computer know.
+    audio:Dispose()
+    */
+
+
+action SetPosition(Vector3 position)
+   SetPosition(position:GetX(), position:GetY(), position:GetZ())
+end
+
+    /*
+        GetX returns the current location of the sound in the X plane in virtual
+        3D space.
+
+        Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+        each other, and using one will override any others used previously.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we'll first need to create an object for it.
+        Audio audio
+
+        // We always have to load a sound before use.
+        audio:Load("noise.ogg")
+
+        // For this example, we will place the audio at 1.5 units to the left 
+        // of the listener.
+        audio:SetX(-1.5)
+
+        // We can get the x position of the sound as a number with GetX().
+        number x = audio:GetX()
+    */
+
+
+system action GetX returns number
+
+    /*
+        GetY returns the current location of the sound in the Y plane in virtual
+        3D space.
+
+        Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+        each other, and using one will override any others used previously.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we'll first need to create an object for it.
+        Audio audio
+
+        // We always have to load a sound before use.
+        audio:Load("noise.ogg")
+
+        // For this example, we will place the audio at 1.85 units in front of
+        // the listener.
+        audio:SetY(1.85)
+
+        // We can get the y position of the sound as a number with GetY().
+        number y = audio:GetY()
+    */
+
+
+system action GetY returns number 
+
+    /*
+        GetZ returns the current location of the sound in the Z plane in virtual
+        3D space.
+
+        Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+        each other, and using one will override any others used previously.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we'll first need to create an object for it.
+        Audio audio
+
+        // We always have to load a sound before use.
+        audio:Load("noise.ogg")
+
+        // For this example, we will place the audio at 1 unit below the listener.
+        audio:SetZ(-1)
+
+        // We can get the z position of the sound as a number with GetZ().
+        number z = audio:GetZ()
+    */
+
+
+system action GetZ returns number
+
+    /*
+        GetPosition will return the position of the Audio in 3D space. The
+        position will be returned as a Vector3 object.
+
+        Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+        each other, and using one will override any others used previously.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+        use Libraries.Compute.Vector3
+
+        // To use audio, we'll first need to create an object for it.
+        Audio audio
+
+        // We always have to load a sound before use.
+        audio:Load("noise.ogg")
+
+        // For this example, we will place the audio at the coordinates 3, -2, 5.
+        audio:SetPosition(3, -2, 5)
+
+        // We can get the position of the audio as a Vector3 with GetPosition().
+        Vector3 vector = audio:GetPosition()
+    */
+
+
+action GetPosition returns Vector3
+   Vector3 vector
+   vector:Set(GetX(), GetY(), GetZ())
+   return vector
+end
+
+    /*
+        EnableDoppler will make the audio automatically calculate doppler shift 
+        for this audio. Doppler is enabled by default for audio, but will have 
+        no effect until the user provides the velocity of the audio via an 
+        action, such as SetVelocity(Vector3).
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Sound.wav")
+
+        // We need to set the velocity of the audio in order to hear the doppler effect.
+        audio:SetVelocity(4, 0, -2)
+
+        // Doppler is already enabled by default, so this call would only be needed
+        // if we had previously disabled the doppler effect on this audio.
+        audio:EnableDoppler()
+    */
+
+
+system action EnableDoppler
+
+    /*
+        DisableDoppler will stop the audio from automatically calculating 
+        doppler shift.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Sound.wav")
+
+        // The doppler effect is only noticable if the audio has velocity.
+        audio:SetVelocity(4, 0, -2)
+
+        // Because we disable the doppler effect here, the velocity we just set will
+        // have no effect.
+        audio:DisableDoppler()
+    */
+
+
+system action DisableDoppler
+
+    /*
+        IsDopplerEnabled will return whether or not the audio is currently set
+        to use the doppler effect while playing. Note that by default, audio
+        will use doppler effects.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Ping.ogg")
+
+        // We will store our result in a new boolean variable. Since we haven't
+        // changed the doppler for the audio, it should return it's default
+        // state, which is true.
+        boolean doppler = audio:IsDopplerEnabled()
+    */
+
+
+system action IsDopplerEnabled returns boolean
+    
+
+    /*
+        SetVelocityX will set the velocity of the audio along the x-axis in 3D 
+        space. The velocity is measured in meters per seconds, and is used to
+        calculate doppler effects. If doppler is disabled, then the audio's 
+        velocity is ignored. Note that setting the velocity of audio will NOT 
+        automatically update the position of the audio over time!
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we need to create an object for it first.
+        Audio audio
+        
+        // We always have to load a sound before use.
+        audio:Load("Car.wav")
+
+        // For this example, we will make the sound move 20 meters per second
+        // to the left.
+        audio:SetVelocityX(20)
+    */
+
+
+system action SetVelocityX(number x)
+
+    /*
+        SetVelocityY will set the velocity of the audio along the y-axis in 3D 
+        space. The velocity is measured in meters per seconds, and is used to
+        calculate doppler effects. If doppler is disabled, then the audio's 
+        velocity is ignored. Note that setting the velocity of audio will NOT 
+        automatically update the position of the audio over time!
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we need to create an object for it first.
+        Audio audio
+        
+        // We always have to load a sound before use.
+        audio:Load("Car.wav")
+
+        // For this example, we will make the sound move 20 meters per second
+        // along the y-axis.
+        audio:SetVelocityY(20)
+    */
+
+
+system action SetVelocityY(number y)
+
+    /*
+        SetVelocityZ will set the velocity of the audio along the z-axis in 3D 
+        space. The velocity is measured in meters per seconds, and is used to
+        calculate doppler effects. If doppler is disabled, then the audio's 
+        velocity is ignored. Note that setting the velocity of audio will NOT 
+        automatically update the position of the audio over time!
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we need to create an object for it first.
+        Audio audio
+        
+        // We always have to load a sound before use.
+        audio:Load("Car.wav")
+
+        // For this example, we will make the sound move 20 meters per second
+        // along the z-axis.
+        audio:SetVelocityZ(20)
+    */
+
+
+system action SetVelocityZ(number z)
+
+    /*
+        SetVelocity will set the velocity of the audio in 3D space along the X,
+        Y, and Z axes. The velocity is measured in meters per seconds, and is 
+        used to calculate doppler effects. If doppler is disabled, then the 
+        audio's velocity is ignored. Note that setting the velocity of audio 
+        will NOT automatically update the position of the audio over time!
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we need to create an object for it first.
+        Audio audio
+        
+        // We always have to load a sound before use.
+        audio:Load("Car.wav")
+
+        // Now we set the velocity of our audio. All numbers are measured in
+        // meters per second.
+        audio:SetVelocity(20, 5, 8)
+    */
+
+
+system action SetVelocity(number x, number y, number z)
+
+    /*
+        SetVelocity will set the velocity of the audio in 3D space along the X,
+        Y, and Z axes. The velocity is measured in meters per seconds, and is 
+        used to calculate doppler effects. If doppler is disabled, then the 
+        audio's velocity is ignored. Note that setting the velocity of audio 
+        will NOT automatically update the position of the audio over time!
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+        use Libraries.Compute.Vector3
+
+        // To use audio, we need to create an object for it first.
+        Audio audio
+
+        // In this example, we will set the velocity using a Vector3 object.
+        Vector3 velocity
+        
+        // We always have to load a sound before use.
+        audio:Load("Car.wav")
+
+        // We can now set our vector with our velocity. All numbers are measured
+        // in meters per second.
+        velocity:Set(20, 5, 8)
+
+        // Now we set the velocity of our audio using our vector.
+        audio:SetVelocity(velocity)
+    */
+
+
+action SetVelocity(Vector3 velocity)
+   SetVelocity(velocity:GetX(), velocity:GetY(), velocity:GetZ())
+end
+
+    /*
+    GetVelocityX returns the velocity of this Audio object along the X axis in
+    3D space. The velocity is measured in meters per second. The velocity must
+    be set manually - it will NOT be calculated automatically!
+
+    Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Tone.wav")
+
+        audio:SetVelocityX(30)
+
+        number speed = audio:GetVelocityX()
+    */
+
+
+system action GetVelocityX returns number
+
+    /*
+    GetVelocityY returns the velocity of this Audio object along the Y axis in
+    3D space. The velocity is measured in meters per second. The velocity must
+    be set manually - it will NOT be calculated automatically!
+
+    Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Tone.wav")
+
+        audio:SetVelocityY(30)
+
+        number speed = audio:GetVelocityY()
+    */
+
+
+system action GetVelocityY returns number
+
+    /*
+    GetVelocityZ returns the velocity of this Audio object along the Z axis in
+    3D space. The velocity is measured in meters per second. The velocity must
+    be set manually - it will NOT be calculated automatically!
+
+    Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Tone.wav")
+
+        audio:SetVelocityZ(30)
+
+        number speed = audio:GetVelocityZ()
+    */
+
+
+system action GetVelocityZ returns number
+
+    /*
+    GetVelocity returns a Vector3 object describing the velocity of this Audio
+    object in 3D space. The velocity is measured in meters per second. The 
+    velocity must be set manually - it will NOT be calculated automatically!
+    */
+
+
+action GetVelocity returns Vector3
+   Vector3 vector
+   vector:Set(GetVelocityX(), GetVelocityY(), GetVelocityZ())
+   return vector
+end
+
+    /*
+        SetListenerX sets the x-coordinate of the listener in 3D space. When 
+        audio is played, how it sounds to the user is dependent on both the 
+        position of the audio and where the listener is positioned. The 
+        listener's position is universal to all audio - or in other words, if 
+        you change the position of the listener for one audio object, it adjusts
+        the position of the listener for ALL audio objects. 
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // In this example, we will use two audio objects. 
+        Audio buzzer
+        buzzer:Load("Buzzer.wav")
+        Audio bell
+        bell:Load("Bell.ogg")
+
+        // We will now set the listener's x position. We could do this with
+        // either of our audio objects.
+        buzzer:SetListenerX(3)
+
+        // Now when we play our audio, both sounds should come from the left
+        // side in 3D space - this is because both sounds are at their default
+        // location of 0, 0, 0, but the listener is 3 units to the right.
+        buzzer:PlayUntilDone()
+        bell:PlayUntilDone()
+    */
+
+
+system action SetListenerX(number x)
+
+    /*
+        SetListenerY sets the y-coordinate of the listener in 3D space. When 
+        audio is played, how it sounds to the user is dependent on both the 
+        position of the audio and where the listener is positioned. The 
+        listener's position is universal to all audio - or in other words, if 
+        you change the position of the listener for one audio object, it adjusts
+        the position of the listener for ALL audio objects. 
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // In this example, we will use two audio objects. 
+        Audio buzzer
+        buzzer:Load("Buzzer.wav")
+        Audio bell
+        bell:Load("Bell.ogg")
+
+        // We will now set the listener's x position. We could do this with
+        // either of our audio objects.
+        buzzer:SetListenerY(3)
+
+        // Now when we play our audio, both sounds are affected by the new
+        // position of the listener.
+        buzzer:PlayUntilDone()
+        bell:PlayUntilDone()
+    */
+
+
+system action SetListenerY(number y)
+
+    /*
+        SetListenerZ sets the z-coordinate of the listener in 3D space. When 
+        audio is played, how it sounds to the user is dependent on both the 
+        position of the audio and where the listener is positioned. The 
+        listener's position is universal to all audio - or in other words, if 
+        you change the position of the listener for one audio object, it adjusts
+        the position of the listener for ALL audio objects. 
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // In this example, we will use two audio objects. 
+        Audio buzzer
+        buzzer:Load("Buzzer.wav")
+        Audio bell
+        bell:Load("Bell.ogg")
+
+        // We will now set the listener's x position. We could do this with
+        // either of our audio objects.
+        buzzer:SetListenerZ(3)
+
+        // Now when we play our audio, both sounds are affected by the new
+        // position of the listener.
+        buzzer:PlayUntilDone()
+        bell:PlayUntilDone()
+    */
+
+
+system action SetListenerZ(number z)
+
+    /*
+        SetListenerPosition sets the X, Y, and Z coordinates of the listener in
+        3D space. When audio is played, how it sounds to the user is dependent 
+        on both the position of the audio and where the listener is positioned. 
+        The listener's position is universal to all audio - or in other words, 
+        if you change the position of the listener for one audio object, it 
+        adjusts the position of the listener for ALL audio objects. 
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // In this example, we will use two audio objects. 
+        Audio buzzer
+        buzzer:Load("Buzzer.wav")
+        Audio bell
+        bell:Load("Bell.ogg")
+
+        // We will now set the listener's position. Although we can set all 3
+        // coordinates with this action, we will set just the x-coordinate for
+        // this example. This is the same as using SetListenerX(3)
+        buzzer:SetListenerX(3, 0, 0)
+
+        // Now when we play our audio, both sounds should come from the left
+        // side in 3D space - this is because both sounds are at their default
+        // location of 0, 0, 0, but the listener is 3 units to the right.
+        buzzer:PlayUntilDone()
+        bell:PlayUntilDone()
+    */
+
+
+system action SetListenerPosition(number x, number y, number z)
+
+    /*
+        SetListenerPosition sets the X, Y, and Z coordinates of the listener in
+        3D space. When audio is played, how it sounds to the user is dependent 
+        on both the position of the audio and where the listener is positioned. 
+        The listener's position is universal to all audio - or in other words, 
+        if you change the position of the listener for one audio object, it 
+        adjusts the position of the listener for ALL audio objects. 
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // In this example, we will use two audio objects. 
+        Audio buzzer
+        buzzer:Load("Buzzer.wav")
+        Audio bell
+        bell:Load("Bell.ogg")
+
+        // We will now set the listener's position. Although we can set all 3
+        // coordinates with this action, we will set just the x-coordinate for
+        // this example. This is the same as using SetListenerX(3)
+        buzzer:SetListenerX(3, 0, 0)
+
+        // Now when we play our audio, both sounds should come from the left
+        // side in 3D space - this is because both sounds are at their default
+        // location of 0, 0, 0, but the listener is 3 units to the right.
+        buzzer:PlayUntilDone()
+        bell:PlayUntilDone()
+    */
+
+
+action SetListenerPosition(Vector3 vector)
+   SetListenerPosition(vector:GetX(), vector:GetY(), vector:GetZ())
+end
+
+    /*
+        SetListenerVelocityX will set the listener's velocity along the x-axis.
+        Just like individual objects, the listener can have velocity, which will
+        be used during calculation of doppler shift. The listener is universal
+        to all audio objects, which means that setting the listener in one
+        audio object will set it for ALL audio objects. The velocity is measured
+        as meters per second.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio flute
+        flute:Load("Flute.ogg")
+        
+        // The listener is given a velocity of 15 meters per second along the
+        // x-axis.
+        flute:SetListenerVelocityX(15)
+    */
+
+
+system action SetListenerVelocityX(number x)
+
+    /*
+        SetListenerVelocityY will set the listener's velocity along the y-axis.
+        Just like individual objects, the listener can have velocity, which will
+        be used during calculation of doppler shift. The listener is universal
+        to all audio objects, which means that setting the listener in one
+        audio object will set it for ALL audio objects. The velocity is measured
+        as meters per second.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio flute
+        flute:Load("Flute.ogg")
+        
+        // The listener is given a velocity of 8 meters per second along the
+        // y-axis.
+        flute:SetListenerVelocityX(8)
+    */
+
+
+system action SetListenerVelocityY(number x)
+
+    /*
+        SetListenerVelocityZ will set the listener's velocity along the z-axis.
+        Just like individual objects, the listener can have velocity, which will
+        be used during calculation of doppler shift. The listener is universal
+        to all audio objects, which means that setting the listener in one
+        audio object will set it for ALL audio objects. The velocity is measured
+        as meters per second.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio flute
+        flute:Load("Flute.ogg")
+        
+        // The listener is given a velocity of 11 meters per second along the
+        // z-axis.
+        flute:SetListenerVelocityZ(11)
+    */
+
+
+system action SetListenerVelocityZ(number z)
+
+    /*
+        SetListenerVelocity will set the listener's velocity in 3D space.
+        Just like individual objects, the listener can have velocity, which will
+        be used during calculation of doppler shift. The listener is universal
+        to all audio objects, which means that setting the listener in one
+        audio object will set it for ALL audio objects. The velocity is measured
+        as meters per second.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio flute
+        flute:Load("Flute.ogg")
+        
+        // The listener is given a velocity of 15 meters per second along the
+        // x-axis, 8 meters per second along the y-axis, and 11 meters-per-second
+        // along the z-axis.
+        flute:SetListenerVelocityX(15, 8, 11)
+    */
+
+
+system action SetListenerVelocity(number x, number y, number z)
+
+    /*
+        SetListenerVelocity will set the listener's velocity in 3D space.
+        Just like individual objects, the listener can have velocity, which will
+        be used during calculation of doppler shift. The listener is universal
+        to all audio objects, which means that setting the listener in one
+        audio object will set it for ALL audio objects. The velocity is measured
+        as meters per second.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+        use Libraries.Compute.Vector3
+
+        Audio flute
+        flute:Load("Flute.ogg")
+
+        Vector3 vector
+        vector:Set(15, 8, 11)
+        
+        // The listener is given a velocity of 15 meters per second along the
+        // x-axis, 8 meters per second along the y-axis, and 11 meters-per-second
+        // along the z-axis.
+        flute:SetListenerVelocityX(vector)
+    */
+
+
+action SetListenerVelocity(Vector3 vector)
+   SetListenerVelocity(vector:GetX(), vector:GetY(), vector:GetZ())
+end
+
+    /*
+        EnableListenerDoppler will make the audio engine consider the velocity
+        of the listener when calculating doppler effects. The listener is
+        universal to all audio objects, which means that if you enable doppler
+        calculations for the listener, it will enable it when calculating
+        doppler for ALL audio objects. By default, the listener already has
+        doppler enabled, but this will have no effect until the listener is
+        given a velocity.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Whale.wav")
+
+        // In order to hear the doppler effect in action, the listener needs
+        // to have velocity.
+        audio:SetListenerVelocity(5, 0, 4)
+
+        // We now enable the doppler effect for the listener -- by default, this
+        // is already on, so this is only needed if we'd previously disabled it.
+        audio:EnableListenerDoppler()
+    */
+
+
+system action EnableListenerDoppler
+
+    /*
+        DisableListenerDoppler will make the audio engine stop using the
+        velocity of the listener when calculating doppler effect. This will NOT
+        stop the engine from using the velocity of other audio objects that do
+        have doppler enabled when calculating the doppler shift. The listener
+        is universal to all audio objects, so disabling doppler effect on the
+        listener will be in effect during calculation of doppler shift for ALL
+        audio objects.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+        audio:Load("Whale.wav")
+
+        // In order to hear the doppler effect in action, the listener needs
+        // to have velocity.
+        audio:SetListenerVelocity(5, 0, 4)
+
+        // Because we are now disabling the doppler effect on the listener, the
+        // velocity we gave it will have no effect.
+        audio:DisableListenerDoppler()
+    */
+
+
+system action DisableListenerDoppler
+
+    /*
+        This action will return whether or not the listener is currently using 
+        its velocity during doppler shift calculations. By default, this will be 
+        true.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        Audio audio
+
+        // We'll store the value in a boolean. Because we haven't disabled the
+        // doppler, it should give us the default value, which is true.
+        boolean doppler = audio:IsListenerDopplerEnabled()
+    */
+
+
+system action IsListenerDopplerEnabled returns boolean
+
+    /*
+        SetRotation sets a sound to play at a point in 3D space such that it
+        has constant volume and is located a given number of degrees from the
+        listener, where 0 degrees is directly in front of the listener and the
+        sound rotates clockwise around the listener.
+
+        Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+        each other, and using one will override any others used previously.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we'll first need to create an object for it.
+        Audio audio
+
+        // We always have to load a sound before use.
+        audio:Load("noise.ogg")
+
+        // For this example, we will rotate the sound so it is to the right of
+        // the listener.
+        audio:SetRotation(90)
+
+        // After we load the file, we can play it with a call to PlayUntilDone().
+        audio:PlayUntilDone()
+
+        // Once we're finished with an audio file, we need to let the computer know.
+        audio:Dispose()
+    */
+
+
+system action SetRotation(number rotation)
+
+    /*
+        GetRotation gets the current degree of rotation of the sound.
+
+        Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+        each other, and using one will override any others used previously.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we'll first need to create an object for it.
+        Audio audio
+
+        // We always have to load a sound before use.
+        audio:Load("noise.ogg")
+
+        // For this example, we will rotate the sound so it is to the right of
+        // the listener.
+        audio:SetRotation(90)
+
+        // We can get the rotation back as a number with GetRotation().
+        number rotation = audio:GetRotation()
+    */
+
+
+system action GetRotation returns number
+
+    /*
+        Rotate increases the degree of rotation of the sound, causing it to 
+        progress clockwise around the listener if given a positive value, or 
+        counter-clockwise around the listener if the action is given a negative
+        value.
+
+        Using Balance, Fade, Rotation, or X,Y,Z coordinates are all exclusive of
+        each other, and using one will override any others used previously.
+
+        Attribute: Example
+
+        use Libraries.Sound.Audio
+
+        // To use audio, we'll first need to create an object for it.
+        Audio audio
+
+        // We always have to load a sound before use.
+        audio:Load("noise.ogg")
+
+        // For this example, we will rotate the sound so it is to the right of
+        // the listener.
+        audio:Rotate(90)
+
+        // After we load the file, we can play it with a call to PlayUntilDone().
+        audio:PlayUntilDone()
+
+        // Now we will rotate it another 180 degrees, so it will be at 270 degrees.
+        audio:Rotate(180)
+            
+        // We can call PlayUntilDone() again to hear it in its new position.
+        audio:PlayUntilDone()
+
+        // Once we're finished with an audio file, we need to let the computer know.
+        audio:Dispose()
+    */
+
+
+system action Rotate(number rotation)
+
+end
