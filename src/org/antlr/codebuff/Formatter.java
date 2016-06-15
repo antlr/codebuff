@@ -372,13 +372,13 @@ public class Formatter {
 		return features;
 	}
 
-	/** Look into the token stream to get the comments to the left of current
+	/** Look into the originalTokens stream to get the comments to the left of current
 	 *  token. Emit all whitespace and comments except for whitespace at the
 	 *  end as we'll inject that per newline prediction.
 	 *
-	 *  This assumes we are grooming not totally reformatting.
-	 *  We able to see original input stream for comment purposes. With all
-	 *  whitespace removed, we can't emit this stuff properly at moment.
+	 *  We able to see original input stream for comment purposes only. With all
+	 *  whitespace removed, we can't emit this stuff properly. This
+	 *  is the only place that examines the original token stream during formatting.
 	 */
 	public int emitCommentsToTheLeft(int tokenIndexInStream, int injectNL_WS) {
 		List<Token> hiddenTokensToLeft = originalTokens.getHiddenTokensToLeft(tokenIndexInStream);
