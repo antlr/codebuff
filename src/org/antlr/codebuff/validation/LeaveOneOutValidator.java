@@ -249,6 +249,7 @@ public class LeaveOneOutValidator {
 				"# CodeBuff %s '%s'\n" +
 				"#\n"+
 				"import numpy as np\n"+
+				"import pylab\n" +
 				"import matplotlib.pyplot as plt\n\n" +
 				"%s\n" +
 				"language_data = %s\n"+
@@ -261,10 +262,11 @@ public class LeaveOneOutValidator {
 				"           labels=labels)\n"+
 				"ax.set_xticklabels(labels, rotation=60, fontsize=8)\n"+
 				"plt.xticks(range(1,len(labels)+1), labels, rotation=60)\n" +
+				"pylab.ylim([0,.30])\n"+
 				"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
 				"ax.set_xlabel(\"Grammar and corpus size\")\n"+
 				"ax.set_ylabel(\"Edit distance / size of file\")\n" +
-				"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
+				//"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
 				"plt.tight_layout()\n" +
 				"fig.savefig('images/%s', format='pdf')\n"+
 				"plt.show()\n";
