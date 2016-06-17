@@ -52,8 +52,8 @@ import static org.antlr.v4.runtime.atn.PredictionMode.SLL;
  * Tool  -dbg  -antlr     corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
  * Tool  -dbg  -leave-one-out -antlr     corpus/antlr4/training      corpus/antlr4/training/MASM.g4
  * Tool  -dbg  -leave-one-out -quorum     corpus/quorum/training      corpus/quorum/training/Containers/List.quorum
- * Tool  -dbg  -sqlite    corpus/sql2/training      corpus/sql2/training/dmart_bits.sql
- * Tool  -dbg  -leave-one-out -tsql      corpus/sql2/training        corpus/sql2/training/dmart_bits_PSQLRPT24.sql
+ * Tool  -dbg  -sqlite    corpus/sqlclean/training      corpus/sqlclean/training/dmart_bits.sql
+ * Tool  -dbg  -leave-one-out -tsql      corpus/sqlclean/training        corpus/sqlclean/training/dmart_bits_PSQLRPT24.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -dbg  -leave-one-out -java      corpus/java/training/stringtemplate4     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
  * Tool  -dbg  -leave-one-out -java      corpus/java/training/guava     corpus/java/training/guava/base/Absent.java
@@ -75,6 +75,10 @@ public class Tool {
 		new LangDescriptor("java_guava", "corpus/java/training/guava", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit",
 		                   2, // wow. indent=2 not 4
 						   JavaLexer.LINE_COMMENT);
+	public static final LangDescriptor JAVA8_GUAVA_DESCR =
+		new LangDescriptor("java8_guava", "corpus/java/training/guava", ".*\\.java", Java8Lexer.class, Java8Parser.class, "compilationUnit",
+		                   2, // wow. indent=2 not 4
+						   Java8Lexer.LINE_COMMENT);
 
 	public static final LangDescriptor ANTLR4_DESCR =
 		new LangDescriptor("antlr", "corpus/antlr4/training", ".*\\.g4", ANTLRv4Lexer.class, ANTLRv4Parser.class, "grammarSpec", 4, ANTLRv4Lexer.LINE_COMMENT);
@@ -82,18 +86,19 @@ public class Tool {
 	public static final LangDescriptor SQLITE_NOISY_DESCR =
 		new LangDescriptor("sqlite_noisy", "corpus/sql/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4, SQLiteLexer.SINGLE_LINE_COMMENT);
 	public static final LangDescriptor SQLITE_CLEAN_DESCR =
-		new LangDescriptor("sqlite", "corpus/sql2/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4, SQLiteLexer.SINGLE_LINE_COMMENT);
+		new LangDescriptor("sqlite", "corpus/sqlclean/training", ".*\\.sql", SQLiteLexer.class, SQLiteParser.class, "parse", 4, SQLiteLexer.SINGLE_LINE_COMMENT);
 
 	public static final LangDescriptor TSQL_NOISY_DESCR =
 		new LangDescriptor("tsql_noisy", "corpus/sql/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4, tsqlLexer.LINE_COMMENT);
 	public static final LangDescriptor TSQL_CLEAN_DESCR =
-		new LangDescriptor("tsql", "corpus/sql2/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4, tsqlLexer.LINE_COMMENT);
+		new LangDescriptor("tsql", "corpus/sqlclean/training", ".*\\.sql", tsqlLexer.class, tsqlParser.class, "tsql_file", 4, tsqlLexer.LINE_COMMENT);
 
 	public static LangDescriptor[] languages = new LangDescriptor[] {
 		QUORUM_DESCR,
 		JAVA_DESCR,
 		JAVA8_DESCR,
 		JAVA_GUAVA_DESCR,
+		JAVA8_GUAVA_DESCR,
 		ANTLR4_DESCR,
 		SQLITE_NOISY_DESCR,
 		SQLITE_CLEAN_DESCR,

@@ -24,7 +24,7 @@ ax.boxplot(language_data,
            showfliers=False)
 ax.set_xticklabels(labels, rotation=60, fontsize=12)
 plt.xticks(range(1,len(labels)+1), labels, rotation=60)
-pylab.ylim([0,.25])
+pylab.ylim([0,.22])
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
 ax.set_xlabel("Grammar and corpus size", fontsize=14)
 ax.set_ylabel("Misclassification Error Rate", fontsize=14)
