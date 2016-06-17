@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
@@ -217,9 +218,8 @@ public class LeaveOneOutValidator {
 	}
 
 	public static String testAllLanguages(LangDescriptor[] languages, String[] corpusDirs, String imageFileName) throws Exception {
-		List<String> languageNames = map(languages, l -> l.name+"_dist");
-		languageNames.addAll(map(languages, l -> l.name+"_err"));
-		Collections.sort(languageNames);
+		List<String> languageNames = map(languages, l -> l.name+"_err");
+//		Collections.sort(languageNames);
 		Map<String, Integer> corpusSizes = new HashMap<>();
 		for (int i = 0; i<languages.length; i++) {
 			LangDescriptor language = languages[i];
@@ -227,8 +227,7 @@ public class LeaveOneOutValidator {
 			corpusSizes.put(language.name, filenames.size());
 		}
 		List<String> languageNamesAsStr = map(languages, l -> '"'+l.name+"\\nn="+corpusSizes.get(l.name)+'"');
-		languageNamesAsStr.addAll(map(languages, l -> '"'+l.name+"_err\\nn="+corpusSizes.get(l.name)+'"'));
-		Collections.sort(languageNamesAsStr);
+//		Collections.sort(languageNamesAsStr);
 
 		StringBuilder data = new StringBuilder();
 		for (int i = 0; i<languages.length; i++) {
@@ -239,7 +238,7 @@ public class LeaveOneOutValidator {
 			List<Formatter> formatters = results.a;
 			List<Float> distances = results.b;
 			List<Float> errors = results.c;
-			data.append(language.name+"_dist = "+distances+"\n");
+//			data.append(language.name+"_dist = "+distances+"\n");
 			data.append(language.name+"_err = "+errors+"\n");
 		}
 
@@ -259,14 +258,15 @@ public class LeaveOneOutValidator {
 				"ax.boxplot(language_data,\n"+
 				"           whis=[10, 90], # 10 and 90 %% whiskers\n"+
 				"           widths=.35,\n"+
-				"           labels=labels)\n"+
-				"ax.set_xticklabels(labels, rotation=60, fontsize=8)\n"+
+				"           labels=labels,\n"+
+				"           showfliers=False)\n"+
+				"ax.set_xticklabels(labels, rotation=60, fontsize=10)\n"+
 				"plt.xticks(range(1,len(labels)+1), labels, rotation=60)\n" +
-				"pylab.ylim([0,.30])\n"+
+				"pylab.ylim([0,.25])\n"+
 				"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
 				"ax.set_xlabel(\"Grammar and corpus size\")\n"+
-				"ax.set_ylabel(\"Edit distance / size of file\")\n" +
-				//"ax.set_title(\"Leave-one-out Validation Using Edit Distance / Error Rate\\nBetween Formatted and Original File\")\n"+
+				"ax.set_ylabel(\"Misclassification Error Rate\")\n" +
+				"# ax.set_title(\"Leave-one-out Validation Using Error Rate\\nBetween Formatted and Original File\")\n"+
 				"plt.tight_layout()\n" +
 				"fig.savefig('images/%s', format='pdf')\n"+
 				"plt.show()\n";
@@ -275,12 +275,13 @@ public class LeaveOneOutValidator {
 
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
+			JAVA_GUAVA_DESCR,
 			ANTLR4_DESCR,
 			SQLITE_CLEAN_DESCR,
 			TSQL_CLEAN_DESCR,
+			QUORUM_DESCR,
 		};
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);
 		String[] dirs = corpusDirs.toArray(new String[languages.length]);

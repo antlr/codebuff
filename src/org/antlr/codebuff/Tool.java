@@ -67,9 +67,9 @@ public class Tool {
 		new LangDescriptor("quorum", "corpus/quorum/training", ".*\\.quorum", QuorumLexer.class, QuorumParser.class, "start", 4, QuorumLexer.COMMENTS);
 
 	public static final LangDescriptor JAVA_DESCR =
-		new LangDescriptor("java", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4, JavaLexer.LINE_COMMENT);
+		new LangDescriptor("java_st", "corpus/java/training/stringtemplate4", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit", 4, JavaLexer.LINE_COMMENT);
 	public static final LangDescriptor JAVA8_DESCR =
-		new LangDescriptor("java8", "corpus/java/training/stringtemplate4", ".*\\.java", Java8Lexer.class, Java8Parser.class, "compilationUnit", 4, Java8Lexer.LINE_COMMENT);
+		new LangDescriptor("java8_st", "corpus/java/training/stringtemplate4", ".*\\.java", Java8Lexer.class, Java8Parser.class, "compilationUnit", 4, Java8Lexer.LINE_COMMENT);
 
 	public static final LangDescriptor JAVA_GUAVA_DESCR =
 		new LangDescriptor("java_guava", "corpus/java/training/guava", ".*\\.java", JavaLexer.class, JavaParser.class, "compilationUnit",
