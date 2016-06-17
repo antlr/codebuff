@@ -24,13 +24,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.Tool.load;
 import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
@@ -262,7 +257,7 @@ public class LeaveOneOutValidator {
 				"           showfliers=False)\n"+
 				"ax.set_xticklabels(labels, rotation=60, fontsize=12)\n"+
 				"plt.xticks(range(1,len(labels)+1), labels, rotation=60)\n" +
-				"pylab.ylim([0,.22])\n"+
+				"pylab.ylim([0,.28])\n"+
 				"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
 				"ax.set_xlabel(\"Grammar and corpus size\", fontsize=14)\n"+
 				"ax.set_ylabel(\"Misclassification Error Rate\", fontsize=14)\n" +
@@ -275,13 +270,15 @@ public class LeaveOneOutValidator {
 
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-			JAVA_DESCR,
-			JAVA8_DESCR,
-			JAVA_GUAVA_DESCR,
-			JAVA8_GUAVA_DESCR,
-			ANTLR4_DESCR,
-			SQLITE_CLEAN_DESCR,
-			TSQL_CLEAN_DESCR,
+//			JAVA_DESCR,
+//			JAVA8_DESCR,
+//			JAVA_GUAVA_DESCR,
+//			JAVA8_GUAVA_DESCR,
+//			ANTLR4_DESCR,
+//			SQLITE_CLEAN_DESCR,
+//			TSQL_CLEAN_DESCR,
+			SQLITE_NOISY_DESCR,
+			TSQL_NOISY_DESCR,
 //			QUORUM_DESCR,
 		};
 		List<String> corpusDirs = map(languages, l -> l.corpusDir);

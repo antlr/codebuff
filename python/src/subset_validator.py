@@ -1,29 +1,28 @@
 #
 # AUTO-GENERATED FILE. DO NOT EDIT
-# CodeBuff 1.4.15 'Wed May 18 13:10:39 PDT 2016'
+# CodeBuff 1.4.19 'Fri Jun 17 15:30:29 PDT 2016'
 #
+import numpy as np
 import matplotlib.pyplot as plt
 
 fig = plt.figure()
 ax = plt.subplot(111)
-N = 20
+N = 3
 sizes = range(1,N+1)
-java = [0.16304348,0.10237849,0.08571429,0.0798573,0.079562046,0.074458055,0.06195547,0.06196841,0.0625,0.04628502,0.06451613,0.055555556,0.06676238,0.057877813,0.05345912,0.058419243,0.05352798,0.05352798,0.0522541,0.07192575]
-ax.plot(sizes, java, label="java", marker='o')
-sqlite = [0.2282507,0.18888889,0.1773779,0.15086207,0.14102565,0.14479166,0.15476191,0.13793103,0.1223176,0.14035088,0.13157895,0.1218638,0.1375,0.13559322,0.109970674,0.12195122,0.110687025,0.13598673,0.11510792,0.1097561]
-ax.plot(sizes, sqlite, label="sqlite", marker='o')
-java8 = [0.15189873,0.12333629,0.094339624,0.076271184,0.074283235,0.07526882,0.073765434,0.06377325,0.07122233,0.054545455,0.059602648,0.055120576,0.0745614,0.05109489,0.04610656,0.05580357,0.05982906,0.050847456,0.046341464,0.046296295]
-ax.plot(sizes, java8, label="java8", marker='o')
-antlr = [0.2754491,0.2040521,0.2124031,0.17985612,0.1779661,0.16949153,0.18539326,0.16157518,0.16949153,0.16949153,0.16949153,0.15631849,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-ax.plot(sizes, antlr, label="antlr", marker='o')
-tsql = [0.29104477,0.17131475,0.1609538,0.14893617,0.12794118,0.1299435,0.11306901,0.12872154,0.12873563,0.12241888,0.11083744,0.11026616,0.101369865,0.11002445,0.1080402,0.11764706,0.10382514,0.113300495,0.09202454,0.10176991]
-ax.plot(sizes, tsql, label="tsql", marker='o')
-java_guava = [0.093333334,0.07038835,0.052540164,0.053140096,0.042644944,0.03448276,0.03635262,0.03033839,0.034767237,0.03448276,0.032258064,0.028892456,0.029804727,0.02919708,0.028265107,0.027777778,0.024937656,0.027322404,0.029931974,0.023880597]
-ax.plot(sizes, java_guava, label="java_guava", marker='o')
+sqlite = [0.39566395,0.19639066,0.1870229]
+ax.plot(range(1,len(sqlite)+1), sqlite, label="sqlite", marker='o')
+antlr = [0.23529412,0.11906425,0.22540188]
+ax.plot(range(1,len(antlr)+1), antlr, label="antlr", marker='o')
+java_st = [0.1372315,0.07272727,0.06632213]
+ax.plot(range(1,len(java_st)+1), java_st, label="java_st", marker='o')
+java8_st = [0.2593828,0.06481481,0.0754717]
+ax.plot(range(1,len(java8_st)+1), java8_st, label="java8_st", marker='o')
+tsql = [0.23404256,0.24701196,0.13541667]
+ax.plot(range(1,len(tsql)+1), tsql, label="tsql", marker='o')
 
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
-ax.set_xlabel("Number n of training files in sample subset corpus")
-ax.set_ylabel("Median Error rate for 50 trials")
+ax.set_xlabel("Number n of training files in sample subset corpus", fontsize=14)
+ax.set_ylabel("Median Error rate for 5 trials", fontsize=14)
 ax.set_title("Effect of Corpus size on Median Leave-one-out Validation Error Rate")
 plt.legend()
 plt.tight_layout()

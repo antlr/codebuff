@@ -58,9 +58,9 @@ public class SubsetValidator {
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
 //			QUORUM_DESCR,
+			ANTLR4_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
-			ANTLR4_DESCR,
 //			SQLITE_NOISY_DESCR,
 			SQLITE_CLEAN_DESCR,
 //			TSQL_NOISY_DESCR,
@@ -87,11 +87,11 @@ public class SubsetValidator {
 			"sizes = range(1,N+1)\n" +
 			"<results:{r |\n" +
 			"<r> = [<rest(results.(r)); separator={,}>]\n"+
-			"ax.plot(sizes, <r>, label=\"<r>\", marker='o')\n" +
+			"ax.plot(range(1,len(<r>)+1), <r>, label=\"<r>\", marker='o')\n" +
 			"}>\n" +
 			"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
-			"ax.set_xlabel(\"Number n of training files in sample subset corpus\")\n"+
-			"ax.set_ylabel(\"Median Error rate for <trials> trials\")\n" +
+			"ax.set_xlabel(\"Number n of training files in sample subset corpus\", fontsize=14)\n"+
+			"ax.set_ylabel(\"Median Error rate for <trials> trials\", fontsize=14)\n" +
 			"ax.set_title(\"Effect of Corpus size on Median Leave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
 			"plt.tight_layout()\n" +
@@ -113,7 +113,7 @@ public class SubsetValidator {
 	public static float[] getMedianErrorRates(LangDescriptor language, int maxNumFiles, int trials) throws Exception {
 		SubsetValidator validator = new SubsetValidator(language.corpusDir, language);
 		List<InputDocument> documents = load(validator.allFiles, language);
-		float[] medians = new float[maxNumFiles+1];
+		float[] medians = new float[Math.min(documents.size(),maxNumFiles)+1];
 
 		int ncpu = Runtime.getRuntime().availableProcessors();
 		if ( FORCE_SINGLE_THREADED ) {
