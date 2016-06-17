@@ -11,7 +11,7 @@ public class ClassificationAnalysis {
 	public int n_actual_nl = 0;
 	public int n_actual_sp = 0;
 
-	public int n_actual_align_none = 0;
+	public int n_actual_align = 0;
 	public int n_actual_align_child = 0;
 	public int n_actual_indent_child = 0;
 	public int n_actual_indent = 0;
@@ -24,7 +24,7 @@ public class ClassificationAnalysis {
 	public int correct_nl = 0;
 	public int correct_sp = 0;
 
-	public int correct_align_none = 0;
+	public int correct_align = 0;
 	public int correct_align_child = 0;
 	public int correct_indent_child = 0;
 	public int correct_indent = 0;
@@ -94,7 +94,7 @@ public class ClassificationAnalysis {
 					n_actual_indent++;
 				}
 				else if ( actual_align ) {
-					n_actual_align_none++;
+					n_actual_align++;
 				}
 				// Can't compare align/indent if both aren't supposed to align.
 				// If we predict '\n' but actual is ' ', alignment will always fail
@@ -102,7 +102,7 @@ public class ClassificationAnalysis {
 				// we didn't compute align so can't compare.
 				n_align_decisions++;
 				if ( predict_align && actual_align ) {
-					correct_align_none++;
+					correct_align++;
 				}
 				else if ( predict_align_child && a.alignPrediction==a.actualAlign ) {
 					correct_align_child++;
@@ -127,7 +127,7 @@ public class ClassificationAnalysis {
 		float sp_accuracy = correct_sp/(float) n_actual_sp;
 		double overall_ws_accuracy = (correct_none+correct_nl+correct_sp)/(float)(n_actual_none+n_actual_nl+n_actual_sp);
 
-		float align_none_accuracy = correct_align_none / (float) n_actual_align_none;
+		float align_none_accuracy = correct_align/ (float) n_actual_align;
 		float align_child_accuracy = correct_align_child / (float) n_actual_align_child;
 		float indent_child_accuracy = correct_indent_child / (float) n_actual_indent_child;
 		float indent_accuracy = correct_indent / (float) n_actual_indent;
@@ -167,7 +167,7 @@ public class ClassificationAnalysis {
 			(correct_none+correct_nl+correct_sp), (n_actual_none+n_actual_nl+n_actual_sp), overall_ws_accuracy*100,
 			n_ws_errors, n_ws_decisions,
 
-			correct_align_none, n_actual_align_none, align_none_accuracy*100,
+			correct_align, n_actual_align, align_none_accuracy*100,
 			correct_align_child, n_actual_align_child, align_child_accuracy*100,
 			correct_indent_child, n_actual_indent_child, indent_child_accuracy*100,
 			correct_indent, n_actual_indent, indent_accuracy*100,
