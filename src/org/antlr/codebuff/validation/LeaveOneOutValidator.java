@@ -260,12 +260,12 @@ public class LeaveOneOutValidator {
 				"           widths=.35,\n"+
 				"           labels=labels,\n"+
 				"           showfliers=False)\n"+
-				"ax.set_xticklabels(labels, rotation=60, fontsize=10)\n"+
+				"ax.set_xticklabels(labels, rotation=60, fontsize=12)\n"+
 				"plt.xticks(range(1,len(labels)+1), labels, rotation=60)\n" +
 				"pylab.ylim([0,.25])\n"+
 				"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
-				"ax.set_xlabel(\"Grammar and corpus size\")\n"+
-				"ax.set_ylabel(\"Misclassification Error Rate\")\n" +
+				"ax.set_xlabel(\"Grammar and corpus size\", fontsize=14)\n"+
+				"ax.set_ylabel(\"Misclassification Error Rate\", fontsize=14)\n" +
 				"# ax.set_title(\"Leave-one-out Validation Using Error Rate\\nBetween Formatted and Original File\")\n"+
 				"plt.tight_layout()\n" +
 				"fig.savefig('images/%s', format='pdf')\n"+

@@ -22,12 +22,12 @@ ax.boxplot(language_data,
            widths=.35,
            labels=labels,
            showfliers=False)
-ax.set_xticklabels(labels, rotation=60, fontsize=10)
+ax.set_xticklabels(labels, rotation=60, fontsize=12)
 plt.xticks(range(1,len(labels)+1), labels, rotation=60)
 pylab.ylim([0,.25])
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
-ax.set_xlabel("Grammar and corpus size")
-ax.set_ylabel("Misclassification Error Rate")
+ax.set_xlabel("Grammar and corpus size", fontsize=14)
+ax.set_ylabel("Misclassification Error Rate", fontsize=14)
 # ax.set_title("Leave-one-out Validation Using Edit Distance / Error Rate\nBetween Formatted and Original File")
 plt.tight_layout()
 fig.savefig('images/leave_one_out.pdf', format='pdf')
