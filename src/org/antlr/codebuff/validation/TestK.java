@@ -22,8 +22,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.QUORUM_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
@@ -40,9 +41,10 @@ public class TestK extends LeaveOneOutValidator {
 
 	public static void main(String[] args) throws Exception {
 		LangDescriptor[] languages = new LangDescriptor[] {
-			QUORUM_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
+			JAVA_GUAVA_DESCR,
+			JAVA8_GUAVA_DESCR,
 			ANTLR4_DESCR,
 			SQLITE_CLEAN_DESCR,
 			TSQL_CLEAN_DESCR,
@@ -105,7 +107,10 @@ public class TestK extends LeaveOneOutValidator {
 			LangDescriptor language = languages[i];
 			List<Float> filteredMedians = BuffUtils.filter(Arrays.asList(medians[i]), m -> m!=null);
 			data.append(language.name+'='+filteredMedians+'\n');
-			plot.append(String.format("ax.plot(ks, %s, label=\"%s\", marker='o')\n", language.name, language.name));
+			plot.append(String.format("ax.plot(ks, %s, label=\"%s\", marker='%s', color='%s')\n",
+			                          language.name, language.name,
+			                          nameToGraphMarker.get(language.name),
+									  nameToGraphColor.get(language.name)));
 		}
 
 		String python =

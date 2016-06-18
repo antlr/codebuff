@@ -37,7 +37,27 @@ public class LeaveOneOutValidator {
 	public static final int DOCLIST_RANDOM_SEED = 951413; // need randomness but use same seed to get reproducibility
 	final Random random = new Random();
 
-	public static final boolean FORCE_SINGLE_THREADED = false;
+	public static boolean FORCE_SINGLE_THREADED = false;
+
+	public static final Map<String,String> nameToGraphMarker = new HashMap<String,String>() {{
+		put("antlr", ".");
+		put("java_st", "s");
+		put("java8_st", "+");
+		put("java_guava", ">");
+		put("java8_guava", "d");
+		put("sqlite", "o");
+		put("tsqlr", "p");
+	}};
+
+	public static final Map<String,String> nameToGraphColor = new HashMap<String,String>() {{
+		put("antlr", "k");
+		put("java_st", "g");
+		put("java8_st", "b");
+		put("java_guava", "m");
+		put("java8_guava", "c");
+		put("sqlite", "y");
+		put("tsql", "r");
+	}};
 
 	public String rootDir;
 	public LangDescriptor language;

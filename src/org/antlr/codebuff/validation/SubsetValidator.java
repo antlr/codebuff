@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
@@ -61,13 +63,13 @@ public class SubsetValidator {
 			ANTLR4_DESCR,
 			JAVA_DESCR,
 			JAVA8_DESCR,
-//			SQLITE_NOISY_DESCR,
+			JAVA_GUAVA_DESCR,
+			JAVA8_GUAVA_DESCR,
 			SQLITE_CLEAN_DESCR,
-//			TSQL_NOISY_DESCR,
 			TSQL_CLEAN_DESCR,
 		};
 
-		int maxNumFiles = 20;
+		int maxNumFiles = 30;
 		int trials = 50;
 		Map<String,float[]> results = new HashMap<>();
 		for (LangDescriptor language : languages) {
@@ -87,10 +89,10 @@ public class SubsetValidator {
 			"sizes = range(1,N+1)\n" +
 			"<results:{r |\n" +
 			"<r> = [<rest(results.(r)); separator={,}>]\n"+
-			"ax.plot(range(1,len(<r>)+1), <r>, label=\"<r>\", marker='o')\n" +
+			"ax.plot(range(1,len(<r>)+1), <r>, label=\"<r>\", marker='<markers.(r)>', color='<colors.(r)>')\n" +
 			"}>\n" +
 			"ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)\n" +
-			"ax.set_xlabel(\"Number n of training files in sample subset corpus\", fontsize=14)\n"+
+			"ax.set_xlabel(\"Number of training files in sample corpus subset\", fontsize=14)\n"+
 			"ax.set_ylabel(\"Median Error rate for <trials> trials\", fontsize=14)\n" +
 			"ax.set_title(\"Effect of Corpus size on Median Leave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
@@ -99,6 +101,8 @@ public class SubsetValidator {
 			"plt.show()\n";
 		ST pythonST = new ST(python);
 		pythonST.add("results", results);
+		pythonST.add("markers", LeaveOneOutValidator.nameToGraphMarker);
+		pythonST.add("colors", LeaveOneOutValidator.nameToGraphColor);
 		pythonST.add("version", version);
 		pythonST.add("date", new Date());
 		pythonST.add("trials", trials);
