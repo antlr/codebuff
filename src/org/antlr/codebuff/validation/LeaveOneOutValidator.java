@@ -46,7 +46,7 @@ public class LeaveOneOutValidator {
 		put("java_guava", ">");
 		put("java8_guava", "d");
 		put("sqlite", "o");
-		put("tsqlr", "p");
+		put("tsql", "p");
 	}};
 
 	public static final Map<String,String> nameToGraphColor = new HashMap<String,String>() {{

@@ -22,9 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Tool.getFilenames;
@@ -43,8 +41,8 @@ public class TestK extends LeaveOneOutValidator {
 		LangDescriptor[] languages = new LangDescriptor[] {
 			JAVA_DESCR,
 			JAVA8_DESCR,
-			JAVA_GUAVA_DESCR,
-			JAVA8_GUAVA_DESCR,
+//			JAVA_GUAVA_DESCR,
+//			JAVA8_GUAVA_DESCR,
 			ANTLR4_DESCR,
 			SQLITE_CLEAN_DESCR,
 			TSQL_CLEAN_DESCR,
@@ -125,9 +123,9 @@ public class TestK extends LeaveOneOutValidator {
 			"fig = plt.figure()\n"+
 			"ax = plt.subplot(111)\n"+
 			"%s"+
-			"ax.set_xlabel(\"k nearest neighbors\")\n"+
-			"ax.set_ylabel(\"Error rate\")\n" +
-			"ax.set_title(\"k Nearest Neighbors vs\\nLeave-one-out Validation Error Rate\")\n"+
+			"ax.set_xlabel(\"$k$ nearest neighbors\", fontsize=14)\n"+
+			"ax.set_ylabel(\"Median error rate\", fontsize=14)\n" +
+			"#ax.set_title(\"k Nearest Neighbors vs\\nLeave-one-out Validation Error Rate\")\n"+
 			"plt.legend()\n" +
 			"fig.savefig('images/vary_k.pdf', format='pdf')\n"+
 			"plt.show()\n";

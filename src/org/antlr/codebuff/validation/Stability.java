@@ -13,25 +13,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
 import static org.antlr.codebuff.Tool.QUORUM_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
 import static org.antlr.codebuff.Tool.version;
 
 public class Stability {
-	public static final int STAGES = 10;
+	public static final int STAGES = 5;
 
 	public static void main(String[] args) throws Exception {
+		LeaveOneOutValidator.FORCE_SINGLE_THREADED = true; // need this when we compare results file by file
 		LangDescriptor[] languages = new LangDescriptor[]{
 			QUORUM_DESCR,
-			JAVA_DESCR,
-			JAVA8_DESCR,
-			ANTLR4_DESCR,
-			SQLITE_CLEAN_DESCR,
-			TSQL_CLEAN_DESCR,
+//			JAVA_DESCR,
+//			JAVA8_DESCR,
+//			ANTLR4_DESCR,
+//			SQLITE_CLEAN_DESCR,
+//			TSQL_CLEAN_DESCR,
 		};
 
 		Map<String, List<Float>> results = new HashMap<>();
@@ -88,6 +85,7 @@ public class Stability {
 		Triple<List<Formatter>, List<Float>, List<Float>> results0 = validator0.validateDocuments(false, "/tmp/stability/1");
 		errorRates.add( BuffUtils.median(results0.c) );
 
+		List<Formatter> formatters0 = results0.a;
 		// now try formatting it over and over
 		for (int i = 1; i<=STAGES; i++) {
 			String inputDir  = "/tmp/stability/"+i;
@@ -95,7 +93,15 @@ public class Stability {
 			LeaveOneOutValidator validator = new LeaveOneOutValidator(inputDir, language);
 			Triple<List<Formatter>, List<Float>, List<Float>> results =
 				validator.validateDocuments(false, outputDir);
-			errorRates.add( BuffUtils.median(results.c) );
+			List<Formatter> formatters = results.a;
+			List<Float> distances = new ArrayList<>();
+			for (int j = 0; j<formatters.size(); j++) {
+				Formatter f0 = formatters0.get(j);
+				Formatter f = formatters.get(j);
+				float editDistance = normalizedLevenshteinDistance(f.getOutput(), f0.getOutput());
+				distances.add(editDistance);
+			}
+			errorRates.add( BuffUtils.median(distances) );
 		}
 
 		return errorRates;
