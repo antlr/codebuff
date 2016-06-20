@@ -48,8 +48,8 @@ public class TestK extends LeaveOneOutValidator {
 			TSQL_CLEAN_DESCR,
 		};
 
-		int MAX_K = 51; // should be odd
-		int OUTLIER_K = 131;
+		int MAX_K = 98; // should be odd
+		int OUTLIER_K = 99;
 		List<Integer> ks = new ArrayList<>();
 		for (int i = 1; i<=MAX_K; i+=2) {
 			ks.add(i);
