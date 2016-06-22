@@ -56,7 +56,7 @@ import static org.antlr.v4.runtime.atn.PredictionMode.SLL;
  * Tool  -dbg  -leave-one-out -tsql      corpus/sqlclean/training        corpus/sqlclean/training/dmart_bits_PSQLRPT24.sql
  * Tool  -dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Tool  -dbg  -leave-one-out -java      corpus/java/training/stringtemplate4     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
- * Tool  -dbg  -leave-one-out -java      corpus/java/training/guava     corpus/java/training/guava/base/Absent.java
+ * Tool  -dbg  -leave-one-out -java_guava      corpus/java/training/guava     corpus/java/training/guava/base/Absent.java
  * Tool  -dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Tool {
@@ -269,6 +269,10 @@ public class Tool {
 		for (String fileName : fileNames) {
 			documents.add( parse(fileName, language) );
 		}
+		if ( documents.size()>0 ) {
+			documents.get(0).parser.getInterpreter().clearDFA(); // free up memory
+		}
+
 		return documents;
 	}
 
