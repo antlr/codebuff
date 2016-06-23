@@ -79,7 +79,7 @@ public class LeaveOneOutValidator {
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
 		List<InputDocument> documents = load(allFiles, language);
 		return validate(language, documents, fileToExclude,
-		                Formatter.DEFAULT_K, outputDir, true, collectAnalysis);
+		                Formatter.DEFAULT_K, outputDir, false, collectAnalysis);
 	}
 
 	public Triple<List<Formatter>,List<Float>,List<Float>> validateDocuments(boolean computeEditDistance,
@@ -200,12 +200,12 @@ public class LeaveOneOutValidator {
 		InputDocument originalDoc = testDoc;
 		long format_start = System.nanoTime();
 		String output = formatter.format(testDoc, collectAnalysis);
+		long format_stop = System.nanoTime();
 		float editDistance = 0;
 		if ( computeEditDistance ) {
 			editDistance = normalizedLevenshteinDistance(testDoc.content, output);
 		}
 		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
-		long format_stop = System.nanoTime();
 		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
 		if ( outputDir!=null ) {
 			File dir = new File(outputDir+"/"+language.name+"/"+Tool.version);
