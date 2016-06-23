@@ -123,10 +123,11 @@ public class TestK extends LeaveOneOutValidator {
 			"fig = plt.figure()\n"+
 			"ax = plt.subplot(111)\n"+
 			"%s"+
-			"ax.set_xlabel(\"$k$ nearest neighbors\", fontsize=14)\n"+
-			"ax.set_ylabel(\"Median error rate\", fontsize=14)\n" +
+			"ax.tick_params(axis='both', which='major', labelsize=18)\n" +
+			"ax.set_xlabel(\"$k$ nearest neighbors\", fontsize=20)\n"+
+			"ax.set_ylabel(\"Median error rate\", fontsize=20)\n" +
 			"#ax.set_title(\"k Nearest Neighbors vs\\nLeave-one-out Validation Error Rate\")\n"+
-			"plt.legend()\n" +
+			"plt.legend(fontsize=18)\n\n" +
 			"fig.savefig('images/vary_k.pdf', format='pdf')\n"+
 			"plt.show()\n";
 		String code = String.format(python, Tool.version, new Date(), data, ks, plot);
