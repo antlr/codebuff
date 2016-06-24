@@ -1,9 +1,9 @@
 package org.antlr.codebuff.validation;
 
 import org.antlr.codebuff.Corpus;
+import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Pair;
@@ -12,8 +12,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.antlr.codebuff.Tool.getFilenames;
-import static org.antlr.codebuff.Tool.languages;
+import static org.antlr.codebuff.Dbg.getFilenames;
+import static org.antlr.codebuff.Dbg.languages;
 import static org.antlr.codebuff.Trainer.FEATURES_HPOS;
 import static org.antlr.codebuff.Trainer.FEATURES_INJECT_WS;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
@@ -47,7 +47,7 @@ public class Speed {
 		// load all files up front
 		long load_start = System.nanoTime();
 		List<String> allFiles = getFilenames(new File(language.corpusDir), language.fileRegex);
-		List<InputDocument> documents = Tool.load(allFiles, language);
+		List<InputDocument> documents = Dbg.load(allFiles, language);
 		long load_stop = System.nanoTime();
 		long load_time = (load_stop-load_start)/1_000_000;
 		System.out.printf("Loaded %d files in %dms\n", documents.size(), load_time);

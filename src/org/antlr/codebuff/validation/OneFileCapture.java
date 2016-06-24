@@ -1,9 +1,9 @@
 package org.antlr.codebuff.validation;
 
 import org.antlr.codebuff.Corpus;
+import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Utils;
@@ -14,16 +14,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.QUORUM_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
-import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
-import static org.antlr.codebuff.Tool.version;
+import static org.antlr.codebuff.Dbg.ANTLR4_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA_DESCR;
+import static org.antlr.codebuff.Dbg.QUORUM_DESCR;
+import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Dbg.SQLITE_NOISY_DESCR;
+import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Dbg.TSQL_NOISY_DESCR;
+import static org.antlr.codebuff.Dbg.normalizedLevenshteinDistance;
+import static org.antlr.codebuff.Dbg.version;
 
 public class OneFileCapture {
 	public static void main(String[] args) throws Exception {
@@ -44,12 +44,12 @@ public class OneFileCapture {
 	}
 
 	public static void runCaptureForOneLanguage(LangDescriptor language) throws Exception {
-		List<String> filenames = Tool.getFilenames(new File(language.corpusDir), language.fileRegex);
+		List<String> filenames = Dbg.getFilenames(new File(language.corpusDir), language.fileRegex);
 		List<Float> selfEditDistances = new ArrayList<>();
 		for (String fileName : filenames) {
 			Corpus corpus = new Corpus(fileName, language);
 			corpus.train();
-			InputDocument testDoc = Tool.parse(fileName, corpus.language);
+			InputDocument testDoc = Dbg.parse(fileName, corpus.language);
 			Formatter formatter = new Formatter(corpus, language.indentSize);
 			String output = formatter.format(testDoc, false);
 			//		System.out.println(output);
@@ -63,7 +63,7 @@ public class OneFileCapture {
 
 		List<Float> corpusEditDistances = new ArrayList<>();
 		for (String fileName : filenames) {
-			InputDocument testDoc = Tool.parse(fileName, corpus.language);
+			InputDocument testDoc = Dbg.parse(fileName, corpus.language);
 			Formatter formatter = new Formatter(corpus, language.indentSize);
 			String output = formatter.format(testDoc, false);
 			//		System.out.println(output);

@@ -5,9 +5,9 @@ import org.antlr.v4.runtime.misc.Utils;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA_GUAVA_DESCR;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 import static org.antlr.codebuff.validation.LeaveOneOutValidator.testAllLanguages;
 

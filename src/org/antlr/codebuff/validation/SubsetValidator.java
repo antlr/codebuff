@@ -22,17 +22,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.getFilenames;
-import static org.antlr.codebuff.Tool.load;
-import static org.antlr.codebuff.Tool.normalizedLevenshteinDistance;
-import static org.antlr.codebuff.Tool.version;
+import static org.antlr.codebuff.Dbg.ANTLR4_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA8_GUAVA_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA_GUAVA_DESCR;
+import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Dbg.getFilenames;
+import static org.antlr.codebuff.Dbg.load;
+import static org.antlr.codebuff.Dbg.normalizedLevenshteinDistance;
+import static org.antlr.codebuff.Dbg.version;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 

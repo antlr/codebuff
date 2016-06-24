@@ -1,9 +1,9 @@
 package org.antlr.codebuff.validation;
 
-import org.antlr.codebuff.Tool;
+import org.antlr.codebuff.Dbg;
 
 public class ANTLROneFileCapture extends OneFileCapture {
 	public static void main(String[] args) throws Exception {
-		runCaptureForOneLanguage(Tool.ANTLR4_DESCR);
+		runCaptureForOneLanguage(Dbg.ANTLR4_DESCR);
 	}
 }

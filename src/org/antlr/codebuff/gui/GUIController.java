@@ -1,7 +1,7 @@
 package org.antlr.codebuff.gui;
 
+import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.validation.TokenPositionAnalysis;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -44,8 +44,8 @@ public class GUIController {
 	public void show() throws Exception {
 		// tokenize so we can highlight tokens
 		String originalText = testDoc.content;
-		original_tokens = Tool.tokenize(originalText, lexerClass);
-		formatted_tokens = Tool.tokenize(formattedText, lexerClass);
+		original_tokens = Dbg.tokenize(originalText, lexerClass);
+		formatted_tokens = Dbg.tokenize(formattedText, lexerClass);
 
 		realFormattedTokens = Trainer.getRealTokens(formatted_tokens);
 

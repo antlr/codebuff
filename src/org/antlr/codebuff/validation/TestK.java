@@ -1,8 +1,8 @@
 package org.antlr.codebuff.validation;
 
+import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Triple;
@@ -20,13 +20,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
-import static org.antlr.codebuff.Tool.JAVA8_DESCR;
-import static org.antlr.codebuff.Tool.JAVA_DESCR;
-import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Tool.getFilenames;
-import static org.antlr.codebuff.Tool.load;
+import static org.antlr.codebuff.Dbg.ANTLR4_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
+import static org.antlr.codebuff.Dbg.JAVA_DESCR;
+import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Dbg.getFilenames;
+import static org.antlr.codebuff.Dbg.load;
 
 public class TestK extends LeaveOneOutValidator {
 	public static final boolean FORCE_SINGLE_THREADED = false;
@@ -130,7 +130,7 @@ public class TestK extends LeaveOneOutValidator {
 			"plt.legend(fontsize=18)\n\n" +
 			"fig.savefig('images/vary_k.pdf', format='pdf')\n"+
 			"plt.show()\n";
-		String code = String.format(python, Tool.version, new Date(), data, ks, plot);
+		String code = String.format(python, Dbg.version, new Date(), data, ks, plot);
 
 		String fileName = "python/src/vary_k.py";
 		Utils.writeFile(fileName, code);

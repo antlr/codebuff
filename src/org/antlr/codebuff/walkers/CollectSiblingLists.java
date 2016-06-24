@@ -1,6 +1,6 @@
 package org.antlr.codebuff.walkers;
 
-import org.antlr.codebuff.Tool;
+import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.kNNClassifier;
 import org.antlr.codebuff.misc.BuffUtils;
@@ -69,24 +69,24 @@ public class CollectSiblingLists extends VisitSiblingLists {
 		Token hiddenTokenToRight = hiddenToRight!=null ? hiddenToRight.get(0) : null;
 
 		int[] ws = new int[4]; // '\n' (before list, before sep, after sep, after last element)
-		if ( hiddenTokenToLeft!=null && Tool.count(hiddenTokenToLeft.getText(), '\n')>0 ) {
+		if ( hiddenTokenToLeft!=null && Dbg.count(hiddenTokenToLeft.getText(), '\n')>0 ) {
 			ws[0] = '\n';
 		}
-		if ( hiddenToLeftOfSep!=null && Tool.count(hiddenToLeftOfSep.get(0).getText(), '\n')>0 ) {
+		if ( hiddenToLeftOfSep!=null && Dbg.count(hiddenToLeftOfSep.get(0).getText(), '\n')>0 ) {
 			ws[1] = '\n';
 //			System.out.println("BEFORE "+JavaParser.ruleNames[ctx.getRuleIndex()]+
 //				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
 //				                   JavaParser.tokenNames[separator.getType()]+
 //				                   " "+separator);
 		}
-		if ( hiddenToRightOfSep!=null && Tool.count(hiddenToRightOfSep.get(0).getText(), '\n')>0 ) {
+		if ( hiddenToRightOfSep!=null && Dbg.count(hiddenToRightOfSep.get(0).getText(), '\n')>0 ) {
 			ws[2] = '\n';
 //			System.out.println("AFTER "+JavaParser.ruleNames[ctx.getRuleIndex()]+
 //				                   "->"+JavaParser.ruleNames[ctx.getRuleIndex()]+" sep "+
 //				                   JavaParser.tokenNames[separator.getType()]+
 //				                   " "+separator);
 		}
-		if ( hiddenTokenToRight!=null && Tool.count(hiddenTokenToRight.getText(), '\n')>0 ) {
+		if ( hiddenTokenToRight!=null && Dbg.count(hiddenTokenToRight.getText(), '\n')>0 ) {
 			ws[3] = '\n';
 		}
 		boolean isSplitList = ws[1]=='\n' || ws[2]=='\n';

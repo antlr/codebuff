@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.antlr.codebuff.Tool.getFilenames;
-import static org.antlr.codebuff.Tool.getLexer;
-import static org.antlr.codebuff.Tool.getParser;
-import static org.antlr.codebuff.Tool.load;
-import static org.antlr.codebuff.Tool.showFileNames;
+import static org.antlr.codebuff.Dbg.getFilenames;
+import static org.antlr.codebuff.Dbg.getLexer;
+import static org.antlr.codebuff.Dbg.getParser;
+import static org.antlr.codebuff.Dbg.load;
+import static org.antlr.codebuff.Dbg.showFileNames;
 
 public class Corpus {
 	public static final int FEATURE_VECTOR_RANDOM_SEED = 314159; // need randomness but use same seed to get reproducibility

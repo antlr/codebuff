@@ -3,8 +3,8 @@ package org.antlr.codebuff.validation;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.antlr.codebuff.Corpus;
+import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.HashBag;
@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static java.lang.Math.log;
-import static org.antlr.codebuff.Tool.load;
+import static org.antlr.codebuff.Dbg.load;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.mean;
 
@@ -90,11 +90,11 @@ import static org.antlr.codebuff.misc.BuffUtils.mean;
 public class Entropy {
 
 	public static void main(String[] args) throws Exception {
-		runCaptureForOneLanguage(Tool.ANTLR4_DESCR);
+		runCaptureForOneLanguage(Dbg.ANTLR4_DESCR);
 	}
 
 	public static void runCaptureForOneLanguage(LangDescriptor language) throws Exception {
-		List<String> filenames = Tool.getFilenames(new File(language.corpusDir), language.fileRegex);
+		List<String> filenames = Dbg.getFilenames(new File(language.corpusDir), language.fileRegex);
 		List<InputDocument> documents = load(filenames, language);
 		for (String fileName : filenames) {
 			// Examine info for this file in isolation

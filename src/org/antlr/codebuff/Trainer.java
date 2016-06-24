@@ -375,7 +375,7 @@ public class Trainer {
 		List<Token> previousWS = getPreviousWS(tokens, i);
 		if ( previousWS!=null ) {
 			for (Token ws : previousWS) {
-				precedingNL += Tool.count(ws.getText(), '\n');
+				precedingNL += Dbg.count(ws.getText(), '\n');
 			}
 		}
 		return precedingNL;
@@ -792,7 +792,7 @@ public class Trainer {
 						buf.append(String.format("%"+displayWidth+"s", abbrev));
 					}
 					else {
-						buf.append(Tool.sequence(displayWidth, " "));
+						buf.append(Dbg.sequence(displayWidth, " "));
 					}
 					break;
 				case INT :
@@ -803,7 +803,7 @@ public class Trainer {
 							buf.append(String.format("%"+displayWidth+"s", StringUtils.center(String.valueOf(features[i]), displayWidth)));
 						}
 						else {
-							buf.append(Tool.sequence(displayWidth, " "));
+							buf.append(Dbg.sequence(displayWidth, " "));
 						}
 					}
 					break;
@@ -819,7 +819,7 @@ public class Trainer {
 						buf.append(features[i] == 1 ? "true " : "false");
 					}
 					else {
-						buf.append(Tool.sequence(displayWidth, " "));
+						buf.append(Dbg.sequence(displayWidth, " "));
 					}
 					break;
 				default :
@@ -847,7 +847,7 @@ public class Trainer {
 						buf.append(String.format("%"+displayWidth+"s", StringUtils.center(String.valueOf(features[i]), displayWidth)));
 					}
 					else {
-						buf.append(Tool.sequence(displayWidth, " "));
+						buf.append(Dbg.sequence(displayWidth, " "));
 					}
 					break;
 				case INFO_FILE:
@@ -901,7 +901,7 @@ public class Trainer {
 				buf.append("| "); // separate prev from current tokens
 			}
 			int displayWidth = FEATURES[i].type.displayWidth;
-			buf.append(Tool.sequence(displayWidth,"="));
+			buf.append(Dbg.sequence(displayWidth, "="));
 		}
 		buf.append("\n");
 		return buf.toString();

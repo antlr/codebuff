@@ -1,10 +1,10 @@
 package org.antlr.codebuff.validation;
 
 import org.antlr.codebuff.Corpus;
+import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.FeatureMetaData;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
-import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
@@ -25,7 +25,7 @@ public class CorpusConsistency {
 		if ( args.length>0 && args[0].equals("-report") ) {
 			report = true;
 		}
-		for (LangDescriptor language : Tool.languages) {
+		for (LangDescriptor language : Dbg.languages) {
 			computeConsistency(language, report);
 		}
 	}
