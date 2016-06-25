@@ -204,4 +204,49 @@ median of [5:19] formatting 2244ms
 
 ## Generating graphs from paper
 
-In the *Universal Code Formatting Through Machine Learning* paper, we have three graphs to support our conclusions. This sections shows how to reproduce them.
+In the *Universal Code Formatting Through Machine Learning* paper, we have three graphs to support our conclusions. This sections shows how to reproduce them. (Note that these jobs take many minutes to run; maybe up to 30 minutes for one of them on a fast box.)
+
+### Box plot with median error rates
+
+To generate:
+
+<img src="images/leave_one_out.png" width="400">
+
+do this:
+
+```bash
+$ mvn clean compile install
+$ java -Xms8G -Xss1M -cp target/codebuff-1.4.19.jar org.antlr.codebuff.validation.LeaveOneOutValidator
+...
+
+```
+
+### Plot showing effect of corpus size on error rate
+
+To generate:
+
+<img src="images/subset_validator.png" width="400">
+
+do this:
+
+```bash
+$ mvn clean compile install
+$ java -Xms8G -Xss1M -cp target/codebuff-1.4.19.jar org.antlr.codebuff.validation.SubsetValidator
+...
+
+```
+
+### Plot showing effect of varying model parameter k
+
+To generate:
+
+<img src="images/vary_k.png" width="400">
+
+do this:
+
+```bash
+$ mvn clean compile install
+$ java -Xms8G -Xss1M -cp target/codebuff-1.4.19.jar org.antlr.codebuff.validation.TestK
+...
+
+```
