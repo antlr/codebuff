@@ -16,11 +16,11 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
 
 /** The main CodeBuff tool used to format files. Examples:
  *
-   $ java -cp codebuff.jar:$CLASSPATH org.antlr.codebuff.Tool \
+   $ java -jar target/codebuff-1.4.19.jar  \
         -g org.antlr.codebuff.ANTLRv4 -rule grammarSpec -corpus corpus/antlr4/training \
         -files g4 -indent 4 -comment LINE_COMMENT T.g4
 
-   $ java -cp codebuff.jar:$CLASSPATH org.antlr.codebuff.Tool \
+   $ java -jar codebuff-1.4.19 \
         -g org.antlr.codebuff.Java -rule compilationUnit \
         -corpus corpus/java/training/stringtemplate4  -files java \
         -comment LINE_COMMENT T.java
@@ -39,7 +39,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
 public class Tool {
 	public static void main(String[] args) throws Exception {
 		if ( args.length<7 ) {
-			System.err.println("Tool -g grammar-name -rule start-rule -corpus root-dir-of-samples \\\n" +
+			System.err.println("org.antlr.codebuff.Tool -g grammar-name -rule start-rule -corpus root-dir-of-samples \\\n" +
 			                   "   [-files file-extension] [-indent num-spaces] \\" +
 			                   "   [-comment line-comment-name] [-o output-file] file-to-format");
 			return;
@@ -88,6 +88,7 @@ public class Tool {
 		}
 		testFileName = args[i]; // must be last
 
+		System.out.println("gramm: "+grammarName);
 		String parserClassName = grammarName+"Parser";
 		String lexerClassName = grammarName+"Lexer";
 		Class<? extends Parser> parserClass = null;

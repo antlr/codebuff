@@ -37,12 +37,6 @@
 			<version>4.5.3</version>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.4</version>
@@ -60,9 +54,91 @@
 		</dependency>
 	</dependencies>
 
+	<!--
+	<profiles>
+		<profile>
+			<id>java-guava-speed</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+									<mainClass>org.antlr.codebuff.validation.Speed</mainClass>
+									<arguments>
+										<argument>-java_guava</argument>
+										<argument>corpus/java/training/guava/cache/LocalCache.java</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>java8-guava-speed</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+									<mainClass>org.antlr.codebuff.validation.Speed</mainClass>
+									<arguments>
+										<argument>-java8_guava</argument>
+										<argument>corpus/java/training/guava/cache/LocalCache.java</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>antlr-speed</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<phase>test</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+									<mainClass>org.antlr.codebuff.validation.Speed</mainClass>
+									<arguments>
+										<argument>-antlr</argument>
+										<argument>corpus/antlr4/training/Java8.g4</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	-->
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<testSourceDirectory>test</testSourceDirectory>
 		<resources>
 			<resource>
 				<directory>resources</directory>
@@ -70,6 +146,29 @@
 			</resource>
 		</resources>
 		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<appendAssemblyId>false</appendAssemblyId>
+					<archive>
+						<manifest>
+							<mainClass>org.antlr.codebuff.Tool</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.antlr</groupId>
 				<artifactId>antlr4-maven-plugin</artifactId>
@@ -109,14 +208,6 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>1.8</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.12.4</version>
-				<configuration>
-					<workingDirectory>${basedir}</workingDirectory>
-				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>

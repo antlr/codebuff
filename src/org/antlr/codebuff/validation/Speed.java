@@ -28,7 +28,7 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  */
 
 public class Speed {
-	public static final int TRIALS = 15;
+	public static final int TRIALS = 20;
 	public static void main(String[] args) throws Exception {
 		String langname = args[0].substring(1);
 		String testFilename = args[1];
@@ -70,10 +70,10 @@ public class Speed {
 			formatting.add(timing.b);
 		}
 		// drop first four
-		training = training.subList(4,training.size());
-		formatting = formatting.subList(4,formatting.size());
-		System.out.printf("median of [4:] training %d\n", BuffUtils.median(training));
-		System.out.printf("median of [4:] formatting %d\n", BuffUtils.median(formatting));
+		training = training.subList(5,training.size());
+		formatting = formatting.subList(5,formatting.size());
+		System.out.printf("median of [5:%d] training %dms\n", TRIALS-1, BuffUtils.median(training));
+		System.out.printf("median of [5:%d] formatting %dms\n", TRIALS-1, BuffUtils.median(formatting));
 	}
 
 	public static Pair<Integer,Integer> test(LangDescriptor language,
