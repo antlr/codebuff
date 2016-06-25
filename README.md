@@ -206,6 +206,8 @@ median of [5:19] formatting 2244ms
 
 In the *Universal Code Formatting Through Machine Learning* paper, we have three graphs to support our conclusions. This sections shows how to reproduce them. (Note that these jobs take many minutes to run; maybe up to 30 minutes for one of them on a fast box.)
 
+The Java code generates python code that uses matplotlib. The result of running the python is a PDF of the graph (that also pops up in a window).
+
 ### Box plot with median error rates
 
 To generate:
@@ -218,7 +220,9 @@ do this:
 $ mvn clean compile install
 $ java -Xms8G -Xss1M -cp target/codebuff-1.4.19.jar org.antlr.codebuff.validation.LeaveOneOutValidator
 ...
-
+wrote python code to python/src/leave_one_out.py
+$ cd python/src
+$ python leave_one_out.py &
 ```
 
 ### Plot showing effect of corpus size on error rate
@@ -233,7 +237,9 @@ do this:
 $ mvn clean compile install
 $ java -Xms8G -Xss1M -cp target/codebuff-1.4.19.jar org.antlr.codebuff.validation.SubsetValidator
 ...
-
+wrote python code to python/src/subset_validator.py
+$ cd python/src
+$ python subset_validator.py &
 ```
 
 ### Plot showing effect of varying model parameter k
@@ -248,5 +254,7 @@ do this:
 $ mvn clean compile install
 $ java -Xms8G -Xss1M -cp target/codebuff-1.4.19.jar org.antlr.codebuff.validation.TestK
 ...
-
+wrote python code to python/src/vary_k.py
+$ cd python/src
+$ python vary_k.py &
 ```
