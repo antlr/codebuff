@@ -201,3 +201,7 @@ java8_guava training of /Users/parrt/antlr/code/codebuff/corpus/java/training/gu
 median of [5:19] training 1863ms
 median of [5:19] formatting 2244ms
 ```
+
+## Generating graphs from paper
+
+In the *Universal Code Formatting Through Machine Learning* paper, we have three graphs to support our conclusions. This sections shows how to reproduce them.

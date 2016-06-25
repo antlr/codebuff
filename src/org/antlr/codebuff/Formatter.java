@@ -291,7 +291,7 @@ public class Formatter {
 		ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 		Token start = null;
 		if ( ancestor==null ) {
-			System.err.println("Whoops. No ancestor at that delta");
+//			System.err.println("Whoops. No ancestor at that delta");
 		}
 		else {
 			ParseTree child = ancestor.getChild(childIndex);
@@ -303,7 +303,7 @@ public class Formatter {
 			}
 			else {
 				// uh oh.
-				System.err.println("Whoops. Tried to access invalid child");
+//				System.err.println("Whoops. Tried to access invalid child");
 			}
 		}
 		if ( start!=null ) {
@@ -321,7 +321,7 @@ public class Formatter {
 		ParserRuleContext ancestor = Trainer.getAncestor(earliestLeftAncestor, deltaFromAncestor);
 		Token start = null;
 		if ( ancestor==null ) {
-			System.err.println("Whoops. No ancestor at that delta");
+//			System.err.println("Whoops. No ancestor at that delta");
 		}
 		else {
 			ParseTree child = ancestor.getChild(childIndex);
@@ -333,7 +333,7 @@ public class Formatter {
 			}
 			else {
 				// uh oh.
-				System.err.println("Whoops. Tried to access invalid child");
+//				System.err.println("Whoops. Tried to access invalid child");
 			}
 		}
 		if ( start!=null ) {
