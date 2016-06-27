@@ -52,10 +52,10 @@ public class Trainer {
 	/** When computing child indexes, we use this value for any child list
 	 *  element other than the first one.  If a parent has just one X child,
 	 *  we use the actual child index. If parent has two or more X children,
-	 *  and we are not the first X, use CHILD_INDEX_LIST_ELEMENT. If first
+	 *  and we are not the first X, use CHILD_INDEX_REPEATED_ELEMENT. If first
 	 *  of two or more X children, use actual child index.
 	 */
-	public static final int CHILD_INDEX_LIST_ELEMENT = 1_111_111_111;
+	public static final int CHILD_INDEX_REPEATED_ELEMENT = 1_111_111_111;
 
 	public static final int LIST_PREFIX         = 0;
 	public static final int LIST_FIRST_ELEMENT  = 1;
@@ -352,7 +352,9 @@ public class Trainer {
 			if ( alignInfo.a < indentInfo.a ) {
 				return aligncat(alignInfo.a, alignInfo.b);
 			}
+			// Choose indentation over alignment if both at same ancestor level
 			return indentcat(indentInfo.a, indentInfo.b);
+//			return aligncat(alignInfo.a, alignInfo.b); // Should not use alignment over indentation; manual review of output shows indentation kinda messed up
 		}
 
 		// otherwise just return the align or indent we computed
@@ -968,7 +970,7 @@ public class Trainer {
 			List<ParserRuleContext> siblings =
 				((ParserRuleContext)parent).getRuleContexts(((ParserRuleContext)t).getClass());
 			if ( siblings.size()>1 && siblings.indexOf(t)>0 ) {
-				return CHILD_INDEX_LIST_ELEMENT;
+				return CHILD_INDEX_REPEATED_ELEMENT;
 			}
 		}
 		// check to see if we are 2nd or beyond repeated token
@@ -976,7 +978,7 @@ public class Trainer {
 			List<TerminalNode> repeatedTokens =
 				((ParserRuleContext) parent).getTokens(((TerminalNode) t).getSymbol().getType());
 			if ( repeatedTokens.size()>1 && repeatedTokens.indexOf(t)>0 ) {
-				return CHILD_INDEX_LIST_ELEMENT;
+				return CHILD_INDEX_REPEATED_ELEMENT;
 			}
 		}
 

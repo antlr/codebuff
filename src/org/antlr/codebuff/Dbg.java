@@ -23,13 +23,13 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Testing:
  *
  * Dbg  -antlr     corpus/antlr4/training      grammars/org/antlr/codebuff/tsql.g4
- * Dbg  -leave-one-out -antlr     corpus/antlr4/training      corpus/antlr4/training/MASM.g4
- * Dbg  -leave-one-out -quorum     corpus/quorum/training      corpus/quorum/training/Containers/List.quorum
+ * Dbg  -antlr     corpus/antlr4/training      corpus/antlr4/training/MASM.g4
+ * Dbg  -quorum     corpus/quorum/training      corpus/quorum/training/Containers/List.quorum
  * Dbg  -sqlite    corpus/sqlclean/training      corpus/sqlclean/training/dmart_bits.sql
- * Dbg  -leave-one-out -tsql      corpus/sqlclean/training        corpus/sqlclean/training/dmart_bits_PSQLRPT24.sql
+ * Dbg  -tsql      corpus/sqlclean/training        corpus/sqlclean/training/dmart_bits_PSQLRPT24.sql
  * Dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
- * Dbg  -leave-one-out -java      corpus/java/training/stringtemplate4     corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
- * Dbg  -leave-one-out -java_guava      corpus/java/training/guava     corpus/java/training/guava/base/Absent.java
+ * Dbg  -java_st      corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
+ * Dbg  -java_guava   corpus/java/training/guava/base/Absent.java
  * Dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Dbg {
@@ -39,19 +39,14 @@ public class Dbg {
 		throws Exception
 	{
 		if ( args.length<2 ) {
-			System.err.println("Dbg [-leave-one-out] [-java|-java8|-antlr|-sqlite|-tsql] root-dir-of-samples test-file");
+			System.err.println("Dbg [-leave-one-out] [-java|-java8|-antlr|-sqlite|-tsql] test-file");
 		}
 
 		int arg = 0;
-		boolean leaveOneOut = false;
+		boolean leaveOneOut = true;
 		boolean collectAnalysis = true;
-		if ( args[arg].equals("-leave-one-out") ) {
-			leaveOneOut = true;
-			arg++;
-		}
 		String language = args[arg++];
 		language = language.substring(1);
-		String corpusDir = args[arg++];
 		String testFilename = args[arg];
 		String output = "???";
 		InputDocument testDoc = null;
@@ -66,9 +61,9 @@ public class Dbg {
 				break;
 			}
 		}
-		if ( lang!=null && leaveOneOut ) {
+		if ( lang!=null ) {
 			start = System.nanoTime();
-			LeaveOneOutValidator validator = new LeaveOneOutValidator(corpusDir, lang);
+			LeaveOneOutValidator validator = new LeaveOneOutValidator(lang.corpusDir, lang);
 			Triple<Formatter,Float,Float> val = validator.validateOneDocument(testFilename, null, collectAnalysis);
 			testDoc = Tool.parse(testFilename, lang);
 			stop = System.nanoTime();
@@ -95,41 +90,6 @@ public class Dbg {
 
 			ClassificationAnalysis analysis = new ClassificationAnalysis(testDoc, analysisPerToken);
 			System.out.println(analysis);
-		}
-		else if ( lang!=null ) {
-			Corpus corpus = new Corpus(corpusDir, lang);
-			corpus.train();
-			testDoc = Tool.parse(testFilename, lang);
-			start = System.nanoTime();
-			Formatter formatter = new Formatter(corpus,lang.indentSize);
-			output = formatter.format(testDoc, collectAnalysis);
-			stop = System.nanoTime();
-			analysisPerToken = formatter.getAnalysisPerToken();
-
-			ClassificationAnalysis analysis = new ClassificationAnalysis(testDoc, analysisPerToken);
-			System.out.println(analysis);
-
-			CommonTokenStream original_tokens = Tool.tokenize(testDoc.content, corpus.language.lexerClass);
-			List<Token> wsTokens = filter(original_tokens.getTokens(),
-			                              t -> t.getText().matches("\\s+"));
-			String originalWS = tokenText(wsTokens);
-//			Utils.writeFile("/tmp/spaces1", originalWS);
-//			Utils.writeFile("/tmp/input", testDoc.content);
-//			Utils.writeFile("/tmp/output", output);
-
-			CommonTokenStream formatted_tokens = Tool.tokenize(output, corpus.language.lexerClass);
-			wsTokens = filter(formatted_tokens.getTokens(),
-			                  t -> t.getText().matches("\\s+"));
-			String formattedWS = tokenText(wsTokens);
-//			Utils.writeFile("/tmp/spaces2", formattedWS);
-
-			System.out.println("len orig, formatted="+testDoc.content.length()+", "+output.length());
-			System.out.println("ws len orig, formatted="+originalWS.length()+", "+formattedWS.length());
-
-			float editDistance = normalizedLevenshteinDistance(originalWS, formattedWS);
-			System.out.println("Levenshtein distance of ws: "+editDistance);
-			editDistance = normalizedLevenshteinDistance(testDoc.content, output);
-			System.out.println("Levenshtein distance: "+editDistance);
 		}
 
 		if ( lang!=null ) {
