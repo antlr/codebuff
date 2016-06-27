@@ -2,13 +2,13 @@ package org.antlr.codebuff.validation;
 
 import org.antlr.codebuff.misc.LangDescriptor;
 
-import static org.antlr.codebuff.Dbg.ANTLR4_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_GUAVA_DESCR;
-import static org.antlr.codebuff.Dbg.QUORUM_DESCR;
-import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
+import static org.antlr.codebuff.Tool.QUORUM_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 
 public class FormatUsingLeaveOneOut extends LeaveOneOutValidator {
 	public FormatUsingLeaveOneOut(String rootDir, LangDescriptor language) {

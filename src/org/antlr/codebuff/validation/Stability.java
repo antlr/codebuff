@@ -13,9 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.antlr.codebuff.Dbg.QUORUM_DESCR;
 import static org.antlr.codebuff.Dbg.normalizedLevenshteinDistance;
-import static org.antlr.codebuff.Dbg.version;
+import static org.antlr.codebuff.Tool.QUORUM_DESCR;
+import static org.antlr.codebuff.Tool.version;
 
 public class Stability {
 	public static final int STAGES = 5;

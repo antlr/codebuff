@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.misc.Triple;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Dbg.QUORUM_DESCR;
+import static org.antlr.codebuff.Tool.QUORUM_DESCR;
 
 public class FormatQuorum {
 	public static void main(String[] args) throws Exception {

@@ -20,7 +20,7 @@ import java.util.Vector;
 
 import static org.antlr.codebuff.Dbg.normalizedLevenshteinDistance;
 import static org.antlr.codebuff.Dbg.tokenText;
-import static org.antlr.codebuff.Dbg.tokenize;
+import static org.antlr.codebuff.Tool.tokenize;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN;
 import static org.antlr.codebuff.Trainer.CAT_ALIGN_WITH_ANCESTOR_CHILD;
 import static org.antlr.codebuff.Trainer.CAT_INDENT;
@@ -147,7 +147,7 @@ public class Formatter {
 
 		String prefix = originalTokens.getText(Interval.of(0, firstToken.getTokenIndex())); // gets any comments in front + first real token
 		charPosInLine = firstToken.getCharPositionInLine()+firstToken.getText().length()+1; // start where first token left off
-		line = Dbg.count(prefix, '\n') + 1;
+		line = Tool.count(prefix, '\n') + 1;
 		output.append(prefix);
 
 		// first identify oversize lists with separators
@@ -210,7 +210,7 @@ public class Formatter {
 		int alignOrIndent = CAT_ALIGN;
 
 		if ( newlines>0 ) {
-			output.append(Dbg.newlines(newlines));
+			output.append(Tool.newlines(newlines));
 			line+=newlines;
 			charPosInLine = 0;
 
@@ -231,7 +231,7 @@ public class Formatter {
 					Token firstTokenOnPrevLine = tokensOnPreviousLine.get(0);
 					int indentCol = firstTokenOnPrevLine.getCharPositionInLine();
 					charPosInLine = indentCol;
-					output.append(Dbg.spaces(indentCol));
+					output.append(Tool.spaces(indentCol));
 				}
 			}
 			else if ( (alignOrIndent&0xFF)==CAT_INDENT ) {
@@ -240,7 +240,7 @@ public class Formatter {
 		}
 		else {
 			// inject whitespace instead of \n?
-			output.append(Dbg.spaces(ws));
+			output.append(Tool.spaces(ws));
 			charPosInLine += ws;
 		}
 
@@ -275,12 +275,12 @@ public class Formatter {
 			if ( firstTokenOnPrevLine!=null ) { // if not on first line, we cannot indent
 				int indentedCol = firstTokenOnPrevLine.getCharPositionInLine()+indentSize;
 				charPosInLine = indentedCol;
-				output.append(Dbg.spaces(indentedCol));
+				output.append(Tool.spaces(indentedCol));
 			}
 			else {
 				// no prev token? ok, just indent from left edge
 				charPosInLine = indentSize;
-				output.append(Dbg.spaces(indentSize));
+				output.append(Tool.spaces(indentSize));
 			}
 			return;
 		}
@@ -309,7 +309,7 @@ public class Formatter {
 		if ( start!=null ) {
 			int indentCol = start.getCharPositionInLine()+indentSize;
 			charPosInLine = indentCol;
-			output.append(Dbg.spaces(indentCol));
+			output.append(Tool.spaces(indentCol));
 		}
 	}
 
@@ -339,7 +339,7 @@ public class Formatter {
 		if ( start!=null ) {
 			int indentCol = start.getCharPositionInLine();
 			charPosInLine = indentCol;
-			output.append(Dbg.spaces(indentCol));
+			output.append(Tool.spaces(indentCol));
 		}
 	}
 
@@ -402,7 +402,7 @@ public class Formatter {
 					String hiddenText = hidden.getText();
 					output.append(hiddenText);
 					if ( hiddenText.matches("\\n+") ) {
-						line += Dbg.count(hiddenText, '\n');
+						line += Tool.count(hiddenText, '\n');
 						charPosInLine = 0;
 					}
 					else {

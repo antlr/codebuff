@@ -25,7 +25,7 @@ public class InputDocument {
 
 	public static InputDocument dup(InputDocument old) throws Exception {
 		// reparse to get new tokens, tree
-		return Dbg.parse(old.fileName, old.language);
+		return Tool.parse(old.fileName, old.language);
 	}
 
 	public InputDocument(String fileName, String content, LangDescriptor language) {

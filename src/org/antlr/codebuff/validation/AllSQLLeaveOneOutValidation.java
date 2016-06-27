@@ -5,10 +5,10 @@ import org.antlr.v4.runtime.misc.Utils;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.SQLITE_NOISY_DESCR;
-import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.TSQL_NOISY_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 import static org.antlr.codebuff.validation.LeaveOneOutValidator.testAllLanguages;
 

@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.misc.Triple;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Dbg.ANTLR4_DESCR;
+import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
 
 public class FormatANTLR4 {
 	public static void main(String[] args) throws Exception {

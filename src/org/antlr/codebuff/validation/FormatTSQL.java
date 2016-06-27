@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.misc.Triple;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 
 public class FormatTSQL {
 	public static void main(String[] args) throws Exception {

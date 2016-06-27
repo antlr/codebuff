@@ -3,6 +3,7 @@ package org.antlr.codebuff.validation;
 import org.antlr.codebuff.Corpus;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
+import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.misc.LangDescriptor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.antlr.v4.runtime.misc.Triple;
@@ -22,17 +23,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.antlr.codebuff.Dbg.ANTLR4_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA8_GUAVA_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_GUAVA_DESCR;
-import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.getFilenames;
-import static org.antlr.codebuff.Dbg.load;
 import static org.antlr.codebuff.Dbg.normalizedLevenshteinDistance;
-import static org.antlr.codebuff.Dbg.version;
+import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.getFilenames;
+import static org.antlr.codebuff.Tool.version;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 
@@ -116,7 +116,7 @@ public class SubsetValidator {
 
 	public static float[] getMedianErrorRates(LangDescriptor language, int maxNumFiles, int trials) throws Exception {
 		SubsetValidator validator = new SubsetValidator(language.corpusDir, language);
-		List<InputDocument> documents = load(validator.allFiles, language);
+		List<InputDocument> documents = Tool.load(validator.allFiles, language);
 		float[] medians = new float[Math.min(documents.size(),maxNumFiles)+1];
 
 		int ncpu = Runtime.getRuntime().availableProcessors();

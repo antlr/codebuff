@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA8_GUAVA_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_GUAVA_DESCR;
-import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
 import static org.antlr.codebuff.Dbg.normalizedLevenshteinDistance;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
 
 public class GrammarInvariance {
 	public static void main(String[] args) throws Exception {

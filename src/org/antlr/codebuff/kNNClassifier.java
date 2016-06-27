@@ -309,7 +309,7 @@ public class kNNClassifier {
 	 */
 	public double distance(int[] A, int[] B) {
 //		return ((float)Tool.L0_Distance(categorical, A, B))/num_categorical;
-		double d = Dbg.weightedL0_Distance(FEATURES, A, B);
+		double d = Tool.weightedL0_Distance(FEATURES, A, B);
 		return d/maxDistanceCount;
 	}
 }

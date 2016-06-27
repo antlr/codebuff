@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.misc.Triple;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
 
 public class FormatJava8 {
 	public static void main(String[] args) throws Exception {

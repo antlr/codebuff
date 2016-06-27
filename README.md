@@ -11,7 +11,7 @@ Either techniques are painful and finicky.
 
 This repository is a step towards what we hope will be a universal code formatter that uses machine learning to look for patterns in a corpus and to format code using those patterns.  
 
-*Holy shit!*  It appears to work.  Working on a paper to be submitted June 2016.  Details therein.
+*Whoa!* It appears to work.  Working on a paper to be submitted June 2016.  Details therein.
 
 ## Build complete jar
 

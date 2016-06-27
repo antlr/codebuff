@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.misc.Triple;
 
 import java.util.List;
 
-import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
 
 public class FormatSQLite {
 	public static void main(String[] args) throws Exception {

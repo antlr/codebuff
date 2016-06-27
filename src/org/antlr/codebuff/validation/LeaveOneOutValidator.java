@@ -1,10 +1,10 @@
 package org.antlr.codebuff.validation;
 
 import org.antlr.codebuff.Corpus;
-import org.antlr.codebuff.Dbg;
 import org.antlr.codebuff.FeatureMetaData;
 import org.antlr.codebuff.Formatter;
 import org.antlr.codebuff.InputDocument;
+import org.antlr.codebuff.Tool;
 import org.antlr.codebuff.Trainer;
 import org.antlr.codebuff.misc.BuffUtils;
 import org.antlr.codebuff.misc.LangDescriptor;
@@ -24,18 +24,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.antlr.codebuff.Dbg.ANTLR4_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA8_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA8_GUAVA_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_DESCR;
-import static org.antlr.codebuff.Dbg.JAVA_GUAVA_DESCR;
-import static org.antlr.codebuff.Dbg.SQLITE_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.SQLITE_NOISY_DESCR;
-import static org.antlr.codebuff.Dbg.TSQL_CLEAN_DESCR;
-import static org.antlr.codebuff.Dbg.TSQL_NOISY_DESCR;
-import static org.antlr.codebuff.Dbg.getFilenames;
-import static org.antlr.codebuff.Dbg.load;
 import static org.antlr.codebuff.Dbg.normalizedLevenshteinDistance;
+import static org.antlr.codebuff.Tool.ANTLR4_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_DESCR;
+import static org.antlr.codebuff.Tool.JAVA8_GUAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_DESCR;
+import static org.antlr.codebuff.Tool.JAVA_GUAVA_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.SQLITE_NOISY_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_CLEAN_DESCR;
+import static org.antlr.codebuff.Tool.TSQL_NOISY_DESCR;
+import static org.antlr.codebuff.Tool.getFilenames;
 import static org.antlr.codebuff.misc.BuffUtils.filter;
 import static org.antlr.codebuff.misc.BuffUtils.map;
 import static org.antlr.codebuff.misc.BuffUtils.median;
@@ -84,7 +83,7 @@ public class LeaveOneOutValidator {
 		throws Exception
 	{
 		List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-		List<InputDocument> documents = load(allFiles, language);
+		List<InputDocument> documents = Tool.load(allFiles, language);
 		return validate(language, documents, fileToExclude,
 		                Formatter.DEFAULT_K, outputDir, false, collectAnalysis);
 	}
@@ -109,7 +108,7 @@ public class LeaveOneOutValidator {
 		long start = System.nanoTime();
 		try {
 			List<String> allFiles = getFilenames(new File(rootDir), language.fileRegex);
-			final List<InputDocument> documents = load(allFiles, language);
+			final List<InputDocument> documents = Tool.load(allFiles, language);
 			final List<InputDocument> parsableDocuments = filter(documents, d -> d.tree!=null);
 			long stop = System.nanoTime();
 			System.out.printf("Load/parse all docs from %s time %d ms\n",
@@ -215,7 +214,7 @@ public class LeaveOneOutValidator {
 		ClassificationAnalysis analysis = new ClassificationAnalysis(originalDoc, formatter.getAnalysisPerToken());
 		System.out.println(testDoc.fileName+": edit distance = "+editDistance+", error rate = "+analysis.getErrorRate());
 		if ( outputDir!=null ) {
-			File dir = new File(outputDir+"/"+language.name+"/"+Dbg.version);
+			File dir = new File(outputDir+"/"+language.name+"/"+Tool.version);
 			if ( !dir.exists() ) {
 				dir.mkdirs();
 			}
@@ -245,7 +244,7 @@ public class LeaveOneOutValidator {
 		Map<String, Integer> corpusSizes = new HashMap<>();
 		for (int i = 0; i<languages.length; i++) {
 			LangDescriptor language = languages[i];
-			List<String> filenames = Dbg.getFilenames(new File(corpusDirs[i]), language.fileRegex);
+			List<String> filenames = Tool.getFilenames(new File(corpusDirs[i]), language.fileRegex);
 			corpusSizes.put(language.name, filenames.size());
 		}
 		List<String> languageNamesAsStr = map(languages, l -> '"'+l.name+"\\nn="+corpusSizes.get(l.name)+'"');
@@ -293,7 +292,7 @@ public class LeaveOneOutValidator {
 				"plt.tight_layout()\n" +
 				"fig.savefig('images/%s', format='pdf')\n"+
 				"plt.show()\n";
-		return String.format(python, Dbg.version, new Date(), data, languageNames, languageNamesAsStr, imageFileName);
+		return String.format(python, Tool.version, new Date(), data, languageNames, languageNamesAsStr, imageFileName);
 	}
 
 	public static void main(String[] args) throws Exception {
