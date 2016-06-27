@@ -206,7 +206,7 @@ median of [5:19] formatting 2244ms
 
 ## Generating graphs from paper
 
-In the *Universal Code Formatting Through Machine Learning* paper, we have three graphs to support our conclusions. This sections shows how to reproduce them. (Note that these jobs take many minutes to run; maybe up to 30 minutes for one of them on a fast box.)
+In the *Towards a Universal Code Formatter Through Machine Learning* paper, we have three graphs to support our conclusions. This sections shows how to reproduce them. (Note that these jobs take many minutes to run; maybe up to 30 minutes for one of them on a fast box.)
 
 The Java code generates python code that uses matplotlib. The result of running the python is a PDF of the graph (that also pops up in a window).
 
