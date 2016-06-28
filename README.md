@@ -1,7 +1,5 @@
 # CodeBuff smart formatter
 
-[![DOI](https://zenodo.org/badge/22921/antlr/codebuff.svg)](https://zenodo.org/badge/latestdoi/22921/antlr/codebuff)
-
 ## Abstract
 
 Code formatting is not particularly exciting but many researchers would consider it either unsolved or not well-solved.  The two well-established solutions are:
