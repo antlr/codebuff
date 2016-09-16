@@ -4,6 +4,10 @@
 #
 import matplotlib.pyplot as plt
 import pylab
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 
 java_st_err = [0.027777778, 0.08366534, 0.05496625, 0.183, 0.028478438, 0.11627907, 0.0623608, 0.025316456, 0.013661202, 0.05620438, 0.22580644, 0.053435113, 0.15625, 0.0583691, 0.018867925, 0.015873017, 0.10743801, 0.026402641, 0.035958905, 0.023002421, 0.06918239, 0.046296295, 0.11784512, 0.028037382, 0.072289154, 0.14925373, 0.01843318, 0.021052632, 0.14925373, 0.036, 0.07917059, 0.21081081, 0.009708738, 0.07159353, 0.12662722, 0.09047619, 0.0375, 0.053097345, 0.033088237, 0.05352798, 0.05376344, 0.009433962, 0.0, 0.054545455, 0.018348623, 0.053030305, 0.07090464, 0.0, 0.056986302, 0.05263158, 0.024449877, 0.024922118, 0.04506699, 0.054247696, 0.059734512, 0.12195122, 0.0415625, 0.047557004, 0.061060857]
 java8_st_err = [0.0, 0.184, 0.11627907, 0.07968128, 0.025316456, 0.03168156, 0.013661202, 0.18478261, 0.060944207, 0.06870229, 0.0545657, 0.21164021, 0.018867925, 0.015873017, 0.051923078, 0.17094018, 0.026402641, 0.060761347, 0.062893085, 0.036020584, 0.028037382, 0.10213243, 0.046296295, 0.060240965, 0.024213076, 0.036842104, 0.19402985, 0.01843318, 0.19402985, 0.19459459, 0.036, 0.009708738, 0.050808314, 0.07728558, 0.034375, 0.029411765, 0.05109489, 0.11438679, 0.05376344, 0.059768066, 0.0, 0.016949153, 0.054545455, 0.0, 0.043560605, 0.018348623, 0.07017544, 0.08243548, 0.04506699, 0.047131147, 0.02200489, 0.046728972, 0.08943089, 0.07334963, 0.04605263, 0.042852674, 0.044960905, 0.0570958, 0.044123713]
@@ -24,13 +28,13 @@ ax.boxplot(language_data,
            widths=.35,
            labels=labels,
            showfliers=False)
-ax.set_xticklabels(labels, rotation=60, fontsize=18)
-ax.tick_params(axis='both', which='major', labelsize=18)
-plt.xticks(range(1,len(labels)+1), labels, rotation=60, fontsize=18)
+ax.set_xticklabels(labels, rotation=60, fontsize=17)
+ax.tick_params(axis='both', which='major', labelsize=17)
+plt.xticks(range(1,len(labels)+1), labels, rotation=60, fontsize=17)
 pylab.ylim([0,.28])
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
-ax.set_xlabel("Grammar and corpus size", fontsize=18)
-ax.set_ylabel("Misclassification Error Rate", fontsize=20)
+ax.set_xlabel("Grammar and corpus size", fontsize=17)
+ax.set_ylabel("Misclassification Error Rate", fontsize=17)
 # ax.set_title("Leave-one-out Validation Using Error Rate\nBetween Formatted and Original File")
 plt.tight_layout()
 fig.savefig('images/leave_one_out.pdf', format='pdf')

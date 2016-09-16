@@ -4,6 +4,10 @@
 #
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 
 fig = plt.figure()
 ax = plt.subplot(111)
@@ -25,9 +29,9 @@ java_guava = [0.10330579,0.05882353,0.056179777,0.052394595,0.04901961,0.0353551
 ax.plot(range(1,len(java_guava)+1), java_guava, label="java_guava", marker='>', color='m')
 
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey', alpha=0.5)
-ax.set_xlabel("Number of training files in sample corpus subset", fontsize=14)
-ax.set_ylabel("Median Error rate for 50 trials", fontsize=14)
-ax.set_title("Effect of Corpus size on Median Leave-one-out Validation Error Rate")
+ax.set_xlabel("Number of training files in sample corpus subset", fontsize=17)
+ax.set_ylabel("Median Error rate for 50 trials", fontsize=17)
+#ax.set_title("Effect of Corpus size on Median Leave-one-out Validation Error Rate")
 plt.legend()
 plt.tight_layout()
 fig.savefig('images/subset_validator.pdf', format='pdf')
