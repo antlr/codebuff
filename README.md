@@ -11,7 +11,196 @@ Either techniques are painful and finicky.
 
 This repository is a step towards what we hope will be a universal code formatter that uses machine learning to look for patterns in a corpus and to format code using those patterns.  
 
-*Whoa!* It appears to work.  Academic paper, [Towards a Universal Code Formatter through Machine Learning](http://arxiv.org/abs/1606.08866) accepted to SLE2016.
+*Whoa!* It appears to work.  Academic paper, [Towards a Universal Code Formatter through Machine Learning](http://arxiv.org/abs/1606.08866) accepted to SLE2016.  Sample output is in the paper or next section.
+
+## Sample output
+
+All input is completed squeezed of whitespace/newlines so only the output really matters when examining CodeBuff output. You can check out the [output](https://github.com/antlr/codebuff/tree/master/output) dir for leave-one-out formatting of the various [corpora](https://github.com/antlr/codebuff/tree/master/corpus). But, here are some sample formatting results.
+
+### SQL
+
+```sql
+SELECT *
+FROM DMartLogging
+WHERE DATEPART(day, ErrorDateTime) = DATEPART(day, GetDate())
+      AND DATEPART(month, ErrorDateTime) = DATEPART(month, GetDate())
+      AND DATEPART(year, ErrorDateTime) = DATEPART(year, GetDate())
+ORDER BY ErrorDateTime
+    DESC
+```
+
+```sql
+SELECT
+    CASE WHEN SSISInstanceID IS NULL
+        THEN 'Total'
+    ELSE SSISInstanceID END SSISInstanceID
+    , SUM(OldStatus4) AS OldStatus4
+    , SUM(Status0) AS Status0
+    , SUM(Status1) AS Status1
+    , SUM(Status2) AS Status2
+    , SUM(Status3) AS Status3
+    , SUM(Status4) AS Status4
+    , SUM(OldStatus4 + Status0 + Status1 + Status2 + Status3 + Status4) AS InstanceTotal
+FROM
+    (
+        SELECT
+            CONVERT(VARCHAR, SSISInstanceID)             AS SSISInstanceID
+            , COUNT(CASE WHEN Status = 4 AND
+                              CONVERT(DATE, LoadReportDBEndDate) <
+                              CONVERT(DATE, GETDATE())
+                        THEN Status
+                    ELSE NULL END)             AS OldStatus4
+            , COUNT(CASE WHEN Status = 0
+                        THEN Status
+                    ELSE NULL END)             AS Status0
+            , COUNT(CASE WHEN Status = 1
+                        THEN Status
+                    ELSE NULL END)             AS Status1
+            , COUNT(CASE WHEN Status = 2
+                        THEN Status
+                    ELSE NULL END)             AS Status2
+            , COUNT(CASE WHEN Status = 3
+                        THEN Status
+                    ELSE NULL END)             AS Status3
+--, COUNT ( CASE WHEN Status = 4 THEN Status ELSE NULL END ) AS Status4
+            , COUNT(CASE WHEN Status = 4 AND
+                              DATEPART(DAY, LoadReportDBEndDate) = DATEPART(DAY, GETDATE())
+                        THEN Status
+                    ELSE NULL END)             AS Status4
+        FROM dbo.ClientConnection
+        GROUP BY SSISInstanceID
+    ) AS StatusMatrix
+GROUP BY SSISInstanceID
+```
+
+### Java
+
+```java
+public class Interpreter {
+    ...
+    public static final Set<String> predefinedAnonSubtemplateAttributes = new HashSet<String>() {
+                                                                              {
+                                                                                  add("i");
+                                                                                  add("i0");
+                                                                              }
+                                                                          };
+...
+    public int exec(STWriter out, InstanceScope scope) {
+        final ST self = scope.st;
+        if ( trace ) System.out.println("exec("+self.getName()+")");
+        try {
+            setDefaultArguments(out, scope);
+            return _exec(out, scope);
+        }
+        catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            pw.flush();
+            errMgr.runTimeError(this,
+                                scope,
+                                ErrorType.INTERNAL_ERROR,
+                                "internal error: "+sw.toString());
+            return 0;
+        }
+    }
+...
+    protected int _exec(STWriter out, InstanceScope scope) {
+        final ST self = scope.st;
+        int start = out.index(); // track char we're about to write
+        int prevOpcode = 0;
+        int n = 0; // how many char we write out
+        int nargs;
+        int nameIndex;
+        int addr;
+        String name;
+        Object o, left, right;
+        ST st;
+        Object[] options;
+        byte[] code = self.impl.instrs;        // which code block are we executing
+        int ip = 0;
+        while ( ip<self.impl.codeSize ) {
+            if ( trace|| debug ) trace(scope, ip);
+            short opcode = code[ip];
+            //count[opcode]++;
+            scope.ip = ip;
+            ip++; //jump to next instruction or first byte of operand
+            switch ( opcode ) {
+                case Bytecode.INSTR_LOAD_STR:
+                    // just testing...
+                    load_str(self, ip);
+                    ip += Bytecode.OPND_SIZE_IN_BYTES;
+                    break;
+                case Bytecode.INSTR_LOAD_ATTR:
+                    nameIndex = getShort(code, ip);
+                    ip += Bytecode.OPND_SIZE_IN_BYTES;
+                    name = self.impl.strings[nameIndex];
+                    try {
+                        o = getAttribute(scope, name);
+                        if ( o== ST.EMPTY_ATTR ) o = null;
+                        }
+                    catch (STNoSuchAttributeException nsae) {
+                        errMgr.runTimeError(this, scope, ErrorType.NO_SUCH_ATTRIBUTE, name);
+                        o = null;
+                    }
+                    operands[++sp] = o;
+                    break;
+...
+```
+
+### ANTLR
+
+```
+referenceType : classOrInterfaceType | typeVariable | arrayType ;
+
+classOrInterfaceType
+    :   (   classType_lfno_classOrInterfaceType
+        |   interfaceType_lfno_classOrInterfaceType
+        )
+        (   classType_lf_classOrInterfaceType
+        |   interfaceType_lf_classOrInterfaceType
+        )*
+    ;
+```
+
+```
+classModifier
+    :   annotation
+    |   'public'
+    |   'protected'
+    |   'private'
+    |   'abstract'
+    |   'static'
+    |   'final'
+    |   'strictfp'
+    ;
+```
+
+```
+typeSpecifier
+    :   (   'void'
+        |   'char'
+        |   'short'
+        |   'int'
+        |   'long'
+        |   'float'
+        |   'double'
+        |   'signed'
+        |   'unsigned'
+        |   '_Bool'
+        |   '_Complex'
+        |   '__m128'
+        |   '__m128d'
+        |   '__m128i'
+        )
+    |   '__extension__' '(' ('__m128' | '__m128d' | '__m128i') ')'
+    |   atomicTypeSpecifier
+    |   structOrUnionSpecifier
+    |   enumSpecifier
+    |   typedefName
+    |   '__typeof__' '(' constantExpression ')' // GCC extension
+    ;
+```
 
 ## Build complete jar
 
