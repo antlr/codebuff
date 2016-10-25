@@ -27,10 +27,8 @@ import static org.antlr.codebuff.misc.BuffUtils.filter;
  * Dbg  -quorum     corpus/quorum/training      corpus/quorum/training/Containers/List.quorum
  * Dbg  -sqlite    corpus/sqlclean/training      corpus/sqlclean/training/dmart_bits.sql
  * Dbg  -tsql      corpus/sqlclean/training        corpus/sqlclean/training/dmart_bits_PSQLRPT24.sql
- * Dbg  -java      corpus/java/training/stringtemplate4     src/org/antlr/codebuff/Tool.java
  * Dbg  -java_st      corpus/java/training/stringtemplate4/org/stringtemplate/v4/StringRenderer.java
  * Dbg  -java_guava   corpus/java/training/guava/base/Absent.java
- * Dbg  -java      corpus/java/training/antlr4-tool   corpus/java/training/stringtemplate4/org/stringtemplate/v4/AutoIndentWriter.java
  */
 public class Dbg {
 
