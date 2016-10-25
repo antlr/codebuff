@@ -239,7 +239,7 @@ $ java -jar target/codebuff-1.4.19.jar  \
 ```
 
 ```bash
-$ java -jar codebuff-1.4.19 \
+$ java -jar target/codebuff-1.4.19.jar \
        -g org.antlr.codebuff.Java \
        -rule compilationUnit \
        -corpus corpus/java/training/stringtemplate4 \
