@@ -1,5 +1,7 @@
 # CodeBuff smart formatter
 
+By Terence Parr (primary developer), Fangzhou (Morgan) Zhang (help with initial development), Jurgen Vinju (empirical results and conceptual help).
+
 ## Abstract
 
 Code formatting is not particularly exciting but many researchers would consider it either unsolved or not well-solved.  The two well-established solutions are:
