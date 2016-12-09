@@ -1,6 +1,6 @@
 # CodeBuff smart formatter
 
-By Terence Parr (primary developer), Fangzhou (Morgan) Zhang (help with initial development), Jurgen Vinju (empirical results and conceptual help).
+By Terence Parr (primary developer), Fangzhou (Morgan) Zhang (help with initial development), Jurgen Vinju (co-author of academic paper, help with empirical results and algorithm discussions).
 
 ## Abstract
 
