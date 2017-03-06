@@ -13,6 +13,8 @@ Either techniques are painful and finicky.
 
 This repository is a step towards what we hope will be a universal code formatter that uses machine learning to look for patterns in a corpus and to format code using those patterns.  
 
+It requires Java 8. See `pom.xml` for dependencies (e.g., ANTLR 4.x, ...).
+
 *Whoa!* It appears to work.  Academic paper, [Towards a Universal Code Formatter through Machine Learning](http://arxiv.org/abs/1606.08866) accepted to SLE2016.  Sample output is in the paper or next section. Video from [Terence's presentation](https://www.youtube.com/watch?v=Mni2HVGGUdo).
 
 ## Sample output
