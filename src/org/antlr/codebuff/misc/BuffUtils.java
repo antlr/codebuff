@@ -31,6 +31,8 @@ public class BuffUtils {
 		return null;
 	}
 
+	// expr '*' expr
+
 	public static <T> List<T> filter(List<T> data, Predicate<T> pred) {
 		List<T> output = new ArrayList<>();
 		if ( data!=null ) for (T x : data) {
