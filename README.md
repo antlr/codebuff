@@ -2,7 +2,7 @@
 
 By Terence Parr (primary developer), Fangzhou (Morgan) Zhang (help with initial development), Jurgen Vinju (co-author of academic paper, help with empirical results and algorithm discussions).
 
-[kaby76](https://github.com/kaby76) has done a [C# port](https://github.com/kaby76/AntlrVSIX/tree/master/org.antlr.codebuff).
+[kaby76](https://github.com/kaby76) has done a [C# port](https://github.com/kaby76/cs-codebuff).
 
 ## Abstract
 
